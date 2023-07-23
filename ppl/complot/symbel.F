@@ -43,6 +43,12 @@ C                   strings starting with @PY. Then labels starting with numeric
 C                   characters don't lose those numbers .
 C V7.51 *acm*  4/19 Fix issue# 1928: When pyferret fonts correct the calculation 
 C                   of string length when it contains subscript or superscript
+C V7.65 *acm*  7/23 Fix PyFerret issue #139:  
+C                   Fix unending WHILE loop, was triggered by a html symbol using <&#nnn>
+C                   Allow the syntax for html symbols to be either <&#nnn> or <#nnn>
+C                   Also make the code more robust when there are multiple html
+C                   in a label. 
+C                   
 C
 C	CALL SYMBEL(X,Y,DEGRES,HEIGHT,NCHAR,STRING)
 C
@@ -124,42 +130,65 @@ C Set font size in from the height
 
 C Ignore any codes for Ferret-Hershey style Pen and Font changes 
 
-	   slen = TM_LENSTR(string)
-	   buff = string(:ABS(slen))
+	slen = TM_LENSTR(string)
+	buff = string(:ABS(slen))
 
-	   ia = INDEX (buff,'@')
-	   ipy = INDEX (buff,'@PY')
-	   inote = 0
+	ia = INDEX (buff,'@')
+	ipy = INDEX (buff,'@PY')
+	inote = 0
 
-	   DO WHILE (ia .GT. 0)
-	      IF (NCHAR.GT.0) inote = 1
-	      IF (ia .EQ. 1) THEN
-	         buff = buff(ia+3:slen)
-	      ELSE
-	         buff1 = buff(1:ia-1)
-	         buff = buff1(1:ia-1)//buff(ia+3:slen)
-	      ENDIF
+	DO WHILE (ia .GT. 0)
+	   IF (NCHAR.GT.0) inote = 1
+	   IF (ia .EQ. 1) THEN
+	      buff = buff(ia+3:slen)
+	   ELSE
+	      buff1 = buff(1:ia-1)
+	      buff = buff1(1:ia-1)//buff(ia+3:slen)
+	   ENDIF
 	      
-	      slen = TM_LENSTR(buff)
-	      ia = INDEX (buff,'@')
-	   ENDDO
-	   IF (inote.GT.0 .AND. ipy.GT.0) inote = 0
-	   IF (inote .GT. 0) CALL WARN 
+	   slen = TM_LENSTR(buff)
+	   ia = INDEX (buff,'@')
+	ENDDO
+	IF (inote.GT.0 .AND. ipy.GT.0) inote = 0
+	IF (inote .GT. 0) CALL WARN 
      .		('Non-Hershey fonts: ignoring Hershey pen or font codes') 
 
+C HTML symbol and decimal codes
 C The HTML would be &#nnn;  or &word; Because semicolon is used in Ferret, 
-C look for <#nnn>  an HTML decimal code. e.g. <#916> is uppercase Delta
-C or <& to start a word,  e.g. <&deg> for the degree sign.
+C look for <#nnn> or <&#nnn> an HTML decimal code, e.g. <#916> is uppercase Delta
+C or look for <& to start a word,  e.g. <&deg> for the degree sign.
+
+C First remove the & from any specifiers that use <&#
+
+	ss = INDEX (buff,'<&#') 
+	se = 1
+	DO WHILE  (ss .GT. 0)
+
+	   if (INDEX (buff,'<&#') .GT. 0) THEN
+	      ia = INDEX (buff,'<&#')
+	      ic = ia + 2
+	      buff1 = buff(:ia)//buff(ic:slen)
+	      buff = buff1
+	      slen = TM_LENSTR(buff)
+	   endif
+	
+	   ss = INDEX (buff,'<&#') 
+	   se = se + 1
+	   IF (se .GT. slen) exit  ! from the loop (prevent endless loop)
+
+	ENDDO
 
 	ss = INDEX (buff,'<#') + INDEX (buff,'<&')
+	se = 1
+
 	DO WHILE  (ss .GT. 0)
 	   ia = INDEX (buff,'<#')
 	   ic = INDEX (buff,'>')
-	
+
 	   IF (ia.GT.0 .AND. ic.GT.ia+2) THEN
 	      ic = ic - 1
 	      nstring = buff(ia+2:ic)
-	      READ (nstring, *) codepoint
+	      READ (nstring, *, err=3400) codepoint
 
 	      CALL CREATE_UTF8_STR(codepoint, utf8str, utf8strlen)
 	      ic = ic+2
@@ -178,22 +207,26 @@ C Is it a word, such as <&deg> ? If so, look up its decimal code
 	      nstring = buff(ia+2:ic)
 	      READ (nstring, *) codeword
 	      CALL SPECIAL_SYM_CODE (codeword, codepoint)
-	      IF (codepoint .GT. 0) THEN  ! -1 means not found. For now, just leave that bad spec in.
+	      IF (codepoint .GT. 0) THEN  ! -1 means not found. Just leave the spec as is in the label.
 	         CALL CREATE_UTF8_STR(codepoint, utf8str, utf8strlen)
 	         ic = ic+2
 	         buff1 = buff(:ia-1)//utf8str(1:utf8strlen)//buff(ic:slen)
 	         buff = buff1
 	         slen = TM_LENSTR(buff)
+
+	      ELSE
+
+	         buff1 = buff(:ia-1)//' &'//codeword(:TM_LENSTR(codeword))//buff(ic+2:slen)
+	         buff = buff1
+	         slen = TM_LENSTR(buff)
 	      ENDIF
 	   ENDIF
+
 	   ss = INDEX (buff,'<#') + INDEX (buff,'<&')
+	   se = se + 1
+	   IF (se .GT. slen) exit  ! from the loop (prevent endless loop)
 
 	ENDDO
-
-C Note any codes for Ferret-Hershey style Pen and Font changes 
-
-	ia = INDEX(buff,'@')
-	IF (ia .GT. 0) CALL WARN ('Non-Hershey fonts: not interpreting @pen and @font codes')
 
 C Look for subscripts and superscript tags. 
 
@@ -419,6 +452,9 @@ C If subscripts and/or superscripts do each part as it comes
 
  3300	err_msg = 'Error in string: mismatch of <sub> or <sup> tags '
      .   //buff(:tm_lenstr(buff))
+
+ 3400	err_msg = 'Error reading numeric code for character '
+     .   //buff(ia:ic+1)
 
 	CALL errmsg (ferr_nomessge, status, err_msg, *3000)
 
