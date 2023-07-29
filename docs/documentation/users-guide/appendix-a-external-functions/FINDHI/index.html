@@ -1,0 +1,142 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>FINDHI - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">FINDHI</h1>
+<p><a name="_VPID_565" id="_VPID_565"></a><a name="_VPINDEXENTRY_2018" id="_VPINDEXENTRY_2018"></a><a name="_VPINDEXENTRY_2019" id="_VPINDEXENTRY_2019"></a><a name="_VPINDEXENTRY_2020" id="_VPINDEXENTRY_2020"></a><a name="_VPINDEXENTRY_2021" id="_VPINDEXENTRY_2021"></a><a name="_VPINDEXENTRY_2022" id="_VPINDEXENTRY_2022"></a></p>
+<p align="left"><b>FINDHI(A,XRANGE,YRANGE)</b> Find local maxima of a variable.</p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">A</p>
+</td>
+<td>
+<p align="left">Variable in x and y, may be a function of z and/or t</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">XRANGE</p>
+</td>
+<td>
+<p align="left">Range in data units of the X radius in which the function looks for maxima</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YRANGE</p>
+</td>
+<td>
+<p align="left">Range in data units of the Y radius in which the function looks for maxima</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">ABSTRACT</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">ABSTRACT: j=1:3</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Inherited from A</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">Inherited from A</p>
+</td>
+</tr></tbody></table><p align="left">The maxima are listed along the X axis: j=1 contains the X locations of the points, j=2 contains the Y coordinates of the points, and j=3 contains the function values at the maxima.</p>
+<p align="left">This function looks for the maximumm gridded value in the neighborhood x+/- XRANGE, Y+/- YRANGE. It returns only values in the interior of the region, not on boundaries. It is an implementaion of the NCAR graphics routine "minmax"</p>
+<p align="left">The GO script label_hi_lo.jnl makes it easy to call this function and label and label low's and high's with either their numerical value or the letters L and H. Run the demonstration script minmax_label_demo.jnl</p>
+<p align="left">Also try the script bullseye.jnl which locates and marks a "bullseye", i.e. a local minimum or maximum in a 2-D field within a user-specified region.</p>
+<p><strong>Example 1:</strong></p>
+<p>The function can find a set of local maxima.  For an example of finding the global maximum see the documentation for function FINDLO.</p>
+<p>You may want to call this function after filling the data with a mean value. The method stops along lon/lat in either direction that do not represent the range requested.  For local minima or maxima this it can be useful to keep the missing data we do not search across a landmass for instance. Here we operation on the variable with its missing-data flags.</p>
+<pre>
+yes? use coads_climatology
+ 
+! define a variable containing the desired region.
+yes? let/like=slp var = slp[L=7,x=100:360,y=-20:60]
+ 
+! define the findhi operation to use
+yes? let low = findlo(var, 360, 180)
+ 
+yes? shade var
+yes? go fland
+ 
+! Draw a mark at the low locations found
+yes? plot/vs/over/nolab/color=red/thick/siz=0.2 low[j=1], low[j=2]
+</pre><p><strong>Example 2:</strong></p>
+<p>Now call the function after filling the data with its mean, and look for maxima on the same region.  The function finds 9 maxima using the same xrange and yrange as above.</p>
+<pre>
+ 
+yes? use coads_climatology
+yes? let/like=slp/title="`slp,return=title` filled with mean value" var = missing(slp[L=7,x=100:360,y=-20:60], slp[l=7, x=100:360@ave,y=-20:60@ave])
+ 
+yes? let high = findhi(var, 10,8)
+ 
+yes? shade var
+yes? go fland
+yes? plot/vs/over/nolab/color=red/thick/siz=0.2 high[j=1], high[j=2]
+ 
+yes? list high[i=@ngd]
+VARIABLE : FINDHI(VAR, 10,8) (# of points)
+FILENAME : coads_climatology.cdf
+FILEPATH : /home/users/tmap/ferret/linux/fer_dsets/data/
+SUBSET   : 3 points (Y)
+X        : 0.5 to 5200.5 (number of valid)
+TIME     : 16-JUL 20:54
+1   / 1:  9.000
+2   / 2:  9.000
+3   / 3:  9.000
+yes? list/order=y/i=1:9 high
+VARIABLE : FINDHI(VAR, 10,8)
+FILENAME : coads_climatology.cdf
+FILEPATH : /home/users/tmap/ferret/linux/fer_dsets/data/
+SUBSET   : 3 by 9 points (Y-X)
+TIME     : 16-JUL 20:54
+1      2      3    
+1      2      3
+1   / 1:   303.     5.  1017.
+2   / 2:   247.    31.  1018.
+3   / 3:   277.    31.  1020.
+4   / 4:   323.    37.  1026.
+5   / 5:   211.    39.  1026.
+6   / 6:   127.    41.  1017.
+7   / 7:   271.    45.  1021.
+8   / 8:   157.    55.  1014.
+9   / 9:   273.    57.  1018.</pre><p> </p>
+<p>See the <strong><a href="FINDLO">FINDLO</a></strong> documentation for another example.</p>
+<div class="clearfix">
+</body>
+</html>
+ 

@@ -1,0 +1,84 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>EOF_TFUNC and EOFSVD_TFUNC - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">EOF_TFUNC and EOFSVD_TFUNC</h1>
+<p><a name="_VPID_564" id="_VPID_564"></a><a name="_VPINDEXENTRY_2015" id="_VPINDEXENTRY_2015"></a><a name="_VPINDEXENTRY_2016" id="_VPINDEXENTRY_2016"></a><a name="_VPINDEXENTRY_2017" id="_VPINDEXENTRY_2017"></a></p>
+<p align="left" class="callout"><b>EOF_TFUNC </b></p>
+<p align="left"><b>EOF_TFUNC(A, FRAC_TIMESER) </b>Compute EOF time amplitude functions from x-y-z-time field w/gaps.</p>
+<p align="left"> </p>
+<p align="left">If running Ferret v6.8 and higher, also see <strong><a href="#_eofsvd_tfunc">EOFSVD_TFUNC</a></strong>, below. If there are gaps in your data, you may choose to use one of Ferret's filling transformations to fill the gaps and then compute the EOF results using EOFSVD functions. Or, see the instructions in the the <strong><a href="../../release-notes/version-6-93-release-notes">Version 6.93 Release Notes</a></strong> to install the non-SVD functions.  They run much slower, and return a resul                                             
+<p align="left">The computation is made in the X-Y and T directions.  If the grid of the argument has further dimensions such as Z, then the XYT computation is made independently at each Z level.</p>
+<p align="left">Please see the discussion under <strong><a href="../appendix-a-external-functions/EOF-SPACE">EOF_SPACE</a></strong>, and see the demonstration<strong> <a href="http://ferret.pmel.noaa.gov/static/Demos/ef_eof_demo/ef_eof_demo.html">ef_eof_demo.jnl</a></strong> for examples of this function.</p>
+<p align="left">The time amplitude functions (TAF's) are dimension less; and the mean of a given TAF = 1. They are returned as follows: For x=1, time amplitude function corresponding to the first eigenfunction is the time series with t=1:NT.</p>
+<p> </p>
+<p align="left"> </p>
+<p><a name="_eofsvd_tfunc" id="_eofsvd_tfunc"></a></p>
+<p> </p>
+<p align="left"><b>EOFSVD_TFUNC(A)</b> Returns EOF (Empirical Orthogonal Function) time amplitude functions from x-y-z-time field computed by Singular Value Decompositiom</p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">A</p>
+</td>
+<td>
+<p align="left">Variable in Variable in any X,Y, and time (see note above).</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">ABSTRACT 1 to NEOF</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">ABSTRACT</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Inherited from A</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>Inherited from A</td>
+</tr></tbody></table><p align="left"> </p>
+<p align="left">The code runs a program contributed by Billy Kessler. It finds "traditionally-scaled" EOFs using a Singular Value Decomposition routine. "Traditionally-scaled" means that the units of the EOFs are the units of the variable, while the TAFs are dimensionless. The routine is based on Numerical Recipes routine svdcmp.f. The result of EOF decomposition is that a function f(x,t) of space and time is decomposed into a sum of products: f(x,t) = SUM[v(x)*a(t)]. The v(x) are referred to as the EOFs, o                                                                                                                                                                            
+is the minimum of (# of locations,# of times). Based on Numerical Recipes subroutine svdcmp.</p>
+<p align="left"> </p>
+<p align="left">The EOFSVD functions all make the same computations, returning different portions of the results. EOFSVD_SPACE returns the eigenfunctions, normalized so that they have the units of data, while time amplitude functions (TAF's) are dimensionless. Thus the sum of the values of a given EOF = sqrt(eigenvalue), and the mean of a given TAF = 1. EOFSVD_STAT returns some useful statistics: the number of EOF's which were computed and normalized for the parameters given; the
+<p align="left">Specifying the context of the input variable explicitly e.g.</p>
+<pre>
+EOFSVD_SPACE(A[x=20:40,y=2s:40n,l=1:58])</pre><p align="left">will prevent any confusion about the region. See the note in chapter 3 on the <a href="../variables-xpressions/XPRESSIONS#_VPINDEXENTRY_306">context of variables passed to functions</a>.</p>
+<p align="left">The EOFSVD analysis solves a matrix problem where the matrix is dimensioned (NX*NY*NZ) by NT, which can quickly become quite large. The EOFSVD functions use other workspace as well which demands even more memory, and often memory must be increased with the SET MEMORY command. Regridding to a coarser grid or restricting the region may be necessary.</p>
+<p align="left">See the example under EOF_STAT for more information on calling these functions, and see the demonstration <a href="http://ferret.pmel.noaa.gov/static/Demos/ef_eof_demo/ef_eof_demo.html">ef_eof_demo.jnl </a>for examples of this function.</p>
+</body>
+</html>
+ 

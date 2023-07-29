@@ -1,0 +1,120 @@
+! cancel mode verify
+
+! Edit a file in appendix_a/Function_name/index.html
+! removing the pmel-specific stuff and the fancy page organization
+! with menus etc.
+
+define symbol function_name = ($1)
+define symbol outfile = ($function_name)/index_out.html
+
+! open the file and create the output file
+columns/type=text/delim="%" ($function_name)/index.html
+
+let strout = " "
+list/clobber/norow/nohead/format=(a)/file="($outfile)" strout
+
+let nlines = `v1[d=1],return=isize`
+
+! keep the very start of the file, up to the line that starts <head profile
+
+repeat/i=1:`nlines` (\
+list/append/norow/nohead/format=(a)/file="($outfile)" v1;\
+let nn = `i`;\
+if `strindex(v1, "head profile")  gt 0` then exit/loop)
+let n1 = `nn`
+
+! Now get the title line
+
+
+repeat/i=`n1`:`nlines` (\
+let nn = `i`;\
+if `strindex(v1, "<title>")  gt 0` then exit/loop)
+let n2 = `nn`
+
+! edit the line taking out Science Data Integration Group
+
+let w1 = strindex(v1[i=`n2`], "| Science Data Integration Group") - 1
+let strout1 = substring(v1[i=`n2`], 1, `w1`)
+let strout = strcat ("`strout1`", "- Ferret/PyFerret Support</title>")
+list/append/norow/nohead/format=(a)/file="($outfile)" strout
+
+say `n2` <title>
+say `strout`
+
+! pause
+! Add the edited css links
+
+sp cat ../users_guide_edited_css.html >> ($outfile)
+
+say  added css
+sp cat ../users_guide_edited_css.html
+! pause
+
+! Now skip a whole lot of stuff until the documentation for this function
+
+repeat/i=`n2`:`nlines` (\
+let nn = `i`;\
+if `strindex(v1, "h1 class") gt 0 and strindex(v1, "page-title") gt 0` then \
+  list/append/norow/nohead/format=(a)/file="($outfile)" v1;\
+if `strindex(v1, "page-title")  gt 0` then exit/loop)
+let n3 = `nn`
+
+say `n3` page-title
+list/norow/nohead v1[i=`n3`]; ! pause
+
+! Now looking for the anchors for internal links e.g. index entries
+! In these files at least, the anchors start with a <p> tag that is
+! not at the start of a line.
+
+repeat/i=`n3`:`nlines` (\
+let nn = `i`;\
+if `strindex(v1, "a name") gt 0 gt 0` then exit/loop)
+let n4 = `nn`
+
+IF `n4 eq nlines` then  ! no anchors... look for  modified-date
+
+   repeat/i=`n3`:`nlines` (\
+   let nn = `i`;\
+   if `strindex(v1, "modified-date") gt 0 gt 0` then exit/loop)
+   let n4 = `nn`
+
+!  Now look for <p> to start the documentation of this fcn
+
+   repeat/i=`n4`:`nlines` (\
+   let nn = `i`;\
+   if `strindex(v1, "<p>") gt 0 gt 0` then exit/loop)
+   let n4 = `nn`
+ENDIF
+
+let w1 = strindex(v1[i=`n4`], "<p>")
+let wn = strlen(v1[i=`n4`])
+let strout = substring(v1[i=`n4`], w1, `wn-w1+1`)
+list/append/norow/nohead/format=(a)/file="($outfile)" strout
+
+say n4 anchors 
+list/norow/nohead v1[i=`n4`]; ! pause
+
+let n4 = `n4+1`
+
+! Now keep the rest of the documentation, ending with  </div> or <div>
+
+
+repeat/i=`n4`:`nlines` (\
+  let nn = `i`;\
+  if `strindex(v1, "<div>") gt 0 or strindex(v1, "</div>") gt 0` then exit/loop;\
+  list/append/norow/nohead/format=(a)/file="($outfile)" v1;\
+  )
+let n5 = `nn`
+
+say `n5` the rest of the stuff up to the <div> tags that close things up
+
+! Now skip over a bunch of </div> and <div> </div> pairs and write some closing tags
+
+let strout = "</body>"
+list/append/norow/nohead/format=(a)/file="($outfile)" strout
+let strout = "</html>"
+list/append/norow/nohead/format=(a)/file="($outfile)" strout
+let strout = " "
+list/append/norow/nohead/format=(a)/file="($outfile)" strout
+
+say ($1) ; pause

@@ -1,0 +1,154 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>NCO_ATTR - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">NCO_ATTR</h1>
+<p><a name="_VPINDEXENTRY_nco_attr" id="_VPINDEXENTRY_nco_attr"></a></p>
+<p align="left">NCO_ATTR (FileName, VariableName, AttributeName, AttributeType, EditMode, AttributeValue), execute the NCO operator <i>ncatted </i>to edit a netCDF file attribute. The function requires that NCO be installed on your system.</p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">FileName</p>
+</td>
+<td>File name (string)</td>
+</tr><tr><td> </td>
+<td>VariableName</td>
+<td>Variable (string)</td>
+</tr><tr><td> </td>
+<td>AttributeName</td>
+<td>Attribute (string)</td>
+</tr><tr><td> </td>
+<td>AttributeType</td>
+<td>Valid data types are "c"=char, "f"=float, "d"=double,"s"=short, "l"=long, "b"=byte (string)</td>
+</tr><tr><td> </td>
+<td>Mode</td>
+<td>Mode: "o"=edit, "a"=append, "d"=delete (string)</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">AttributeValue</p>
+</td>
+<td>
+<p align="left">value, input as a string which will be converted to the type given in argument 4 (string)</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">Abstract</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">NORMAL</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">NORMAL</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">NORMAL</p>
+</td>
+</tr></tbody></table><p align="left"> </p>
+<p align="left">Execute the <i>ncatted </i>operator to edit netCDF file attributes. The result is always 1. See <a class="generated" href="http://nco.sourceforge.net/nco.html#ncatted">http://nco.sourceforge.net/nco.html#ncatted</a> for documentation on this operator, and <a class="generated" href="http://nco.sourceforge.net/nco.html">http://nco.sourceforge.net/nco.html</a> for a discussion of the nco operators in general.</p>
+<p align="left"><b>Note:</b> You do not need to open the file in Ferret before running the nco_attr function, and if you have opened the file in Ferret before issuing these commands, you will NOT see the results of any changes you make to a file, until you close and reopen it. It is recommended that you close the file in Ferret before editing it with nco_attr.</p>
+<p align="left"><b>For example:</b></p>
+<pre>
+yes? ! Create a simple file
+yes? let A = {1,2,3,4,5}
+yes? let B = {1,2,3,4,5}
+yes? save/clobber/file=xfile.nc A, B
+yes? can var/all
+yes? use xfile
+ 
+yes? ! Add the cartesian_axis attribute to an axis
+yes? let status = nco_attr("xfile.nc", "`A,return=xaxis`", "cartesian_axis", "c", "o", "X")
+yes? load status
+ 
+yes? ! Add the units attribute to a variable
+let status = nco_attr("xfile.nc", "B", "units", "c", "o", "tons")
+load status
+ 
+yes? ! Add to the history attribute of the file
+yes? let status = nco_attr("xfile.nc", "global", "history", "c", "a"," Add text to history attribute")
+yes? load status
+ 
+yes? ! Add another line to the history attribute
+yes? let status = nco_attr("xfile.nc", "global", "history", "c","a","\nAdd a new line to the history")
+yes? load status
+ 
+yes? ! Add a new floating point attribute to a variable
+yes? let status = nco_attr("xfile.nc", "B", "upper_bound", "f", "a", "10")
+yes? load status
+ 
+yes? ! Edit an attribute
+yes? let status = nco_attr("xfile.nc", "B", "long_name", "c", "o", "wheat exports")
+yes? load status
+ 
+yes? ! Add a new double precision attribute to a variable
+yes? let status = nco_attr("xfile.nc", "B", "factor", "d", "a", "100.987654321")
+yes? load status
+ 
+ 
+yes? ! list what we have done
+yes? sp ncdump -h xfile.nc
+netcdf xfile {
+dimensions:
+XAX1_5 = 5 ;
+variables:
+double XAX1_5(XAX1_5) ;
+XAX1_5:point_spacing = "even" ;
+XAX1_5:axis = "X" ;
+XAX1_5:cartesian_axis = "X" ;
+float A(XAX1_5) ;
+A:missing_value = -1.e+34f ;
+A:_FillValue = -1.e+34f ;
+A:long_name = "{1,2,3,4,5}" ;
+float B(XAX1_5) ;
+B:missing_value = -1.e+34f ;
+B:_FillValue = -1.e+34f ;
+B:long_name = "wheat exports" ;
+B:units = "tons" ;
+B:upper_bound = 10.f ;
+B:factor = 100.987654321 ;
+ 
+// global attributes:
+:history = "FERRET V6.1 9-Sep-08 Add text to history attribute\000\n",
+"Add a new line to the history" ;
+:Conventions = "CF-1.0" ;
+}
+ 
+ 
+ 
+</pre><p> </p>
+</body>
+</html>
+ 

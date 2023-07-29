@@ -1,0 +1,103 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>FINDLO - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">FINDLO</h1>
+<p><a name="_VPID_566" id="_VPID_566"></a><a name="_VPINDEXENTRY_2023" id="_VPINDEXENTRY_2023"></a><a name="_VPINDEXENTRY_2024" id="_VPINDEXENTRY_2024"></a><a name="_VPINDEXENTRY_2025" id="_VPINDEXENTRY_2025"></a><a name="_VPINDEXENTRY_2026" id="_VPINDEXENTRY_2026"></a><a name="_VPINDEXENTRY_2027" id="_VPINDEXENTRY_2027"></a></p>
+<p align="left"><b>FINDLO(A,XRANGE,YRANGE) </b> Find local minima of a variable.</p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">A</p>
+</td>
+<td>
+<p align="left">Variable in x and y, may be a function of z and/or t</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">XRANGE</p>
+</td>
+<td>
+<p align="left">Range in data units of the X radius in which the function looks for minima</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YRANGE</p>
+</td>
+<td>
+<p align="left">Range in data units of the Y radius in which the function looks for minima</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">ABSTRACT</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">ABSTRACT: j=1:3</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Inherited from A</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">Inherited from A</p>
+</td>
+</tr></tbody></table><p align="left">The minima are listed along the X axis: j=1 contains the X locations of the points, j=2 contains the Y coordinates of the points, and j=3 contains the function values at the minima.</p>
+<p align="left">This function looks for the minimum gridded value in the neighborhood x+/- XRANGE, Y+/- YRANGE. It returns only values in the interior of the region, not on boundaries. It is an implementation of the NCAR graphics routine "minmax".</p>
+<p align="left">The GO script label_hi_lo.jnl makes it easy to call this function and label and label low's and high's with either their numerical value or the letters L and H. Run the demonstration script minmax_label_demo.jnl</p>
+<p align="left">Also try the script bullseye.jnl which locates and marks a "bullseye", i.e. a local minimum or maximum in a 2-D field within a user-specified region.</p>
+<p> </p>
+<p><strong>Example:</strong></p>
+<p>The function can find a set of local minima, but here we find the overall minimum.</p>
+<p>In this case it's necessary to call the function on the variable after filling it with a mean value. The method stops along lon/lat in either direction that do not represent the range requested.  For local minima or maxima this is useful: we do not search across a landmass for instance. But for global data we want to search all of each direction.</p>
+<pre>
+yes? use coads_climatology
+ 
+! define a variable containing the desired region as well as any other modifications.
+yes? let/like=slp/title="`slp,return=title` filled with mean value" var = missing(slp[L=7], slp[l=7, x=@ave,y=@ave])
+ 
+! define the findlo operation to use
+yes? let low = findlo(var, 360, 180)
+ 
+yes? shade var
+ 
+! Draw a mark at the low location found and make a label with its value.
+yes? plot/vs/over/nolab/color=red/thick/siz=0.2 low[i=1,j=1], low[i=1,j=2]
+yes? annotate/norm/xpos=1/ypos=1.05/halign=1/siz=0.1 "Location of lowest value= `low[i=1,j=3],prec=6`"
+</pre><p> </p>
+<p>See the <strong><a href="FINDHI">FINDHI</a></strong> documentation for more examples.</p>
+</body>
+</html>
+ 

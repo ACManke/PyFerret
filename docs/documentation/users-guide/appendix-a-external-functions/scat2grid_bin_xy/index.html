@@ -1,0 +1,350 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>SCAT2GRID_BIN functions - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">SCAT2GRID_BIN functions</h1>
+<p><strong>SCAT2GRID_BIN_XYZ(XPTS,YPTS,ZPTS,VAR,XAXPTS,YAXPTS,ZAXPTS)</strong><br />
+    Put scattered data into XYZ grid by binning</p>
+<p><strong>SCAT2GRID_BIN_XYZT(XPTS,YPTS,ZPTS,TPTS,VAR,XAXPTS,YAXPTS,ZAXPTS,TAXPTS)</strong><br />
+    Put scattered data into XYZT grid by binning</p>
+<p>
+These functions return average value of all valid scattered data values that lie within each grid cell in XY, XYT, XYZ, or XYZT. See the SCAT2GRID_NBIN_XY and SCAT2GRID_NBIN_XYT functions which return the count of data that contributes to each grid cell.  (Comparable NBIN functions for XYZ and XYZT gridding are not implemented at this time.  Use SHOW FUNCTIONS to explore what functions may be available, e.g.<em> yes? show func/brief scat2grid_nbin*</em>).</p>
+<p>NOTE: Unlike SCAT2GRIDGAUSS and SCAT2GRIDLAPLACE Functions, the arguments that represent the scattered X, Y, Z, and/or T locations must be 1-dimensional lists of values.</p>
+<p>At the end of this page there is some discussion about using these functions with Discrete Sampling Geometries datasets.</p>
+<p align="left"> </p>
+<p align="left">
+SCAT2GRID_BIN_XY(XPTS,YPTS,F,XAXPTS,YAXPTS)</p>
+<p> </p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">XPTS</p>
+</td>
+<td>
+<p align="left">x-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YPTS</p>
+</td>
+<td>
+<p align="left">y-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">VAR</p>
+</td>
+<td>
+<p align="left">VAR  List of function values at scattered locations, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">XAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of X-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of Y-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td><b>Result Axes:</b></td>
+<td>X</td>
+<td>Inherited from XAXPTS</td>
+<td> </td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">Inherited from YAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">NORMAL</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">NORMAL</p>
+</td>
+</tr></tbody></table><p align="left">Quick example:</p>
+<pre>
+yes? DEFINE AXIS/X=180:221:1 xax
+yes? DEFINE AXIS/Y=-30:10:1 yax
+yes? ! read some data
+yes? SET DATA/EZ/VARIABLES="times,lats,lons,var" myfile.dat 
+ 
+yes? LET my_out = SCAT2GRID_BIN_XY(lons, lats, var, x[gx=xax], y[gy=yax])</pre><p align="left"> </p>
+<p align="left">SCAT2GRID_BIN_XYT(XPTS,YPTS,TPTS,VAR,XAXPTS,YAXPTS,TAXPTS)</p>
+<p align="left"> </p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">XPTS</p>
+</td>
+<td>
+<p align="left">x-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YPTS</p>
+</td>
+<td>
+<p align="left">y-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>TPTS</td>
+<td>t-coordinates of scattered input triples, listed along an abstract axis in any direction. These<br />
+			must be in the same time units as the axis we are gridding to, and with the same time origin.</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">VAR</p>
+</td>
+<td>
+<p align="left">VAR  List of function values at scattered locations, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">XAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of X-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of Y-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td> </td>
+<td>TAXPTS</td>
+<td>
+<p align="left">coordinates of T-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">Inherited from XAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">Inherited from YAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">NORMAL</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">Inherited from TAXPTS</p>
+</td>
+</tr></tbody></table><p align="left"> </p>
+<p align="left">SCAT2GRID_BIN_XYZ(XPTS,YPTS,ZPTS,VAR,XAXPTS,YAXPTS,ZAXPTS)</p>
+<p align="left"> </p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">XPTS</p>
+</td>
+<td>
+<p align="left">x-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YPTS</p>
+</td>
+<td>
+<p align="left">y-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>ZPTS</td>
+<td>z-coordinates of scattered input triples, listed along an abstract axis in any direction.</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">VAR</p>
+</td>
+<td>
+<p align="left">VAR  List of function values at scattered locations, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">XAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of X-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of Y-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td> </td>
+<td>ZAXPTS</td>
+<td>
+<p align="left">coordinates of Z-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">Inherited from XAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">Inherited from YAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Inherited from ZAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">NORMAL</p>
+</td>
+</tr></tbody></table><p align="left"> </p>
+<p align="left">SCAT2GRID_BIN_XYZT(XPTS,YPTS,ZPTS,TPTS,VAR,XAXPTS,YAXPTS,ZAXPTS,TAXPTS)</p>
+<p align="left"> </p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">XPTS</p>
+</td>
+<td>
+<p align="left">x-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YPTS</p>
+</td>
+<td>
+<p align="left">y-coordinates of scattered input triples, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>ZPTS</td>
+<td>z-coordinates of scattered input triples, listed along an abstract axis in any direction.</td>
+</tr><tr><td> </td>
+<td>TPTS</td>
+<td>t-coordinates of scattered input triples, listed along an abstract axis in any direction. These<br />
+			must be in the same time units as the axis we are gridding to, and with the same time origin.</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">VAR</p>
+</td>
+<td>
+<p align="left">VAR  List of function values at scattered locations, listed along an abstract axis in any direction.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">XAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of X-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">YAXPTS</p>
+</td>
+<td>
+<p align="left">coordinates of Y-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td> </td>
+<td>ZAXPTS</td>
+<td>coordinates of Z-axis of output grid. Must be regularly spaced.</td>
+</tr><tr><td> </td>
+<td>TAXPTS</td>
+<td>
+<p align="left">coordinates of T-axis of output grid. Must be regularly spaced.</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">Inherited from XAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">Inherited from YAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Inherited from ZAXPTS</p>
+</td>
+</tr><tr><td> </td>
+<td>T</td>
+<td>Inherited from ZAXPTS</td>
+</tr></tbody></table><p align="left"> </p>
+<p align="left"><b><b>Note: </b></b></p>
+<p align="left">The SCAT2GRID_BIN* functions are "grid-changing"functions; the output grid is different from the input arguments.Therefore it is best to use explicit limits on any of the arguments rather than a SET REGION command. (See this note on <a href="../variables-xpressions/XPRESSIONS#_VPINDEXENTRY_306">the context of variables</a> passed to functions.)</p>
+<p align="left"> </p>
+<p align="left"><a href="../data-set-basics/2-8-discrete-geometries-datasets-1">Discrete Sampling Geometries</a> (DSG) data:</p>
+<p align="left">Observational data from DSG datasets contain collections of data which has lists of coordinate information that can feed into these functions for gridding into a multi-dimensional grid.  However, with the exception of trajectory data the coordinates do not all have the same dimensionality.  Timeseries data for instance has a station location for each station, and multiple observations in time.  Profile data has station location and time, and multiple heights/depths in each profile. For th                                                                                                                                                                                                                                                 
+<p>The FAQ, <a href="http://ferret.lark.pmel.noaa.gov/faq/calling-scat2grid-functions-dsg-data">Calling SCAT2GRID functions for DSG data</a> explains how to work with these datasets.</p>
+</body>
+</html>
+ 

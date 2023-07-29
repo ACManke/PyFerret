@@ -1,0 +1,122 @@
+cancel mode verify
+
+! Edit Ferret documentation html files, removing the pmel-specific stuff 
+! Run this script from the users-guide directory under Ferret/documentation
+
+! Edits an html file in a directory under the location of this script.
+
+define symbol directory = ($1)
+define symbol filename = ($2)
+define symbol outfile = ($directory)/($filename)_out.html
+
+
+! open the file and create the output file
+columns/type=text/delim="%" ($directory)/($filename)
+
+let strout = " "
+list/clobber/norow/nohead/format=(a)/file="($outfile)" strout
+
+let nlines = `v1[d=1],return=isize`
+
+! keep the very start of the file, up to the line that starts <head profile
+
+repeat/i=1:`nlines` (\
+list/append/norow/nohead/format=(a)/file="($outfile)" v1;\
+	let nn = `i`;\
+if `strindex(v1, "head profile")  gt 0` then exit/loop)
+let n1 = `nn`
+
+! Now get the title line
+
+
+repeat/i=`n1`:`nlines` (\
+let nn = `i`;\
+if `strindex(v1, "<title>")  gt 0` then exit/loop)
+
+if `nn ge nlines` then
+   say ($directory)  ($filename)
+   say <title> not found
+   exit/program
+endif
+let n2 = `nn`
+
+! edit the line taking out Science Data Integration Group
+
+let w1 = strindex(v1[i=`n2`], "| Science Data Integration Group") - 1
+
+let strout1 = v1[i=`n2`]
+if `w1 gt 0` then let strout1 = substring(v1[i=`n2`], 1, `w1`)
+let strout = strcat ("`strout1`", "- Ferret/PyFerret Documentation</title>")
+list/append/norow/nohead/format=(a)/file="($outfile)" strout
+
+say `n2` <title>
+say `strout`
+
+! pause
+! Add the edited css and js for the header of all files
+
+sp cat ../../html_editing/users_guide_edited_header_contents.html >> ($outfile)
+
+say  added css hand js for header
+! pause
+
+! Now skip a whole lot of stuff until the end of the header. 
+
+
+repeat/i=`n2`:`nlines` (\
+let nn = `i`;\
+if `strindex(v1, "</div></header>")  gt 0` then exit/loop)
+
+if `nn ge nlines` then
+   say ($directory)  ($filename)
+   say </div></header> not found
+   exit/program
+endif
+let n2 = `nn + 1`
+
+! pause
+! Now looking for the line with breadcrumb in it.  Do not keep the breadcrumb line.
+
+
+
+repeat/i=`n2`:`nlines` (\
+let nn = `i`;\
+if `strindex(v1, "breadcrumb")  gt 0` then exit/loop;\
+list/append/norow/nohead/format=(a)/file="($outfile)" v1;\
+)
+let n2 = `nn`
+
+! Now add the big bunch of content with the menus that will be over on the left.
+
+
+
+sp cat ../../html_editing/users_guide_edited_menu_contents.html >> ($outfile)
+
+
+! Now skip lines in the input file until we get to "main-content"
+
+repeat/i=`n2`:`nlines` (\
+let nn = `i`;\
+if `strindex(v1, "main-content")  gt 0` then exit/loop;\
+)
+let n2 = `nn`
+
+! Keep lines containing the documentation (except for the last-modified date)
+
+say `n2`  `nlines`; ! pause
+
+repeat/i=`n2`:`nlines` (\
+let nn = `i`;\
+list/norow/nohead `nn`;\
+list/norow/nohead/format=(a) v1;\
+if `strindex(v1, "modified-date") eq 0` then list/append/norow/nohead/format=(a)/file="($outfile)" v1;\
+if `strindex(v1, "footer")  gt 0` then exit/loop;\
+)
+let n2 = `nn`
+
+
+! Now add the common lines that end all files.
+
+
+
+sp cat ../../html_editing/users_guide_edited_ending_contents.html >> ($outfile)

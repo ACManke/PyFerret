@@ -1,0 +1,144 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>TAX_DATESTRING - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">TAX_DATESTRING</h1>
+<p><a name="_VPINDEXENTRY_tax_datestring" id="_VPINDEXENTRY_tax_datestring"></a></p>
+<p><b>TAX_DATESTRING(A,B,C)<br />
+Returns date string for time axis coordinate values.</b></p>
+<p> </p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">A</p>
+</td>
+<td>
+<p align="left">Time steps to convert</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">B</p>
+</td>
+<td>
+<p align="left">A variable with the reference time axis;<br />
+			indicate argument limits with "[]"</p>
+</td>
+</tr><tr><td> </td>
+<td>C</td>
+<td>Precision to return (string)</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">Inherited from argument 1</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">Inherited from argument 1</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Inherited from argument 1</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">Inherited from argument 1</p>
+</td>
+</tr></tbody></table><p> </p>
+<p> </p>
+<p>Argument 3 is given as a string and must be enclosed in double quotes. Its values can be "year", "month", "day", "hour", "minute", "second". Only the first 3 letters of this string is matched, so for instance, you can specify month with "mon".</p>
+<p> </p>
+<p>Note that the variables you specify for the first two arguments will be loaded into memory. So, rather than giving a simple variable name, it's best to specify just a variable based on its time axis, say t[gt=b]. See example 1 below.</p>
+<p><a name="_TAX_single_precision" id="_TAX_single_precision"></a></p>
+<p><b>Caution: Previous to Ferret v6.8 only: </b><i>Although Ferret stores and computes with coordinate values in double-precision, argument 1 of this function is a single-precision expression. There is plenty of precision in double-precision data to handle 1-second time axes since year 0000 with accuracy, but if an axis has units of seconds and its time origin is too long before the coordinates you are looking at, the truncation to single precision in an expression such as t[gt=var] may result in duplicate                                                                                                                                                                                                                                                                                                                                                                                    
+<p><b>Example 1:</b></p>
+<pre>
+yes? define axis/t=1-jan-1980:1-jan-1990:4/unit=days tax
+ 
+yes? let date_list = t[t=29000:29900:100]
+ 
+yes? list tax_datestring(date_list,t[gt=tax], "day")
+VARIABLE : TAX_DATESTRING(DATE_LIST,T[GT=TAX], "day")
+SUBSET   : 10 points (T)
+29000   /  1:"09-JUN-1980"
+29100   /  2:"17-SEP-1980"
+29200   /  3:"26-DEC-1980"
+29300   /  4:"05-APR-1981"
+29400   /  5:"14-JUL-1981"
+29500   /  6:"22-OCT-1981"
+29600   /  7:"30-JAN-1982"
+29700   /  8:"10-MAY-1982"
+29800   /  9:"18-AUG-1982"
+29900   / 10:"26-NOV-1982"
+</pre><p>In this example, one COULD specify just "sst" for the second argument, but in fact the whole variable for all time steps would then be loaded into memory as the variable is passed to the function. So, just give a variable representing the time axis.</p>
+<pre>
+yes? use "http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/coads_sst.cdf"
+yes? let tsteps = t[gt=sst,L=1200:1220:12]
+yes? list tax_datestring(tsteps, t[gt=sst], "year") VARIABLE : TAX_DATESTRING(TSTEPS, T[GT=SST], "year") DATA SET : COADS Surface Marine Observations (1854-1993) FILENAME : coads_sst.cdf FILEPATH : http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/ SUBSET : 9 points (TIME)
+DEC-1953 / 1:"1953" DEC-1954 / 2:"1954" DEC-1955 / 3:"1955" DEC-1956 / 4:"1956"
+DEC-1957 / 5:"1957" DEC-1958 / 6:"1958"
+DEC-1959 / 7:"1959" DEC-1960 / 8:"1960"
+DEC-1961 / 9:"1961"
+</pre><p><b>Example 2:</b></p>
+<p><b>The precision issue described here is only a problem prior to Ferret v6.8:</b></p>
+<p>This time axis, defined with timesteps of days, but underlying units of seconds, can be converted to strings with the TAX_DATESTRING function. The function gets the coordinate values corresponding to t[gt=ssh].</p>
+<pre>
+yes? define axis/t=1-jan-2010:31-dec-2010:86400/unit=seconds taxis
+yes? let var = sin(t[gt=taxis])yes?  list/l=1:7 TAX_DATESTRING(t[gt=var], var, "seconds")
+VARIABLE : TAX_DATESTRING(T[GT=VAR], VAR, "seconds")
+SUBSET   : 7 points (TIME)
+01-JAN-2010 00 / 1:"31-DEC-2010 00:00:00"
+02-JAN-2010 00 / 2:"31-DEC-2010 00:00:00"
+03-JAN-2010 00 / 3:"31-DEC-2010 00:00:00"
+04-JAN-2010 00 / 4:"31-DEC-2010 00:00:00"
+05-JAN-2010 00 / 5:"31-DEC-2010 00:00:00"
+06-JAN-2010 00 / 6:"31-DEC-2010 00:00:00"
+07-JAN-2010 00 / 7:"31-DEC-2010 00:00:00"
+ 
+</pre><p>The coordinates on the following time axis, with timesteps of 5 seconds and the default time origin in 1901 cannot be converted accurately to single precision values. Ferret uses it correctly but the tax_datestring function can't be used. (Previous to Ferret v6.73 the function did not check for this case and returned inaccurate results.)</p>
+<pre>
+yes? define axis/t="1-jan-2010:00:00":"1-jan-2010:00:10":5/unit=seconds taxis
+yes? let var = sin(t[gt=taxis])
+yes? list/l=1:7 TAX_DATESTRING(t[gt=var], var, "seconds")
+ 
+Bailing out of external function "tax_datestring":
+Duplicate times in ARG 1, may arise from double- to single- precision conversion 0.3438547E+10 0.3438547E+10
+**ERROR: error in external function
+ 
+</pre><p>The axis could be redefined with a time origin closer to the first timestep, and then we can use the function to convert to strings.</p>
+<pre>
+yes? define axis/t="1-jan-2010:00:00":"1-jan-2010:00:10":5/t0=1-jan-2010/unit=seconds taxis
+...
+</pre><p> </p>
+</body>
+</html>
+ 

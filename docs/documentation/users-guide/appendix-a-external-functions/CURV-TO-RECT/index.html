@@ -1,0 +1,110 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>CURV_TO_RECT - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">CURV_TO_RECT</h1>
+<p><a name="AppendixA CURV_TO_RECT" id="AppendixA CURV_TO_RECT"></a><a name="_VPID_556" id="_VPID_556"></a><b><a name="_VPINDEXENTRY_2001" id="_VPINDEXENTRY_2001"></a></b></p>
+<p align="left"><b>CURV_TO_RECT (V, mapping)</b></p>
+<p align="left">Applies the mapping computed by function CURV_TO_RECT_MAP to interpolate data from a curvilinear to a rectilinear latitude-longitude grid. This computation employs a spherical interpolation code written at GFDL; the Ferret developers are responsible for its implementation as an external function.</p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">V</p>
+</td>
+<td>
+<p align="left">Variable on the source curvilinear grid</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">mapping</p>
+</td>
+<td>
+<p align="left">mapping from the source grid to a rectilinear grid</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">Inherited from mapping</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">Inherited from mapping</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Inherited from V</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">Inherited from V</p>
+</td>
+</tr></tbody></table><p align="left">This is a grid-changing function. Indicate limits on the argument axes with square brackets []. See the note on <a href="../variables-xpressions/XPRESSIONS#_VPINDEXENTRY_306">grid-changing functions</a> in Chapter 3</p>
+<p align="left">Example of calls to CURV_TO_RECT_MAP and CURV_TO_RECT:</p>
+<pre>
+<b>yes? use my_curvilinear_data.nc
+yes? show data
+currently SET data sets:
+1&gt; /.my_curvilinear_data.nc (default)
+name title I J K L
+GEOLON geographic longitude of grid 1:180 1:173 ... ...
+GEOLAT geographic latitude of grid 1:180 1:173 ... ...
+SALT salinity 1:180 1:173 1:30 1:12 
+AIRT air temperature 1:180 1:173 1:30 1:12
+ 
+</b>yes? ! For convenience define variables with curvilinear grid
+ 
+<b>yes? let lonin = geolon[d=1]
+yes? let latin = geolat[d=1]
+</b><b>yes? ! Define output grid and a variable on the rectilinear output grid</b>
+ 
+<b>yes? define axis/x=0:360:5/modulo/units=degrees xax
+yes? def axis/y=0:85:5/units=degrees yax
+ 
+! This is a dummy variable on the rectilinear grid
+yes? let lonlatout = y[gy=yax] + x[gx=xax]
+</b><b>yes? ! Compute the mapping to the rectangular grid, save to a file
+ 
+yes? let map = curv_to_rect_map ( lonin,latin,lonlatout,10)
+yes? save/clobber/file=curv_map.nc map
+</b><b>yes? ! Apply the mapping to the data fields</b>
+ 
+<b>yes? cancel var/all
+yes? use curv_map.nc
+yes? let out_salt = curv_to_rect(salt[d=1,K=1,L=2], map[d=2])</b><b>yes? shade out_salt</b>
+<b>yes? let out_airt = curv_to_rect(airt[d=1], map[d=2])</b>
+<b>yes? save/file=air_on_rect.nc out_airt</b></pre><p> </p>
+<p> </p>
+<p> </p>
+</body>
+</html>
+ 

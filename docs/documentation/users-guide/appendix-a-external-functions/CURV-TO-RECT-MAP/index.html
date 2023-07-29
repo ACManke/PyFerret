@@ -1,0 +1,107 @@
+ 
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML+RDFa 1.1//EN">
+<html lang="en" dir="ltr" version="HTML+RDFa 1.1"
+xmlns:content="http://purl.org/rss/1.0/modules/content/"
+xmlns:dc="http://purl.org/dc/terms/"
+xmlns:foaf="http://xmlns.com/foaf/0.1/"
+xmlns:og="http://ogp.me/ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:sioc="http://rdfs.org/sioc/ns#"
+xmlns:sioct="http://rdfs.org/sioc/types#"
+xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:schema="http://schema.org/">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<title>CURV_TO_RECT_MAP - Ferret/PyFerret Support</title>
+<!--  edited css for simplified html Ferret/PyFerret Users Guide -->
+<link rel="stylesheet" href="../../css/ckeditor_custom.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-reset.css?rwj4yp">
+<link rel="stylesheet" href="../../css/omega-text.css?rwj4yp">
+<link rel="stylesheet" href="../../css/alpha-default.css?rwj4yp">
+<h1 class="title" id="page-title">CURV_TO_RECT_MAP</h1>
+<p><a name="_VPID_555" id="_VPID_555"></a><a name="_VPINDEXENTRY_1998" id="_VPINDEXENTRY_1998"></a><a name="_VPINDEXENTRY_1999" id="_VPINDEXENTRY_1999"></a><a name="_VPINDEXENTRY_2000" id="_VPINDEXENTRY_2000"></a></p>
+<p align="left"><strong>CURV_TO_RECT_MAP</strong>(lon_in, lat_in, grid_out, radius)</p>
+<p align="left">Computes mapping parameters for regridding from a <a href="../working-with-special-data-sets/CURVILINEAR-COORDINATE-DATA">curvilinear grid</a> to a rectilinear latitude-longitude grid. The mapping is applied to data with the function CURV_TO_RECT which interpolates the data to the rectilinear grid. This computation uses a spherical interpolation code written at GFDL; the Ferret developers are responsible for its implementation as an external function.</p>
+<p align="left">The curvilinear grid here is described as having longitude and latitude units. The function should work with 2-dimensional curvilinear coordinate variables having other units; it has not been tested with coordinate systems other than longitude/ latitude. The destination grid must have the same units as the units of the curvilinear coordinate variables.</p>
+<p align="left">The output of this function is a set of mapping parameters; this mapping may be saved and applied to interpolate any field on the curvilinear grid onto the output rectangular grid.</p>
+<p align="left">Define the output grid so that its longitudes are on the same branch of modulo longitudes as what is in the curvilinear coordinate variable; that is if the longitudes in the curvilienar grid are in the range -180 to 180, then define your output longitude axis so that its longitudes are also in that range.</p>
+<table><tbody><tr><td>
+<p align="left"><b>Arguments: </b></p>
+</td>
+<td>
+<p align="left">lon_in</p>
+</td>
+<td>
+<p align="left">Source grid longitudes, in degrees (2-D field of longitudes describing the curvilinear grid)</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">lat_in</p>
+</td>
+<td>
+<p align="left">Source grid latitudes, in degrees (2-D field of latitudes describing the curvilinear grid)</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">grid_out</p>
+</td>
+<td>
+<p align="left">Any variable on the output recangular lon-lat grid. This grid may have irregularly spaced longitude and/or latitude axes</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">radius</p>
+</td>
+<td>
+<p align="left">Source points falling within radius (in degrees) of destination point are included in the mapping to the destination point. Described further below.</p>
+</td>
+</tr><tr><td>
+<p align="left"><b>Result Axes:</b></p>
+</td>
+<td>
+<p align="left">X</p>
+</td>
+<td>
+<p align="left">Inherited from grid_out</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Y</p>
+</td>
+<td>
+<p align="left">Inherited from grid_out</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">Z</p>
+</td>
+<td>
+<p align="left">Abstract</p>
+</td>
+</tr><tr><td> </td>
+<td>
+<p align="left">T</p>
+</td>
+<td>
+<p align="left">Abstract</p>
+</td>
+</tr></tbody></table><p align="left">For an example of a call to this function see the documentation for the function <a href="../appendix-a-external-functions/CURV-TO-RECT">CURV_TO_RECT</a>.</p>
+<p align="left"> </p>
+<p align="left">This function does large amounts of calculation, and so runs slowly. It is recommended that you compute mappings from the curvilinear grid to desired rectilinear grid(s) and save them for use with your data fields.</p>
+<p align="left">The following figure illustrates a destination grid location (*) with a radius of influence R. Valid source curvilinear grid locations (o) which fall within the radius of influence of the destination point are used in the mapping. Missing source points (x) do not contribute to the mapping. In this case, 3 valid source grid points fall within the radius of influence.</p>
+<p><a href="/Ferret/sites/default/files/images/documentation/users-guide/user_guide_images/AppA_schematic.gif"><img alt="AppA_schematics/images/documentation/users-guide/user_guide_images/AppA_schematic.gif/image_mini" class="image-inline" src="/Ferret/sites/default/files/images/documentation/users-guide/user_guide_images/AppA_schematic.gif" style="height: 213px; width: 200px;" /></a></p>
+<p align="left">The radius parameter should be chosen to be somewhat larger than the size of the input curvilinear grid cells so that any output grid location will have some input data contributing to its value.</p>
+<p align="left">The variable MAP, the result of a call to function CURV_TO_RECT_MAP, contains weights and the indices of the longitudes and latitudes of the curvilinear grid that correspond to the coordinates of the output grid. Below, in_curv_lon and in_curv_lat are the index value from the input curvilinear grid that correspond to the longitude and latitude of the rectangular output grid. The parameter num_neighbors is 4; the code looks around at four neighboring grid cells.</p>
+<p align="left">The weights are based on the distance from the source to the result grid points. The output variable map, then contains:</p>
+<p><b>for each m = 1, nlon_out<br />
+for each n = 1, nlat_out<br />
+for each k=1, num_neighbors<br />
+MAP(m,n,k,1) = weight(m,n,k)<br />
+MAP(m,n,k,2) = in_curv_lon(m,n,k)<br />
+MAP(m,n,k,3) = in_curv_lat(m,n,k)</b></p>
+<p align="left">This may be used to determine the range of indices required in order to specify a subset of data on a curvilinear grid. See the FAQ, <a href="http://ferret.pmel.noaa.gov/static/FAQ/custom_plots/subsetting_curvi_data.html">Plotting subsets of data on a curvilinear grid</a>, for an outline of the procedure.</p>
+<p> </p>
+<p> </p>
+</body>
+</html>
+ 
