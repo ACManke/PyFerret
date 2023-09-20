@@ -63,6 +63,7 @@ C              after applying an offset.)
 * V745 *acm* 3/19 Draw tic marks on top of any graticule lines so 
 *                 dashes or color are covered up by the tic mark
 * V766 *acm*11/22 Fix issue 129: 1st graticule line was not drawn
+* V766 *acm* 9/23 Fix issue 142: No graticules drawn for depth axis
 
 C**
 C**    @(#)yaxis1.f	1.1    3/10/88
@@ -89,6 +90,7 @@ C**
 	LOGICAL hline          ! If true, do the lines across.
         LOGICAL solid          ! solid lines across at tics
         LOGICAL dashed         ! dashed lines across at tics
+        LOGICAL drawit         ! draw a line across?
 	LOGICAL noylab
 	LOGICAL SHRINKY
 
@@ -157,11 +159,17 @@ C
            dash4 = hgrat(4,1)
         ENDIF
 
-	DO 100 I=1,ISTOP
+* Draw tic marks. If graticules are turned on, draw them. When the axis is a depth
+* axis, the test for whether we are within the axis range changes.
+
+	DO I=1,ISTOP
 	IF ( interrupted ) RETURN		! TMAP interrupt
 	CALL SMY1(X,XFACT,YFACT,Y,YHI,YTIC,NSMTCY,
      .     xacross,hgrat,hcolor,hline)
-        IF ((solid.OR.dashed) .AND. hline .AND. y.GT.ylo) THEN ! make line across
+        
+	drawit = y .GT. ylo
+	IF (ytic .LT. 0.) drawit = y .GT. yhi
+	IF ((solid.OR.dashed) .AND. hline .AND. drawit) THEN ! make line across
            CALL COLOR(hcolor(1))
            IF (dashed) THEN
               CALL DASHSZ(dash1,dash2,dash3,dash4)
@@ -176,7 +184,8 @@ C
 	CALL PLOTT7(X,Y,XFACT,YFACT,1,-6)
 
 	Y=Y+YTIC
-100	CONTINUE
+	ENDDO
+
 	CALL SMY1(X,XFACT,YFACT,Y,YHI,YTIC,NSMTCY,
      .     xacross,hgrat,hcolor,hline)
         
@@ -258,7 +267,7 @@ C
 C First compute max axis-label width without writing labels 
 C (ITYPE=3 arg to SCINOT) 
 
-        DO 199 I=0,ISTOP
+        DO I=0,ISTOP
 	IF ( interrupted ) RETURN		! TMAP interrupt
         TEMP=SIGSZ*Y/YUNIT
         IF (yvaloff .EQ. 0) THEN
@@ -272,7 +281,7 @@ C (ITYPE=3 arg to SCINOT)
 	if (abs(y) .lt. epsilon*abs(y0)) y = 0.0
 
 	IF(WID.GT.YWIDT)YWIDT=WID
-199	CONTINUE
+	ENDDO
 
 * Use origin and label-size info that is in common to possibly
 * reset the axis-label size for this axis only, so the labels dont
@@ -295,7 +304,7 @@ C (ITYPE=3 arg to SCINOT)
 	IF (do_shift) spacwid = SYMWID(ABSSZ,1,'N')
 
 * Now make the labels. 
-	DO 200 I=0,ISTOP
+	DO I=0,ISTOP
 	IF ( interrupted ) RETURN		! TMAP interrupt
         TEMP=SIGSZ*Y/YUNIT
         IF (yvaloff .EQ. 0) THEN
@@ -333,7 +342,8 @@ CC	Y=Y+YTIC*LINTY
 	if (abs(y) .lt. epsilon*abs(y0)) y = 0.0
 
 	IF(WID.GT.YWIDT) YWIDT=WID 
-200	CONTINUE
+	ENDDO
+
 	IF(LABEL.LT.0)THEN 
            IF (YDMS .GE. 2) ywidt = ywidt - symwid(abssz,1,'''')
            YWID=YWID+YWIDT
