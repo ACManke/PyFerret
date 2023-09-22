@@ -42,6 +42,7 @@
 
 * 9/13/95 for Ferret version 4.2
 * V6.74 3/12 *acm* cleanup ifdefs and unnecessary include files
+* V7.66 9/23 *acm* Use double-precision tests when checking for identical lines.
 
 * Include files
 	include 'tmap_dims.parm'
@@ -57,7 +58,7 @@
 	INTEGER target
 
 * Local definitions
-	LOGICAL     TM_SAME_LINE_DEF
+	LOGICAL     TM_SAME_LINE_DEF_DBLE
 	INTEGER specimen
 
 * initialize linked list search
@@ -73,7 +74,7 @@
 	ELSEIF ( specimen .EQ. target ) THEN	
 	   specimen = line_flink(specimen)		! skip over self
 
-	ELSEIF ( TM_SAME_LINE_DEF( target, specimen ) ) THEN
+	ELSEIF ( TM_SAME_LINE_DEF_DBLE( target, specimen ) ) THEN
 	   TM_Find_like_dyn_line = specimen
 	   RETURN					! success
 

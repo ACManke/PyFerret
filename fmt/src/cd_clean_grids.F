@@ -74,6 +74,9 @@
 *                  if the dimension name wasn't stored as a variable to begin with.
 * v7.6 2/2020 *acm* handling  files with dimensions that are not coordinate variables
 * 11/2022 *acm* Code cleanup: Modernize DO-loop syntax. 
+* v7.66 9/2023 *acm* Issue 141: duplicate-line test is done in single precision. If the
+*                  incoming axis is defined in double precision, check using double precision.
+*                 
 
 * argument definitions:
 *       dset    - pointer to TMAP data set
@@ -101,13 +104,13 @@
         CHARACTER*128 temp_axnams(nferdims,max_temp_grid)
 
 * local parameter definitions:
-      INTEGER     max_grd_per_cdf
-      PARAMETER ( max_grd_per_cdf = 40 )
+      INTEGER     max_grd_per_cdf, is_double
+      PARAMETER ( max_grd_per_cdf = 40, is_double = 6 )
 
 * local variable declarations:
       LOGICAL TM_SAME_GRID_DEF, 
      .        dup_name, dup_guts, coordvar
-      INTEGER TM_GET_LINEMATCH,  TM_GET_LINENUM, TM_GET_GRIDNUM, 
+      INTEGER TM_GET_LINEMATCH, TM_GET_LMATCH_DBLE, TM_GET_LINENUM, TM_GET_GRIDNUM, 
      .        TM_LENSTR1, STR_SAME,
      .        igrid, iaxis, count, idim, i_dup, ivar,
      .        npts, istat,  reused(max_lines:line_ceiling),
@@ -133,7 +136,24 @@
      .     .AND. reused(iaxis).NE.unspecified_int4 ) THEN
 	      reused(iaxis) = unspecified_int4
 	      dup_guts = .FALSE.
-	  ENDIF 
+	  ENDIF
+
+*  If we found the lines to be the same, also check: is iaxis defined in 
+*  double-prec? If so call second routine to do the comparison in double precision.  
+
+	  IF  (reused(iaxis).NE.unspecified_int4) THEN 
+	  
+             vname = line_name(iaxis)
+             len = TM_LENSTR1(vname)
+             CALL CD_GET_VAR_ID (dset, vname, varid, status)
+             IF (status .EQ. merr_ok) CALL CD_GET_VAR_INFO (dset, varid, 
+     .           vname, vartype, nvdims, vdims, nvatts, coordvar, 
+     .            outflag, status)
+
+	     IF (vartype .EQ. is_double) reused(iaxis) = 
+     .           TM_GET_LMATCH_DBLE( iaxis, dup_name, dup_guts )
+	  ENDIF  
+
 	  IF ( dup_name .AND. .NOT.dup_guts ) THEN
 	     line_fixname(iaxis) = .TRUE.  ! new definition reuses old name
 	  ELSE
