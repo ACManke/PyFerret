@@ -67,6 +67,8 @@
 * V600 *acm* 3/06  fixing bugs 439&1390, pass apply_cx to get_new_cx to say whether
 *                  to apply command context to grave-accent expressions.
 * V702 *sh*  3/17 Dynamic memory
+* V765 *acm* 9/23 fix PyFerret issue 140, lo:hi:delta syntax incorrectly interpreted as
+*                 applicable to evaluating a grave-accent expression
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -84,12 +86,10 @@
 	CHARACTER*(*) expression
 
 * local variable declarations
-	INTEGER		cx_expr, mr
+	INTEGER		cx_expr, mr, idim, TM_LENSTR1
 	CHARACTER	EXPR_NAME*8
-	INTEGER		tlen
 
 * initialize grid stack pointer (pushes down from top)
-	tlen = LEN(expression)
 	grd_stk_ptr = max_grids
 
 * initialize memory usage diagnostic
@@ -106,6 +106,15 @@
 *	regions that have grave-accented region information
 	CALL GET_NEW_CX( dflt_cx, cx_cmnd, apply_cx, status )
 	IF ( status .NE. ferr_ok ) GOTO 5000
+
+* Issue 140: for evaluating a grave-accent expression, any cx_delta comes
+* from elsewhere in the command than the expression being evaluated, e.g. from
+* a define axis/t=lo:hi:delta syntax. The cx-delta of a command-level context
+* should not affect the evaluation of a constant
+
+	DO idim = 1, nferdims
+	   cx_delta(idim, cx_cmnd) = unspecified_val8 
+	ENDDO
 
 * store expression in the uvar list names as "EX#1"
 	CALL DELETE_OLD_EXPR
