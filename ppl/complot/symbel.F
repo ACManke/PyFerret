@@ -48,8 +48,11 @@ C                   Fix unending WHILE loop, was triggered by a html symbol usin
 C                   Allow the syntax for html symbols to be either <&#nnn> or <#nnn>
 C                   Also make the code more robust when there are multiple html
 C                   in a label. 
+C V7.65 *acm* 10/23 PyFerret issue 138
+C                   @ is handled as an ordinary character when using PyFerret fonts. 
+C                   Warn of this once per session if using PyFerret font and Hershey font 
+C                   or pen settings encountered.
 C                   
-C
 C	CALL SYMBEL(X,Y,DEGRES,HEIGHT,NCHAR,STRING)
 C
 C	THIS SUBROUTINE DRAWS A STRING OF CHARACTERS.
@@ -128,30 +131,49 @@ C Set font size in from the height
 	   fac = (1.+fac*0.2)
 	ENDIF
 
-C Ignore any codes for Ferret-Hershey style Pen and Font changes 
-
 	slen = TM_LENSTR(string)
 	buff = string(:ABS(slen))
+
+
+C Treat @ as a regular character.
+C Warn once per session that PyFerret font is in place and a 
+C Hershet font or pen setting has been encountered.
 
 	ia = INDEX (buff,'@')
 	ipy = INDEX (buff,'@PY')
 	inote = 0
+	IF (ia .EQ. slen .OR. buff(ia+1:ia+1) .EQ. ' ') ia = 0
 
-	DO WHILE (ia .GT. 0)
-	   IF (NCHAR.GT.0) inote = 1
-	   IF (ia .EQ. 1) THEN
-	      buff = buff(ia+3:slen)
-	   ELSE
-	      buff1 = buff(1:ia-1)
-	      buff = buff1(1:ia-1)//buff(ia+3:slen)
-	   ENDIF
+	IF (ia.GT.0 .AND. NCHAR.GT.0) inote = 1
+	IF (.NOT. pyfnt_hershey_warn) inote = 0
+
+* Moveable labels are sent in with @PY, so that such labels that start
+* with a number. Remove @PY from the label
+
+	IF (ipy .GT. 0) THEN
+	   inote = 0
+	   
+	   ss = 1
+	   DO WHILE (ipy .GT. 0)
+	      IF (ipy .EQ. 1) THEN
+	         buff = buff(ipy+3:slen)
+	      ELSE
+	         buff1 = buff(1:ipy-1)
+	         buff = buff1(1:ipy-1)//buff(ipy+3:slen)
+	      ENDIF
 	      
-	   slen = TM_LENSTR(buff)
-	   ia = INDEX (buff,'@')
-	ENDDO
-	IF (inote.GT.0 .AND. ipy.GT.0) inote = 0
-	IF (inote .GT. 0) CALL WARN 
+	      slen = TM_LENSTR(buff)
+	      ipy = INDEX (buff,'@PY')
+	      ss = ss + 1
+	      IF (ss .GT. slen) EXIT ! prevent infinite loop
+	   ENDDO 
+	ENDIF
+
+	IF (inote .GT. 0) THEN
+	   CALL WARN 
      .		('Non-Hershey fonts: ignoring Hershey pen or font codes') 
+	   pyfnt_hershey_warn = .FALSE.
+	ENDIF
 
 C HTML symbol and decimal codes
 C The HTML would be &#nnn;  or &word; Because semicolon is used in Ferret, 

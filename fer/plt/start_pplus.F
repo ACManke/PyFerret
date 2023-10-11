@@ -74,6 +74,10 @@
 *                  called from set_window or not.  If not, there is addition
 *                  initialization required.  
 *                  Remove functions calls already made by DISP_RESET.
+C V7.65 *acm*  7/23 PyFerret issue 138
+                  @ is now an ordinary character in labels when using PyFerret fonts. 
+                  Warn of this once per session if Hershey font or pen settings encountered 
+                  when using PyFerret font. Initialize flag pyfnt_hershey_warn here
 
         IMPLICIT NONE
 
@@ -145,6 +149,10 @@
 	CALL OPNPPL ( dummy_filename,41,42,43,44,ttout_lun,45,46,47,48 )
 	echof = .FALSE.
 	pplus_started = .TRUE.
+
+* Starting with v7.65, @ is handled as an ordinary character when using PyFerret
+* fonts. Warn of this once per session if Hershey font or pen settings encountered.
+	pyfnt_hershey_warn = .TRUE.
 
 * define plot values and sizes
 	CALL COLOR(1)
