@@ -1,0 +1,155 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: a problem writing a NetCDF file -->
+<!--X-From-R13: Syvmnorgu Rboovaf <qboovafNtbbsl.czry.abnn.tbi> -->
+<!--X-Date: Fri, 28 Aug 1998 14:18:18 &#45;0700 -->
+<!--X-Message-Id: Pine.OSF.3.96.980828141716.8321A&#45;100000@goofy.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>a problem writing a NetCDF file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00172.html">Thread Prev</a>][<a href="msg00176.html">Thread Next</a>][<A HREF="threads.html#00173">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>a problem writing a NetCDF file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>a problem writing a NetCDF file</strong></li>
+<li><strong>From</strong>: <strong>Elizabeth Dobbins &lt;<A HREF="mailto:dobbins@DOMAIN.HIDDEN">dobbins@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 28 Aug 1998 14:18:16 -0700 (PDT)</li>
+<li>Reply-to: <A HREF="mailto:dobbins@DOMAIN.HIDDEN">dobbins@xxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi;
+
+I'm working on a project in which I would like to merge an 'improved'
+dataset in a small geographic area with a world-wide dataset (etopo5) to
+create a single world-wide variable with better data in small patches. 
+Ferret seems to let me create this variable, but it balks when I try to
+write the final result to a NetCDF file.  Here's the details. 
+
+I start with 2 data sets, one big and one small:
+
+yes? sho dat/var
+     currently SET data sets:
+    1&gt; ./etopo5vl.cdf.bak
+  name     title                             I         J         K   L
+ TOPOL    ETOPO5                          1:4320    1:2161    1:1  1:1
+               on grid GFS1 with -1.E+34 for missing data
+             X=0.04W(-0.04):0.04W(360)  Y=90S:90N  
+ 
+    2&gt; ./kodiak_block.cdf  (default)
+  name     title                             I         J         K   L
+ BATHY    NGDC bathymetry via GMT, edited  1:121     1:121     1:1  1:1
+             M on grid GHK1 with -1.E+34 for missing data
+             X=155W(205):145W(215)  Y=52N:62N  
+
+
+I merge them together to make one big variable:
+yes? let temp=if bathy[g=topol[d=1]] then bathy[g=topol[d=1]] else topol[d=1]
+yes? set variable/title=&quot;ETOPO5vl with Detailed Alaska&quot;/units=&quot;M&quot; temp
+
+
+I can contour plot temp as if it were the big data set (ie. set limits
+outside the limits of the smaller data set), and my new variable seems to
+have the same grid as the original big data set: 
+
+yes? sho grid temp
+    GRID GFS1
+ name       axis              # pts   start                end
+ XAN       LONGITUDE         4320mr   0E        0.084015W(359.92)
+ YAN       LATITUDE          2161 r   90S                  90N
+ normal    Z
+ normal    T
+yes? sho grid topol[d=1]
+    GRID GFS1
+ name       axis              # pts   start                end
+ XAN       LONGITUDE         4320mr   0E        0.084015W(359.92)
+ YAN       LATITUDE          2161 r   90S                  90N
+ normal    Z
+ normal    T
+
+
+But when I try to write temp to a NetCDF file, I get this error message:
+
+yes? LIST/FORMAT=CDF/file=&quot;etopo5vl.cdf&quot; temp
+ **ERROR: inconsistent sizes of data regions: X axis
+          TOPOL[D=1] has 4321 points (I=0001:4321)
+          expression has 121 points (I=2461:2581)
+yes? LIST/FORMAT=CDF/file=&quot;etopo5vl.cdf&quot; temp[g=topol[d=1]]
+ **ERROR: inconsistent sizes of data regions: X axis
+          TOPOL[D=1] has 4321 points (I=0001:4321)
+          expression has 121 points (I=2461:2581)
+
+
+Where did I go wrong?
+
+Thanks,
+Liz
+
+*********************
+Elizabeth L. Dobbins
+Research Scientist
+JISAO/PMEL
+phone: (206) 526-4581
+
+Fine words butter no parsnips.
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00172.html">Using viewports, margins, &amp;c...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00176.html">Another Mapping Question</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00172.html">Thread Prev</a>][<a href="msg00176.html">Thread Next</a>][<A HREF="threads.html#00173">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

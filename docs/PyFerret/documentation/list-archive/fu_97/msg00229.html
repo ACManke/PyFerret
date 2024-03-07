@@ -1,0 +1,136 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: vertical modes -->
+<!--X-From-R13: funaxneNpfavb.era.avp.va -->
+<!--X-Date: Tue, 9 Dec 1997 21:00:03 &#45;0800 -->
+<!--X-Message-Id: 199712100501.KAA23543@ren.ren.nic.in -->
+<!--X-Content-Type: text -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>vertical modes</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00228.html">Thread Prev</a>][<a href="msg00230.html">Thread Next</a>][<A HREF="threads.html#00229">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>vertical modes</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>vertical modes</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:shankar@DOMAIN.HIDDEN">shankar@xxxxxxxxxxxxxxxx</A></strong></li>
+<li>Date: Wed, 10 Dec 1997 10:31:07 +0530</li>
+<li>>from: shankar@csnio.ren.nic.in</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello,
+
+Sometime back, I had trouble with the output of a model in which the
+variables were decomposed into vertical modes.  Steve Hankin solved the
+problem and the solution is given below.  But given that some time has
+elapsed since the question was posed (and answered; sorry, Steve), here is
+the Q first.
+
+*************************************
+The FERRET manual says that ferret cannot handle more than 4 dimensional data
+sets.  I'd like to use ferret to look at the output of a model in which the
+variables are decomposed into vertical modes.  The net value of any model
+variable at a given depth then is the result of a summation of var_n (where n
+is the vertical mode number) over the N vertical modes.  Since var_n is
+therefore a function of x,y,t, and n, and the mode shape psi_n is a function
+of mode number n and depth z, there are 5 independent &quot;axes&quot; for ferret to
+handle.
+
+I'd like to keep var_n in the netCDF file, using ferret to compute the sums.
+This way I can sum over any combination of modes and also compute those
+model variables that can be derived from the primary dependent variables.
+In this case, u_n, v_n, and p_n are the variables that are solved for, it
+being possible to derive w and rho (density) from these 3.
+
+I tried defining u,v, and p as functions of (n,x,y,t) and psi as a function
+of (n,z), but this did not work.
+
+So what I have now are u,v, and p as functions of (x,y,z, and t), after
+summing over the N modes.  So, when I want to compare the contributions
+of different modes, I have to create a new dataset.
+This is not a problem, except that the files are huge.  Also, to view the w
+and rho fields, I have do the computation outside of ferret, generating
+another dataset.  Seems a pity, given the powerful analysis tools ferret
+provides.
+
+Is there some way that ferret can be tricked into accepting the 5 &quot;axes&quot;?
+*************************************
+
+The solution was to define var_n as functions of (x,y,n,t), switching x and n
+from the earlier netCDF file.
+
+yes? sh data
+     currently SET data sets:
+    1&gt; /user6/datasets/data/eicc2.nc  (default)
+ name     title                             I         J         K         L
+ MASK     MASK                             1:162     1:110     1:1       1:1
+ PN       PN                               1:162     1:110     1:10      1:12
+ UN       UN                               1:162     1:110     1:10      1:12
+ VN       VN                               1:162     1:110     1:10      1:12
+ PSIN     PSIN                             1:10      1:1       1:49      1:1
+
+There are 10 vertical modes and PSIN is defined at 49 depths in the file.
+To compute a variable, say u, just sum over the required modes.  
+This may be done with a GO script.
+
+! begin eicc2.jnl
+let u1  = un[k=1]*psin[i=1]
+let u2  = un[k=2]*psin[i=2]
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00228.html">Pentium II problems under Linux</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00230.html">(no subject)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00228.html">Thread Prev</a>][<a href="msg00230.html">Thread Next</a>][<A HREF="threads.html#00229">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

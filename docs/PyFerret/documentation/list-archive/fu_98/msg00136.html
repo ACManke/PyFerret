@@ -1,0 +1,167 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: regridding -->
+<!--X-From-R13: Qneby Znqq <pynqqNbprna.jnfuvatgba.rqh> -->
+<!--X-Date: Fri, 10 Jul 1998 12:51:57 &#45;0700 -->
+<!--X-Message-Id: Pine.OSF.3.96.980710121026.16510A&#45;100000@tsunami.ocean.washington.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>regridding</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00135.html">Thread Prev</a>][<a href="msg00142.html">Thread Next</a>][<A HREF="threads.html#00136">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>regridding</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>regridding</strong></li>
+<li><strong>From</strong>: <strong>Carol Ladd &lt;<A HREF="mailto:cladd@DOMAIN.HIDDEN">cladd@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 10 Jul 1998 12:51:54 -0700 (PDT)</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi. 
+
+I am trying to get a dataset of depth of specified isopycnals from the
+levitus monthly climatology.  The depth of the isopycnals is easy to
+calculate:
+
+THETA = THETA_FO(SALT,TEMP,Z,0)
+SIGMA_TH = RHO_UN(SALT,THETA,0)-1000
+DEPTH1 = SIGMA_TH[Z=@LOC:22.5]
+
+Now DEPTH1 is still on the same grid as the levitus data which includes 19
+depth levels.  However, DEPTH1 only has one value along the depth axis.
+So how do I regrid to a z axis with only one value?
+
+I have tried 
+
+define axis/z=1:1:1 zax   
+let d2=depth1[gz=zax] 
+contour d2
+ **ERROR: invalid command: attempt to regrid on a compressed axis
+
+and numerous variations on this.
+
+I have also tried the new RESHAPE function:
+
+DEPTH1 = SIGMA_TH[Z=@LOC:22.5,l=9]
+define axis/z=1:1:1 zax1
+define axis/t=1:1:1 tax1
+let outgrid=x[g=temp,i=1]+y[g=temp,j=1]+z[gz=zax1,k=1]+t[gt=tax1,l=1]
+show grid outgrid
+let d1=RESHAPE(depth1,outgrid)
+show grid d1
+    GRID (G002)
+ name       axis              # pts   start                end
+ XAX_LEV9421_380 LONGITUDE    360mr   20.5E                19.5E(379.5)
+ YAX_LEV94 LATITUDE           180 r   89.5S                89.5N
+ ZAX1      Z                    1 r   1                    1
+ TAX1      T                    1 r   1                    1
+
+ 
+However, when I try to contour d1, it tells me it is not a 2D field.
+When I ask for a list of a 2D region, it only gives me one value along the
+y axis:
+
+ list/x=130e:135e/y=20n:25n d1
+             RESHAPE(DEPTH1,OUTGRID)
+             Z: 1
+             T: 1
+             DATA SET: /loon/data/ocean_atlas_monthly.cdf
+                 20.5N 
+                111
+ 130.5E / 111:  56.86
+ 131.5E / 112:  56.84
+ 132.5E / 113:  57.13
+ 133.5E / 114:  57.45
+ 134.5E / 115:  57.60
+
+I can get a list of the 2D field but only if I specify each place along
+the y axis separately:
+
+list/i=111:130 d1[j=106],d1[j=107],d1[j=108]
+
+             DATA SET: /loon/data/ocean_atlas_monthly.cdf
+             World Ocean Atlas 1994 * 1x1 Degree Monthly Means
+             LONGITUDE: 130E to 150E
+             Z: 1
+             T: 1
+ Column  1: D1[Y=15.5N] is RESHAPE(DEPTH1,OUTGRID)
+ Column  2: D1[Y=16.5N] is RESHAPE(DEPTH1,OUTGRID)
+ Column  3: D1[Y=17.5N] is RESHAPE(DEPTH1,OUTGRID)
+                 D1     D1     D1 
+130.5E / 111:  89.43  82.21  74.37
+131.5E / 112:  89.51  82.32  74.50
+132.5E / 113:  89.01  81.98  74.42
+133.5E / 114:  88.24  81.39  74.14
+134.5E / 115:  87.58  80.78  73.74
+135.5E / 116:  87.18  80.29  73.30
+
+Am I missing something?  Is there any other way to do this?
+
+Thanks for any help anyone can give me on this.
+
+************************************************************
+Carol Ladd
+University of Washington
+School of Oceanography
+Box 357940                      (206) 543-5214
+Seattle, WA  98195-7940         cladd@ocean.washington.edu
+************************************************************
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00135.html">problems with ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00142.html">folded grids in FERRET</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00135.html">Thread Prev</a>][<a href="msg00142.html">Thread Next</a>][<A HREF="threads.html#00136">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

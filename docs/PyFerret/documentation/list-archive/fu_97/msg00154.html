@@ -1,0 +1,203 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Fortran Binary File Read -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Fri, 5 Sep 1997 17:37:22 &#45;0700 -->
+<!--X-Message-Id: 9709051736.ZM9520@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 9709052016.AA08194@ferret.wrc.noaa.gov -->
+<!--X-Reference: oxilia@OCE.ORST.EDU -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Fortran Binary File Read</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00152.html">Thread Prev</a>][<a href="msg00151.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Fortran Binary File Read</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Fortran Binary File Read</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Fri, 5 Sep 1997 17:36:24 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: David Oxilia &lt;oxilia@OCE.ORST.EDU&gt;       &quot;Fortran Binary File Read&quot; (Sep  5,  1:18pm)</li>
+<li>References: &lt;<a href="msg00150.html">9709052016.AA08194@ferret.wrc.noaa.gov</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi David,
+
+You do, indeed, have a somewhat messy file to describe to Ferret ... but Ferret
+can read it.
+
+In the Ferret Users guide you will find a section in Chapter 2
+
+	6 TRICKS TO READING BINARY AND ASCII FILES
+
+with the basic strategy of approaching each variable as a separate soft link.
+The sections preceeding that explain FORTRAN unformatted record structure.
+You'll find further information in the writeups on STREAM format under SET DATA
+in the commands reference section of the UG (see
+<A  HREF="http://tmap.pmel.noaa.gov/home/ferret/ug/v44/partII.html#_2_18">http://tmap.pmel.noaa.gov/home/ferret/ug/v44/partII.html#_2_18</A>)
+
+You'll want to set the /SKIP= parameter to the number of 4-byte words preceding
+the start of the actual data for a given variable. For your first variable,
+eta, the command will look something like this (untested):
+
+I will use `nx`, `ny`, and `nk` to represent those values in Ferret
+
+ let nx = ???
+ let ny = ???
+ let nk = ???
+
+ define axis/x=1:`nx`:1 xax
+ define axis/y=1:`ny`:1 yax
+ define grid/x=xax/y=yax g2D
+
+ file/skip=`1+3+1+1`/var=eta/grod=g2D/columns=`nx*ny`/format=stream myfile.unf
+
+ set variable/title=&quot;ETA title&quot;/units=&quot;whatever&quot; eta
+ save/file=myfile.cdf eta
+
+The `1+3+1+1` skip value corresponds to
+	1 word FORTRAN record length starting first record
+	3 words, nx, ny, nk values stored in first record
+	1 word FORTRAN record length ending   first  record
+	1 word FORTRAN record length starting second record
+
+For your second variable, &quot;ub&quot;, you'll need to add nx*ny+2 to the SKIP value.
+
+Hope this helps -- steve
+
+=======================================================
+
+On Sep 5,  1:18pm, David Oxilia wrote:
+&gt; Subject: Fortran Binary File Read
+&gt; Hello,
+&gt;
+&gt; I'd like to read a set of fortran binary files into ferret. I've tried it
+&gt; a couple of different ways according to the documentation (User guide v4.4
+&gt; p24) but ferret quits with a core dump.
+&gt;
+&gt; The size of each binary file is 59435348 bytes and they are written with
+&gt; a fortran subroutine which looks like:
+&gt;
+&gt; !
+&gt; ! generate file name from time t
+&gt; !
+&gt;       s = t
+&gt;       if(s.ge.10**6) s = 10**6-1
+&gt;       do i=5,0,-1
+&gt;         p = s/10**i
+&gt;         s = s - p*10**i
+&gt;         num((6-i):(6-i)) = digit(p)
+&gt;       enddo
+&gt;       fil = 'out'//num
+&gt;       if(sda) then
+&gt;          ff = 'physical'
+&gt;       else
+&gt;          ff = 'unformatted'
+&gt;       endif
+&gt; !
+&gt; ! open file and write it
+&gt; !
+&gt;       open(unit=10,status='unknown',file=fil,form=ff)
+&gt;       write(10) nx,ny,nk
+&gt;
+&gt;       write(10) eta
+&gt;       write(10) ub
+&gt;       write(10) vb
+&gt;       write(10) up
+&gt;       write(10) vp
+&gt;       write(10) us
+&gt;       write(10) vs
+&gt;       write(10) dp
+&gt;       write(10) q
+&gt;       write(10) qx
+&gt;       write(10) qy
+&gt;
+&gt;       close(10)
+&gt;
+&gt; The variables are arrays of dimension (nx,ny) or (nx,ny,nk) and they
+&gt; are written unformatted. Any help would be appreciated.
+&gt;
+&gt; thanks,
+&gt;
+&gt; David.
+&gt;
+&gt; *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+&gt; David Oxilia                          Tel: (541) 737-2368
+&gt; COAS-Oregon State University          Fax: (541) 737-2064
+&gt; Ocean Admin. Bldg. 104
+&gt; Corvallis, OR 97331-5503              Email: oxilia@hejira.oce.orst.edu
+&gt; *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+&gt;-- End of excerpt from David Oxilia
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00150" href="msg00150.html">Fortran Binary File Read</a></strong>
+<ul><li><em>From:</em> David Oxilia</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00152.html">Re: Fortran Binary File Read</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00151.html">Re: Fortran Binary File Read</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00152.html">Thread Prev</a>][<a href="msg00151.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

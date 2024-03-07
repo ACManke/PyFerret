@@ -1,0 +1,199 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: weird regridding behavior -->
+<!--X-From-R13: irefpuryNnznebar.tfsp.anfn.tbi ([nex O. Hrefpuryy) -->
+<!--X-Date: Thu, 2 Sep 1999 09:05:51 &#45;0700 -->
+<!--X-Message-Id: 9909021205.ZM16384@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.SGI.4.00.9909021017000.842&#45;100000@weka.gsfc.nasa.gov -->
+<!--X-Reference: dlw@weka -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: weird regridding behavior</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00273.html">Thread Prev</a>][<a href="msg00275.html">Thread Next</a>][<A HREF="threads.html#00274">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: weird regridding behavior</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Denise Worthen &lt;<A HREF="mailto:dlw@DOMAIN.HIDDEN">dlw@xxxxxxxxxxxxxxxxxx</A>&gt;, <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: weird regridding behavior</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A> (Mark A. Verschell)</strong></li>
+<li>Date: Thu, 2 Sep 1999 12:05:42 -0400</li>
+<li>In-reply-to: Denise Worthen &lt;dlw@weka&gt;       &quot;weird regridding behavior&quot; (Sep  2, 11:12am)</li>
+<li>References: &lt;<a href="msg00273.html">Pine.SGI.4.00.9909021017000.842-100000@weka.gsfc.nasa.gov</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Denise,
+
+	The striping you end up with with the &quot;air[gx=xax@mod,gy=yax]&quot; is
+beyond my comprehension (Steve Hankin?), however the fix for the overall
+regridding is simple. The problem comes up in the ambiguity of the region you
+are asking for.
+When you say simply &quot;air[g=gfine]&quot;, ferret assumes you mean to use the region
+of &quot;air&quot; which is 0E:2.5W, and thus when you regrid using gfine, the last
+longitude (2W) isn't part of that region. This is true even though both axis
+are modulo since modulo just ALLOWS you to wrap around. ferret doesn't try to
+guess every situation where you want to wrap around, you have to ask for this.
+
+	So, the answer to your question is just to specify the region of the
+target grid &quot;air[x=0:358,g=gfine], and this will give you the full 180*26 grid
+you want.
+
+	Mark
+
+On Sep 2, 11:12am, Denise Worthen wrote:
+&gt; Subject: weird regridding behavior
+&gt;
+&gt; I'm using Ferret 4.91 on an SGI irix64 6.2 (had no luck installing v5.0).
+&gt;
+&gt; I have a series of NCEP/NCAR daily reanalysis netCDF files. I want to
+&gt; regrid them to a 2x2 degree grid, from a 2.5x2.5 degree grid. The
+&gt; original grid is:
+&gt;
+&gt; yes? show grid air
+&gt;     GRID GMH1
+&gt;  name       axis              # pts   start                end
+&gt;  LON       LONGITUDE          144mr   0E                   2.5W
+&gt;  LAT       LATITUDE            73 r   90S                  90N
+&gt;  normal    Z
+&gt;  TIME      TIME               365 r   03-JAN-1978 00:00    02-JAN-1979
+&gt; 00:00
+&gt;
+&gt; (The days are off by 2 because of the udunits issue.)
+&gt;
+&gt; The grid I defined is:
+&gt;
+&gt; define axis/x=0:358:2/unit=degrees/modulo xax
+&gt; define axis/y=90s:40s:2/unit=degrees yax
+&gt; define grid/x=xax/y=yax gfine
+&gt;
+&gt; I've tried two methods to get what I want using the new grid and neither
+&gt; work.
+&gt;
+&gt; The first thing I tried was to regrid directly onto grid gfine
+&gt; &quot;air[g=gfine]&quot;. But I get one less than the expected dimension in X (ie,
+&gt; 179 values, from 0e to 356 by 2.
+&gt;
+&gt; Since both the orignal and new grid are defined modulo in X I don't
+&gt; understand why the regridding won't act the way I expect, ie, to give 180
+&gt; values in X, using the modulo function to interpolate between 357.5 and
+&gt; 0.0. On the other hand, at least there are no missing values in longitude
+&gt; (not that I expect any, but see below):
+&gt;
+&gt; yes? list/y=60s/l=1 air
+&gt;              mean Daily Air temperature at sigma leve (degK)
+&gt;              regrid: 2 deg on X, 2 deg on Y
+&gt;              TIME: 03-JAN-1978 00:00
+&gt;              DATA SET: ./regrid_1.cdf
+&gt;                  60S
+&gt;                  16
+&gt;  0E     /   1:  272.5
+&gt;  2E     /   2:  272.5
+&gt;  4E     /   3:  272.4
+&gt;  6E     /   4:  272.3
+&gt;  8E     /   5:  272.3
+&gt;  10E    /   6:  272.4
+&gt;  12E    /   7:  272.5
+&gt;  14E    /   8:  272.6
+&gt;  16E    /   9:  272.6
+&gt;  18E    /  10:  272.5
+&gt;
+&gt; The second way I tried was to explicity tell ferret to regrid on the X
+&gt; axis using modulo regridding &quot;air[gx=xax@mod,gy=yax]&quot;. In this case I get
+&gt; regridded values with the expected dimensions in X (ie, 180 values, from 0
+&gt; to 358 by 2) but, every 5th value comes up missing:
+&gt;
+&gt; yes? list/y=60s/l=1 air
+&gt;              mean Daily Air temperature at sigma leve (degK)
+&gt;              regrid: 2 deg on X@MOD, 2 deg on Y@LIN
+&gt;              TIME: 03-JAN-1978 00:00
+&gt;              DATA SET: ./regrid_2.cdf
+&gt;                  60S
+&gt;                  16
+&gt;  0E     /   1:  272.5
+&gt;  2E     /   2:  272.5
+&gt;  4E     /   3:   ....
+&gt;  6E     /   4:  272.3
+&gt;  8E     /   5:  272.3
+&gt;  10E    /   6:  272.4
+&gt;  12E    /   7:  272.6
+&gt;  14E    /   8:   ....
+&gt;  16E    /   9:  272.7
+&gt;  18E    /  10:  272.5
+&gt;
+&gt; Does anyone have an explanation for what's going on here? And, more
+&gt; importantly, how to get the regridding to do what I want?
+&gt;-- End of excerpt from Denise Worthen
+
+
+
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-614-5669  Fax: 301-614-5666    Greenbelt, MD 20771
+
+
+		     Better Living Through Denial
+               ** USQC Certified: 100% Microsoft Free **
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00273" href="msg00273.html">weird regridding behavior</a></strong>
+<ul><li><em>From:</em> Denise Worthen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00273.html">weird regridding behavior</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00275.html">Re: weird regridding behavior</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00273.html">Thread Prev</a>][<a href="msg00275.html">Thread Next</a>][<A HREF="threads.html#00274">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

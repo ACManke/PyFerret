@@ -1,0 +1,176 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: weird regridding behavior -->
+<!--X-From-R13: Rravfr Ibegura <qyjNjrxn.tfsp.anfn.tbi> -->
+<!--X-Date: Thu, 2 Sep 1999 08:12:53 &#45;0700 -->
+<!--X-Message-Id: Pine.SGI.4.00.9909021017000.842&#45;100000@weka.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>weird regridding behavior</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00271.html">Thread Prev</a>][<a href="msg00274.html">Thread Next</a>][<A HREF="threads.html#00273">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>weird regridding behavior</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>weird regridding behavior</strong></li>
+<li><strong>From</strong>: <strong>Denise Worthen &lt;<A HREF="mailto:dlw@DOMAIN.HIDDEN">dlw@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 2 Sep 1999 11:12:45 -0400</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+I'm using Ferret 4.91 on an SGI irix64 6.2 (had no luck installing v5.0).
+
+I have a series of NCEP/NCAR daily reanalysis netCDF files. I want to
+regrid them to a 2x2 degree grid, from a 2.5x2.5 degree grid. The
+original grid is:
+
+yes? show grid air
+    GRID GMH1
+ name       axis              # pts   start                end
+ LON       LONGITUDE          144mr   0E                   2.5W
+ LAT       LATITUDE            73 r   90S                  90N
+ normal    Z
+ TIME      TIME               365 r   03-JAN-1978 00:00    02-JAN-1979
+00:00
+
+(The days are off by 2 because of the udunits issue.)
+
+The grid I defined is:
+
+define axis/x=0:358:2/unit=degrees/modulo xax
+define axis/y=90s:40s:2/unit=degrees yax
+define grid/x=xax/y=yax gfine
+
+I've tried two methods to get what I want using the new grid and neither
+work.
+
+The first thing I tried was to regrid directly onto grid gfine
+&quot;air[g=gfine]&quot;. But I get one less than the expected dimension in X (ie,
+179 values, from 0e to 356 by 2.
+
+Since both the orignal and new grid are defined modulo in X I don't
+understand why the regridding won't act the way I expect, ie, to give 180
+values in X, using the modulo function to interpolate between 357.5 and
+0.0. On the other hand, at least there are no missing values in longitude
+(not that I expect any, but see below):
+
+yes? list/y=60s/l=1 air
+             mean Daily Air temperature at sigma leve (degK)
+             regrid: 2 deg on X, 2 deg on Y
+             TIME: 03-JAN-1978 00:00
+             DATA SET: ./regrid_1.cdf
+                 60S   
+                 16
+ 0E     /   1:  272.5
+ 2E     /   2:  272.5
+ 4E     /   3:  272.4
+ 6E     /   4:  272.3
+ 8E     /   5:  272.3
+ 10E    /   6:  272.4
+ 12E    /   7:  272.5
+ 14E    /   8:  272.6
+ 16E    /   9:  272.6
+ 18E    /  10:  272.5
+
+The second way I tried was to explicity tell ferret to regrid on the X
+axis using modulo regridding &quot;air[gx=xax@mod,gy=yax]&quot;. In this case I get
+regridded values with the expected dimensions in X (ie, 180 values, from 0
+to 358 by 2) but, every 5th value comes up missing:
+
+yes? list/y=60s/l=1 air
+             mean Daily Air temperature at sigma leve (degK)
+             regrid: 2 deg on X@MOD, 2 deg on Y@LIN
+             TIME: 03-JAN-1978 00:00
+             DATA SET: ./regrid_2.cdf
+                 60S   
+                 16
+ 0E     /   1:  272.5
+ 2E     /   2:  272.5
+ 4E     /   3:   ....
+ 6E     /   4:  272.3
+ 8E     /   5:  272.3
+ 10E    /   6:  272.4
+ 12E    /   7:  272.6
+ 14E    /   8:   ....
+ 16E    /   9:  272.7
+ 18E    /  10:  272.5
+
+Does anyone have an explanation for what's going on here? And, more
+importantly, how to get the regridding to do what I want?
+
+Thanks,
+Denise
+=====================================================================
+Denise L. Worthen, SSAI
+Oceans and Ice Branch/Code 971
+NASA Goddard Space Flight Center
+Greenbelt MD 20771
+
+dlw@weka.gsfc.nasa.gov
+(301) 286-2339
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00275" href="msg00275.html">Re: weird regridding behavior</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00271.html">A couple of problems</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00274.html">Re: weird regridding behavior</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00271.html">Thread Prev</a>][<a href="msg00274.html">Thread Next</a>][<A HREF="threads.html#00273">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

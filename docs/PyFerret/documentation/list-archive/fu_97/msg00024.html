@@ -1,0 +1,193 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Three ferret questions -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Mon, 31 Mar 1997 13:18:18 &#45;0800 -->
+<!--X-Message-Id: 9703311317.ZM20622@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 970323194127.ZM7599@rahmstorflt -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Three ferret questions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00022.html">Thread Prev</a>][<a href="msg00023.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Three ferret questions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:stefan@DOMAIN.HIDDEN">stefan@xxxxxxxxxxxxxxxxx</A> (Stefan Rahmstorf)</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Three ferret questions</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Mon, 31 Mar 1997 13:17:25 -0800</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: stefan@s1.pik-potsdam.DE (Stefan Rahmstorf)       &quot;Three ferret questions&quot; (Mar 23,  7:41pm)</li>
+<li>References: &lt;<a href="msg00022.html">970323194127.ZM7599@rahmstorflt</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Stefan,
+
+My answers are embedded below. I will refer to the on-line Ferret Users Guide
+available through the Ferret Web home page (<A  HREF="http://www.ferret.noaa.gov">http://www.ferret.noaa.gov</A>). As
+always, if I've misunderstood your answer please feel free to follow up.
+
+	- steve
+
+==============================
+
+On Mar 23,  7:41pm, Stefan Rahmstorf wrote:
+&gt; Subject: Three ferret questions
+&gt; Dear Ferrets,
+&gt;
+&gt; there are 3 issues that I sometimes encounter when writing ferret go
+&gt; files which I have not found good solutions for yet.
+&gt;
+&gt; 1. I want to plot temp[k=kmax] say, where kmax is not a constant but a
+&gt; field kmax(i,j), e.g. to plot temperature along the sea bottom. More
+&gt; generally I sometimes would like to use within the [] a variable that I
+&gt; can define or calculate earlier in a go file.
+
+The &quot;@WEQ&quot; transformation will do what you are after. See
+	Chapter 3: VARIABLES AND EXPRESSIONS
+		2.4.27 @WEQ
+	<A  HREF="http://dread.pmel.noaa.gov/home/ferret/ug/v44/chapter3.html#_1_96">http://dread.pmel.noaa.gov/home/ferret/ug/v44/chapter3.html#_1_96</A>
+
+Combine the examples 3 and 4 for your problem defining a variable
+&quot;zero_at_deepest&quot; analagous to zero_at_warmest in example 4.
+
+If you have &quot;kmax&quot; as a variable (a 2-d field in lat-long) you can use it:
+
+	let zero_at_deepest = k[g=temp] - kmax
+
+If, instead, you have only the field &quot;temp&quot;, itself, with missing values below
+the max depth then you can define
+
+	let kmax3D = k[g=temp] + 0*temp	! an XYZ field of K masked by bottom
+	let kmax   = kmax3D[k=1:33@max]	! if 33 is number of vertical levels
+
+&gt; 2. If statements. I use models of different resolutions etc. but don't
+&gt; want to keep seperate go files for each model although certain plots
+&gt; need to be handled differently for each model (e.g. they use a different
+&gt; mask for the Atlantic etc). What I would like is something like setting
+&gt; 'let model=2' at the beginning of a ferret session and then select
+&gt; certain options in each go file by something like
+&gt; 'if model eq 2 ....'
+&gt; I don't feel the $1 etc parameters can quite do what I want.
+
+Check out the IF-THEN-ELSE logic that is in version 4.4 of Ferret:
+	Chapter 1: INTRODUCTION
+              5.3.5 Flow Control in GO tools
+	<A  HREF="http://dread.pmel.noaa.gov/home/ferret/ug/v44/chapter3.html#_1_100">http://dread.pmel.noaa.gov/home/ferret/ug/v44/chapter3.html#_1_100</A>
+
+Use this in conjunction with &quot;symbols&quot; for the behavior that you are after
+	Chapter 7: HANDLING STRING DATA: &quot;SYMBOLS&quot;
+		7 SYMBOL EDITING
+	<A  HREF="http://dread.pmel.noaa.gov/home/ferret/ug/v44/chapter7.html#_1_195">http://dread.pmel.noaa.gov/home/ferret/ug/v44/chapter7.html#_1_195</A>
+
+As in
+	IF ($model&quot;|my_model_1&gt;1|&quot;) THEN
+	    do these lines only for for my_model_1
+	    more lines
+	ENDIF
+
+&gt; 3. How can I e.g. subtract a 2-d field from a 3-d field, e.g. if I
+&gt; wanted to subtract the temperature at level 1 (at each i,j) from the
+&gt; temperatures at every level (for the same i,j)? (There are useful
+&gt; applications for this e.g. to define a mixed layer depth.)
+
+Ferret will subtract a 2D field from a 3D field as in
+
+	LET temp_anomaly = temp - sst		! temp is 3D, sst is 2D
+  or
+	LET temp_anomaly = temp - temp[z=0]	! temp[Z=0] is a 2D field
+
+&gt; Hope for some ideas!
+
+I hope this has helped.  -- steve
+
+&gt; Cheers,
+&gt;
+&gt; Stefan
+&gt;
+&gt;
+&gt; --
+&gt;
+&gt; Dr Stefan Rahmstorf
+&gt; Potsdam Institute for Climate Impact Research (PIK)
+&gt; PO Box 60 12 03
+&gt; 14412 Potsdam
+&gt; Germany
+&gt;
+&gt; --
+&gt; E-mail:  rahmstorf@pik-potsdam.de
+&gt; Tel:     +49 331 2781 160  (home: +49 331 715429)
+&gt; Fax:     +49 331 2781 204  (home: +49 331 715429)
+&gt;-- End of excerpt from Stefan Rahmstorf
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00022" href="msg00022.html">Three ferret questions</a></strong>
+<ul><li><em>From:</em> Stefan Rahmstorf</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00022.html">Three ferret questions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00023.html">Reading weirdish FORTRAN data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00022.html">Thread Prev</a>][<a href="msg00023.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

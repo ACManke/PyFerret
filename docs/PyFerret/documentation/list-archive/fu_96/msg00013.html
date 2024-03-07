@@ -1,0 +1,145 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret how&#45;to: odd time axes in models -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Fri, 1 Mar 1996 15:41:12 &#45;0800 -->
+<!--X-Message-Id: 9603011550.ZM31855@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret how-to: odd time axes in models</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00010.html">Thread Prev</a>][<a href="msg00014.html">Thread Next</a>][<A HREF="threads.html#00013">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret how-to: odd time axes in models</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Ferret how-to: odd time axes in models</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Fri, 1 Mar 1996 15:50:12 -0800</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Ferret how_to:
+
+	********************************************************
+	* How to deal with non-standard year-lengths in models *
+	********************************************************
+
+On Mar 1,  5:39pm, Joachim Dengg wrote:
+
+&gt; Oh, by the way, I keep running into time inconsistencies because my model
+&gt; years are only 360 days long. Is there any way to deal with that?
+
+====================================
+
+Yes. The key is to make sure that your axis has these two properties:
+
+	1) it has 360 points (corresponding to the model &quot;year&quot;)
+	2) it spans the correct number of hours for an &quot;average&quot; year
+
+An average year must take leap years into account. You can use the
+coads_climatology data set as a reference:
+
+	set data coads_climatology
+	show grid/l=1:3 sst
+	show grid/l=1:24000:1200 sst		==&gt; no drift in 2000 years
+	set list/precision=7
+	list t[l=13,g=sst] - t[l=1,g=sst]	==&gt; 8765.82 hours per ave yr
+
+So for a 360 day year
+
+	list (t[l=13,g=sst]-t[l=1,g=sst])/360   ==&gt; 24.3495 hours per day
+
+A 360 day year time axis would then be:
+
+    define axis/modulo/t0=1-jan-0000/t=1:8765.2:24.3495/units=hours tadjusted
+
+To test that this axis is correct try
+
+	define grid/t=tadjusted gadj
+	show grid/l=1:756000:36000 gadj		==&gt; no drift in 2000 years
+
+Now, how do you use this axis? There are actually two distinct &quot;views&quot; of your
+model data - by day number and by calendar date. You can preserve both views
+using this technique:
+
+  1) Create your model output using simply the day number 1, 2, 3, ...
+
+     For example, this abstract variable is based on such an axis
+
+	define axis/t=1:360:1/modulo/units=days t360
+	define grid/t=t360 gmodel
+	let model_var = SIN(PI*T[g=gmodel]/180)
+	let PI = 3.14159
+	plot/l=1:720 model_var
+
+  2) Create the &quot;calendar view&quot; of the same variable using &quot;regridding by
+     association&quot;
+
+	define grid/like=model_var/t=tadjusted gcalendar
+	let calendar_model_var = model_var[g=gcalendar@asn]
+	plot/l=1:720 calendar_model_var
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00010.html">mpeg animations</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00014.html">Ferret question (max/min on contour)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00010.html">Thread Prev</a>][<a href="msg00014.html">Thread Next</a>][<A HREF="threads.html#00013">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

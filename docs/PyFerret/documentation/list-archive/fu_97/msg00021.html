@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: large number of variable -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Fri, 21 Mar 1997 10:09:04 &#45;0800 -->
+<!--X-Message-Id: 9703211007.ZM12780@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 33326A25.1D9C@gesma.fr -->
+<!--X-Reference: paroux@gesma.gesma.FR -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: large number of variable</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00020.html">Thread Prev</a>][<a href="msg00022.html">Thread Next</a>][<A HREF="threads.html#00021">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: large number of variable</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Vincent PAROUX Stagiaire ENIB &lt;<A HREF="mailto:paroux@DOMAIN.HIDDEN">paroux@xxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: large number of variable</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Fri, 21 Mar 1997 10:07:56 -0800</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: Vincent PAROUX Stagiaire ENIB &lt;paroux@gesma.gesma.FR&gt;       &quot;large number of variable&quot; (Mar 21, 11:59am)</li>
+<li>References: &lt;<a href="msg00019.html">33326A25.1D9C@gesma.fr</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Vincent,
+
+If your file indeed contains the characters &quot;oui&quot; (column 2) then you will need
+to use the /FORMAT qualifier to skip over this field. Attempting to read &quot;oui&quot;
+as a number may be the source of your error message.
+
+You are correct, however, that the limit to the number of variables that Ferret
+will read simultaneously from an ASCII file is 20:
+
+  See the V4.4 Users GuidePart II: COMMANDS REFERENCE, 26.2 SET DATA_SET
+  (<A  HREF="http://dread.pmel.noaa.gov/home/ferret/ug/v44/partII.html#_2_18">http://dread.pmel.noaa.gov/home/ferret/ug/v44/partII.html#_2_18</A>) under
+  &quot;SET DATA/EZ/ VARIABLES= &quot; it confirms:
+  ==&gt; &quot;The maximum number of variables allowed in a single data set is 20.&quot;
+
+You can use a /FORMAT qualifier to skip over un-needed columns and effectively
+reduce the number of variables in the file. For example, if the file has 22
+data columns of width 8 characters each and you can skip the first 2 columns
+with
+
+	FILE/FORMAT=&quot;(16x,20F8.1)&quot;/var=&quot;v1,v2,v3,...,v20&quot; my_file.dat
+
+If you absolutely need all 22 columns you can create a Unix symbolic link (the
+&quot;ln -s&quot; command, effectively giving 2 names to the same file) and use the FILE
+command twice, capturing half of the variables from each FILE.
+
+I hope this helps.
+
+	- steve
+
+P.S. The Unix &quot;sed&quot; command can be used to provide a more comprehensive
+solution to text fields such as &quot;oui&quot; embedded in the file.
+
+============================
+
+On Mar 21, 11:59am, Vincent PAROUX Stagiaire ENIB wrote:
+&gt; Subject: large number of variable
+&gt; Hi,
+&gt;
+&gt; I use FERRET Version 4.4, and I would like to read an ASCII file which
+&gt; contains 22 variables, stored in a single column each
+&gt; Example:
+&gt; (Col_1   Col_2  ...  Col_22)
+&gt;
+&gt;   1      oui          120
+&gt;   2      oui          119
+&gt;   .       .            .
+&gt;   .       .            .
+&gt;   .       .            .
+&gt;   5      non           130
+&gt;
+&gt; I tried to read this file with the command:
+&gt; FILE/VAR=&quot;VAR_NAME1,VAR_NAME2,...?VAR_NAME22&quot; ascii_filename
+&gt; But when I tried the command:LIST VAR_NAME1 I have this answer:
+&gt;  **TMAP ERR: unknown error number
+&gt;              Last or next-to-last record read:
+&gt;  Value1 value2 value3 value4 ... value11 val
+&gt;              Data set: ./ascii_filename
+&gt;              Data file: ./ascii_filename
+&gt; where valueN are the value of the first line of my file.
+&gt;
+&gt; My question is:
+&gt; Is there a max number of variable that I can use with ferret or if not
+&gt; How can I do to read my file ?
+&gt;
+&gt; Thanks
+&gt;
+&gt; Best Regards , Vincent
+&gt;-- End of excerpt from Vincent PAROUX Stagiaire ENIB
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00019" href="msg00019.html">large number of variable</a></strong>
+<ul><li><em>From:</em> Vincent PAROUX Stagiaire ENIB</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00020.html">Re: large number of variable</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00022.html">Three ferret questions</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00020.html">Thread Prev</a>][<a href="msg00022.html">Thread Next</a>][<A HREF="threads.html#00021">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

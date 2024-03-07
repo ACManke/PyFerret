@@ -1,0 +1,171 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Slow Calculation Speed &#45; Can it be Faster? -->
+<!--X-From-R13: "[nex Hrefpuryy" <znexiNfurne.pbncf.sfh.rqh> -->
+<!--X-Date: Fri, 11 Apr 1997 11:22:46 &#45;0700 -->
+<!--X-Message-Id: 9704111422.ZM4631@shear.coaps.fsu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.A41.3.95b.970410161125.14718A&#45;100000@dante19.u.washington.edu -->
+<!--X-Reference: 9704101743.ZM30581@rogue.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Slow Calculation Speed - Can it be Faster?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00040.html">Thread Next</a>][<A HREF="threads.html#00037">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Slow Calculation Speed - Can it be Faster?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Slow Calculation Speed - Can it be Faster?</strong></li>
+<li><strong>From</strong>: <strong>&quot;Mark Verschell&quot; &lt;<A HREF="mailto:markv@DOMAIN.HIDDEN">markv@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 11 Apr 1997 14:22:25 -0400</li>
+<li>In-reply-to: hankin@rogue.pmel.noaa.gov (Steve Hankin)       &quot;Re: climatologies&quot; (Apr 10,  5:43pm)</li>
+<li>References: &lt;<a href="msg00034.html">Pine.A41.3.95b.970410161125.14718A-100000@dante19.u.washington.edu</a>&gt; &lt;<a href="msg00035.html">9704101743.ZM30581@rogue.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+I have written a routine to calculate the correlation coefficient between two
+data series (code attached below). I can understand why some of the first
+calculations are slow, but once the values are calculated once, it appear that
+everytime they are referenced after that they are calculated all over again. Is
+there a way to prevent this?
+
+My calling routine is:
+   use &quot;TS01/TS01dt&quot;
+   use &quot;TS20/TS20dt&quot;
+   let qc1=qcdt[d=1]
+   let tqa1=qc1-qc1[i=@ave]   ! remove mean
+   let tqs1=tqa1[l=@ave]      ! average longitudinal profile
+   let tqn1=tqs1/0.00021232   ! normalize by standard deviation
+   let qc2=qcdt[d=2]
+   let tqa2=qc2-qc2[i=@ave]
+   let tqs2=tqa2[l=@ave]
+   let tqn2=tqs2/0.00011629
+   go xcorrel tqn1 tqn2
+
+XCORREL.JNL is:
+   let/quiet Xi = $1
+   let/quiet Yi = $2
+   let/quiet XiYi = Xi*Yi
+   let/quiet Xi2 = Xi*Xi
+   let/quiet Yi2 = Yi*Yi
+   let/quiet sXiYi = XiYi[i=@sum]
+   let/quiet sXi2 = Xi2[i=@sum]
+   let/quiet sYi2 = Yi2[i=@sum]
+   let/quiet mX = Xi[i=@ave]
+   let/quiet mY = Yi[i=@ave]
+   let/quiet nX = Xi[i=@NGD]
+   let/quiet eN = $3%nX%
+   list sXiYi, sXi2, SYi2, mX, mY, nX, eN
+   let/quiet sX2 = sXi2-nX*mX*mX
+   let/quiet sY2 = sYi2-nX*mY*mY
+   list sX2, sY2
+   let/quiet rXY = (sXiYi-nX*mX*mY)/(sX2*sY2)^0.5
+   list rXY                                        ! *** 1 ***
+   let/quiet w = 0.5*LN((1+rXY)/(1-rXY))
+   list w                                          ! *** 2 ***
+   let/quiet signif = w*(eN-3)^0.5
+   list signif
+
+First, I realize that in this particular case that since I have removed the
+mean and normalized by the standard deviation so that my correlation function
+could
+be greatly simplified, but I wanted the routine to be more general.  In the
+future I will likely add some flag that will indicate that I am using
+ normalized anomaly series and thus run simplified code. Right now I am trying
+to understand a more general principle. In particular, in XCORREL.JNL at the
+line indicated by the comment *** 1 *** all the values used to calculate rXY
+have already been calculated once before (in the list statements), but it still
+takes a long time to calculate. Furthermore, at the line in XCORREL.JNL
+indicated by the comment *** 2 ***, Rxy has already been calculated - but w
+takes forever to calculate.
+
+I tried inserting load/perm statements before the list statements to hopefully
+get around this. Nope, the list statements took just as long so obviously the
+load/perm statements didn't do what I hoped.
+
+Lastly, I tried simplifying my calling routine to:
+   use &quot;TS01/TS01dt&quot;
+   use &quot;TS20/TS20dt&quot;
+   let tqs1=qc[d=1,l=@ave]  ! average longitudinal profile
+   let tqs2=qc[d=2,l=@ave]  ! average longitudinal profile
+   go xcorrel tqs1 tqs2
+
+This worked very quickly, so it must have something to do with the mutliple
+definitions in my calling routine. But I am not sure how to work around this.
+Any help would be appreciated!
+
+	Thanks, Mark
+
+-- 
+-------------------------------------------------------------------------------
+
+	      Mark Verschell (verschell@coaps.fsu.edu)
+	      Center for Ocean and Atmospheric Prediction Studies
+	      Florida State University
+              2035 E. Paul Dirac Drive
+              R.M. Johnson Bldg. - Suite 200
+	      Tallahassee, FL  32306-3041
+	      (904) 644-6532              (904) 644-4841 (fax)
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00034" href="msg00034.html">climatologies</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+<li><strong><a name="00035" href="msg00035.html">Re: climatologies</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00036.html">Re: climatologies</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00040.html">Re: Slow Calculation Speed - Can it be Faster?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00040.html">Thread Next</a>][<A HREF="threads.html#00037">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

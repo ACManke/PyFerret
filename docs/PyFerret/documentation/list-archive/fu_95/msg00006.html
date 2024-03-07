@@ -1,0 +1,183 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret how&#45;to: speed of large calculations -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Tue, 5 Sep 1995 10:14:59 &#45;0700 -->
+<!--X-Message-Id: 9509051018.ZM955@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret how-to: speed of large calculations</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00005.html">Thread Prev</a>][<a href="msg00007.html">Thread Next</a>][<A HREF="threads.html#00006">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret how-to: speed of large calculations</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Ferret how-to: speed of large calculations</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Tue, 5 Sep 1995 10:18:50 -0700</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+(for advanced users) How to get the best performance from Ferret on large
+calculations:
+
+------------
+
+On Aug 31, 11:48am, Billy Kessler wrote:
+
+	&gt; Subject: why is this code so slow?
+	&gt;
+	&gt; Steve,
+	&gt;
+	&gt; I have a go script which takes more than 6 minutes
+	&gt; to execute. Is there something I could do to speed
+	&gt; it up, or is that inevitable for this [large] calculation?
+	&gt; Thanks, Billy
+
+=================================================
+
+Hi Billy,
+
+Here's how you figure out where Ferret is spending its time during a
+large calculation:
+
+	yes? SET MODE DIAGNOSTIC
+
+On the commands that follow this Ferret will list diagnostic information
+describing its internal actions.  I'll paste a fragment of the output with
+explanation, below.
+
+Watch for messages about &quot;gathering&quot;.  These indicate that Ferret felt the
+calculation was too large to fit into memory and it has broken the calculation
+into slices.  This can slow down the IO considerably (but the calculation does
+get finished without any intervention.)  You can influence how Ferret makes its
+decision to use gathering -- section 22.6.4 (MODE DESPERATE), Users Guide V3.1
+(P.156).
+
+Use SET MEMORY/SIZE=&lt;value&gt; to allocate large memory.  (see
+$FER_DIR/release_notes* -- version 3.2 or later).  In conjunction with the
+information in section 22.6.4 this can greatly enhance performance by fully
+utilizing the physical memory of your system.
+
+For maximum performance be explicit in telling Ferret the region of interest
+(i.e. don't leave the limits of axes unspecified to imply the full domain).
+When limits are not explicit Ferret misses opportunities for reusing cached
+results -- slower processing and potentially more memory needed due to
+fragmentation may result.
+
+Explicit limits are especially important when you see &quot;gathering&quot; (above).
+Watch the diagnostic output to see if Ferret is re-reading the same data.  If
+so, consider using LOAD (and LOAD/PERMANENT) to read file variables into memory
+prior to requesting a result.  This is especially useful when calculations
+involve derivatives and shift operators.  For example, using MY_VAR[I=101:110]
+and MY_VAR[I=101:110@SHF:2] in the same calculation may require two separate
+reading operations; pre-reading with LOAD MY_VAR[I=101:112] will cache a single
+block of data big enough for both.
+
+	- steve
+
+==========================
+
+P.S. Here's a fragment of MODE DIAGNOSTIC output and some explanation:
+
+yes? SET MODE DIAGNOSTIC
+yes? LOAD SST[l=1:400@AVE]
+ getgrid EX#1   5 D: 2  I:    1    1  J:    1    1  K:    1    1  L:    1    1
+ eval    EX#1   4 D: 2  I: -111 -111  J: -111 -111  K: -111 -111  L: -111 -111
+ strip gathering SST on Y axis:     1    90
+ strip --&gt; SST[T=01-JAN-1946:01-MAY-1979@AVE,D=2]
+ reading SST    3 D: 2  I:    1  180  J:    1    4  K: -111 -111  L:    1  400
+ doing --&gt; SST[T=01-JAN-1946:01-MAY-1979@AVE,D=2]
+ doing gathering SST on Y axis:     1     4
+
+Explanation:
+
+- &quot;D: 2&quot; tells us that the operations are from data set #2
+
+-  the &quot;getgrid&quot; pass determines the grid of the result
+
+- &quot;eval EX#1&quot; is the start of evaluation for the first expression (there may be
+	multiple comma-separated expressions)
+
+- &quot;I: -111 -111&quot; means that the limits on the I (X) axis are IMPLIED (unknown).
+	Use explicit limits for better performance and memory management.
+
+- &quot;strip&quot; means that Ferret has detected the need for an operation and
+	allocated space for it on a stack.
+
+- &quot;strip gathering SST on Y axis&quot; means this calculation is being broken into
+	slicess along the Y axis (to fit into memory)
+
+- &quot;reading SST ...&quot; means IO is in progress. The I,J,K,L limits are shown.
+	You may see delays during large IO operations.
+
+- &quot;doing&quot; tells us the operation that was &quot;stripped&quot; above is being done
+
+- &quot;gathering  SST on Y axis:  1  4&quot; tells us that the J=1:4 slice of the
+	calculation has been completed.  J=5:8 will probably follow.
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00005.html">Ferret how-to: non-decimated LIST output</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00007.html">Ferret version 4.11 available</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00005.html">Thread Prev</a>][<a href="msg00007.html">Thread Next</a>][<A HREF="threads.html#00006">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

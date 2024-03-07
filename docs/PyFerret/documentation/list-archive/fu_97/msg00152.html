@@ -1,0 +1,154 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Fortran Binary File Read -->
+<!--X-From-R13: "[nex O. Hrefpuryy" <irefpuryNnznebar.UETQ.@OEO.UAH> -->
+<!--X-Date: Fri, 5 Sep 1997 14:09:11 &#45;0700 -->
+<!--X-Message-Id: 9709051713.ZM2231@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 9709052016.AA08194@ferret.wrc.noaa.gov -->
+<!--X-Reference: oxilia@OCE.ORST.EDU -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Fortran Binary File Read</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00150.html">Thread Prev</a>][<a href="msg00154.html">Thread Next</a>][<A HREF="threads.html#00152">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Fortran Binary File Read</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Fortran Binary File Read</strong></li>
+<li><strong>From</strong>: <strong>&quot;Mark A. Verschell&quot; &lt;<A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 5 Sep 1997 17:13:41 -0400</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A> (Ferret Group)</li>
+<li>In-reply-to: David Oxilia &lt;oxilia@OCE.ORST.EDU&gt;       &quot;Fortran Binary File Read&quot; (Sep  5,  1:18pm)</li>
+<li>References: &lt;<a href="msg00150.html">9709052016.AA08194@ferret.wrc.noaa.gov</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Sep 5,  1:18pm, David Oxilia wrote:
+&gt; I'd like to read a set of fortran binary files into ferret. I've tried it
+&gt; a couple of different ways according to the documentation (User guide v4.4
+&gt; p24) but ferret quits with a core dump.
+
+The problem is your file format. Ferret is pretty forgiving with file structure
+but what you are trying to do is not something that ferret can EASILY read. It
+could be done but there are easier ways. In your style you would have to do all
+sorts of playing around with the file command to get it to work correctly - NOT
+AN EASY TASK. It's easier to write the data out differently, such as the
+following 2 examples:
+
+1) 11 separate files (1 each for eta, ub, ...)
+Write them in the following manner:
+2D (nx,ny):
+	do j=1,ny
+	  write(10) (eta(i,j),i=1,nx)
+	enddo
+3D (nx,ny,nz):
+	do k=1,nz
+	  do j=1,ny
+	    write(11) (q(i,j,k),i=1,nx)
+	  enddo
+	enddo
+Read them into ferret (with a more appropriate grid definition):
+yes? define axis/x=1:nx:1 myx
+yes? define axis/y=1:ny:1 myy
+yes? define axis/z=1:nz:1 myz
+yes? define grid/x=myx/y=myy grid2
+yes? define grid/like=grid2/z=myz grid3
+yes? file/form=unfor/grid=grid2/var=eta eta.dat
+yes? file/form=unfor/grid=grid3/var=q q.dat
+You might also need to add column info to the file command (I can't recall)
+i.e.:
+yes? file/form=unfor/grid=grid2/col=nx/var=eta eta.dat
+yes? file/form=unfor/grid=grid3/col=nx/var=q q.dat
+
+--------------------------------------------------------------------------
+2)  Split them into 2 files (1 for 2D and 1 for 3D)
+In Fortran:
+	do j=1,ny
+	  do i=1,nx
+	    write(10) eta(i,j),ub(i,j),vb(i,j),up(i,j),us(i,j),vs(i,j)
+	  enddo
+	enddo
+	do k=1,nz
+	  do j=1,ny
+	    do i=1,nx
+	      write(11) dp(i,j,k),q(i,j,k),qx(i,j,k),qy(i,j,k)
+	    enddo
+	  enddo
+	enddo
+In Ferret:
+yes? define axis/y=1:ny:1 myy
+yes? define axis/z=1:nz:1 myz
+yes? define grid/x=myx/y=myy grid2
+yes? define grid/like=grid2/z=myz grid3
+yes? file/form=unfor/grid=grid2/var=&quot;eta,ub,vb,up,us,vs&quot; d2.dat
+yes? file/form=unfor/grid=grid3/var=&quot;dp,q,qx,qy&quot; d3.dat
+
+Good Luck!
+
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-286-2027  Fax: 301-286-1761    Greenbelt, MD 20771
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00150" href="msg00150.html">Fortran Binary File Read</a></strong>
+<ul><li><em>From:</em> David Oxilia</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00150.html">Fortran Binary File Read</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00154.html">Re: Fortran Binary File Read</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00150.html">Thread Prev</a>][<a href="msg00154.html">Thread Next</a>][<A HREF="threads.html#00152">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

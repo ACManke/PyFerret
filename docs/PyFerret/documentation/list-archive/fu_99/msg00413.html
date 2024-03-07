@@ -1,0 +1,183 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: multi netcdf -->
+<!--X-From-R13: irefpuryNnznebar.tfsp.anfn.tbi ([nex O. Hrefpuryy) -->
+<!--X-Date: Thu, 2 Dec 1999 06:25:03 &#45;0800 -->
+<!--X-Message-Id: 9912020924.ZM2735@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 38458EA4.655ADA0C@jasper.stanford.edu -->
+<!--X-Reference: joerg@jasper.stanford.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: multi netcdf</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00411.html">Thread Prev</a>][<a href="msg00418.html">Thread Next</a>][<A HREF="threads.html#00413">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: multi netcdf</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:joerg@DOMAIN.HIDDEN">joerg@xxxxxxxxxxxxxxxxxxx</A>,       &quot;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: multi netcdf</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A> (Mark A. Verschell)</strong></li>
+<li>Date: Thu, 2 Dec 1999 09:24:57 -0500</li>
+<li>In-reply-to: Jörg Kaduk &lt;joerg@jasper.stanford.edu&gt;       &quot;multi netcdf&quot; (Dec  1,  1:09pm)</li>
+<li>References: &lt;<a href="msg00411.html">38458EA4.655ADA0C@jasper.stanford.edu</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Joerg,
+
+This should work pretty easy (try having different length timesteps some time!)
+By the way, using seconds could get you in trouble due to very large numbers.
+Since you are using 21600 as your time step, may I suggest switching to hours,
+then your delta-T will be 6, a more manageable number.
+
+In your example, your files should of course be named something like:
+
+psib_1985.pbp2.nc.001 - January
+psib_1985.pbp2.nc.002 - February
+         :
+psib_1985.pbp2.nc.012 - December
+
+And then the step files will all have to be seperately entered (since you will
+have a different number of timesteps per file. I will assume that you are
+making a climatological year (year 1) for this example. (What I did to get
+S_START and S_END was to create an axis/grid in ferret and then show grid/l,
+i.e., define axis/t=&quot;1-jan-0001&quot;:&quot;31-dec-0001:18&quot;/np=1460/unit=seconds myt):
+
+ $STEPFILE_RECORD
+   S_FILENAME      = 'psib_1985.pbp2.nc.001',
+   S_AUX_SET_NUM   = 0,
+   S_START         = 31622400.,
+   S_END           = 34279200.,
+   S_DELTA         = 21600.,
+   S_NUM_OF_FILES  =   1,
+ $END
+ $STEPFILE_RECORD
+   S_FILENAME      = 'psib_1985.pbp2.nc.002',
+   S_AUX_SET_NUM   = 0,
+   S_START         = 34300800.,
+   S_END           = 36698400.,
+   S_DELTA         = 21600.,
+   S_NUM_OF_FILES  =   1,
+ $END
+
+          :
+
+ $STEPFILE_RECORD
+   S_FILENAME      = 'psib_1985.pbp2.nc.012',
+   S_AUX_SET_NUM   = 0,
+   S_START         = 60480000.,
+   S_END           = 63136800.,
+   S_DELTA         = 21600.,
+   S_NUM_OF_FILES  =   1,
+ $END
+
+
+See what I mean about the large number? If you used hours instead (or even
+days) the S_START and S_END would then be: 8784,9522 (or 366,396.75).
+
+Mark Verschell
+
+On Dec 1,  1:09pm, =?iso-8859-1?Q?J=F6rg?= Kaduk wrote:
+&gt; Subject: multi netcdf
+&gt;
+&gt; [ text/plain
+&gt;   Encoded with &quot;quoted-printable&quot; ]:
+&gt; Hi there,
+&gt;
+&gt; I have a question about constructing a multi-netcdf file:
+&gt;
+&gt; I have twelve monthly files with 4 data pre day in them, so
+&gt; there are 124 data per variable in the Jan file, 112 in the
+&gt; Feb file, 124 in the March file, and so on.
+&gt; My time unit is the second. So the data are every 21600 seconds.
+&gt; How does the descriptor file have to look like for ferret
+&gt; to read the data ok, i.e. what should there be in the
+&gt; stepfile record? I've tried a couple of things, but somehow
+&gt; I do not get it yet.
+&gt; Any hints greatly appreciated,
+&gt; thanks!
+&gt; Joerg
+&gt;
+&gt;
+&gt;   $STEPFILE_RECORD
+&gt;    s_filename           = 'psib_1985.pbp2.nc.009',
+&gt;    S_AUX_SET_NUM        = ,
+&gt;    S_START              = ,
+&gt;    S_END                = ,
+&gt;    S_DELTA              = ,
+&gt;    S_NUM_OF_FILES       = 1,
+&gt;    S_REGVARFLAG         = ' ',
+&gt;-- End of excerpt from =?iso-8859-1?Q?J=F6rg?= Kaduk
+
+
+
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-614-5669  Fax: 301-614-5666    Greenbelt, MD 20771
+
+
+		     Better Living Through Denial
+               ** USQC Certified: 100% Microsoft Free **
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00411" href="msg00411.html">multi netcdf</a></strong>
+<ul><li><em>From:</em> Jörg Kaduk</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00411.html">multi netcdf</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00418.html">Time Axis again</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00411.html">Thread Prev</a>][<a href="msg00418.html">Thread Next</a>][<A HREF="threads.html#00413">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

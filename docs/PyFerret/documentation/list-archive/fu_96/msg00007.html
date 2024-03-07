@@ -1,0 +1,190 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: GRADS binary &#45;> Ferret -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Mon, 12 Feb 1996 16:52:29 &#45;0800 -->
+<!--X-Message-Id: 9602121701.ZM6488@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: GRADS binary -&gt; Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00006.html">Thread Prev</a>][<a href="msg00008.html">Thread Next</a>][<A HREF="threads.html#00007">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: GRADS binary -&gt; Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: GRADS binary -&gt; Ferret</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Mon, 12 Feb 1996 17:01:19 -0800</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Feb 12,  7:37pm, Ilana Wainer wrote:
+&gt; Subject: GRADS binary -&gt; Ferret
+&gt;
+&gt;
+&gt; Question: how to use a GRADS binary file with Ferret. In other words
+&gt; what would the &quot; FILE/FORMAT &quot; comand look like ?
+&gt;
+&gt; thanks
+&gt;
+&gt; -Ilana
+===================================================
+
+Hi Illana,
+
+The GrADS binary files are typically (always?) grids of single precision
+floating point values. Ferret can read 'em.
+
+It is generally best to use Ferret to read the data and then SAVE the results
+into a NetCDF file (with titles and units etc.). The reason for this is that
+Ferret reads NetCDF much faster than unformatted binary and it cannot do direct
+access or memory management on the binary data file. In Ferret we opted for
+flexibility in ASCII and binary files at some cost of performance. Anyway, the
+NetCDF files are standardized, machine independent, and self-describing ... all
+that good stuff.
+
+To read a variable from the binary file follow these steps:
+
+1) Use DEFINE AXIS and DEFINE GRID to describe the coordinate system of the
+variable
+
+2) Use the FILE command with
+	/GRID=grid_from_step_1
+	/FORMAT=stream
+	/SKIP=#_of_words_to_skip_at_file_start
+	/VAR=varname
+
+3) (optional) Use
+	SET VARIABLE/TITLE=&quot;My variable&quot;/UNITS=&quot;those units&quot; varname
+   to describe the variable
+
+4) Use
+	SAVE/FILE=myfile.nc/TITLE=&quot;data set title&quot; varname
+
+5) for multiple variables repeat 2-4 and add &quot;/APPEND&quot; to the SAVE command in 4
+
+Note: it is actually possible to read multiple variables simultaneously in step
+2 by specifying /VAR=&quot;var1,var2,...&quot; and
+/COLUMNS=#_of_words_between_variables_in_file ... for simplicity we'll stick
+with one variable at a time in this message)
+
+
+Below is a more concrete example.
+
+	Cheers - steve
+
+=================================================================
+
+Suppose your file, GrADS.dat, was organized on a 2x2 degree global grid like
+this:
+
+          Time 1, Level    ?, Variable slp  (sea level pressure)
+          Time 1, Level 1000, Variable td
+          Time 1, Level  850, Variable td
+          Time 1, Level  700, Variable td
+          Time 1, Level  500, Variable td
+          Time 1, Level  400, Variable td
+          Time 1, Level  300, Variable td
+          Time 1, Level 1000, Variable u
+          Time 1, Level  850, Variable u
+                 then levels 700, 500, 400, 300, 250, 200, then
+          Time 1, Level  150, Variable u
+          Time 1, Level  100, Variable u
+          Time 1, Level 1000, Variable v
+          Time 1, Level  850, Variable v
+                 then levels 700, 500, 400, 300, 250, 200, then
+          Time 1, Level  150, Variable v
+          Time 1, Level  100, Variable v
+
+	 ditto all that for Time 2, ...
+
+For this example we will read the 2D field of U at the first level at Time 1.
+
+Step 1: define the grid for U
+
+	DEFINE AXIS/X=21E:19E:2/units=degrees xax	! 180 points
+	DEFINE AXIS/Y=89S:89N:2/unit=degrees  yax	! 90 points
+	DEFINE AXIS/Z=1000:1000:1/units=mbars zax
+	DEFINE AXIS/t=1-JAN-1986:1-JAN-1986:1/unit=days tax  ! or whatever ...
+
+	DEFINE GRID/X=xax/Y=yax/Z=zax/T=tax ugrid2d
+
+Step 2: describe the variable in the file
+
+	FILE/VAR=u/SKIP=`180*90*7`/GRID=ugrid2d/FORMAT=stream   GrADS.dat
+
+Step 3: more information about variable &quot;u&quot;
+
+	SET VARIABLE/TITLE=&quot;Zonal Velocity&quot;/UNITS=&quot;cm/sec&quot; u
+
+Step 4: Save the data to a NetCDF file
+
+	SAVE/FILE=GrADS.cdf/TITLE=&quot;My NetCDF data set&quot; u
+
+To keep this simple I've avoided the steps to handle the decreasing coordinates
+on the Z axis of U. Write me if you want that.
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00006.html">GRADS binary -&gt; Ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00008.html">Namelist record problems on IBM RS/6000</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00006.html">Thread Prev</a>][<a href="msg00008.html">Thread Next</a>][<A HREF="threads.html#00007">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Virtual Reality out of Ferret -->
+<!--X-From-R13: "Oyoreg X. Vreznaa" <ureznaaNczry.abnn.tbi> -->
+<!--X-Date: Fri, 11 Dec 1998 14:52:48 &#45;0800 -->
+<!--X-Message-Id: 3671A34D.3307A4EA@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Virtual Reality out of Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00251.html">Thread Prev</a>][<a href="msg00253.html">Thread Next</a>][<A HREF="threads.html#00252">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Virtual Reality out of Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>, albert hermann &lt;<A HREF="mailto:hermann@DOMAIN.HIDDEN">hermann@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Virtual Reality out of Ferret</strong></li>
+<li><strong>From</strong>: <strong>&quot;Albert J. Hermann&quot; &lt;<A HREF="mailto:hermann@DOMAIN.HIDDEN">hermann@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 11 Dec 1998 14:57:17 -0800</li>
+<li>Organization: pacific marine environmental lab</li>
+<li>Reply-to: <A HREF="mailto:hermann@DOMAIN.HIDDEN">hermann@xxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Ferreteers,
+
+Attached is a script which writes Virtual Reality files out of ferret.
+Why would you want to try this? It allows you to generate 3-D surfaces
+out of ferret and then fly around them using a VRML viewer - directly
+out of your web browser. So far we have a script which generates up to
+two surfaces, each colored by a different variable if you like. I have
+found this useful for looking at sea surface properties over bathymetry.
+
+Unfortunately the script cannot handle missing values in the variables
+used to generate the surfaces, so you will have to zero or smooth them
+out beforehand. The colorizing variables should set the color to black
+if they have missing values; otherwise the palette is blue (low) to red
+(high).
+Have fun and let me know of any glaring errors.
+
+-Al Hermann
+hermann@pmel.noaa.gov
+
+
+</pre>
+<pre>
+! Ferret virtual world generator
+!
+! Al Hermann and Chris Moore 12/4/98
+!
+! hermann@pmel.noaa.gov
+!
+! This script writes out a Virtual Reality (.wrl) file for one to 
+! four variables for subsequent viewing by a browser with the appropriate 
+! plug-in (such as the Cosmo Viewer; if you don't have it go to 
+! <A  HREF="http://www.cosmosoftware.com/products/player">http://www.cosmosoftware.com/products/player</A> and download for free)
+! We have a few convenient vantage points programmed in for viewing
+! the resulting surfaces from the north, south, east or west and from
+! above
+!
+! Variables are assumed to be on a regular grid with evenly spaced x 
+! and evenly spaced y (but need not be the same spacing in x and y)
+! A surface representing the values of the one variable may be 
+! colored according to values of the second variable or just left
+! monochrome; a second colored surface can also be requested
+! (for instance you might want to show the sea surface with bathymetry).
+! The palette used for coloring is blue (lowest) to red (highest)
+!
+! z is positive downwards so bathymetry values (increasing with depth)
+! will appear in the usual oceanographic way
+!
+! You will want to scale the surface variables to get a pleasing shape;
+! try making the range in height about the same as the range of the x-axis 
+! for a pleasing result (for example, if you have a region which is
+! 10x10, a reasonable range for the z-values would be 0-10 - so the aspect
+! ratio of the box is then 1x1x1)
+!
+! NOTES: 
+! **You MUST explicitly set a region using i and j BEFORE you invoke this script,
+! e.g. set reg/i=1:10/j=1:10
+!
+! **This script CANNOT handle missing values in the surfaces so set them to some 
+! convenient value (such as zero) or otherwise fill them beforehand if any are 
+! present. Missing values in the varaibles used for coloring are set to black
+!
+! usage: go fer_vrml wrlname var1 [var1col] [var2] [var2col] 
+!
+! wrlname = name of your world - i.e. you get a file called &quot;wrlname.wrl&quot;
+! var1 - first variable to render as a surface height
+! var1col - a variable to color the first surface 
+!           (if blank then you get a red surface)
+! var2 - second variable to render as a surface height
+!           (if blank you get just the first surface)
+! var2col - a variable to color the second surface 
+!           (if blank then you get a red surface)
+! 
+!
+! EXAMPLE:
+!
+! Try this simple gaussian surface
+! let surfc1=-5.*exp(-.2*((i-5)*(i-5)+(j-5)*(j-5)))
+! let colorit = i+j
+! set reg/i=1:10/j=1:10
+! go fer_vrml test surfc1 colorit
+!
+! Want two surfaces? Try
+! go fer_vrml test surfc1 colorit -1.*surfc1 -1.*colorit
+!
+! Open you browser and go to the file called &quot;test.wrl&quot;
+! and have a pleasant flight! 
+!
+let/quiet ii=i
+let/quiet jj=j
+let/quiet xx=x
+let/quiet yy=y
+let/quiet imax = ii[i=@max]
+let/quiet imin = ii[i=@min]
+let/quiet jmax = jj[j=@max]
+let/quiet jmin = jj[j=@min]
+let/quiet xmax = xx[i=@max]
+let/quiet xmin = xx[i=@min]
+let/quiet ymax = yy[j=@max]
+let/quiet ymin = yy[j=@min]
+
+let/quiet xd = imax-imin+1
+let/quiet zd = jmax-jmin+1
+let/quiet dx = (xmax-xmin)/(imax-imin)
+let/quiet dz = (ymax-ymin)/(jmax-jmin)
+let/quiet xsize= (xd-1)*dx
+let/quiet zsize= (zd-1)*dz
+let/quiet xmid = xsize/2.
+let/quiet zmid = -1.*zsize/2.
+
+sp rm $1.wrl
+sp echo &quot;#VRML V2.0 utf8&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;# END_HEADER&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;Background {skyColor 0 0 0}&quot; | cat &gt;&gt; $1.wrl 
+
+sp echo &quot;Viewpoint {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  position `xmid` 0 `zsize` &quot; | cat &gt;&gt; $1.wrl 
+sp echo &quot;  orientation 1.0 0.0 0.0 -0. # rotating -.0 radians around x axis&quot; | cat &gt;&gt; $1.wrl
+sp echo '  description &quot;look north&quot;' | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;Viewpoint {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  position `-1.*xsize` 0 `zmid` &quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  orientation 0 1.0 0. -1.541 # rotating pi/2 radians around y axis&quot; | cat &gt;&gt; $1.wrl
+sp echo '  description &quot;look east&quot;' | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;Viewpoint {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  position `xmid` 0 `-2.*zsize`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  orientation 0 1.0 0. -3.1416 # rotating pi/2 radians around y axis&quot; | cat &gt;&gt; $1.wrl
+sp echo '  description &quot;look south&quot;' | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;Viewpoint {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  position `2.*xsize` 0 `zmid`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  orientation 0 1.0 0. -4.682 # rotating 3/2 pi radians around y axis&quot; | cat &gt;&gt; $1.wrl
+sp echo '  description &quot;look west&quot;' | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;Viewpoint {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  position `xmid` `3.*xsize` `zmid`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  orientation 1.0 0. 0. -1.541 # rotating pi/4 radians around x axis&quot; | cat &gt;&gt; $1.wrl
+sp echo '  description &quot;look down&quot;' | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+
+
+sp echo &quot;        DirectionalLight {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;                on              TRUE&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;                intensity       0.50&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;                color           1 1 1&quot; | cat &gt;&gt; $1.wrl         
+sp echo &quot;                direction       -1. -1. -0.&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;        } #Directional Light  &quot; | cat &gt;&gt; $1.wrl  
+
+
+
+
+sp echo &quot;Transform {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;translation `xmid` 0 0&quot; | cat &gt;&gt; $1.wrl 
+sp echo &quot;children [&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;Shape {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot; appearance Appearance { material Material {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	diffuseColor 1.0 0.0 0.0}}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot; geometry Box { size `xsize` `xsize*.01` `xsize*.01` }&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+
+sp echo &quot;Transform {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;translation 0 `-1.*xmid` 0&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;children [&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;Shape {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot; appearance Appearance { material Material {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	diffuseColor 0.0 0.0 1.0}}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot; geometry Box { size `xsize*.01` `xsize` `xsize*.01` }&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;Transform {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;translation 0 0 `zmid`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;children [&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;Shape {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot; appearance Appearance { material Material {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	diffuseColor 0.0 1.0 0.0}}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot; geometry Box { size `zsize*.01` `zsize*.01` `zsize` } &quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+
+
+sp echo &quot;Transform {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;translation 0 0 0&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;rotation 1. 0. 0. 3.14159&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;children [&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;Shape {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;appearance Appearance {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;        material Material {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;          diffuseColor 0.8 0.8 0.8&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;          specularColor 0.2 0.2 0.2&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;		transparency 0.&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;        }&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;      }&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  geometry ElevationGrid {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;         solid FALSE&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 xDimension `xd`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 zDimension `zd`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 xSpacing `dx`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 zSpacing `dz`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 creaseAngle 0.785&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;	 height  [&quot; | cat &gt;&gt; $1.wrl
+
+list/nohead/append/file=$1.wrl/format=(e13.6,&quot;,&quot;) $2
+
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;	colorPerVertex TRUE&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	color Color {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	color[&quot; | cat &gt;&gt; $1.wrl
+let colvar= $3&quot;0.*$2&quot;
+let colvarmin=colvar[i=`imin`:`imax`@min,j=`jmin`:`jmax`@min]
+let colvarmax=colvar[i=`imin`:`imax`@max,j=`jmin`:`jmax`@max]
+let colsc =(colvar-colvarmin+1.e-10)/(colvarmax-colvarmin+1.e-10)
+let ramp = 1.
+let bamp = ramp
+let gamp = ramp
+let blue = if (colsc lt .5) then bamp*(1.) else bamp*(1.-2.*(colsc-.5))
+let green= gamp*(1.-2.*abs(colsc-0.5))
+let red= if (colsc gt .5) then ramp*(1.) else ramp*(2.*(colsc-0.))
+list/nohead/append/file=$1.wrl/format=(3f5.2,&quot;,&quot;) missing(red,0.),missing(green,0.),missing(blue,0.)
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+! skip the next section if only one surface
+
+let testval = $4&quot;-999+0.*$2&quot;
+
+IF `testval[i=1,j=1] ne -999` THEN
+
+sp echo &quot;Transform {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;translation 0 0 0&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;rotation 1. 0. 0. 3.14159&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;children [&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;Shape {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;appearance Appearance {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;        material Material {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;          diffuseColor .8 .8 .8&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;          specularColor 0.2 0.2 0.2&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;          transparency 0.&quot;  | cat &gt;&gt; $1.wrl
+sp echo &quot;        }&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;      }&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;  geometry ElevationGrid {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;         solid FALSE&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 xDimension `xd`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 zDimension `zd`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 xSpacing `dx`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 zSpacing `dz`&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 creaseAngle 0.785&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	 height  [&quot; | cat &gt;&gt; $1.wrl
+
+list/nohead/append/file=$1.wrl/format=(e13.6,&quot;,&quot;) $4
+
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+
+sp echo &quot;	colorPerVertex TRUE&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	color Color {&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;	color[&quot; | cat &gt;&gt; $1.wrl
+let colvar2= $5&quot;0.*$4&quot;
+let colvarmin2=colvar2[i=`imin`:`imax`@min,j=`jmin`:`jmax`@min]
+let colvarmax2=colvar2[i=`imin`:`imax`@max,j=`jmin`:`jmax`@max]
+let colsc2 =(colvar2-colvarmin2+1.e-10)/(colvarmax2-colvarmin2+1.e-10)
+let ramp = 1.
+let bamp = ramp
+let gamp = ramp
+let blue2 = if (colsc2 lt .5) then bamp*(1.) else bamp*(1.-2.*(colsc2-.5))
+let green2= gamp*(1.-2.*abs(colsc2-0.5))
+let red2= if (colsc2 gt .5) then ramp*(1.) else ramp*(2.*(colsc2-0.))
+list/nohead/append/file=$1.wrl/format=(3f5.2,&quot;,&quot;) missing(red2,0.),missing(green2,0.),missing(blue2,0.)
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;]&quot; | cat &gt;&gt; $1.wrl
+sp echo &quot;}&quot; | cat &gt;&gt; $1.wrl
+
+
+ENDIF
+
+exit 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00251.html">Lost messages?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00253.html">Reading fortran unformatted data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00251.html">Thread Prev</a>][<a href="msg00253.html">Thread Next</a>][<A HREF="threads.html#00252">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

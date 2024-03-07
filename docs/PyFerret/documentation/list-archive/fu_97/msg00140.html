@@ -1,0 +1,197 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: limit on coordinate? -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Thu, 21 Aug 1997 09:39:45 &#45;0700 -->
+<!--X-Message-Id: 9708210938.ZM9124@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.OSF.3.95.970522141428.2602C&#45;100000@ibis.rsmas.miami.edu -->
+<!--X-Reference: 9705221320.ZM14553@rogue.pmel.noaa.gov -->
+<!--X-Reference: 33FC59D4.5E71@gesma.fr -->
+<!--X-Reference: reptin@gesma.gesma.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: limit on coordinate?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00139.html">Thread Prev</a>][<a href="msg00075.html">Thread Next</a>][<A HREF="threads.html#00140">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: limit on coordinate?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Bertrand REPTIN &lt;<A HREF="mailto:reptin@DOMAIN.HIDDEN">reptin@xxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: limit on coordinate?</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Thu, 21 Aug 1997 09:38:37 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: Bertrand REPTIN &lt;reptin@gesma.gesma.fr&gt;       &quot;Re: limit on coordinate?&quot; (Aug 21,  5:08pm)</li>
+<li>References: &lt;<a href="msg00073.html">Pine.OSF.3.95.970522141428.2602C-100000@ibis.rsmas.miami.edu</a>&gt; &lt;<a href="msg00074.html">9705221320.ZM14553@rogue.pmel.noaa.gov</a>&gt; &lt;<a href="msg00139.html">33FC59D4.5E71@gesma.fr</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Bertrand,
+
+With version 4.4x of Ferret (and earlier) Ferret's ability to grid irrigular
+data is, indeed, limited. You could play heuristic games like gridding one half
+of the data into one grid and the other half into another grid and then
+averaging the two -- the result could give you something close to the correct
+field though not valid from a statistical point of view.
+
+Version 5 of Ferret will have a full-fledged facility to define objective
+analysis and gridding procedures. That is a few months away (too soon to give a
+firm date). Meantime, I recommend that if your gridding needs are exacting you
+use code external to Ferret to create gridded fields for Ferret to work with.
+
+One code that comes to mind is a public domain utility from Unidata called
+&quot;ncbarne&quot; (a NetCDF utility). Have a look at <A  HREF="http://www.unidata.ucar.edu/">http://www.unidata.ucar.edu/</A> to
+find that. Other users may be able to recommend further alternatives.
+
+	- steve
+
+===========================================================
+
+On Aug 21,  5:08pm, Bertrand REPTIN wrote:
+&gt; Subject: Re: limit on coordinate?
+&gt; Steve Hankin wrote:
+&gt; &gt;
+&gt; &gt; Hi Dongxiao,
+&gt; &gt;
+&gt; &gt; Yes, Ferret does have a limit of 50,000 coordinate points but it need not
+get
+&gt; &gt; in your way. It is only really a limit if you have 50K **unevenly spaced**
+&gt; &gt; coordinate points -- this is rarely the case.
+&gt; &gt;
+&gt;
+&gt;
+&gt; Hello Steve,
+&gt;
+&gt; Unfortunately, I read an ascii file containing 73403 values of water
+&gt; depth with irregular and **unevenly spaced** values of latitude and
+&gt; longitude, in the form :
+&gt;
+&gt; lat	lon	depth
+&gt; 46.6396  -4.9982 1348.0   ! value 1
+&gt; ...
+&gt; 45.5245  -3.1742  149.0	! value 73403
+&gt;
+&gt;
+&gt; I read them as follows :
+&gt;
+&gt; yes? define axis/t=1:73403:1 taxis
+&gt; yes? define grid/t=taxis tgrid
+&gt; yes? file/var=&quot;lat,lon,prof&quot;/grid=tgrid bathyzoe1
+&gt; yes? plot/vs lon,lat
+&gt; yes? sh data
+&gt;      currently SET data sets:
+&gt;     1&gt; ./bathyzoe1  (default)
+&gt;  name     title                             I         J
+&gt; K         L
+&gt;  LAT      LAT                              1:1       1:1       1:1
+&gt; 1:73403
+&gt;  LON      LON                              1:1       1:1       1:1
+&gt; 1:73403
+&gt;  PROF     PROF                             1:1       1:1       1:1
+&gt; 1:73403
+&gt;
+&gt; This plotting was OK, although the number of points was too big !
+&gt;
+&gt; but not the following one, to transform data in a regular grid :
+&gt;
+&gt; yes? go objective lon lat prof &quot;-5:-3:0.01&quot; &quot;45:47:0.01&quot; 0 1
+&gt; Your result will be variable &quot;gridded&quot; in data set fer_objective.unf.
+&gt;  **ERROR: a program limit has been reached: too many input points -
+&gt; limit 50000
+&gt; USER/COMMAND=OBJECTIVE/opt1=-5:-3:0.01,45:47:0.01,0,1/file=fer_objective.unf
+&gt; lon/10000,lat/10000,prof
+&gt; Command file, command group, or REPEAT execution aborted
+&gt;
+&gt; This last command is OK if I use file/skip=30000 to have less than 50000
+&gt; values
+&gt;
+&gt; How can I easily transform the 73403 irregular (x,y,z) values to a 2D
+&gt; regular grid ?
+&gt;
+&gt; Thanks
+&gt;
+&gt; Bertrand
+&gt;
+&gt;
+&gt; *******************************************************************************
+&gt; Bertrand REPTIN
+&gt; STSN/GESMA - BP42 - BREST naval - FRANCE
+&gt; Tel. 98-22-53-67
+&gt; Fax. 98-22-72-13
+&gt; e-mail :  reptin@gesma.fr
+&gt; *******************************************************************************
+&gt;-- End of excerpt from Bertrand REPTIN
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00073" href="msg00073.html">limit on coordinate?</a></strong>
+<ul><li><em>From:</em> Dongxiao Zhang</li></ul></li>
+<li><strong><a name="00074" href="msg00074.html">Re: limit on coordinate?</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+<li><strong><a name="00139" href="msg00139.html">Re: limit on coordinate?</a></strong>
+<ul><li><em>From:</em> Bertrand REPTIN</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00139.html">Re: limit on coordinate?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00075.html">I'm confused - unformatted I/O ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00139.html">Thread Prev</a>][<a href="msg00075.html">Thread Next</a>][<A HREF="threads.html#00140">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

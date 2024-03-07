@@ -1,0 +1,190 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret How To: Mercator projections -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Thu, 19 Sep 1996 11:04:56 &#45;0700 -->
+<!--X-Message-Id: 9609191115.ZM21762@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret How To: Mercator projections</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00062.html">Thread Prev</a>][<a href="msg00065.html">Thread Next</a>][<A HREF="threads.html#00064">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret How To: Mercator projections</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Ferret How To: Mercator projections</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Thu, 19 Sep 1996 11:15:42 -0700</li>
+<li>Cc: <A HREF="mailto:rolande@DOMAIN.HIDDEN">rolande@xxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+***** Ferret how-to:  Mercator and Lambert conformal projections *****
+
+
+On Sep 19,  1:04pm, Rolande Tournier wrote:
+&gt; Subject: 
+&gt; I search a mercator projection
+&gt; Thanks you
+
+--------------
+
+Hi Rolande,
+
+Map projections which involve transforming only the latitude axis
+(such as Mercator and Lambert conformal) can be done quite easily
+in Ferret. The method is to apply the Mercator transformation to
+the latitude axis of the grid. The only hard part is only in getting
+the tic marks to look nice.
+
+Below I have attached a demo script that demonstrates the procedure.
+The script can be run as-is (Ferret version 4.2 or later).
+
+	Happy Ferreting - steve
+
+================================================
+
+! mercator_demo.jnl  9/96
+
+! Description: Plot a 2-panel demonstration of a Mercator projection
+! Note that Lambert conformal is very similar (see Lambert conformal eqn below)
+
+! usage:   GO mercator_demo [Y_lo, Y_hi] [Y_tics] 
+! Y_lo,Y_hi  - latitude range to plot
+! Y_tics     - the tic spacing on the Mercator plot
+
+! The technique that is used is to create a new Y axis of &quot;page positions&quot;
+! made by transforming the latitudes of the data grid using the
+! Mercator equations. Then &quot;associate&quot; the data with these page positions
+! (replacing the original latitudes) using the &quot;GY=@ASN&quot; syntax.
+
+! The only complication to this is to get the axis tic marks as desired
+! For that we use the REPEAT loop at the end of the demo
+
+!	Map Projections -- A Working Manual
+!	J.P. Snyder
+!	USGS Professional Paper 1395
+!	US Govt Printing Office, 1987.
+
+
+CANCEL REGION
+SET WIND/ASP=1.2
+SET DATA etopo60
+
+! determine J index limits corresponding to requested latitude range
+! (the default range is 80S to 80N)
+LET j_lo = J[G=ROSE,Y=$1&quot;80S&quot;]
+LET j_hi = J[G=ROSE,Y=$2&quot;80N&quot;]
+
+! ***** Standard Rectilinear Projection (for comparison) *****
+SET VIEW upper
+GO magnify 1.2		! looks nicer
+
+SHADE/LEV=(0,10000,1000)/PALETTE=dark_terrestrial/NOKEY/j=`j_lo`:`j_hi` rose
+
+
+! ***** Mercator Projection *****
+SET VIEW lower
+GO magnify 1.2		! looks nicer
+
+! define the vertical page location axis
+! (the transformed latitudes of the grid to be plotted)
+LET pi = 3.141529
+LET degrad = pi/180
+LET radian_lat = degrad * y[g=rose]
+LET yp = LOG(TAN(radian_lat/2 + pi/4))		! Mercator eqn
+! LET yp = SIN(radian_lat)			! Lambert Conformal eqn.
+DEFINE AXIS/from/y/name=ypageax yp
+
+! plot the data on a Mercator projection (omit Y axis)
+SHADE/LEVELS/PALETTE=dark_terrestrial/NOKEY/SET_UP/j=`j_lo`:`j_hi` rose[gy=ypageax@asn]
+PPL YLAB
+PPL AXSET 1,1,0,0	! suppress latitude axes
+PPL TITLE .15 @CRRelief using Mercator Projection
+PALETTE dark_terrestrial;ppl shade;palette default
+PPL AXSET 1,1,1,1
+
+! *** Vertical Axis Tics ***
+
+! draw vertical axis lines
+PPL ALINE/NOUSER 1,0,0,0,($PPL$YLEN)
+PPL ALINE/NOUSER 1,($PPL$XLEN),0,($PPL$XLEN),($PPL$YLEN)
+
+! &quot;lat&quot; will be the latitude of each tic to be drawn
+LET radian_lat=degrad * lat
+DEFINE AXIS/Y=$1&quot;80s&quot;:$2&quot;80n&quot;:$3&quot;40&quot; ytics
+
+! small correction to get label text to align with tic mark
+LET lat = `y[gy=ytics,y=$1&quot;80s&quot;]`; LET ypage_lo = `yp`
+LET lat = `y[gy=ytics,y=$2&quot;80n&quot;]`; LET ypage_hi = `yp`
+LET yoffset = 0.02*(ypage_hi - ypage_lo)
+
+! draw the tics
+! note 1: the tic at the equator should really be drawn separately
+REPEAT/Y=$1&quot;80s&quot;:0:$3&quot;40&quot; (LET lat=`y[gy=ytics]`; PPL ALINE 1,12,`yp`,20,`yp`; LABEL 8,`yp-yoffset`,1,0,.1  &quot;@SR`ABS(lat)`#S&quot;)
+REPEAT/Y=0:$2&quot;80n&quot;:$3&quot;40&quot; (LET lat=`y[gy=ytics]`; PPL ALINE 1,12,`yp`,20,`yp`; LABEL 8,`yp-yoffset`,1,0,.1  &quot;@SR`lat`#N&quot;)
+LABEL -15,0,0,90,.12 LATITUDE
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00062.html">[no subject]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00065.html">Ferret v4.4 release</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00062.html">Thread Prev</a>][<a href="msg00065.html">Thread Next</a>][<A HREF="threads.html#00064">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

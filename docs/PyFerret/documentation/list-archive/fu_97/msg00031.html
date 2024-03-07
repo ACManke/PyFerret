@@ -1,0 +1,244 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: definition and use of W Longitude axis -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Mon, 7 Apr 1997 10:22:08 &#45;0700 -->
+<!--X-Message-Id: 9704071021.ZM26846@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 33480FF0.60CA@u.washington.edu -->
+<!--X-Reference: emiliom@u.WASHINGTON.EDU -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: definition and use of W Longitude axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00030.html">Thread Prev</a>][<a href="msg00032.html">Thread Next</a>][<A HREF="threads.html#00031">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: definition and use of W Longitude axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilio Mayorga &lt;<A HREF="mailto:emiliom@DOMAIN.HIDDEN">emiliom@xxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: definition and use of W Longitude axis</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Mon, 7 Apr 1997 10:21:20 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: Emilio Mayorga &lt;emiliom@u.WASHINGTON.EDU&gt;       &quot;definition and use of W Longitude axis&quot; (Apr  6,  3:04pm)</li>
+<li>References: &lt;<a href="msg00029.html">33480FF0.60CA@u.washington.edu</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+  ***************************************************************
+  ***   Explanation:  definition and use of W Longitude axis  ***
+  ***************************************************************
+
+Hi  Emilio and Stefan,
+
+The longitude encodings used in data sets, as we know, are not standardized.
+The most common encodings are 0 to 360 and -180 to 180. Ferret does not mandate
+any particular encoding. Ferret uses the &quot;modulo&quot; property of a longitude axis
+to translate between encodings.
+
+Internally, Ferret always interprets formatted longitudes as positive values.
+For example SET REGION/X=165W is identical to SET REGION/X=195.
+
+Now consider the command
+
+	PLOT/X=165W my_var[D=my_data_set.nc]
+
+Ferret sees this as a reference to &quot;X=195&quot;. If data set my_data_set.nc uses a 0
+to 360 longitude encoding then the operations are straightforward. If, on the
+other hand, the data set uses a -180 to 180 encoding then Ferret has to apply
+modulo-360 transformation to the reference. The modulo operation actually
+occurs in &quot;index space&quot; -- indices of less than one or greater than N are
+allowed inside Ferret -- which is why Ferret can easily make 2-world wide plots
+(e.g. X=0:720) and multi-year monthly climatologies (e.g. L=1:36).  In most
+cases, Ferret does modulo translations transparently. Your questions point to
+two special cases where it does not:
+
+Case 1) If a longitude axes is not &quot;modulo&quot; the modulo-360 translation will not
+be performed. A longitude axis is modulo only if
+     i) it is 360 degrees wide
+and ii) it is designated as modulo  (e.g. SET AXIS/MODULO or DEFINE
+AXIS/MODULO)
+In Emilio's question his data set extends only from &quot;X=80W(-80):45W(-45)&quot;.
+
+The solution in this case is to specify X in the encoding used by the data set,
+such as &quot;X=-65&quot; instead of &quot;X=65W&quot;.
+
+(Note: modulo longitude axes of less than 360 degrees are allowed, but are of
+interest only for special problems such as nymerical models with &quot;cyclic&quot;
+boundary conditions.)
+
+Case 2) If the modulo operation generates negative indices less than I=-100
+Ferret will issue the warning message that Stefan referred to. This occurs when
+the referenced X values are LESS than the longitude values encoded in the X
+axis of the data set. For example, if an axis runs from X=0 to 360 and we refer
+to X=-180 we will generate negative index references.
+
+The solution is to add a multiple of 360 to the X references. For example,
+X=180:540 is equivalent to X=-180:180 and will usually avoid negative
+subscripts.
+
+One additional case) When using /OVERLAY on a plotting command, the longitude
+encodings of the overlay must match the encodings of the base plot.
+
+Solution: Add or subtract a multiple of 360 to your longitudes as needed to
+ensure this. The same consideration may apply when SAVE/APPEND is used to add
+additional data to a NetCDF file.
+
+I hope this helps.
+
+	- steve
+
+=========================================
+
+On Apr 6,  3:04pm, Emilio Mayorga wrote:
+&gt; Subject: definition and use of W Longitude axis
+&gt; I've had some problems with the definition and use of West Longitudes
+&gt; since I started using Ferret. I assign negative values to the W
+&gt; longitude axis variable in my netcdf files. These sometimes create
+&gt; errors in Ferret.
+&gt;
+&gt; For instance, in the GUI I have to switch the Longitude option to use
+&gt; x-index instead, otherwise I only get error messages like this one:
+&gt;
+&gt;  **ERROR: illegal limits: PRECIP is not in the range X=65W
+&gt;           Axis extremes are X=80W(-80):45W(-45)
+&gt;
+&gt; In the command-line Ferret, I also encounter this problem sometimes,
+&gt; such as the following, where the first line works fine and the second
+&gt; results in the error message:
+&gt;
+&gt; yes? shade/t=0:83/y=20S:6N precip[x=-65]
+&gt; yes? shade/t=0:83/y=20S:6N precip[x=65W]
+&gt;  **ERROR: illegal limits: PRECIP is not in the range X=65W
+&gt;           Axis extremes are X=80W(-80):45W(-45)
+&gt;
+&gt; Lastly (as another illustration), I just noticed that for these
+&gt; variables that I've defined with negative values for W lon, using a
+&gt; region specifier such as x=290E will result in an error message when
+&gt; plotting variables (all my variables are defined in the window 80W to
+&gt; 55W, 2S to 6N).
+&gt;
+&gt; * Does anyone know what's going on? Should I switch to using positive
+&gt; values for W longitude in the netcdf longitude coordinate variables --
+&gt; that is, will that option result in fewer errors and inconsistencies?
+&gt;
+&gt; I appreciate any help on this.
+&gt;
+&gt; Emilio Mayorga
+&gt; ________________________________________________________________
+&gt; University of Washington
+&gt; School of Oceanography			emiliom@u.washington.edu
+&gt; Box 357940				ph. (206) 543-5334
+&gt; Seattle, WA  98195-7940	  USA		FAX (206) 685-3351
+&gt; <A  HREF="http://boto.ocean.washington.edu/staff_pages/emilio">http://boto.ocean.washington.edu/staff_pages/emilio</A>
+&gt;-- End of excerpt from Emilio Mayorga
+
+====================================================================
+
+On Apr 7, 10:44am, Stefan Rahmstorf wrote:
+&gt; Subject: Re: definition and use of W Longitude axis
+&gt; Hi,
+&gt;
+&gt; I have a similar problem with longitude axis as Emilio.
+&gt; When using
+&gt;
+&gt; set region/x=160e:160e
+&gt; shade temp[k=1]
+&gt;
+&gt; to make a global plot with the edges at 160e,
+&gt; I get a message &quot;Modulo axis index is too negative - this can crash ferret!&quot;
+&gt; although the plot appears to be o.k. I have not found a way of doing this
+&gt; without the error message; e.g. x=160:520 or x=200w:160e produces the
+&gt; same error.
+&gt; Only setting the plot edge at 180e or larger fixes the problem.
+&gt;
+&gt; Stefan
+&gt;
+&gt;
+&gt; --
+&gt;
+&gt; Dr Stefan Rahmstorf
+&gt; Potsdam Institute for Climate Impact Research (PIK)
+&gt; PO Box 60 12 03
+&gt; 14412 Potsdam
+&gt; Germany
+&gt;
+&gt; --
+&gt; E-mail:  rahmstorf@pik-potsdam.de
+&gt; Tel:     +49 331 2781 160  (home: +49 331 715429)
+&gt; Fax:     +49 331 2781 204  (home: +49 331 715429)
+&gt;-- End of excerpt from Stefan Rahmstorf
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00032" href="msg00032.html">Re: definition and use of W Longitude axis</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00029" href="msg00029.html">definition and use of W Longitude axis</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00030.html">Re: definition and use of W Longitude axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00032.html">Re: definition and use of W Longitude axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00030.html">Thread Prev</a>][<a href="msg00032.html">Thread Next</a>][<A HREF="threads.html#00031">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

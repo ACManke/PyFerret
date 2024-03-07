@@ -1,0 +1,305 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: NetCDF and Map Projections -->
+<!--X-From-R13: Xrerzl E Bny <wcnyN[WF.SRG> -->
+<!--X-Date: Thu, 20 Aug 1998 11:51:08 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.3.96.980820095422.25458A&#45;100000@NILE.mit.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>NetCDF and Map Projections</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00167.html">Thread Next</a>][<A HREF="threads.html#00166">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>NetCDF and Map Projections</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users Group &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>NetCDF and Map Projections</strong></li>
+<li><strong>From</strong>: <strong>Jeremy S Pal &lt;<A HREF="mailto:jpal@DOMAIN.HIDDEN">jpal@xxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 20 Aug 1998 14:51:01 -0400 (EDT)</li>
+<li>Reply-to: Jeremy S Pal &lt;<A HREF="mailto:jpal@DOMAIN.HIDDEN">jpal@xxxxxxx</A>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+  Hi -
+
+Thanks for the prompt and helpful reply to my first question regarding
+projected grids.
+
+I am trying to display some data that are on a rotated Mercator grid.  The
+data are in a NetCDF format where LAT and LON are defined on the rotated
+pole.  I have written a script (mp_rotmer.jnl) that rotates the 
+coordinates (LAT and LON) to the non-rotated pole (see below).  This 
+script seems to run fine, in that it produces the proper latitudes and
+longitudes associated with each data point.  However, there are a few
+things regarding this procedure that I haven't been able to figure out:
+
+(1) Is there a way to have my script pull the rotated data directly from
+    my NetCDF file?  Currently, I have to explicitly define MP_X and MP_Y.
+
+(2) My NetCDF file references a &quot;constants_file_name&quot; that lists important
+    mapping stuff (e.g. pole lat and lon).  Can the info from this file be
+    obtained so that I can avoid having to explicitly enter in the pole
+    latitide and longitude of the grid?
+
+(3) Is there a way to display the data in its raw form (Mercator Grid)
+    and overlay a Mercator Map on top of it rather than project the
+    raw data onto the map?  In other words, I want to be able to use the
+    MP_LAND script instead of the standard LAND script.
+
+(4) Is there a way to display state and country political boundaries?
+
+I have attached mp_rotmer.jnl and the header info (plus lat, lon, lev, and
+time info) from my NetCDF file to help answer these questions.
+
+
+  Thank you,
+
+  - Jeremy
+
+
+
+******* mp_rotmer.jnl *****************************************
+let mp_x = -32.25+0.5*(i[i=1:129]-1)  &lt;==  I WOULD LIKE TO AVOID HAVING
+let mp_y = -22.42+0.5*(j[j=1:80]-1)        TO SPECIFY THESE DIRECTLY
+                                           SINCE THE INFO EXISTS IN THE
+                                           NetCDF FILE.
+! let mp_x = LON    &lt;==  THESE DO NOT SEEM TO PULL THE LAT/LON INFO FROM
+! let mp_y = LAT         THE NetCDF FILE.
+! let mp_x = X
+! let mp_y = Y
+
+let PLAT = 50       &lt;==  CAN THESE BE READ FROM MY NetCDF CONSTANTS FILE?
+let PLON = 85
+
+let Pi = 3.14159265
+let deg2rad = Pi / 180.0
+let rad2deg = 180.0 / Pi
+
+let coslatpol = cos(deg2rad*PLAT)
+let sinlatpol = sin(deg2rad*PLAT)
+let lonpol = deg2rad*PLON
+
+let mp_lats = deg2rad * mp_y
+let mp_lons = deg2rad * mp_x
+let arg =  coslatpol*cos(mp_lats)*cos(mp_lons) + sinlatpol*sin(mp_lats)
+let y_page = rad2deg*asin(arg)
+
+let arg1a = sin(lonpol)
+let arg1b = coslatpol*sin(mp_lats) - sinlatpol*cos(mp_lons)*cos(mp_lats)
+let arg1c = cos(lonpol)*sin(mp_lons)*cos(mp_lats)
+let arg1 = arg1a*arg1b - arg1c
+let arg2a = cos(lonpol)
+let arg2b = coslatpol*sin(mp_lats) - sinlatpol*cos(mp_lons)*cos(mp_lats)
+let arg2c = sin(lonpol)*sin(mp_lons)*cos(mp_lats)
+let arg2  = arg2a*arg2b + arg2c
+let x_page = rad2deg*atan2(arg1,arg2)
+
+
+******* ncdump -h OGRUN19.NC ******************
+netcdf OGRUN19 {
+dimensions:
+        lon = 129 ;
+        lat = 80 ;
+        level = 14 ;
+        time = UNLIMITED ; // (149 currently)
+variables:
+        float lon(lon) ;
+                lon:long_name = &quot;Longitude&quot; ;
+                lon:units = &quot;degrees_east&quot; ;
+                lon:actual_range = -32.25015f, 32.25015f ;
+        float lat(lat) ;
+                lat:long_name = &quot;Latitude&quot; ;
+                lat:units = &quot;degrees_north&quot; ;
+                lat:actual_range = -22.41909f, 17.5811f ;
+        float level(level) ;
+                level:long_name = &quot;Height_Index&quot; ;
+                level:units = &quot;level&quot; ;
+                level:actual_range = 1050.f, 0.f ;
+        double time(time) ;
+                time:long_name = &quot;Time&quot; ;
+                time:units = &quot;hours since 1-1-1 00:00:0.0&quot; ;
+                time:actual_range = 17465760., 17466648. ;
+        short u(time, level, lat, lon) ;
+                u:long_name = &quot;Zonal Wind&quot; ;
+                u:units = &quot;m/s&quot; ;
+                u:missing_value = -9.99e+32f ;
+                u:add_offset = 0.f ;
+                u:scale_factor = 0.003051804f ;
+        short v(time, level, lat, lon) ;
+                v:long_name = &quot;Meridional Wind&quot; ;
+                v:units = &quot;m/s&quot; ;
+                v:missing_value = -9.99e+32f ;
+                v:add_offset = 0.f ;
+                v:scale_factor = 0.003051804f ;
+        short tk(time, level, lat, lon) ;
+                tk:long_name = &quot;Temperature&quot; ;
+                tk:units = &quot;K&quot; ;
+                tk:missing_value = -9.99e+32f ;
+                tk:add_offset = 255.f ;
+                tk:scale_factor = 0.002899214f ;
+        short qd(time, level, lat, lon) ;
+                qd:long_name = &quot;Mixing Ratio&quot; ;
+                qd:units = &quot;kg/kg&quot; ;
+                qd:missing_value = -9.99e+32f ;
+                qd:add_offset = 0.025f ;
+                qd:scale_factor = 7.629511e-07f ;
+        short ps(time, lat, lon) ;
+                ps:long_name = &quot;Surface Pressure&quot; ;
+                ps:units = &quot;hPa&quot; ;
+                ps:missing_value = -9.99e+32f ;
+                ps:add_offset = 750.f ;
+                ps:scale_factor = 0.01373312f ;
+        short Ts(time, lat, lon) ;
+                Ts:long_name = &quot;Surface Temperature&quot; ;
+                Ts:units = &quot;C&quot; ;
+                Ts:missing_value = -9.99e+32f ;
+                Ts:add_offset = 275.f ;
+                Ts:scale_factor = 0.002288853f ;
+        short rc(time, lat, lon) ;
+                rc:long_name = &quot;Convective Rainfall&quot; ;
+                rc:units = &quot;cm&quot; ;
+                rc:missing_value = -9.99e+32f ;
+                rc:add_offset = 2500.f ;
+                rc:scale_factor = 0.07629511f ;
+        short rn(time, lat, lon) ;
+                rn:long_name = &quot;Non-Conv Rainfall&quot; ;
+                rn:units = &quot;cm&quot; ;
+                rn:missing_value = -9.99e+32f ;
+                rn:add_offset = 2500.f ;
+                rn:scale_factor = 0.07629511f ;
+        short zpbl(time, lat, lon) ;
+                zpbl:long_name = &quot;PBL Height&quot; ;
+                zpbl:units = &quot;m&quot; ;
+                zpbl:missing_value = -9.99e+32f ;
+                zpbl:add_offset = 2500.f ;
+                zpbl:scale_factor = 0.07629511f ;
+
+// global attributes:
+                :domxmin = -32.25015f ;
+                :domxmax = 32.25015f ;
+                :domymin = -22.41909f ;
+                :domymax = 17.5811f ;
+                :domzmin = 1050.f ;
+                :domzmax = 0.f ;
+                :constants_file_name = &quot;tmp &quot; ;
+
+data:
+
+ lon = -32.25015, -31.74624, -31.24234, -30.73843, -30.23452, -29.73061, 
+    -29.2267, -28.7228, -28.21889, -27.71498, -27.21107, -26.70716, 
+    -26.20325, -25.69935, -25.19544, -24.69153, -24.18762, -23.68371, 
+    -23.17981, -22.6759, -22.17199, -21.66808, -21.16417, -20.66026, 
+    -20.15636, -19.65245, -19.14854, -18.64463, -18.14072, -17.63682, 
+    -17.13291, -16.629, -16.12509, -15.62118, -15.11728, -14.61337, 
+    -14.10946, -13.60555, -13.10164, -12.59773, -12.09383, -11.58992, 
+    -11.08601, -10.5821, -10.07819, -9.574286, -9.070377, -8.566469, 
+    -8.062561, -7.558652, -7.054744, -6.550835, -6.046926, -5.543018, 
+    -5.039109, -4.535201, -4.031292, -3.527383, -3.023475, -2.519566, 
+    -2.015657, -1.511749, -1.00784, -0.5039315, -2.288818e-05, 0.5038857, 
+    1.007794, 1.511703, 2.015612, 2.51952, 3.023429, 3.527338, 4.031246, 
+    4.535155, 5.039063, 5.542972, 6.046881, 6.550789, 7.054698, 7.558607, 
+    8.062515, 8.566423, 9.070332, 9.57424, 10.07815, 10.58206, 11.08596, 
+    11.58987, 12.09378, 12.59769, 13.1016, 13.6055, 14.10941, 14.61332, 
+    15.11723, 15.62114, 16.12505, 16.62895, 17.13286, 17.63677, 18.14068, 
+    18.64459, 19.14849, 19.6524, 20.15631, 20.66022, 21.16413, 21.66804, 
+    22.17194, 22.67585, 23.17976, 23.68367, 24.18758, 24.69148, 25.19539, 
+    25.6993, 26.20321, 26.70712, 27.21103, 27.71493, 28.21884, 28.72275, 
+    29.22666, 29.73057, 30.23447, 30.73838, 31.24229, 31.7462, 32.25011 ;
+
+ lat = -22.41909, -21.91276, -21.40643, -20.9001, -20.39376, -19.88743, 
+    -19.3811, -18.87477, -18.36843, -17.8621, -17.35577, -16.84944, 
+    -16.34311, -15.83677, -15.33044, -14.82411, -14.31778, -13.81145, 
+    -13.30512, -12.79879, -12.29245, -11.78612, -11.27979, -10.77346, 
+    -10.26713, -9.760797, -9.254465, -8.748134, -8.241802, -7.735471, 
+    -7.229139, -6.722808, -6.216476, -5.710145, -5.203814, -4.697482, 
+    -4.191151, -3.684819, -3.178488, -2.672156, -2.165825, -1.659493, 
+    -1.153162, -0.6468305, -0.140499, 0.3658325, 0.872164, 1.378495, 
+    1.884827, 2.391158, 2.89749, 3.403821, 3.910153, 4.416484, 4.922816, 
+    5.429147, 5.935479, 6.44181, 6.948142, 7.454473, 7.960804, 8.467136, 
+    8.973468, 9.479799, 9.986131, 10.49246, 10.99879, 11.50513, 12.01146, 
+    12.51779, 13.02412, 13.53045, 14.03678, 14.54311, 15.04945, 15.55578, 
+    16.06211, 16.56844, 17.07477, 17.58111 ;
+ level = 0.995, 0.98, 0.95, 0.895, 0.815, 0.72, 0.615, 0.51, 0.405, 0.3, 
+    0.21, 0.135, 0.07, 0.02 ;
+
+ time = 17465760, 17465766, 17465772, 17465778, 17465784, 17465790,
+17465796, 
+    17465802, 17465808, 17465814, 17465820, 17465826, 17465832, 17465838, 
+    17465844, 17465850, 17465856, 17465862, 17465868, 17465874, 17465880, 
+    17465886, 17465892, 17465898, 17465904, 17465910, 17465916, 17465922, 
+    17465928, 17465934, 17465940, 17465946, 17465952, 17465958, 17465964, 
+    17465970, 17465976, 17465982, 17465988, 17465994, 17466000, 17466006, 
+    17466012, 17466018, 17466024, 17466030, 17466036, 17466042, 17466048, 
+    17466054, 17466060, 17466066, 17466072, 17466078, 17466084, 17466090, 
+    17466096, 17466102, 17466108, 17466114, 17466120, 17466126, 17466132, 
+    17466138, 17466144, 17466150, 17466156, 17466162, 17466168, 17466174, 
+    17466180, 17466186, 17466192, 17466198, 17466204, 17466210, 17466216, 
+    17466222, 17466228, 17466234, 17466240, 17466246, 17466252, 17466258, 
+    17466264, 17466270, 17466276, 17466282, 17466288, 17466294, 17466300, 
+    17466306, 17466312, 17466318, 17466324, 17466330, 17466336, 17466342, 
+    17466348, 17466354, 17466360, 17466366, 17466372, 17466378, 17466384, 
+    17466390, 17466396, 17466402, 17466408, 17466414, 17466420, 17466426, 
+    17466432, 17466438, 17466444, 17466450, 17466456, 17466462, 17466468, 
+    17466474, 17466480, 17466486, 17466492, 17466498, 17466504, 17466510, 
+    17466516, 17466522, 17466528, 17466534, 17466540, 17466546, 17466552, 
+    17466558, 17466564, 17466570, 17466576, 17466582, 17466588, 17466594, 
+    17466600, 17466606, 17466612, 17466618, 17466624, 17466630, 17466636, 
+    17466642, 17466648 ;
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00165.html">log scale (A quick one!)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00167.html">Conditionals in GO scripts?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00167.html">Thread Next</a>][<A HREF="threads.html#00166">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

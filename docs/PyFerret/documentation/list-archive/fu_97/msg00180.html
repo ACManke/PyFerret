@@ -1,0 +1,166 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Missing values -->
+<!--X-From-R13: "[nex O. Hrefpuryy" <irefpuryNnznebar.UETQ.@OEO.UAH> -->
+<!--X-Date: Mon, 27 Oct 1997 06:10:19 &#45;0800 -->
+<!--X-Message-Id: 9710270912.ZM2012@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 199710270500.KAA04066@ren.ren.nic.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Missing values</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00179.html">Thread Prev</a>][<a href="msg00211.html">Thread Next</a>][<A HREF="threads.html#00180">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Missing values</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:shenoi@DOMAIN.HIDDEN">shenoi@xxxxxxxxxxxxxxxx</A>, <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Missing values</strong></li>
+<li><strong>From</strong>: <strong>&quot;Mark A. Verschell&quot; &lt;<A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 27 Oct 1997 09:12:10 -0500</li>
+<li>In-reply-to: shenoi@csnio.ren.NIC.IN       &quot;Missing values&quot; (Oct 27, 10:30am)</li>
+<li>References: &lt;<a href="msg00179.html">199710270500.KAA04066@ren.ren.nic.in</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Oct 27, 10:30am, shenoi@csnio.ren.NIC.IN wrote:
+&gt; I came across a strange problem when I used the 'IF' condition to pick the
+&gt; zonal and meridional components of a vector based on the number of
+&gt; observations available in a grid.  In one case the vector has a zero value
+&gt; for one component (ie. v=0.0). In this case when I used the 'IF' condition,
+&gt; it reports v as missing rather than 0.0. The following will explain the
+&gt; problem better (see the values reported for 16-Sep, column 2 &amp; 5).
+&gt;
+&gt; Is there any way out for this problem? I want 0.0 when the values are zeros.
+&gt; Not as 'missing value'. When I compute the annual mean (using @ave)
+&gt; I get umean with 12 values and vmean with 11 values rather than 12 values
+&gt; which is incorrect.
+&gt;-- End of excerpt from shenoi@csnio.ren.NIC.IN
+
+Satheesh-
+
+I am not certain exactly what is going on here, I tried to replicate it by
+copying your data and definitions, but I got 0.00 for V1 on 16-SEP.
+
+This indicates to me that somewhere in the chain of variable definitions you
+are including something that IS undefined. I would suggest tracking this down
+by looking specifically at the V1 for 16-SEP, and then looking at all the V
+values that go into that - maybe one of the is undefined. I have appended my
+version of your data, and the .jnl file I used in hopes that it will help.
+
+-Mark
+
+sh.dat
+------
+  -13.0 -13.00  20.00
+  -61.0  -3.00  33.00
+    7.0   6.00  34.00
+  106.0 -13.00  24.00
+  146.0 -22.00  66.00
+   60.0 -18.00  51.00
+   11.0 -17.00  67.00
+   48.0 -18.00  48.00
+   67.0   0.00  42.00
+   83.0  32.00  36.00
+  150.0 -10.00  40.00
+   62.0  -2.00  53.00
+
+
+sh.jnl
+------
+define axis/t=&quot;16-jan&quot;:&quot;16-dec&quot;/np=12 tsh
+define grid/t=tsh gsh
+file/var=u,v,nobs/grid=gsh sh.dat
+let u1 = IF(NOBS GT 10) THEN U
+let v1 = IF(NOBS GT 10) THEN V
+let nobs1 = IF(NOBS GT 10) THEN NOBS
+list/l=1:12 u,v,nobs,u1,v1,nobs
+
+The output of the list is:
+--------------------------
+             DATA SET: ./sh.dat
+             TIME: 01-JAN      00:00:05 to 31-DEC      05:2
+ Column  1: U
+ Column  2: V
+ Column  3: NOBS
+ Column  4: U1 is IF(NOBS GT 10) THEN U
+ Column  5: V1 is IF(NOBS GT 10) THEN V
+ Column  6: NOBS
+                      U      V   NOBS     U1     V1   NOBS
+16-JAN      /  1:  -13.0 -13.00  20.00  -13.0 -13.00  20.00
+15-FEB      /  2:  -61.0  -3.00  33.00  -61.0  -3.00  33.00
+16-MAR      /  3:    7.0   6.00  34.00    7.0   6.00  34.00
+16-APR      /  4:  106.0 -13.00  24.00  106.0 -13.00  24.00
+16-MAY      /  5:  146.0 -22.00  66.00  146.0 -22.00  66.00
+16-JUN      /  6:   60.0 -18.00  51.00   60.0 -18.00  51.00
+16-JUL      /  7:   11.0 -17.00  67.00   11.0 -17.00  67.00
+16-AUG      /  8:   48.0 -18.00  48.00   48.0 -18.00  48.00
+15-SEP      /  9:   67.0   0.00  42.00   67.0   0.00  42.00
+16-OCT      / 10:   83.0  32.00  36.00   83.0  32.00  36.00
+15-NOV      / 11:  150.0 -10.00  40.00  150.0 -10.00  40.00
+16-DEC      / 12:   62.0  -2.00  53.00   62.0  -2.00  53.00
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-286-2027  Fax: 301-286-1761    Greenbelt, MD 20771
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00179" href="msg00179.html">Missing values</a></strong>
+<ul><li><em>From:</em> shenoi</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00179.html">Missing values</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00211.html">missing values</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00179.html">Thread Prev</a>][<a href="msg00211.html">Thread Next</a>][<A HREF="threads.html#00180">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

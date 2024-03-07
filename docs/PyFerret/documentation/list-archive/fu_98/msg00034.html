@@ -1,0 +1,292 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: FFT -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Tue, 17 Feb 1998 13:08:20 &#45;0800 -->
+<!--X-Message-Id: 9802171308.ZM7552@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: FFT</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00032.html">Thread Prev</a>][<a href="msg00033.html">Thread Next</a>][<A HREF="threads.html#00034">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: FFT</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ilana Wainer &lt;<A HREF="mailto:wainer@DOMAIN.HIDDEN">wainer@xxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: FFT</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Tue, 17 Feb 1998 13:07:59 -0800</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Encoding: 2 TEXT BOUNDARY, 56 MESSAGE, 2 TEXT BOUNDARY, 126 MESSAGE, 2 TEXT BOUNDARY, 41 MESSAGE, 3 TEXT BOUNDARY</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Feb 17, 11:45am, Ilana Wainer wrote:
+&gt; Subject: FFT
+&gt;
+&gt; Anybody out there has a &quot;go tool&quot; that can calculate FFT in FERRET?
+&gt;
+&gt; thanks
+&gt;
+&gt; Ilana Wainer
+&gt;
+&gt;-- End of excerpt from Ilana Wainer
+
+===============================================
+
+Hi Ilana,
+
+The external function framework that will be part of Ferret version 5 will
+provide FFT's. But that is then ... here is are some Ferret scripts that you
+can use now as a stop-gap.
+
+The scripts work in conjunction with the public domain GMT package, so you must
+have GMT installed on your system (<A  HREF="http://www.soest.hawaii.edu/wessel/gmt.html">http://www.soest.hawaii.edu/wessel/gmt.html</A>)
+
+The Ferret script names are
+
+	gmt_power	- computes the power spectrum
+and	overlay_bars	- graphical tool for error bars
+
+Instructions on using the routines are available from inside Ferret using the
+commands
+
+	yes? GO/HELP gmt_power
+and
+	yes? GO/HELP overlay_bars
+
+Sample usage	- plot power spectrum of Navy winds at X=180, Y=0
+
+ yes? SET DATA monthly_navy_winds
+ yes? GO gmt_power uwnd[x=180,y=0] uwnd x180y0 64
+ yes? PLOT x180y0_power
+ yes? GO overlay_bars x180y0_power  x180y0_error red
+
+	cheers - steve
+
+P.S. Instructions: Copy the two attached files,
+gmt_power.jnl and overlay_bars.jnl, into the directory $FER_DIR/go.
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+</pre>
+<pre>
+\cancel mode verify
+! gmt_power.jnl 10/96
+! update 10/23 - display the GMT commend that is issued
+
+! Description: define a variable for the power spectrum of a time series
+
+! Output: variable definitions for &quot;out_name&quot;.power and &quot;out_name&quot;.error
+
+! Usage:	            1        2        3         4
+!         GO gmt_power my_T_series grid  [out_name] [seg_len]
+
+! Arguments:
+!  my_T_series - variable or expression for time series
+!		 (should not depend on SET REGION/T=...)
+!
+!  grid		The name of the grid upon which your time series is defined
+!		   (If computing the power spectrum of a file variable you
+!			may simply use the variable name here.)  
+!				[default=&quot;unknown&quot;]
+!
+!  out_name   - name stem for the resultant variables
+!			        [default=&quot;gmt&quot;]
+!		    use this argument especially when it is necessary to
+!		    work with multiple time series simultaneously
+!
+!  seg_len	seg_len (&quot;-S&quot; in GMT spectrum1d man pages)
+!		  [default=largest power of 2 less than 1/2 Npoints]
+!	  ... a radix-2 number of samples per window for ensemble
+!	  averaging.  The smallest frequency estimated is 1.0/(segment_size *
+!	  dt), while the largest is 1.0/(2 * dt).  One standard error in power
+!	  spectral density is approximately 1.0 / sqrt(n_data / segment_size),
+!	  so if segment_size = 256, you need 25,600 data to get a one standard
+!	  error bar of 10%.
+
+! Example: power spectrum of zonal wind at Equator, dateline
+
+!	yes? SET DATA monthly_navy_winds
+!	yes? GO gmt_power uwnd[x=180,y=0] uwnd x180y0 64
+!	yes? PLOT x180y0_power
+!	yes? GO overlay_bars x180y0_power  x180y0_error red
+
+! See &quot;man spectrum1d&quot; for detailed explanations.
+
+! Note -- this tool:
+!  - computes a power spectrum at a single geographical location, only
+!  - CANCELs the current REGION
+!  - cannot accept missing data (gaps) in the time series
+!  For details on the FFT calculation type &quot;man spectrum1d&quot; at the Unix prompt.
+
+! check for valid time series - must exist, must be a simple 1D time series
+query/ignore $1%&lt;Usage: GO gmt_power my_T_series grid [out_name] [seg-len]%
+query/ignore $2%&lt;Usage: GO gmt_power my_T_series grid [out_name] [seg-len]%
+DEFINE SYMBOL psgmt_shape `$1,return=shape`
+IF ($psgmt_shape&quot;|T&gt;0|*&gt;1&quot;) THEN
+   SAY You must pass a simple time series to this routine
+   SAY Your argument of $1 is ($psgmt_shape) dimensioned
+   CANNOT_CONTINUE using $1		! deliberate syntax error
+ENDIF 
+
+! abort if the time series contains missing values
+LET/quiet psgmt_check = $1
+IF `psgmt_check[l=@nbd]` THEN
+   SAY &gt;&gt;&gt; GMT FFT routines cannot handle gaps in data
+   SAY &gt;&gt;&gt; Expression contains `psgmt_check[l=@nbd]` missing values: $1
+   EXIT
+ENDIF
+
+! determine the &quot;segment length&quot; (if not passed as an argument)
+IF $4&quot;0&quot; THEN
+  DEFINE SYMBOL psgmt_seg $4
+ELSE
+! ... greatest power of 2 less than one half of the time series length
+  DEFINE SYMBOL psgmt_Nt  `$1,return=lsize`
+  DEFINE SYMBOL psgmt_seg `2^(INT(LOG(($psgmt_Nt))/LOG(2))-1)`
+  SAY Using segment length of ($psgmt_seg)
+ENDIF
+
+! set up symbols for variable names, and file names
+DEFINE SYMBOL psgmt_var     $3&quot;gmt&quot;
+DEFINE SYMBOL psgmt_dat     ($psgmt_var).tseries
+
+! determine delta T for the time series (in days)
+LET/QUIET gmt_T_one = T[G=$2]/T[G=$2]
+DEFINE SYMBOL psgmt_days `gmt_T_one[l=@din]/(gmt_T_one[l=@ngd]*60*60*24)`
+CANCEL VARIABLE gmt_T_one
+
+! clean up files after last use
+SPAWN rm -f ($psgmt_dat)
+
+! write the indicated time series data into a new file
+list/file=($psgmt_dat)/format=(1PG15.6)/nohead $1
+
+! compute the power spectrum using GMT routine
+SAY &gt;&gt;&gt; Using GMT command: spectrum1d ($psgmt_dat) -N($psgmt_var) -S($psgmt_seg) -D($psgmt_days)
+SPAWN spectrum1d ($psgmt_dat) -N($psgmt_var) -S($psgmt_seg) -D($psgmt_days)
+
+! read the frequency axis from the resulting spectrum
+SET DATA/SAVE
+CANCEL REGION
+file/var=freq ($psgmt_var).xpower
+DEFINE AXIS/T=`freq[i=1]`:`freq[i=@max]`/npoints=`freq[i=@ngd]`/units=&quot;1/days&quot; ($psgmt_var)freq
+define grid/T=($psgmt_var)freq ($psgmt_var)freq
+CANCEL DATA ($psgmt_var).xpower 
+
+! define variables for the results: power series and error
+file/grid=($psgmt_var)freq/var=-,power,error ($psgmt_var).xpower 
+
+! set titles and units for resultant variables
+LET/QUIET ($psgmt_var)_power = power[d=($psgmt_var).xpower]
+SET VARIABLE/TITLE=&quot;Power Spectrum of $1 &quot; ($psgmt_var)_power
+LET/QUIET ($psgmt_var)_error = error[d=($psgmt_var).xpower]
+SET VARIABLE/TITLE=&quot;Spectral Error of $1 &quot; ($psgmt_var)_error
+
+! let the user know what the power spectrum variables are
+SAY &gt;&gt;&gt; Power spectrum is  ($psgmt_var)_power   (try PLOT ($psgmt_var)_power )
+SAY &gt;&gt;&gt; Spectral error is  ($psgmt_var)_error
+
+! clean up
+CANCEL SYMBOL psgmt*
+SET DATA/RESTORE
+SET MODE/LAST VERIFY
+</pre>
+<pre>
+\CANCEL MODE VERIFY
+! overlay_bars.jnl 10/96
+
+! DESCRIPTION: Overlay error bars on a time series (or frequency) plot
+
+! This is a simple routine to overlay error bars. It is applicable only to
+! T axis plots and it creates only a simple vertical line (no I bar).
+
+! A more sophisticated script could be both faster and higher functioning.
+
+! Usage:                   1        2      3
+!       GO overlay_bars spectrum errors [color]
+
+! Arguments:
+
+!  spectrum - 1D field to be plotted (on T axis)
+!
+!  errors   - a 1D field of errors (bars from spectrum-error to spectrum+error)
+!
+!  color    - color of the error bars
+
+! check color parameter
+DEFINE SYMBOL ob_color $3&quot;1|1|2|3|4|5|6|7|8|9|10|11|12|13|14|black&gt;1|red&gt;2|green&gt;3|blue&gt;4|&lt;Unknown color argument&quot;
+
+! define a 2-point vertical line with this variable
+LET/QUIET kk=k		! to work around a known bug in Ferret V4.4
+LET/QUIET vbar = if kk eq 1 then (-1)*$2 else $2
+
+! error bar plot
+REPEAT/L=`$1,return=lstart`:`$1,return=lend` PLOT/OVER/VS/LINE=($ob_color)/K=1:2/NOLAB $1*kk*0+T,$1+vbar
+
+! clean up
+CANCEL REGION/l
+CANCEL VARIABLE kk, vbar
+CANCEL SYMBOL ob_color
+SET MODE/LAST VERIFY
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00032.html">FFT</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00033.html">Powermac linux ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00032.html">Thread Prev</a>][<a href="msg00033.html">Thread Next</a>][<A HREF="threads.html#00034">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

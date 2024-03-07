@@ -1,0 +1,203 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Masking fields by topography -->
+<!--X-From-R13: R Eunaxne <funaxneNqneln.avb.bet> -->
+<!--X-Date: Mon, 23 Nov 1998 20:34:02 &#45;0800 -->
+<!--X-Message-Id: Pine.SGI.3.94.981124093411.6205A&#45;100000@darya.nio.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3659C61B.3C9DAD28@oce.orst.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Masking fields by topography</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00239.html">Thread Prev</a>][<a href="msg00241.html">Thread Next</a>][<A HREF="threads.html#00240">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Masking fields by topography</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Masking fields by topography</strong></li>
+<li><strong>From</strong>: <strong>D Shankar &lt;<A HREF="mailto:shankar@DOMAIN.HIDDEN">shankar@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 24 Nov 1998 09:37:45 +0530 (IST)</li>
+<li>In-reply-to: &lt;<a href="msg00239.html">3659C61B.3C9DAD28@oce.orst.edu</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+The GO script attached below is used by us to plot masks for the Levitus
+climatologies.  A variable MASK is defined in the dataset and made use of
+in the script.  It works for both horizontal and vertical sections.
+
+D. Shankar                           Ph. (O): [91](832) 22 6253/4/5/6
+Physical Oceanography Division,                         * 4400/4224
+National Institute of Oceanography       (R): [91](832) 23 8208    
+Dona Paula,                          Fax    : [91](832) 22 3340/1360/9102
+Goa 403 004,                         email  : shankar@csnio.ren.nic.in
+India.                                        shankar@darya.nio.org
+
+_______________________________________________________________________
+! NOTE: for a contour plot in the XY plane BELOW the surface, you MUST 
+! supply the first argument to this GO script.
+! usage: GO fland_levitus k=N  (where N is the required level)
+! or     GO fland_levitus z=Z  (where Z is the required depth)
+!        GO fland_levitus      (in other cases)
+\cancel mode verify
+! fland_levitus.jnl - a land mask for the LEVITUS dataset (overlay or &quot;basemap&quot;)
+! 1/97
+
+! Description: Plot/overlay an an area-filled continental map using LEVITUS mask
+
+! usage:               arg1      arg2        arg3         arg4      arg5
+!  GO fland_levitus [z=lo:hi] [palette] [overlay_style] [x=lo:hi] [y=lo:hi]
+
+! arg1  - depth limits - specify as for any FERRET depth range
+!                        use either k=*:* or z=*:*
+! arg2  - palette - may be any palette on your system.  Normally solid colors
+!	           like black, gray,red, etc. (see Fpalette '*') default=gray
+! arg3  - overlay_style - &quot;basemap&quot;, &quot;transparent&quot;, or &quot;overlay&quot; (default)
+! arg4  - longitude limits - specify as for any FERRET longitude range
+! arg5  - latitude  limits - specify as for any FERRET latitude  range
+ 
+! examples:
+!	  GO fland_levitus 	          ! default - color gray, overlay
+!       GO fland_levitus k=1            ! MASK for surface
+!	  GO fland_levitus k=1 red        ! palette red.spk, overlay
+!	  GO fland_levitus z=0:1000 red basemap ! color red, basemap
+!	  GO fland_levitus z=1000 gray transparent ! color gray, transparent mask
+!       GO fland k=1 gray overlay x=30e:100w y=20s:20n
+
+! Note : The transparent option creates a see-through overlay land mask
+
+! check the overlay/basemap/transparent option
+query/ignore $3%overlay|overlay|basemap|transparent&lt;3rd argument of GO fland_levitus must be &quot;overlay&quot;, &quot;basemap&quot;, or &quot;transparent&quot;%
+
+! save data set
+set data/save
+
+! save region
+define region/default levitus
+
+! set data for MASK
+use levitus_mask.nc
+
+set region/l=1
+
+shade/nolab/nokey/levels=&quot;(-0.5,0.5,1.0)&quot;$1&quot; |*&gt;/*&quot;/pal=$2&quot;gray&quot;$3&quot;/overlay|basemap&gt; |*&gt;/overlay&quot;$4&quot; |*&gt;/*&quot;$5&quot; |*&gt;/*&quot; $3&quot;MASK|transparent&gt;if mod(i+j,2) eq 0 then MASK|*&gt;MASK&quot;
+
+! cancel MASK data set
+cancel data levitus_mask.nc
+
+! restore region
+set region levitus
+
+! restore original data set
+set data/restore
+
+set mode/last verify
+_______________________________________________________________________
+
+
+On Mon, 23 Nov 1998, David Oxilia wrote:
+
+&gt; Dear Ferreters,
+&gt; 
+&gt; One of the things I've always had trouble doing with ferret is
+&gt; masking a field to be plotted as a section (ie, lat or lon vs
+&gt; depth) by bottom topography. Say I want to plot a section of
+&gt; sigma-0. I read in my data and generate the plot. However, I
+&gt; then want to overlay a plot of the bathymetry.
+&gt; 
+&gt; How does one do this? 
+&gt; 
+&gt; It is straight forward to simply draw a line plot of depth vs
+&gt; latitude say over the sigma-0 field. There is a problem though;
+&gt; that is, the line plot simply places a line over the field 
+&gt; without covering up (in a uniform color) the underlying colored
+&gt; field. In essence if there was a means to do &quot;filled curves&quot;
+&gt; this would solve the problem. One would say something like:
+&gt; 
+&gt; yes? plot/vs/over/yfilled/nolab/line=1 lat,zb
+&gt; 
+&gt; where the yfilled would instruct to fill the curve down to the
+&gt; &quot;y-axis&quot; (defined by the grid) in the color specified by &quot;line&quot;.
+&gt; Alternatively, if one could mask the field by the topography
+&gt; with something like:
+&gt; 
+&gt; yes? let masked_field = if (field_depth lt zb) then field else missing
+&gt; 
+&gt; This would allow one to contour the field with the lower bound
+&gt; masked off by the topographic height. One could then plot the
+&gt; topography line to make it stand out. This approach limits the 
+&gt; topography &quot;color&quot; to be white though which is not entirely 
+&gt; satisfactory.
+&gt; 
+&gt; Any suggestions?
+&gt; 
+&gt; David.
+&gt; 
+&gt; *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+&gt; David Oxilia			Tel: (541) 737-2368
+&gt; COAS:Oregon State University	Fax: (541) 737-2064
+&gt; Ocean Admin. Bldg. 104		WWW: <A  HREF="http://www.oce.orst.edu/po">http://www.oce.orst.edu/po</A>
+&gt; Corvallis, OR 97331-5503	Email: oxilia@kundun.oce.orst.edu
+&gt; *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00239" href="msg00239.html">Masking fields by topography</a></strong>
+<ul><li><em>From:</em> David Oxilia</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00239.html">Masking fields by topography</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00241.html">Masking fields by topography</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00239.html">Thread Prev</a>][<a href="msg00241.html">Thread Next</a>][<A HREF="threads.html#00240">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

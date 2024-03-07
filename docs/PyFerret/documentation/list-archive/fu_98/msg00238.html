@@ -1,0 +1,146 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Problem with missing values -->
+<!--X-From-R13: Evzba Sinaf <fvzbaNznguf.hafj.SRG.OG> -->
+<!--X-Date: Thu, 19 Nov 1998 15:38:12 &#45;0800 -->
+<!--X-Message-Id: 199811192338.KAA14954@alpha.maths.unsw.EDU.AU -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Problem with missing values</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00236.html">Thread Prev</a>][<a href="msg00239.html">Thread Next</a>][<A HREF="threads.html#00238">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Problem with missing values</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A> (Ferret Users)</strong></li>
+<li><strong>Subject</strong>: <strong>Problem with missing values</strong></li>
+<li><strong>From</strong>: <strong>Simon Evans &lt;<A HREF="mailto:simon@DOMAIN.HIDDEN">simon@xxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 20 Nov 1998 10:38:38 +1100 (EST)</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+    Dear Ferret users,
+
+    When setting up a NetCDF file for ocean model (POM) output, I try
+ to assign a special value to land cells by setting the _FillValue or
+ missing_value attribute.
+
+    For example, in the case of the variable EL (sea surface elevation):
+
+        call NCAPTC(CDFID,ELID,'long_name',NCCHAR,9,'Elevation',IRET)
+        call NCAPTC(CDFID,ELID,'units',NCCHAR,6,'meters',IRET)
+  ---&gt;  call NCAPT(CDFID,ELID,'missing_value',NCDOUBLE,1,SPVAL,IRET)
+
+ where SPVAL is -999.0 or some such number. Then when writing the
+ variable to the CDF file, the code fragment is:
+
+        do j = 1,JM
+         do i = 1,IM
+           if (FSM(i,j).eq.0.0) then
+             TMP2D(i,j) = SPVAL      ! Land cell identifier
+           else
+             TMP2D(i,j) = EL(i,j)
+           endif
+          enddo
+        enddo
+
+        ELID = NCVID(CDFID,'EL',IRET)
+        call NCVPT(CDFID,ELID,CORNER,EDGES,TMP2D,IRET)
+
+  where FSM is a mask which is zero on land cells and unity everywhere
+ else.
+
+     The trouble is that while an older version of Ferret (v4.11) seems
+ to recognise the missing value flag, the newest version avaliable to
+ me (v4.90) does not. For example, with the earlier version, I get
+ the missing value indicator (&quot;...&quot;) as I should:
+
+&gt;   yes? list/j=2/i=1:5 EL
+&gt;                Elevation (meters)
+&gt;                T (days): 0
+&gt;                DATA SET: ./spiral.cdf
+&gt;                2     
+&gt;                2
+&gt;    1   / 1:    ....
+&gt;    2   / 2:  0.0000
+&gt;    3   / 3:  0.0000
+&gt;    4   / 4:  0.0000
+&gt;    5   / 5:  0.0000
+
+   while with the later version I get something strange:
+
+&gt;   yes? list/j=2/i=1:5 EL
+&gt;                Elevation (meters)
+&gt;                T (days): 0
+&gt;                DATA SET: ./spiral.cdf
+&gt;                2    
+&gt;                2
+&gt;    1   / 1: -999.0
+&gt;    2   / 2:   ....
+&gt;    3   / 3:   ....
+&gt;    4   / 4:   ....
+&gt;    5   / 5:   ....
+
+   Ferret v4.90 seems to interpret the zeros as missing values, but 
+ fails to correctly interpret my intended missing-value flag!
+
+   Any ideas as to what is happening here?
+
+ 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00236.html">NOTE: Negative values at start of time axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00239.html">Masking fields by topography</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00236.html">Thread Prev</a>][<a href="msg00239.html">Thread Next</a>][<A HREF="threads.html#00238">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

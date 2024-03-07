@@ -1,0 +1,155 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: follow&#45;up to bin averages and looping -->
+<!--X-From-R13: Quevf Irnire <jrnireNndhnevhf.raifpv.ehgtref.rqh> -->
+<!--X-Date: Wed, 10 Feb 1999 13:11:58 &#45;0800 -->
+<!--X-Message-Id: 199902102110.QAA00710@aquarius.envsci.rutgers.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>follow-up to bin averages and looping</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00040.html">Thread Prev</a>][<a href="msg00043.html">Thread Next</a>][<A HREF="threads.html#00042">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>follow-up to bin averages and looping</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>follow-up to bin averages and looping</strong></li>
+<li><strong>From</strong>: <strong>Chris Weaver &lt;<A HREF="mailto:weaver@DOMAIN.HIDDEN">weaver@xxxxxxxxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 10 Feb 1999 16:10:53 -0500 (EST)</li>
+<li>Reply-to: Chris Weaver &lt;<A HREF="mailto:weaver@DOMAIN.HIDDEN">weaver@xxxxxxxxxxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+Hi,
+
+Steve Hankin graciously provided me with some solutions to my general problem of 
+creating averages of one variable in &quot;bins&quot; of another, so I thought I would 
+post a summary here in case anyone was interested.
+
+Let's say we want to bin sst by slp and then average the result over a given XY 
+region (e.g., calculate mean sst in each 2 mb slp bin from 991 to 1041 mb).  The 
+key point is we need to define an axis over which the binning will take 
+place--in this case the axis units are &quot;slp&quot;:
+
+  use coads_climatology
+  define axis/X=991:1041:2/units=slp Xslp
+
+The limits of each slp bin (width) can then be defined in terms of this axis:
+
+  let bin_lo = x[gx=Xslp] - xbox[gx=Xslp]/2
+  let bin_hi = x[gx=Xslp] + xbox[gx=Xslp]/2
+
+And we can compute the XY average of sst in a particular bin (say 1001 mb) as 
+follows:
+
+  let binned_sst = if slp gt bin_lo[x=1001] and slp le bin_hi[x=1001] then sst
+  let binned_sst_ave = binned_sst[x=@ave,y=@ave]
+  
+To loop over Xslp and calculate the average in _all_ bins, we just need to put 
+the above 4 command lines in a script (one_bin.jnl), with the following change 
+to line #3:
+
+  let binned_sst = if slp gt bin_lo[x=$1] and slp le bin_hi[x=$1] then sst
+  
+Now call the script in a repeat loop:
+
+  repeat/i=1:26 go one_bin `x[gx=Xslp]`
+  
+The grave accents allow the specific value of x at each i of the bin axis (e.g., 
+991, 993, etc.) to be passed as a scalar to the script.  For output purposes, 
+you can have the script list binned_sst_ave to the screen or to a file.  For 
+example:
+
+list/ binned_sst_ave[x=130E:160E,y=5N:45N,l=1] or
+list/nohead/file=my_output.out/append/format=(f8.2)   
+                                    binned_sst_ave[x=130E:160E,y=5N:45N,l=1]
+                                    
+To save the output, including information about the bin axis, to a NetCDF file, 
+requires the following steps:
+
+  ! save result in a temporary file with a time axis but no &quot;bin&quot; axis
+  save/clobber/file=temp.cdf/x=130E:160E/y=5N:45N binned_sst_ave
+
+  ! read back the temporary variable and &quot;stamp&quot; it with the correct bin index
+  cancel variables/all
+  use temp.cdf
+  let bin_stamp0 = 0*x[gx=Xslp]
+  let result_sst = binned_sst_ave + bin_stamp0
+  
+  ! save in the final file
+  set variable/title=&quot;My binned SST&quot;/units=&quot;deg. C&quot; result_sst
+  save/append/file=my_output.cdf/ilimits=1:26 result_sst[x=$1]
+
+
+I hope this will be useful to someone else like it was to me.                            
+  
+Regards,
+
+Chris Weaver
+
+
+
+Department of Environmental Sciences
+Rutgers University/Cook College
+14 College Farm Road
+New Brunswick, NJ 08901-8551
+USA
+(ph) 1 732 932 7902  (int) weaver@gaia.rutgers.edu
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00040.html">Re: Strange time axis inconsistencies, and more</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00043.html">Preserving variables between function calls</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00040.html">Thread Prev</a>][<a href="msg00043.html">Thread Next</a>][<A HREF="threads.html#00042">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

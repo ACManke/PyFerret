@@ -1,0 +1,110 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject:  -->
+<!--X-From-R13: Gaxabja -->
+<!--X-Date: Tue May 07 13:53:19 2002 -->
+<!--X-Message-Id: d41d8cd98f00b204e9800998ecf8427e@NO&#45;ID&#45;FOUND.mhonarc.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[no subject]</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00022.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00002">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[no subject]</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Stefan,
+
+Some suggestions:
+
+1) Masking is the easy approach to integration over irregular areas.
+ (i.e defining a variable of 1's and 0's indicating where the calculation
+should be performed.)  Multiply your variables by this mask ... then integrate.
+Only be aware that the integration is simply a sum of rectangular grid cells
+-- that's adequate as long as the grid cells are highly resolved relative to
+the domain of the problem.  If they are not (i.e. if coastline irregularities
+cut across individual grid cells in ways that will effect the result) then
+regrid to a finer grid prior to integration.
+
+2) Here's some script code to help make ocean masks that are &quot;hand tuned&quot;
+to exactly the region shape desired:
+
+! define a general land/ocean mask tailored to your particular grid
+! (such a mask may already be available as a part of your model)
+	yes? set data etopo60	! also available 40, 20, and 5 min. resolution
+	yes? DEFINE GRID/X=my_var[d=my_dset]/Y=my_var[d=my_dset] my_grid
+	yes? let bathymetry = rose[d=etopo60,g=my_grid]
+	yes? let ocean_mask = IF bathymetry LT 0.0 THEN 1 ELSE 0
+! Now we need to define an atlantic ocean mask.  A simple rectangle would
+! include fragments of Pacific Ocean (etc.), too.  These must be eliminated.
+! Start with the rectangular region which includes those annoying &quot;corners&quot;
+	yes? let atlantic_mask = ocean_mask	! the default
+	yes? set region/x=80w:30e/y=60s:60n	! or whatever ... Atlantic
+	yes? save/file=atlantic_mask.cdf atlantic_mask
+! now redefine &quot;atlantic_mask&quot; so we can lay 0's over the incorrect regions
+	yes? let atlantic_mask = 0 * ocean_mask	! an electronic eraser ...
+! erase the lower left corner (in the Pacific Ocean)
+	yes? save/file=atlantic_mask.cdf/append/x=80w:70w/y=60s:0 atlantic_mask
+	yes? ...
+	yes? .... continue erasing other rectangles as needed ...
+	yes? ...
+! verify that the resulting mask is correct
+	yes? CANCEL VARIABLE atlantic_mask ! must do this in current version
+	yes? use atlantic_mask.cdf
+	yes? shade atlantic_mask
+
+	- steve
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00022.html">`Different' Axes</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00022.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00002">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

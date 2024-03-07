@@ -1,0 +1,157 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret how&#45;to: labelling contour extrema -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Thu, 21 Mar 1996 14:17:35 &#45;0800 -->
+<!--X-Message-Id: 9603211426.ZM29533@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret how-to: labelling contour extrema</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00014.html">Thread Prev</a>][<a href="msg00016.html">Thread Next</a>][<A HREF="threads.html#00015">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret how-to: labelling contour extrema</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Ferret how-to: labelling contour extrema</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Thu, 21 Mar 1996 14:26:44 -0800</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Ferret how_to:
+
+	******************************************
+	* How to label extrema on a contour plot *
+	******************************************
+
+On Mar 18,  2:29pm, Jack J. Katzfey wrote:
+&gt; Subject: Ferret question (max/min on contour)
+
+&gt; Is it possible to plot the maximum and/or minimum values on a 
+&gt; contour plot?  Ideally, these should be relative max/mins over
+&gt; the plot, not just the absolute max/min for the whole plot.
+
+=====================
+
+Hi Jack,
+
+Ferret has no contour option to automatically annotate the local
+minima and maxima on a contour plot, however, the script below allows
+you easily to annotate selected extrema. Here's an example of using it:
+
+------
+    Mark the sea level pressure maximum in the N. Pacific
+
+	yes? SET DATA coads_climatology
+	yes? SHADE/L=1/LEVELS=40 slp
+	yes? GO extremum MAX &quot;slp[l=1]&quot; x=170w:110w y=20N:40N 0.15 2
+------
+
+	- steve
+
+===============================================================
+
+\cancel mode verify
+! extremum.jnl - annotate an extremum for a region on a plot 
+! 3/96
+
+! Description: Annotate an extremum for a region on a plot 
+
+! arg no.:                1         2        3         4         5      6
+! usage:  GO extremum min_or_max variable &quot;X=lo:hi&quot; &quot;Y=lo:hi&quot; [size] [delta]
+ 
+! where
+!          min_or_max is &quot;MIN&quot; or &quot;MAX&quot; as desired
+!          variable   is the expression that has been contoured
+!          X=lo:hi    is the X range over which to locate the extremum
+!          Y=lo:hi    is the Y range over which to locate the extremum
+!          size       is the label size for the extremum value [default=0.15]
+!          delta      is the distance above the extrema to locate the label
+
+! example: mark the sea level pressure maximum in the N. Pacific
+!          SET DATA coads_climatology
+!          ! GO graticule             ! optional - helps to locate extrema
+!          SHADE/L=1/LEVELS=40 slp
+!          GO extremum MAX &quot;slp[l=1]&quot; x=170w:110w y=20N:40N 0.15 2
+
+! Note: this quick and dirty version is suitable only for 2D plots in the
+! XY plane. Extension to other planes is straightforward. 
+
+! the user must specify &quot;min&quot; or &quot;max&quot;
+QUERY/IGNORE this $1%|MIN|MAX|&lt;Usage: GO extremum &quot;min&quot;_or_&quot;max&quot; variable &quot;X=lo:hi&quot; &quot;Y=lo:hi&quot; [text_size]%
+
+! define a variable with the expression currently on the plot
+LET/quiet field = $2%&lt;Usage: GO extremum min_or_max variable &quot;X=lo:hi&quot; &quot;Y=lo:hi&quot; [text_size]%
+
+let extremum = field[$3@$1,$4@$1]      ! becomes field[X=lo:hi@MAX,Y=lo:hi@MAX]
+LET/quiet field0 = field - extremum
+LET/quiet xlocs = field0[$3@loc:0]     ! becomes X=lo:hi@loc:0
+LET/quiet ylocs = field0[$4@loc:0]
+
+! put a plot mark over the maximum
+PLOT/VS/OVER/NOLABEL/SYM=2 `xlocs[$4@ave]`,`ylocs[$3@ave]`
+
+! label the maximum (place label above the mark)
+LABEL `xlocs[$4@ave]`,`ylocs[$3@ave]+$6&quot;0&quot;`,0,0,$5&quot;.15&quot; &quot;@CR`extremum`&quot;
+
+! clean up
+SET MODE/LAST VERIFY
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00014.html">Ferret question (max/min on contour)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00016.html">Ferret, the Web, and NetCDF</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00014.html">Thread Prev</a>][<a href="msg00016.html">Thread Next</a>][<A HREF="threads.html#00015">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

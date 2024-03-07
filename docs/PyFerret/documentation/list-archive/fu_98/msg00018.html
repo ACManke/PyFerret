@@ -1,0 +1,152 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret How To:  Solaris 2.4 "rindex" symbol not found -->
+<!--X-From-R13: "Yriva [. A'Pevra" <xboevraNnex.czry.abnn.tbi> -->
+<!--X-Date: Wed, 21 Jan 1998 08:55:48 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.3.95.980121083023.723U&#45;100000@ark.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41CC32E3B99@fel4.fel.tno.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret How To:  Solaris 2.4 &quot;rindex&quot; symbol not found</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00019.html">Thread Prev</a>][<a href="msg00020.html">Thread Next</a>][<A HREF="threads.html#00018">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret How To:  Solaris 2.4 &quot;rindex&quot; symbol not found</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;VEEFKIND J.P. 254/1J10/4-3&quot; &lt;<A HREF="mailto:jpvn2@DOMAIN.HIDDEN">jpvn2@xxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Ferret How To:  Solaris 2.4 &quot;rindex&quot; symbol not found</strong></li>
+<li><strong>From</strong>: <strong>&quot;Kevin M. O'Brien&quot; &lt;<A HREF="mailto:kobrien@DOMAIN.HIDDEN">kobrien@xxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 21 Jan 1998 08:52:11 -0800 (PST)</li>
+<li>Cc: Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A>&gt;,       <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;<a href="msg00016.html">41CC32E3B99@fel4.fel.tno.nl</a>&gt;</li>
+<li>Reply-to: &quot;Kevin M. O'Brien&quot; &lt;<A HREF="mailto:kobrien@DOMAIN.HIDDEN">kobrien@xxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+***** Ferret how-to: Solving Solaris 2.4's &quot;rindex&quot; symbol not found error
+
+&gt; &gt; On Nov 28,  4:21pm, VEEFKIND J.P. 254/1J10/4-3 wrote:
+&gt; &gt; &gt; Subject: problems with ferret 4.90 for solaris
+&gt; &gt; &gt; Hi,
+&gt; &gt; &gt;
+&gt; &gt; &gt; I have a problem with the new ferret version (4.90) for solaris. When
+&gt; &gt; &gt; I try to run the application the following error occurs:
+&gt; &gt; &gt;
+&gt; &gt; &gt;  f41sn1% ferret
+&gt; &gt; &gt;         NOAA/PMEL TMAP
+&gt; &gt; &gt;         Program FERRET (GUI)
+&gt; &gt; &gt;         Version 4.90 - 11/19/97
+&gt; &gt; &gt;         28-Nov-97 16:13
+&gt; &gt; &gt;
+&gt; &gt; &gt; ld.so.1: ferret: fatal: relocation error: symbol not found: rindex:
+&gt; &gt; &gt; referenced in ferret
+&gt; &gt; &gt; Killed
+
+-------------
+
+Hi Pepijn,
+
+As it turns out, this problem is isolated to the solaris 2.4 operating
+system.   An excellent solution was given by Thierry Ludjet. (Thanks
+Thierry!)
+
+The solution, which I will include below, is also a part of the Ferret
+FAQ (<A  HREF="http://dread.pmel.noaa.gov/home/ferret/FAQ">http://dread.pmel.noaa.gov/home/ferret/FAQ</A>).  If there are any
+questions, let me know.
+
+Kevin
+
+--------  BEGIN SOLUTION --------
+
+Date: Tue, 16 Dec 1997 13:28:45 +0100
+From: Thierry Ludjet 
+
+Here is my own solution:
+
+cat &lt;&lt;\EOF &gt;rindex.c
+#include 
+char *rindex(const char *s, const char c)
+{
+    return strrchr(s, c);
+}
+EOF
+
+gcc -fpcc-struct-return -fpic -c rindex.c
+ld -o libindex.so.1 -G -z text -h libindex.so rindex.o
+
+cp libindex.so.1 /usr/local/libindex.so.1
+chmod 644 /usr/local/libindex.so.1
+ln -s /usr/local/libindex.so.1 /usr/local/libindex.so
+export LD_PRELOAD=/usr/local/libindex.so #(ksh syntax)
+
+------ END SOLUTION -----------
+
+--------
+Kevin O'Brien				
+206-526-6751			NOAA/PMEL/TMAP/JISAO
+206-526-6744 (fax)		<A  HREF="http://tmap.pmel.noaa.gov">http://tmap.pmel.noaa.gov</A>
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00016" href="msg00016.html">Re: Solaris problems with ferret 4.90</a></strong>
+<ul><li><em>From:</em> VEEFKIND J.P. 254/1J10/4-3</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00019.html">Re: Solaris problems with ferret 4.90</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00020.html">[Fwd: Re: NetCDF Toolbox]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00019.html">Thread Prev</a>][<a href="msg00020.html">Thread Next</a>][<A HREF="threads.html#00018">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

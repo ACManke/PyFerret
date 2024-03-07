@@ -1,0 +1,178 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret "how to": adjusting plot margins -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Mon, 6 Nov 1995 11:08:10 &#45;0800 -->
+<!--X-Message-Id: 9511061112.ZM23491@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret &quot;how to&quot;: adjusting plot margins</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00014.html">Thread Prev</a>][<a href="msg00016.html">Thread Next</a>][<A HREF="threads.html#00015">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret &quot;how to&quot;: adjusting plot margins</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Ferret &quot;how to&quot;: adjusting plot margins</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Mon, 6 Nov 1995 11:12:42 -0800</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+	Ferret &quot;how to&quot;: adjusting plot margins
+
+The script below was contributed by Sim Larkin, who developed it in
+conjunction with laying out viewports for publication-ready graphics.
+It allows you to precisely and simply control how to fit your plots into
+viewports.  For a more detailed understanding try the example given
+within the script.
+
+
+	cheers - steve
+
+
+                |  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+                |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+===============================================================
+
+\ cancel mode verify
+! margins.jnl (10/30/95) (NKL)
+
+! Description: specify plot margins (layout of plot axes to window edges)
+
+! usage:             1       2       3      4
+!       GO margins [top] [bottom] [left] [right]
+!
+!       Arguments not specified will not be modified from current settings.
+!       Margins are specified in &quot;inches&quot; from edge of viewport.
+!
+! defaults          1.4     1.4     1.2    1.0
+!
+! also
+!       GO margins  &quot;reset&quot;     -- RESETS to default plot margins
+!       GO margins              -- query the current plot margins
+!
+! example:
+!       yes? go margins 0.2 0.6 &quot; &quot; 1.0
+!                                           
+!  	set margins to 0.2 on top, 0.6 bottom, left is unchanged, 1.0 on right
+!
+! a sample session - lay out two frames vertically:
+!	yes? SET DATA coads_climatology	! demo data set
+!	yes? SET VIEW upper		! use upper half of plot frame
+!	yes? SHADE/NOLAB sst[l=1]	! default plot layout
+!	yes? GO margins			! look at the current margins
+!	yes? GO margins 0.2 0.75	! adjust the vertical margins
+!	yes? SHADE/NOLAB sst[l=1]	! look at the resulting plot
+!	yes? GO margins  &quot; &quot;,,0.9,0.8	! adjust the horizontal margins
+!	yes? SHADE/NOLAB sst[l=1]	! look at the resulting plot
+!	yes? GO margins			! ask to look at the new margins
+!	yes? SET VIEW lower		! use lower half of plot frame
+!	yes? GO margins 0.2 0.75 0.9 0.8! use the same modified margins
+!	yes? SHADE/NOLAB sst[l=6]	! make the lower plot
+!	yes? GO margins   RESET		! return to default settings
+
+! Note 1: Issue &quot;GO margins ...&quot; AFTER changing the viewport with SET VIEWPORT
+!	  because SET VIEWPORT recomputes the origin and axis lengths.
+! Note 2: The &quot;PLOT&quot; command recomputes the vertical origin and axis length in
+!	  order to accomodate label keys. When adjusting margins for the
+!	  PLOT command follow the sequence:
+!	  	&quot;PLOT/SET_UP ...&quot; , then &quot;GO margins ...&quot; , then &quot;PPL PLOT&quot;
+
+! -----------make sure ppl is up and running
+ppl set junk            1
+ppl delete junk 
+
+! -----------prepare to process a query (if no arguments were given)
+define alias cmd0 &quot;query/ignore&quot;
+define alias cmd1 &quot;message/continue&quot;
+define symbol do_query cmd`$1&quot;1|*&gt;0&quot;*$2&quot;1|*&gt;0&quot;*$3&quot;1|*&gt;0&quot;*$4&quot;1|*&gt;0&quot;`  ! 1 or 0
+
+! -----------set symbols - default to current conditions
+define symbol top    $1&quot;($vp_height) - ($ppl$yorg) - ($ppl$ylen)|reset&gt;-10|*|&quot;
+define symbol bottom $2&quot;($ppl$yorg)&quot;
+define symbol left   $3&quot;($ppl$xorg)&quot;
+define symbol right  $4&quot;($vp_width) - ($ppl$xorg) - ($ppl$xlen)&quot;
+
+! -----------Old conditions
+($do_query) &quot;                            T     B     L    R&quot;
+($do_query) &quot;margins are  -- GO margins `($vp_height) - ($ppl$yorg) - ($ppl$ylen)`   `($ppl$yorg)`   `($ppl$xorg)`   `($vp_width) - ($ppl$xorg) - ($ppl$xlen)`&quot;
+
+! ----------Reset is top = -10
+define symbol bottom    `if (($top)) le (-10) then 1.4 else (($bottom))`
+define symbol left      `if (($top)) le (-10) then 1.2 else (($left))`
+define symbol right     `if (($top)) le (-10) then 1.0 else (($right))`
+define symbol top       `if (($top)) le (-10) then 1.4 else (($top))`
+
+! -----------change origin, axis length
+ppl origin ($left),($bottom)
+ppl axlen `($vp_width) - ($left) - ($right)`,`($vp_height) - ($bottom) - ($top)`
+
+! clean up
+cancel alias cmd0
+cancel alias cmd1
+cancel symbol do_query
+cancel symbol top
+cancel symbol bottom
+cancel symbol left
+cancel symbol right
+set mode/last verify
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00014.html">[no subject]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00016.html">ferret to .eps</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00014.html">Thread Prev</a>][<a href="msg00016.html">Thread Next</a>][<A HREF="threads.html#00015">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

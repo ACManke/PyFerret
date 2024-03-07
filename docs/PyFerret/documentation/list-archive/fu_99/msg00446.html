@@ -1,0 +1,210 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: FLN interpolation (controlling the gap width to fill) -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Tue, 28 Dec 1999 09:23:33 &#45;0800 -->
+<!--X-Message-Id: 3868F052.8234361@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: FLN interpolation (controlling the gap width to fill)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00441.html">Thread Prev</a>][<a href="msg00447.html">Thread Next</a>][<A HREF="threads.html#00446">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: FLN interpolation (controlling the gap width to fill)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: FLN interpolation (controlling the gap width to fill)</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 28 Dec 1999 09:16:02 -0800</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+</pre>
+<blockquote><small>---&nbsp;<i>Begin&nbsp;Message</i>&nbsp;---</small>
+<ul>
+<li><strong>To</strong>: <strong>Ed Harrison &lt;<A HREF="mailto:harrison@DOMAIN.HIDDEN">harrison@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: FLN interpolation</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 27 Dec 1999 17:04:14 -0800</li>
+<li>References: &lt;<a href="msg00441.html">199912201117.MAA09298@mouli.cst.cnes.fr</a>&gt;&lt;<a href="msg00444.html">3867E348.B4F96BD6@pmel.noaa.gov</a>&gt; &lt;3867FAB0.9635F59E@pmel.noaa.gov&gt;</li>
+</ul>
+<pre>
+Hi Ed,
+
+With a little effort you can do it with the current Ferret transformation.
+
+The transformations @CIA, and @CIB (see docs pasted below) allow you to know how far you
+are from a valid point. You can use these to create a mask showing how large the gaps
+are:
+
+    let gap_size = my_var[i=@cia] + my_var[i=@cib]
+    let gap_mask = if gap_size LE BIGGEST_GAP_ALLOWED THEN 1
+
+Now you  use
+
+    let my_answer = my_var[i=@fln] * gap_mask
+
+Or you can combine the whole mess into one expression (bigger than 15 point gap to be
+rejected):
+
+    let my_answer = IF (my_var[i=@cia]+my_var[i=@cib]) LE 15 THEN my_var[i=@fln]
+
+Alternatively, you can use the CDA &amp; CDB transformations and work in terms of gaps
+measured in time or distance instead of number of missing points.
+
+    - steve
+
+=========================================
+
+     2.4.29 @CDA--closest distance above
+
+     The transformation @CDA will compute at each grid point how far it is to the
+     closest valid point above this coordinate position on the
+     indicated axis. The distance will be reported in the units of the axis. If a
+     given grid point is valid (not missing) then the result of @CDA for
+     that point will be 0.0.
+
+     2.4.30 @CDB--closest distance below
+
+     The transformation @CDB will compute at each grid point how far it is to the
+     closest valid point below this coordinate position on the
+     indicated axis. The distance will be reported in the units of the axis. If a
+     given grid point is valid (not missing) then the result of @CDB for
+     that point will be 0.0.
+
+     2.4.31 @CIA--closest index below
+
+     The transformation @CIA will compute at each grid point how far it is to the
+     closest valid point above this coordinate position on the
+     indicated axis. The distance will be reported in terms of the number of points
+     (distance in index space). If a given grid point is valid (not
+     missing) then the result of @CIA for that point will be 0.0.
+
+     2.4.32 @CIB--closest index below
+
+     The transformation @CIB will compute at each grid point how far it is to the
+     closest valid point below this coordinate position on the
+     indicated axis. The distance will be reported in terms of the number of points
+     (distance in index space). If a given grid point is valid (not
+     missing) then the result of @CIB for that point will be 0.0.
+
+Ed Harrison wrote:
+
+&gt; Hi Steve
+&gt;
+&gt; how hard would it be to implement a filling routine that only fills gaps if there are
+&gt; data within 'n' points of the grid point, where one specifies 'n'?
+&gt;
+&gt; there have been a number of situations where such a function would be helpful to
+&gt; me...because i wanted to be able to tell someone that i'd only filled gaps of 'n' (or
+&gt; 2n) width or less.
+&gt;
+&gt; hope you had a fine Christmas!
+&gt;
+&gt; ed
+&gt;
+&gt; Steve Hankin wrote:
+&gt;
+&gt; &gt; Hi Gerard,
+&gt; &gt;
+&gt; &gt; @FLN fills in gaps, regardless of the width of the gap, as long as it has a
+&gt; &gt; valid data point on either side of the gap from which to interpolate. The
+&gt; &gt; optional &quot;n&quot; parameter (see
+&gt; &gt; <A  HREF="http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/chapter3.html#FLN">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/chapter3.html#FLN</A>
+&gt; &gt; transformation$linear interpolation) tells Ferret how far to read beyond the
+&gt; &gt; edges of the requested region for valid data points from which to interpolate.
+&gt; &gt;
+&gt; &gt;     - steve
+&gt; &gt;
+&gt; &gt; ======================================
+&gt; &gt;
+&gt; &gt; Gerard Eldin wrote:
+&gt; &gt;
+&gt; &gt; &gt; Hi fereteers,
+&gt; &gt; &gt;
+&gt; &gt; &gt; There something I don't understand with the @FLN:n interpolation function.
+&gt; &gt; &gt; I have a gappy time series of temperatures that I want to interpolate, but
+&gt; &gt; &gt; without filling gaps larger than, say, 6 months. When I use @FLN:n, every
+&gt; &gt; &gt; gap, even 12 months long, is filled by linear interpolation, it doesn't
+&gt; &gt; &gt; seem to care what value of n I give.
+&gt; &gt; &gt;
+&gt; &gt; &gt; Could it be a bug ?
+&gt; &gt; &gt;
+&gt; &gt; &gt; Sincerely,
+&gt; &gt; &gt;
+&gt; &gt; &gt;       --------------------------------------------------
+&gt; &gt; &gt;        Dr. Gerard ELDIN,          Tel: 00 5 61 33 28 72
+&gt; &gt; &gt;        IRD, LEGOS/GRGS,           Fax: 00 5 61 25 32 05
+&gt; &gt; &gt;        18 Av. Edouard Belin,
+&gt; &gt; &gt;        31401 TOULOUSE CEDEX 4     Gerard.Eldin@cnes.fr
+&gt; &gt; &gt;        FRANCE                     or     eldin@ird.fr
+&gt; &gt; &gt;       --------------------------------------------------
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Steve Hankin
+&gt; &gt; NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+&gt; &gt; ph. (206) 526-6080 -- FAX (206) 526-6744
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+</pre>
+<small>---&nbsp;<i>End Message</i>&nbsp;---</small></blockquote>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00441.html">FLN interpolation</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00447.html">How to customize time axis?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00441.html">Thread Prev</a>][<a href="msg00447.html">Thread Next</a>][<A HREF="threads.html#00446">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: [Fwd: Re: NetCDF Toolbox] -->
+<!--X-From-R13: <Dhffryy.TvrqyreNznevar.pfveb.nh> -->
+<!--X-Date: Wed, 28 Jan 1998 20:15:56 &#45;0800 -->
+<!--X-Message-Id: 199801290415.PAA07736@inverse -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [Fwd: Re: NetCDF Toolbox]</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00020.html">Thread Prev</a>][<a href="msg00022.html">Thread Next</a>][<A HREF="threads.html#00021">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [Fwd: Re: NetCDF Toolbox]</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>, <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [Fwd: Re: NetCDF Toolbox]</strong></li>
+<li><strong>From</strong>: <strong>&lt;<A HREF="mailto:Russell.Fiedler@DOMAIN.HIDDEN">Russell.Fiedler@xxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 29 Jan 1998 15:15:43 +1100</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi David,
+
+&gt; 
+&gt; yes? show data
+&gt;      currently SET data sets:
+&gt;     1&gt; /home/server/scratch/oxilia/netcdf/posum_test.cdf  (default)
+&gt;  name     title          I         J         K         L
+&gt;  XC                     1:275     1:2       1:1       1:199
+&gt; 
+&gt; My question is: How do I define a VARIABLE grid x(j)? 
+
+Actually, what you want is a new VARIABLE xpos(i,j) which can be used with
+the new 3 variable version of SHADE (contour or fill)  in Ferret if you want
+to contour in the x-y plane.
+
+If you only want to plot in the x-t plane the you can either use the new shade
+etc. or define an x-axis using the 'from_data' qualifier. 
+
+You need to treat the x 'axis' as an abstract axis. I'll include the relevant
+lines below.
+
+&gt; &gt; % ------------------------------------------------------------
+&gt; &gt; % Dimensions
+&gt; &gt; nc('one') = 1;
+&gt; &gt; nc('latitude') = iymax;
+&gt; &gt; nc('t') = 2*m-1;
+&gt; &gt; nc('x') = n;
+
+&gt; &gt; 
+&gt; &gt; % Axes &amp; Variables
+&gt; &gt; nc{'latitude'} = 'latitude';                    % an axis
+&gt; &gt; nc{'t'} = 't';                                  % an axis
+
+
+%Up to here is OK
+
+
+% Delete this
+
+%&gt; &gt; nc{'x'} = {'one','one','latitude','x'};         % a 4D axis !!
+
+% Forget about x. What we want is a new variable xpos.
+
+
+nc{'xpos'}={'one','one','latitude','x'};
+
+
+
+
+&gt; &gt; nc{'XC'} = {'t','one','latitude','x'};          % a &gt;4D variable?!
+
+Nope. It's 4-d now.
+
+&gt; &gt; 
+&gt; &gt; % Attributes
+&gt; &gt; nc{'latitude'}.units = 'degrees';
+&gt; &gt; nc{'t'}.units = 'days';
+
+% OK this is now 'xpos' rather than 'x'      
+
+
+
+nc{'xpos'}.units = 'km';
+
+
+
+
+&gt; &gt; nc{'XC'}.units = ' ';
+&gt; &gt; nc{'XC'}.long_name = 'Time-Longitude Lagged Cross-Correlations';
+&gt; &gt; 
+&gt; &gt; % Write data
+&gt; &gt; nc{'latitude'}(:) = yax;                        % a vector
+&gt; &gt; nc{'t'}(:) = tlax;                              % a vector
+
+% Here too.
+
+nc{'xpos'}(:) = XLAX;                              % a 4D array
+
+
+&gt; &gt; nc{'XC'}(:) = CA;                               % a 4D array
+&gt; &gt; % ------------------------------------------------------------
+&gt; &gt; 
+
+Now when you do a SHOW DATA in Ferret you should see a new variable
+'xpos'
+
+You may need a new version of Ferret to proceed (V4.9 or later), earlier
+versions work for the alternative method below.
+
+to contour (shade or whatever)
+
+SHOW DATA
+
+     currently SET data sets:
+    1&gt; ./temp.nc  (default)
+ name     title                             I         J         K         L
+ XPOS                                      1:275     1:2       1:1       1:1
+ XC       Time-Longitude Lagged Cross-Cor  1:275     1:2       1:1       1:199
+ 
+
+
+! Create x,t grid the same size as XC
+
+let time=t[g=xc]+0*xc
+let lat=xpos+0*xc
+
+! Now use 3 variable contour for first latitude
+
+set win 1
+contour/i=1:275/j=1/k=1/l=1:199 xc,lat,time
+
+! Now second
+
+set win 2
+contour/i=1:275/j=2/k=1/l=1:199 xc,lat,time
+
+! Alternatively, define an axis from the data itself
+
+set win 3
+define axis/from_data/x/name=myx1/unit=km xpos[i=1:275,j=1]
+contour/i=1:275/j=1/k=1/l=1:199 xc[gi=myx1@asn]
+
+set win 4
+define axis/from_data/x/name=myx2/unit=km xpos[i=1:275,j=2]
+contour/i=1:275/j=2/k=1/l=1:199 xc[gi=myx2@asn]
+
+
+
+Cheers,
+
+Russ Fiedler
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00020.html">[Fwd: Re: NetCDF Toolbox]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00022.html">simple plot of polygon</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00020.html">Thread Prev</a>][<a href="msg00022.html">Thread Next</a>][<A HREF="threads.html#00021">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

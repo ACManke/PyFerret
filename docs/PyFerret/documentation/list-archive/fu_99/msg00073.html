@@ -1,0 +1,259 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Binary 2 netCDF -->
+<!--X-From-R13: Rnivq Akvyvn <bkvyvnNAQS.ADEF.SRG> -->
+<!--X-Date: Wed, 17 Mar 1999 18:18:27 &#45;0800 -->
+<!--X-Message-Id: 36F061F7.5F6364D7@oce.orst.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Binary 2 netCDF</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00071.html">Thread Prev</a>][<a href="msg00074.html">Thread Next</a>][<A HREF="threads.html#00073">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Binary 2 netCDF</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Binary 2 netCDF</strong></li>
+<li><strong>From</strong>: <strong>David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 17 Mar 1999 18:16:23 -0800</li>
+<li>Organization: COAS</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Dear ferreters,
+
+I wrote a script a couple of years ago to read binary NODC data
+and write a netCDF file containing salinity and temperature. I
+wanted to reuse it today and it's giving me a nasty error message.
+Being unsavvy to the internals of ferret's I/O I'm not sure how
+to fix this. Below is the relevant info to the case.
+
+Thanks in advance for any suggestions/fixes.
+
+David.
+
+Here's my ferret script and the error it produces:
+
+! nodc2cdf.jnl
+!
+! Regrid binary NODC (T,S) data into global 33-level arrays and
+! write as a netCDF file.
+!
+! Oxilia * 18/2/97
+
+! Set state
+set mode verify
+can/all data
+can/all var
+ 
+! Define depths grid
+def axis/x=1:33:1/unit=&quot;levels&quot; dax
+def grid/x=dax dg
+
+! Read depths data
+file/grid=dg/var=depths depths.dat
+set var/tit=&quot;Standard Depths&quot;/unit=m depths
+
+! Define axes
+def axis/x=0.5E:0.5W/npoints=360/unit=deg xax
+def axis/y=89.5S:89.5N/npoints=180/unit=deg yax
+alias daxis def axis/depth/from_data/z/npoints=33/name=zax
+daxis/unit=meters depths[d=1,i=1:33]
+
+! Read temperature data
+def grid/x=xax/y=yax/z=zax tg
+alias tread file/form=unf/order=xyz/grid=tg/var=temp
+tread/tit=&quot;NODC Annual Climatology&quot; temp_u.bin
+set var/tit=&quot;Temperature&quot;/unit=&quot;deg C&quot; temp
+
+! Read salinity data
+def grid/x=xax/y=yax/z=zax sg
+alias sread file/form=unf/order=xyz/grid=sg/var=salt
+sread/tit=&quot;NODC Annual Climatology&quot; salt_u.bin
+set var/tit=&quot;Salinity&quot;/unit=&quot;psu&quot; salt
+
+! clean up
+can data 1
+
+! Plot meridional sections to check successful read
+set r/x=180/j=1:180/k=1:33/l=1
+set wind/siz=.4/clear 1
+fill/line/key temp[d=2]
+set wind/siz=.4/clear 2 
+fill/line/key salt[d=3]
+
+! Set state for netCDF file writing
+can memory
+set memory/size=5.0				! MegaWords
+
+! Write netCDF file
+set r/i=1:360/j=1:180/k=1:33/l=1:1
+save/file=NODC.cdf temp[d=2],salt[d=3]
+spawn mv NODC.cdf &quot;/home/server/scratch/oxilia/data/netcdf&quot;
+
+! Restore state
+set memory/size=3.2
+can/a data
+
+! End code
+quit
+
+-----------------------------------------------------------------
+
+yes? go nodc2cdf
+
+forrtl: severe (257): formatted I/O to unit open for unformatted
+transfers, unit 63, file
+/home/server/scratch/oxdata/data/nodc/./temp_u.bin
+
+The binary files are unformatted but this message seems to think
+otherwise!
+
+-----------------------------------------------------------------
+
+Here's the fortan code I wrote to create temp_u.bin and salt_u.bin:
+
+* ------------------------------------------------------------
+*     Convertion program to read in binary NODC data and write
+*     out uniform length binary files for convertion to netCDF
+*     by ferret.
+*
+*     Oxilia * 17/2/98
+* ------------------------------------------------------------
+
+      program convert
+
+      parameter (nx=360,ny=180,nz=33)
+
+      real*4 amiss
+      real*4 temp(nx,ny,nz)
+      real*4 salt(nx,ny,nz)
+      integer nlon, nlat, nlev
+
+      amiss = -99.9999
+*
+* Read binary temperature data
+*     
+      write(*,*)
+      write(*,*) 'Reading binary temperature file'
+      write(*,*)
+
+      open(10,file='temp00.bin',form='unformatted',status='unknown')
+      read(10) nlon, nlat, nlev, temp
+      close(10)
+      print*,nlon,nlat,nlev
+*
+* Write uniform length temperature binary data
+*     
+      write(*,*)
+      write(*,*) 'Writing uniform length binary temperature file'
+      write(*,*)
+
+      open(20,file='temp_u.bin',form='unformatted',status='unknown')
+      do k = 1,nz
+         do j = 1,ny
+            do i = 1,nx
+               if (temp(i,j,k) .eq. amiss) then
+                  temp(i,j,k) = -1.0e34
+               end if
+               write(20) temp(i,j,k)
+            end do
+         end do
+      end do
+      close(20)
+*
+* Read binary salinity data
+*     
+      write(*,*)
+      write(*,*) 'Reading binary salinity file'
+      write(*,*)
+
+      open(10,file='salt00.bin',form='unformatted',status='unknown')
+      read(10) nlon, nlat, nlev, salt
+      close(10)
+      print*,nlon,nlat,nlev
+*
+* Write uniform length binary salinity data
+*     
+      write(*,*)
+      write(*,*) 'Writing uniform length binary salinity file'
+      write(*,*)
+
+      open(20,file='salt_u.bin',form='unformatted',status='unknown')
+      do k = 1,nz
+         do j = 1,ny
+            do i = 1,nx
+               if (salt(i,j,k) .eq. amiss) then
+                  salt(i,j,k) = -1.0e34
+               end if
+               write(20) salt(i,j,k)
+            end do
+         end do
+      end do
+      close(20)
+      
+      stop
+      end
+
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+David Oxilia			Tel: (541) 737-2368
+COAS:Oregon State University	Fax: (541) 737-2064
+Ocean Admin. Bldg. 104		Email: oxilia@oce.orst.edu
+Corvallis, OR 97331-5503	WWW: <A  HREF="http://www.oce.orst.edu/po">http://www.oce.orst.edu/po</A>
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00071.html">Accessing SYMBOLs inside &quot;animation&quot; scripts...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00074.html">Re: Binary 2 netCDF</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00071.html">Thread Prev</a>][<a href="msg00074.html">Thread Next</a>][<A HREF="threads.html#00073">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

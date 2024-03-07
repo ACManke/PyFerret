@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: [Question] limit of Plot buffer size -->
+<!--X-From-R13: "[nex Hrefpuryy" <znexiNfurne.pbncf.sfh.rqh> -->
+<!--X-Date: Wed, 11 Jun 1997 12:09:41 &#45;0700 -->
+<!--X-Message-Id: 9706111509.ZM869@shear.coaps.fsu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 199706100510.OAA14598@ocean6.geoph.s.u&#45;tokyo.ac.jp -->
+<!--X-Reference: aiko@ocean6.geoph.s.u&#45;tokyo.ac.jp -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [Question] limit of Plot buffer size</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00102.html">Thread Prev</a>][<a href="msg00103.html">Thread Next</a>][<A HREF="threads.html#00104">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [Question] limit of Plot buffer size</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Aiko Fujimura &lt;<A HREF="mailto:aiko@DOMAIN.HIDDEN">aiko@xxxxxxxxxxxxxxxxxxxxxxxxxxxx</A>&gt;,       <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [Question] limit of Plot buffer size</strong></li>
+<li><strong>From</strong>: <strong>&quot;Mark Verschell&quot; &lt;<A HREF="mailto:markv@DOMAIN.HIDDEN">markv@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 11 Jun 1997 15:09:22 -0400</li>
+<li>In-reply-to: Aiko Fujimura &lt;aiko@ocean6.geoph.s.u-tokyo.ac.jp&gt;       &quot;[Question] limit of Plot buffer size&quot; (Jun 10,  2:10pm)</li>
+<li>References: &lt;<a href="msg00101.html">199706100510.OAA14598@ocean6.geoph.s.u-tokyo.ac.jp</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+As a follow up to Jerry Davison's message:
+
+	I was having a similar problem as Aiko, and since this was a problem I
+knew would occur frequently I wrote a .jnl file to do most of the work for me.
+I include this below for those that would like to make use of it. The optional
+4th argument can be replaced with specific PPLUS commands if desired.
+
+	Mark
+
+******************************Cut Here***************************************
+
+\cancel mode verify
+! bplot.jnl - 03/97 by M. Verschell (verschell@coaps.fsu.edu)
+!             uses the split_z.jnl file by Joachim Dengg as a template
+
+! Description: allows plotting of regions larger than the 495000 point limit
+
+! usage:  GO bplot variable command [qualifiers] [pplcommands]
+! $1 - the variable to be plotted (use quotation marks if it contains commas)
+! $2 - the plot command (SHADE, FILL or CONTOUR) (default, &quot;CONTOUR&quot;)
+! $3 - plot qualifiers (e.g. /LEVELS, /PALETTE) (default, none)
+! $4 - optional .jnl file with PPLUS commands (default, no file)
+
+! example:
+!   yes? SET DATA eltopo	! Eltopo 5 minute data set (4320x2161 points)
+! Note 1: any region must be defined first
+!   yes? SET REGION/X=120E:70W/Y=40S:40N ! Still has almost 2,000,000 points
+! Note 2: any increase in memory (likely) must be done first
+!   yes? set memory/size=4
+!   yes? GO bplot eltopo shade &quot;/lev=(0,11000,11000)&quot; pplelt.jnl
+! Note 3: this will shade the variable eltopo (above 0m) in 4 strips, calling
+!         the GO file pplelt.jnl after the first one to execute various ppl
+!         commands to modify the plot
+! Note 4: the optional .jnl file should only contain PPLUS commands to modify
+!         the entire plot (pen definitions, label commands, etc.), and must not
+!         end with a PPLUS SHADE/FILL/CONTOUR.
+
+! Set dafault values and check for argument errors
+DEFINE SYMBOL var  $1&quot;&lt;Usage: GO bplot var cmnd [quals] [pplcmnds]&quot;
+DEFINE SYMBOL cmnd $2&quot;CONTOUR&quot;
+DEFINE SYMBOL qual $3&quot;SET_UP&quot;
+
+! Determine extent of plot region
+LET/QUIET ilo=`($var),RETURN=ISTART`
+LET/QUIET xlo=X[g=($var),I=`ilo`]
+LET/QUIET ihi=`($var),RETURN=IEND`
+LET/QUIET xhi=X[g=($var),I=`ihi`]
+LET/QUIET jlo=`($var),RETURN=JSTART`
+LET/QUIET jhi=`($var),RETURN=JEND`
+LET/QUIET itot=ihi-ilo+1
+LET/QUIET jtot=jhi-jlo+1
+LET/QUIET idel=INT(495000/jtot)
+
+! Plot first region strip
+(($cmnd)/($qual)/XLIMITS=`xlo`:`xhi`/SET_UP ($var)[I=`ilo`:`ilo+idel-1`])
+IF $4&quot;0|*&gt;1&quot; THEN GO $4&quot;none&quot;
+PPL ($cmnd)
+
+! Plot remaining strips (this is 1 long line not 2 lines)
+REPEAT/I=`ilo+idel`:`ihi`:`idel` (($cmnd)/($qual)/OVER/NOLABELS
+($var)[I=`i`:`i+idel-1`])
+
+! Clean up
+CANCEL SYMBOL var
+CANCEL SYMBOL cmnd
+CANCEL SYMBOL qual
+SET MODE/LAST VERIFY
+
+-- 
+-------------------------------------------------------------------------------
+
+	      Dr. Mark Verschell (verschell@coaps.fsu.edu)
+	      Center for Ocean and Atmospheric Prediction Studies
+	      Florida State University
+              2035 E. Paul Dirac Drive
+              R.M. Johnson Bldg. - Suite 200
+	      Tallahassee, FL  32306-3041
+	      (904) 644-6935              (904) 644-4841 (fax)
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00101" href="msg00101.html">[Question] limit of Plot buffer size</a></strong>
+<ul><li><em>From:</em> Aiko Fujimura</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00102.html">Re: [Question] limit of Plot buffer size</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00103.html">Changing directories</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00102.html">Thread Prev</a>][<a href="msg00103.html">Thread Next</a>][<A HREF="threads.html#00104">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

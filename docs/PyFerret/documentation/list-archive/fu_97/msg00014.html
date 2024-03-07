@@ -1,0 +1,184 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: multi CDF data -->
+<!--X-From-R13: Rbatkvnb Lunat <qmunatNvovf.efznf.zvnzv.rqh> -->
+<!--X-Date: Fri, 28 Feb 1997 08:12:45 &#45;0800 -->
+<!--X-Message-Id: Pine.OSF.3.95.970228101959.11846A&#45;100000@ibis.rsmas.miami.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>multi CDF data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00012.html">Thread Prev</a>][<a href="msg00015.html">Thread Next</a>][<A HREF="threads.html#00014">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>multi CDF data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>multi CDF data</strong></li>
+<li><strong>From</strong>: <strong>Dongxiao Zhang &lt;<A HREF="mailto:dzhang@DOMAIN.HIDDEN">dzhang@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 28 Feb 1997 11:12:39 -0500 (EST)</li>
+<li>Cc: <A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi all,
+
+Days ago, I got some problems on using multi CDF data. My previous email
+is included at the bottom. Steve figured out that the problems are from my
+netCDF data. According to Steves's suggestion, I revised them, everything
+is going fine. Now, I would like to share his advice with Ferreters.
+
+An &quot;MC&quot; data set in Ferret ties a collection of files together into a time
+series, but each of the files in the collection must contain valid time
+information describing the time steps that it contains. The documentation
+on MC data sets (Chapt. 9, sect. 4) says
+
+ &quot;Ferret performs sanity checking on the data set by comparing these time
+  coordinates with those found in the data files as the data are read.&quot;
+
+This means that the values of &quot;T&quot; contained in each individual file must
+match the values that are given in the $STEPFILE_RECORD of the MC
+descriptor file. And the time dimension should be named as &quot;t&quot; or &quot;time&quot;
+instead of others, like &quot;l&quot; in my case. So Steve's suggestions are:
+
+1) change dimension name &quot;l&quot; to &quot;t&quot; or &quot;time&quot;
+
+2) (optionally) add the time origin value on the units, as in, for
+example:
+
+        float t(t) ;
+                t:long_name = &quot;time&quot; ;
+                t:units = &quot;seconds since 1972-01-01&quot; ;
+
+3) Insert the correct numerical value of &quot;t&quot; into each file.
+
+&gt;From my experience, 1) plays the key role, i.e., the file should looks
+like this:
+dimensions:
+        .
+        .
+        t = UNLIMITED ;
+variables:
+        .
+        .
+        float t(t) ;
+                t:long_name = &quot;time&quot; ;
+Even you don't have correct numerical value of &quot;t&quot; in each file(t=0 in all
+my files), but you give the values in descriptor file, Ferret will work,
+it will compare the time, give you the information about what value is
+expected and what is in reality, finally it will follow descriptor file.
+
+Note: you should test this and take your own responsibility. 
+
+It is not hard to follow all Steve's suggestion when you extract model
+outputs to netCDF files.
+
+Happy ferreting and thanks to Ferret group,
+
+Dongxiao 
+--------------------------------------------------------------------
+Dongxiao Zhang(Graduate Student)
+Division of Meteorology and Physical Oceanography
+Rosenstiel School of Marine and Atmospheric Science
+4600 Rickenbacker Causeway
+Miami, FL 33149
+Phone  : (305)361-4806
+Fax    : (305)361-4696
+Office : MSC Room 309
+--------------------------------------------------------------------
+&gt; Hi, all,
+&gt;
+&gt; I am trying to make a single NetCDF data set as a collection of NetCDF
+&gt; files referred to as &quot;MC&quot;(multi CDF) data sets. Then I need a MC
+&gt; descriptor. I tried and met the following problems:
+&gt;
+&gt; In my case, I have model output. They are hundreds of NetCDF
+&gt; files, with
+&gt; variables: depth index--KMT(j,i), SSH(l,j,i), U(l,k,j,i), V(l,k,j,i),
+&gt; TEMP(l,k,j,i) and SALT(l,k,j,i). I made a MC descriptor for 10 files,
+for
+&gt; example. In ferret, &quot;show data&quot; command gave the following:
+&gt;  name     title             I      J      K     L
+&gt;  T        time             1:1    1:1    1:1   1:1
+&gt;  KMT      depth index      1:481  1:9    1:1   1:1
+&gt;  SSH                       1:481  1:9    1:1   1:1--note:it should be
+1:10
+&gt;  U                         1:481  1:9    1:20  1:10
+&gt;  V                         1:481  1:9    1:20  1:10
+&gt;  TEMP                      1:481  1:9    1:20  1:10
+&gt;  SALT                      1:481  1:9    1:20  1:10
+&gt; I could only plot KMT and SSH(only one time level). When I tried to plot
+&gt; V, for example, ferret showed error:** netCDF error: Variable not found
+&gt; Then I excluded KMT variable in the NetCDF files, and the &quot;show data&quot;
+&gt; command gave the following:
+&gt;  name     title             I      J      K     L
+&gt;  SSH                       1:481  1:9    1:1   1:1--note:it should be
+&gt;                                                          1:10, too.
+&gt;  U                         1:481  1:9    1:20  1:10
+&gt;  V                         1:481  1:9    1:20  1:10
+&gt;  TEMP                      1:481  1:9    1:20  1:10
+&gt;  SALT                      1:481  1:9    1:20  1:10
+&gt; This time, everything was fine except that I only got one time level of
+&gt; SSH(I need 10 levels).
+&gt;
+&gt; Can somebody explain this to me? It seems to me, MC descriptor can not
+&gt; work on the variables with different dimentions at the same time. Is it
+&gt; right? Is there a way to go around? I don't want to exclude the KMT and
+&gt; SSH out of the files one file by one file because I have hundreds of
+&gt; files.
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00012.html">Ferret without an X display</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00015.html">TMAP ERR in demo files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00012.html">Thread Prev</a>][<a href="msg00015.html">Thread Next</a>][<A HREF="threads.html#00014">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

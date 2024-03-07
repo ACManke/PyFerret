@@ -1,0 +1,138 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: I'm confused &#45; unformatted I/O ? -->
+<!--X-From-R13: xrffyreNczry.abnn.tbi (Pvyyl Yrffyre) -->
+<!--X-Date: Thu, 22 May 1997 22:51:55 &#45;0700 -->
+<!--X-Message-Id: 199705230549.WAA13127@pontus.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: I'm confused - unformatted I/O ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00075.html">Thread Prev</a>][<a href="msg00076.html">Thread Next</a>][<A HREF="threads.html#00078">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: I'm confused - unformatted I/O ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:joerg@DOMAIN.HIDDEN">joerg@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: I'm confused - unformatted I/O ?</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxx</A> (Billy Kessler)</strong></li>
+<li>Date: Thu, 22 May 1997 22:49:49 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+Hi Joerg -
+
+I think the problem is that you need quotes around the variable
+list in your file statement, as follows:
+
+yes? file/format=unf/grid=csu/var=&quot;tc,dt1,dt2,dt3&quot;
+&quot;/home/joerg/sib/sib2/data/ECMWF/test/fort.35&quot;
+
+The error message you got often indicates that ferret was trying to
+read past the end of a file or record (I admit it is not very clear). 
+You need to tell ferret what each record of your fortran output looks 
+like. For example, the statement above should have 4 numbers/record,
+representing the 4 variables listed. This would correspond to the
+following fortran write loop:
+
+	do 100 j=1,44
+	do 100 i=1,72
+100	write(35) tc,dt1,dt2,dt3
+
+Note that if you had not written these with x varying fastest (ie if
+you had switched the do loop order), you would have to add the /ord=yx 
+qualifier to the ferret file statement to tell ferret that y varied
+fastest.
+
+If you had written the output:
+
+	write(35) ((tc(i,j),dt1(i,j),dt2(i,j),dt3(i,j),i=1,72),j=1,44)
+
+You could read it in ferret:
+
+yes? file/format=unf/grid=csu/var=&quot;tc,dt1,dt2,dt3&quot;/col=`4*72*44`
+&quot;/home/joerg/sib/sib2/data/ECMWF/test/fort.35&quot;
+
+Note the backslash on the col qualifier which allows immediate
+evaluation of a numerical expression.
+
+I hope this helps. If you still have problems send me the fortran
+statement that wrote the data file.
+
+Finally, if you added the /units qualifier to your define axis statements:
+
+yes? define axis/x=1:72:1/unit=lon xlon
+yes? define axis/y=1:44:1/unit=lat ylat
+
+Then the plots would have nice latitude/longitude axis labels. Come to
+think if it, I'm not sure if your naming the axes &quot;lat&quot; and &quot;lon&quot; might
+be a problem; note the slight change I made.
+
+Regards, Billy Kessler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle Wa 98115 USA
+ 
+Tel: 206-526-6221                    o__    ____ 
+Fax: 206-526-6744                    _,&gt;/'_  -----
+E-mail: kessler@pmel.noaa.gov       (_) \(_) ------
+Home page: <A  HREF="http://www.pmel.noaa.gov/~kessler">http://www.pmel.noaa.gov/~kessler</A>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00075.html">I'm confused - unformatted I/O ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00076.html">How to use ungridded data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00075.html">Thread Prev</a>][<a href="msg00076.html">Thread Next</a>][<A HREF="threads.html#00078">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

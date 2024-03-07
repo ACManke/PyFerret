@@ -1,0 +1,210 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Something really weird... -->
+<!--X-From-R13: irefpuryNnznebar.tfsp.anfn.tbi ([nex O. Hrefpuryy) -->
+<!--X-Date: Fri, 12 Mar 1999 07:53:03 &#45;0800 -->
+<!--X-Message-Id: 9903121052.ZM7142@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 199903112205.PAA20833@olympic.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Something really weird...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00068.html">Thread Prev</a>][<a href="msg00070.html">Thread Next</a>][<A HREF="threads.html#00069">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Something really weird...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</A> (Gary Strand),       Ferret Users Mailing List &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Something really weird...</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A> (Mark A. Verschell)</strong></li>
+<li>Date: Fri, 12 Mar 1999 10:52:42 -0500</li>
+<li>In-reply-to: strandwg@ucar.edu (Gary Strand)       &quot;Something really weird...&quot; (Mar 11,  3:05pm)</li>
+<li>References: &lt;<a href="msg00068.html">199903112205.PAA20833@olympic.cgd.ucar.edu</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Gary,
+
+	The 1D isn't really any better than the 2D, it just seems that way
+because you are looking at two different variables. The problem is in your
+definition of the annual average. What you really want is
+
+yes? let atemp = temp[gt=annave@AVE]
+
+Without the @AVE, you are getting @LIN, or linear interpolation (i.e., the
+closest points on the time axis for temp that corresponds with the point on the
+time axis for atemp are linearly interpolated to give a value at the new time
+point). If you do not have a great deal of variation over the year, the value
+for @LIN can be close to the value for @AVE. If there is a lot of variation
+over the year, then the values will likely be very different.
+
+If you do this definition change, you will see that both plots improve greatly.
+
+In addition there can be problems with the axis definitions you are using. If I
+understand what you are really trying to do, you have 412 years of data on an
+irregular time axis (with 15059 points in the time axis you end up with an
+average of about 36.6 points per year). Then you are trying to calculate an
+annual avarage and are comparing that against the original data with a 36 point
+running average.
+
+	My suggestion is that you should be using a different time unit than
+years. This is, of course, a time unit with an ambiguous length (model year,
+leap year, etc...). Instead, you should try to use hours or days as the
+underlying time stamp. To easily get a time axis that is similar to what you
+have now with hours as the underlying time unit, you could use:
+
+yes? define axis/t=&quot;06-JAN-1030:17:11:42&quot;:&quot;30-DEC-1441:03:37:58&quot;/np=15059 taxis
+
+For days, simply append the /units=days qualifier. (If you need to keep the
+existing time axis as is, switch from years to days/hours.)
+
+You can regrid your variables on the fly if you use the new &quot;taxis&quot; from above
+by:
+
+yes? let voltr = volt[gt=newg@ASN]
+yes? let tempr = temp[gt=newg@ASN]
+
+The @ASN is blind association, i.e., point 1 on the old time axis becomes point
+1 on the new time axis, point 2 old becomes point 2 new, etc., with no
+interpolation or averaging.
+
+Next, to define the annual average, you can do a similar thing:
+
+yes? define axis/t=&quot;01-JUL-1030&quot;:&quot;01-JUL-1441&quot;/np=412 annual
+
+Which is probably more what you are expecting. Notice that I have moved the
+start and end points to the middle of the year. You then obviously need to
+change the succeeding definitions:
+
+yes? let avolt = voltr[gt=annave@AVE]
+yes? let rvolt = voltr[l=@sbx:36]
+yes? let atemp = tempr[gt=annave@AVE]
+yes? let rtemp = tempr[l=@sbx:36]
+
+I don't know how this will change your analysis, but the definitions are much
+more consisten this way. I suggest reading Chapter 4 in the ferret manual on
+Grids and Regions, they can be very tricky things as you have learned.
+
+Regards, Mark Verschell
+
+On Mar 11,  3:05pm, Gary Strand wrote:
+&gt; Subject: Something really weird...
+&gt;
+&gt; Here's something really really weird.
+&gt;
+&gt; The data is at <A  HREF="ftp://ftp.ucar.edu/cgd/strandwg/GB.nc">ftp://ftp.ucar.edu/cgd/strandwg/GB.nc</A>
+&gt;
+&gt; and here's the ferret script I'm trying to get to work:
+&gt; -------------------------------------------------------------------------------
+&gt; use GB.nc
+&gt; set mem/size=32
+&gt; !
+&gt; define axis/t=&quot;01-JAN-1030&quot;:&quot;31-DEC-1441&quot;:1/unit=year annual
+&gt; define grid/t=annual annave
+&gt; !
+&gt; let avolt = volt[gt=annave]
+&gt; let rvolt = volt[l=@sbx:36]
+&gt; !
+&gt; let atemp = temp[gt=annave]
+&gt; let rtemp = temp[l=@sbx:36]
+&gt; !
+&gt; plot/set avolt,rvolt
+&gt; ppl txlsze 0.05
+&gt; ppl plot
+&gt; frame/file=volt.gif
+&gt; !
+&gt; plot/set temp[k=1],atemp[k=1],rtemp[k=1]
+&gt; ppl txlsze 0.05
+&gt; ppl plot
+&gt; frame/file=temp.gif
+&gt; !
+&gt; quit
+&gt; -------------------------------------------------------------------------------
+&gt;
+&gt; I'd like to know why the 1-D variable annually averaged looks OK, but the 2-D
+&gt; variable annually averaged is all wrong.
+&gt;
+&gt; Here's the gifs created by the above:
+&gt;
+&gt; <A  HREF="ftp://ftp.ucar.edu/cgd/strandwg/volt.gif">ftp://ftp.ucar.edu/cgd/strandwg/volt.gif</A>
+&gt; <A  HREF="ftp://ftp.ucar.edu/cgd/strandwg/temp.gif">ftp://ftp.ucar.edu/cgd/strandwg/temp.gif</A>
+&gt;
+&gt; Thanks - this has been driving me nuts all day.
+&gt;
+&gt; --
+&gt; Gary Strand
+&gt; strandwg@ucar.edu
+                         <A  HREF="http://www.cgd.ucar.edu/ccr/strandwg">http://www.cgd.ucar.edu/ccr/strandwg</A>
+&gt;-- End of excerpt from Gary Strand
+
+
+
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-614-5669  Fax: 301-614-5666    Greenbelt, MD 20771
+
+
+		     Better Living Through Denial
+               ** USQC Certified: 100% Microsoft Free **
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00068" href="msg00068.html">Something really weird...</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00068.html">Something really weird...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00070.html">Re: Something really weird...</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00068.html">Thread Prev</a>][<a href="msg00070.html">Thread Next</a>][<A HREF="threads.html#00069">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

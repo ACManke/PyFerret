@@ -1,0 +1,359 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Emacs ferret.el v 0.02.0 -->
+<!--X-From-R13: irefpuryNnznebar.tfsp.anfn.tbi ([nex O. Hrefpuryy) -->
+<!--X-Date: Thu, 23 Dec 1999 09:49:26 &#45;0800 -->
+<!--X-Message-Id: 9912231249.ZM30306@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 374045E2.54A687E5@oce.orst.edu -->
+<!--X-Reference: 9912211343.ZM28872@amarone.gsfc.nasa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Emacs ferret.el v 0.02.0</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00442.html">Thread Prev</a>][<a href="msg00127.html">Thread Next</a>][<A HREF="threads.html#00443">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Emacs ferret.el v 0.02.0</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Emacs ferret.el v 0.02.0</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A> (Mark A. Verschell)</strong></li>
+<li>Date: Thu, 23 Dec 1999 12:49:22 -0500</li>
+<li>In-reply-to: verschel (Mark A. Verschell)       &quot;Re: Emacs ferret-mode?&quot; (Dec 21,  1:43pm)</li>
+<li>References: &lt;<a href="msg00126.html">374045E2.54A687E5@oce.orst.edu</a>&gt; &lt;<a href="msg00442.html">9912211343.ZM28872@amarone.gsfc.nasa.gov</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Thanks to some early comments on v 0.01.0, I have made a quick update to
+ferret.el to make the following changes:
+
+1) Font-lock is now case-insensitive
+2) All commands, subcommands, and aliases are supported including most
+   abbreviations (if I missed obvious ones, let me know)
+3) Qualifiers are supported
+4) Operators, functions, and transformations are supported
+5) Strings (anything between &quot;&quot;) are supported
+
+Again, suggestions are gratefully accepted (encouraged). I would also like
+suggestions for functionality beyond just font-lock (like fortran auto-indent).
+For example, does anybody think any of the following would be useful?
+
+a) auto-capitalization of commands, etc...
+b) auto-indent of it-then-elif-endif constructs
+c) abbreviations (e.g., ;s for shade)
+
+The next-update will probably be a little ways off, the improvements I have in
+mind now are more difficult to implement since the last time I wrote any LISP
+code was more than 15 years ago.
+
+See last message and comments inside code belowe for implementation notes.
+
+And last, a comment: if you aren't sure what this is for you are probably using
+vi, and thus are beyond help :^)
+
+Mark Verschell
+
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+ferret.el
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+;;; ferret.el --- Ferret mode for GNU Emacs
+
+;; Copyright (c) 1999 by Mark A. Verschell &lt;verschell@neptune.gsfc.nasa.gov&gt;
+
+;; Author: Mark A. Verschell &lt;verschell@neptune.gsfc.nasa.gov&gt;
+;; Maintainer: Mark A. Verschell &lt;verschell@neptune.gsfc.nasa.gov&gt;
+;; Version 0.02.0 (December 23, 1999)
+;; Keywords: languages
+
+;; Ferret.el is free software; you can redistribute it and/or modify it under
+;; the terms of the GNU General Public License, version 2, published by the
+;; Free Software Foundation.
+
+;; You should have received a copy of the GNU General Public License along
+;; with GNU Emacs; see the file COPYING.  If not, write to the Free Software
+;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA,
+;; or refer to the WWW document &quot;<A  HREF="http://www.gnu.org/copyleft/gpl.html&quot">http://www.gnu.org/copyleft/gpl.html&quot</A>;.
+
+;; Ferret.el is distributed in the hope that it will be useful, but WITHOUT
+;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+;; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+;; more details.
+
+;; Information about &quot;Ferret&quot;, a graphical analysis tool for gridded data, can
+;; be found at &quot;<A  HREF="http://ferret.wrc.noaa.gov/Ferret/&quot">http://ferret.wrc.noaa.gov/Ferret/&quot</A>;
+
+;; Documentation
+;; -------------
+;; IMPORTANT NOTE: This only works with X-windows emacs, and only for
+;; semi-recent versions of emacs (18.xx and above)
+;;
+;; This is Ferret mode for GNU emacs, a major mode designed to facilitate the
+;; writing of journal files for &quot;Ferret&quot;, a graphical analysis tool for
+;; gridded data.
+;;
+;; Ferret mode for emacs is limited at this time to font-lock coverage
+;; This means that the following is supported:
+;;   Commands, subcommands, and aliases with most abbreviations
+;;   Command and subcommand qualifiers with most abbreviations
+;;   Comments starting with ! anywhere on line are supported
+;;   Subroutines (go calls) are supported
+;;   Shell command called by spawn is supported
+;;   Strings are supported between &quot;&quot;
+;;   Functions, operators, and transformations are supported
+;;   Font-lock mode is case-insensitive
+;;
+;; I will take (friendly-worded) suggestions for improvements. Obviously, if I
+;; get no comments, then I will only update this as I find it useful.
+
+;; Usage
+;; -----
+;; - You need a local directory to store the ferret.el file, I call mine Emacs,
+;;   so in the following block replace the /d9/verschell/Emacs with your local
+;;   directory
+;; - Place the ferret.el file in this directory
+;; - Compile the ferret.el file
+;;     Enter emacs while in the ferret.el directory
+;;     ESC x byte-compile-file RETURN ferret.el RETURN
+;; - This gives you ferret.elc
+;; - Make the following modifications to your .emacs file
+;;
+;; &lt;&lt;&lt;CUT HERE AND REMOVE BEGINNING ;; ON EACH LINE&gt;&gt;&gt;
+;; ;;; Add local function directory to emacs search path
+;; (setq load-path (cons &quot;/d9/verschell/Emacs&quot; load-path))
+;;
+;; ;;; Add automatic ferret-mode for .jnl suffix
+;; (setq auto-mode-alist (cons '(&quot;\.jnl$&quot; . ferret-mode) auto-mode-alist))
+;;
+;; ;;; Load Ferret major-mode (modified text mode)
+;; (load &quot;ferret&quot;)
+;;
+;; ;;; Font lock mode
+;; (cond ((fboundp 'global-font-lock-mode)
+;;             ;; Turn on font-lock in all modes that support it
+;;             (global-font-lock-mode t)
+;;             ;; Maximum colors
+;;             (setq font-lock-maximum-decoration t)))
+;; &lt;&lt;&lt;CUT HERE&gt;&gt;&gt;
+;;
+;; - exit emacs
+;; - the next time you edit a ferret file, you should get lots of pretty colors
+
+;; Bugs to verschell@neptune.gsfc.nasa.gov
+
+;;; Code:
+
+(defconst ferret-mode-version &quot;version 0.02.0&quot;)
+
+(defgroup ferret nil
+  &quot;Ferret mode for Emacs&quot;
+  :group 'languages)
+
+;; font-lock-comment-face        - COMMENTS
+;; font-lock-function-name-face  - FUNCTION NAMES, SHELL COMMANDS
+;; font-lock-keyword-face        - COMMANDS, SUBCOMMANDS, OPERATORS, FUNCTIONS,
+;;                                 TRANSFORMATIONS
+;; font-lock-reference-face
+;; font-lock-string-face         - STRINGS
+;; font-lock-type-face           - QUALIFIERS
+;; font-lock-variable-name-face
+
+(let ((comment-chars &quot;!&quot;)
+      (ferret-keywords
+;      (&quot;alias&quot; &quot;animate&quot; &quot;axis&quot; &quot;cancel&quot; &quot;commands&quot; &quot;contour&quot; &quot;data_set&quot;
+;       &quot;dataset&quot; &quot;define&quot; &quot;elif&quot; &quot;else&quot; &quot;endif&quot; &quot;exit&quot; &quot;expression&quot; &quot;file&quot;
+;       &quot;fill&quot; &quot;frame&quot; &quot;function&quot; &quot;grid&quot; &quot;help&quot; &quot;if&quot; &quot;label&quot; &quot;let&quot; &quot;list&quot;
+;       &quot;load&quot; &quot;memory&quot; &quot;message&quot; &quot;mode&quot; &quot;movie&quot; &quot;palette&quot; &quot;plot&quot; &quot;pplus&quot;
+;       &quot;queries&quot; &quot;query&quot; &quot;quit&quot; &quot;region&quot; &quot;repeat&quot; &quot;save&quot; &quot;say&quot; &quot;set&quot; &quot;shade&quot;
+;       &quot;show&quot; &quot;statistics&quot; &quot;symbol&quot; &quot;then&quot; &quot;transform&quot; &quot;unalias&quot; &quot;use&quot; &quot;user&quot;
+;       &quot;variable&quot; &quot;vector&quot; &quot;viewport&quot; &quot;window&quot; &quot;wire&quot;))
+       (concat &quot;a\\(lias?\\|nima?t?e?\\|xis\\)\\|&quot;
+	       &quot;c\\(an?ce?l?\\|o\\(mma?n?d?s?\\|nto?u?r?\\)\\)\\|&quot;
+	       &quot;d\\(ata[_]*?s?e?t?\\|efi?n?e?\\)\\|&quot;
+	       &quot;e\\(l\\(if\\|se\\)\\|ndif?\\|x\\(it\\|pre?s?s?i?o?n?\\)\\)\\|&quot;
+	       &quot;f\\(i\\(le\\|ll\\)\\|rame?\\|unct?i?o?n?\\)\\|&quot;
+	       &quot;grid\\|help\\|if\\|&quot;
+	       &quot;l\\(abe?l?\\|et\\|ist\\|oad\\)\\|&quot;
+	       &quot;m\\(e\\(mo?r?y?\\|ssa?g?e?\\)\\|o\\(de\\|vi?e?\\)\\)\\|&quot;
+	       &quot;p\\(ale?t?t?e?\\|lot\\|plu?s?\\)\\|&quot;
+	       &quot;qu\\(e\\(ri?e?s?\\|ry?\\)\\|it\\)\\|&quot;
+	       &quot;re\\(gio?n?\\|pe?a?t?\\)\\|&quot;
+	       &quot;s\\(a\\(ve\\|y\\)\\|et\\|h\\(ade?\\|ow\\)\\|tati?s?t?i?c?s?&quot;
+	       &quot;\\|ymbo?l?\\)\\|&quot;
+	       &quot;t\\(hen\\|rans?f?o?r?m?\\)\\|&quot;
+	       &quot;u\\(nali?a?s?\\|ser?\\)\\|&quot;
+	       &quot;v\\(ari?a?b?l?e?|ect?o?r?\\|iewp?o?r?t?\\)\\|&quot;
+	       &quot;wi\\(ndo?w?\\|re\\)&quot;))
+      (ferret-qualifiers
+;       &quot;all&quot; &quot;append&quot; &quot;aspect&quot; &quot;bad&quot; &quot;brief&quot; &quot;clear&quot; &quot;clip&quot; &quot;clobber&quot;
+;       &quot;columns&quot; &quot;command&quot; &quot;compress&quot; &quot;continue&quot; &quot;d&quot; &quot;data_set&quot; &quot;dataset&quot;
+;       &quot;default&quot; &quot;depth&quot; &quot;di&quot; &quot;diag&quot; &quot;dj&quot; &quot;dk&quot; &quot;dl&quot; &quot;dt&quot; &quot;dx&quot; &quot;dy&quot; &quot;dynamic&quot;
+;       &quot;dz&quot; &quot;external&quot; &quot;ez&quot; &quot;file&quot; &quot;fill&quot; &quot;format&quot; &quot;frame&quot; &quot;free&quot; &quot;from_data&quot;
+;       &quot;fromdata&quot; &quot;full&quot; &quot;grid&quot; &quot;heading&quot; &quot;help&quot; &quot;i&quot; &quot;ignore&quot; &quot;ilimits&quot; &quot;j&quot;
+;       &quot;jlimits&quot; &quot;k&quot; &quot;key&quot; &quot;klimits&quot; &quot;l&quot; &quot;laser&quot; &quot;last&quot; &quot;length&quot; &quot;levels&quot;
+;       &quot;like&quot; &quot;line&quot; &quot;llimits&quot; &quot;location&quot; &quot;modulo&quot; &quot;name&quot; &quot;new&quot; &quot;noaxes&quot;
+;       &quot;noerror&quot; &quot;nohead&quot; &quot;nokey&quot; &quot;nolabel&quot; &quot;npoints&quot; &quot;opt1&quot; &quot;opt2&quot; &quot;order&quot;
+;       &quot;origin&quot; &quot;overlay&quot; &quot;palette&quot; &quot;pen&quot; &quot;permanent&quot; &quot;precision&quot; &quot;quiet&quot;
+;       &quot;reset&quot; &quot;restore&quot; &quot;rigid&quot; &quot;save&quot; &quot;set_up&quot; &quot;single&quot; &quot;size&quot; &quot;skip&quot;
+;       &quot;start&quot; &quot;symbol&quot; &quot;t&quot; &quot;t0&quot; &quot;temporary&quot; &quot;text&quot; &quot;title&quot; &quot;tlimits&quot;
+;       &quot;tranpose&quot; &quot;units&quot; &quot;user&quot; &quot;variable&quot; &quot;viewpoint&quot; &quot;vs&quot; &quot;x&quot; &quot;xlimits&quot;
+;       &quot;xskip&quot; &quot;y&quot; &quot;ylimits&quot; &quot;yskip&quot; &quot;z&quot; &quot;zlimits&quot; &quot;zscale&quot;
+       (concat &quot;a\\(ll\\|ppe?n?d?\\|spe?c?t?\\)\\|&quot;
+	       &quot;b\\(ad\\|rief?\\)\\|&quot;
+	       &quot;c\\(l\\(ear?\\|ip\\|obb?e?r?\\)\\|o\\(lu?m?n?s?\\|m\\(ma?n?d?&quot;
+	       &quot;\\|mpr?e?s?s?\\)\\|nti?n?u?e?\\)\\)\\|&quot;
+	       &quot;d\\(\\|ata[_]*s?e?t?\\|e\\(fa?u?l?t?\\|pt?h?\\)\\|i\\(\\|ag\\)&quot;
+	       &quot;\\|j\\|k\\|l\\|t\\|x\\|y\\(\\|na?m?i?c?\\)\\|z\\)\\|&quot;
+	       &quot;e\\(xte?r?n?a?l?\\|z\\)\\|&quot;
+	       &quot;f\\(il[el]\\|orm?a?t?\\|r\\(ame?\\|ee\\|om[_]*d?a?t?a?\\)&quot;
+	       &quot;\\|ull\\)\\|&quot;
+	       &quot;grid\\|&quot;
+	       &quot;he\\(adi?n?g?\\|lp\\)\\|&quot;
+	       &quot;i\\(\\|gno?r?e?\\|li?m?i?t?s?\\)\\|&quot;
+	       &quot;j\\(\\|li?m?i?t?s?\\)\\|&quot;
+	       &quot;k\\(\\|ey\\|li?m?i?t?s?\\)\\|&quot;
+	       &quot;l\\(\\|as\\(er?\\|t\\)\\|e\\(ngt?h?\\|ve?l?s?\\)\\|i\\(ke\\|ne&quot;
+	       &quot;\\)\\|li?m?i?t?s?\\|oca?t?i?o?n?\\)\\|&quot;
+	       &quot;modu?l?o?\\|&quot;
+	       &quot;n\\(ame\\|ew\\|o\\(axe?s?\\|err?o?r?\\|hea?d?\\|key?&quot;
+	       &quot;\\|lab?e?l?\\)\\|poin?t?s?\\)\\|&quot;
+	       &quot;o\\(p\\(t1\\|t2\\)\\|r\\(der?\\|igi?n?\\)\\|verl?a?y?\\)\\|&quot;
+	       &quot;p\\(ale?t?t?e?\\|e\\(n\\|rma?n?e?n?t?\\)\\|reci?s?i?o?n?\\)\\|&quot;
+	       &quot;quiet?\\|&quot;
+	       &quot;r\\(e\\(s\\(et?\\|to?r?e?\\)\\)\\|igi?d?\\)\\|&quot;
+	       &quot;s\\(ave?\\|et_?u?p?\\|i\\(ngl?e?\\|ze\\)\\|kip\\|tart?&quot;
+	       &quot;\\|ymb?o?l?\\)\\|&quot;
+	       &quot;t\\(\\|0\\|e\\(mpo?r?a?r?y?\\|xt\\)\\|itl?e?\\|li?m?i?t?s?&quot;
+	       &quot;\\|ranp?o?s?e?\\)\\|&quot;
+	       &quot;u\\(nits?\\|ser?\\)\\|&quot;
+	       &quot;v\\(ari?a?b?l?e?\\|iewp?o?i?n?t?\\|s\\)\\|&quot;
+	       &quot;x\\(\\|li?m?i?t?s?\\|ski?p?\\)\\|&quot;
+	       &quot;y\\(\\|li?m?i?t?s?\\|ski?p?\\)\\|&quot;
+	       &quot;z\\(\\|li?m?i?t?s?\\|sca?l?e?\\)&quot;))
+      (ferret-operators
+;       &quot;and&quot; &quot;eq&quot; &quot;ge&quot; &quot;gt&quot; &quot;le&quot; &quot;lt&quot; &quot;ne&quot; &quot;or&quot;
+       (concat &quot;and\\|eq\\|g[et]\\|l[et]\\|ne\\|or&quot;))
+      (ferret-functions
+;       &quot;abs&quot; &quot;acos&quot; &quot;asin&quot; &quot;atan&quot; &quot;atan2&quot; &quot;cos&quot; &quot;days1900&quot; &quot;exp&quot; &quot;ignore0&quot;
+;       &quot;int&quot; &quot;ln&quot; &quot;log&quot; &quot;max&quot; &quot;min&quot; &quot;missing&quot; &quot;mod&quot; &quot;randn&quot; &quot;randu&quot; &quot;reshape&quot;
+;       &quot;rho_un&quot; &quot;sin&quot; &quot;tan&quot; &quot;theta_fo&quot; &quot;times2&quot; &quot;unravel&quot; &quot;zaxreplace&quot;
+       (concat &quot;a\\(bs\\|cos\\|sin\\|tan2?\\)\\|cos\\|days1900\\|exp\\|&quot;
+	       &quot;i\\(gnore0\\|nt\\)\\|l\\(n\\|og\\)\\|m\\(ax\\|i\\(n\\|ssing\\)&quot;
+	       &quot;\\|od\\)\\|r\\(and[nu]\\|eshape\\|ho_un\\)\\|sin\\|t\\(an\\|&quot;
+	       &quot;heta_fo\\|imes2\\)\\|unravel\\|zaxreplace&quot;))
+      (ferret-transformations
+;       &quot;asn&quot; &quot;ave&quot; &quot;ave&quot; &quot;cda&quot; &quot;cdb&quot; &quot;cia&quot; &quot;cib&quot; &quot;ddb&quot; &quot;ddc&quot; &quot;ddf&quot; &quot;din&quot;
+;       &quot;fav&quot; &quot;fln&quot; &quot;fnr&quot; &quot;iin&quot; &quot;itp&quot; &quot;lin&quot; &quot;loc&quot; &quot;max&quot; &quot;max&quot; &quot;min&quot; &quot;min&quot;
+;       &quot;mod&quot; &quot;modmax&quot; &quot;modmin&quot; &quot;modngd&quot; &quot;modsum&quot; &quot;modvar&quot; &quot;nbd&quot; &quot;ngd&quot; &quot;ngd&quot;
+;       &quot;rsum&quot; &quot;sbn&quot; &quot;sbx&quot; &quot;shf&quot; &quot;shn&quot; &quot;spz&quot; &quot;sum&quot; &quot;sum&quot; &quot;swl&quot; &quot;var&quot; &quot;var&quot;
+;       &quot;weq&quot; &quot;xact&quot;
+       (concat &quot;a\\(sn\\|ve\\)\\|c\\(d[ab]\\|i[ab]\\)\\|d\\(d[bcf]\\|in\\)\\|&quot;
+	       &quot;f\\(av\\|l[nr]\\)i\\(in\\|tp\\)\\|l\\(in\\|oc\\)\\|m\\(ax\\|in&quot;
+	       &quot;\\|od\\(\\|m\\(ax\\|in\\)\\|ngd\\|sum\\|var\\)\\)\\|n[bg]d&quot;
+	       &quot;\\|rsum\\|s\\(b[nx]\\|h[fn]\\|pz\\|um\\|wl\\)\\|var\\|weq&quot;
+	       &quot;\\|xact&quot;))
+      )
+
+  (setq ferret-font-lock-keywords
+   (list
+    '(&quot;\&quot;[^'\n]*'?&quot; . font-lock-comment-face)
+    (list (concat &quot;\\&lt;\\(go\\|spaw\\|spawn\\)\\&gt;[ \t]*\\(\\sw+\\)?&quot;)
+       '(1 font-lock-keyword-face)
+       '(2 font-lock-function-name-face nil t))
+   (cons (concat &quot;\\/\\(&quot; ferret-qualifiers &quot;\\)\\&gt;&quot;) 'font-lock-type-face)
+   (concat &quot;\\&lt;\\(&quot; ferret-keywords &quot;\\)\\&gt;&quot;)
+   (concat &quot;\\&lt;\\(&quot; ferret-operators &quot;\\)\\&gt;&quot;)
+   (concat &quot;\\&lt;\\(&quot; ferret-functions &quot;\\)\\&gt;&quot;)
+   (concat &quot;\\@\\(&quot; ferret-transformations &quot;\\)\\&gt;&quot;)
+   ))
+  &quot;Default expressions to highlight in Ferret mode.&quot;)
+
+-------------------------------------------------------------------------------
+;;;###autoload
+(require 'derived)
+
+(define-derived-mode ferret-mode text-mode &quot;Ferret&quot;
+  &quot;Major mode for editing ferret .jnl files.
+Special commands:
+\\{ferret-mode-map}&quot;
+  (set (make-local-variable 'comment-start) &quot;! &quot;)
+  (set-syntax-table (copy-syntax-table))
+  (modify-syntax-entry ?! &quot;&lt;&quot;)
+  (modify-syntax-entry ?\n &quot;&gt;&quot;)
+  (set (make-local-variable 'font-lock-defaults)
+       '(ferret-font-lock-keywords nil t)))
+
+(provide 'ferret)
+
+;;; ferret.el ends here
+
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-614-5669  Fax: 301-614-5666    Greenbelt, MD 20771
+
+
+		     Better Living Through Denial
+               ** USQC Certified: 100% Microsoft Free **
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00126" href="msg00126.html">Emacs ferret-mode?</a></strong>
+<ul><li><em>From:</em> David Oxilia</li></ul></li>
+<li><strong><a name="00442" href="msg00442.html">Re: Emacs ferret-mode?</a></strong>
+<ul><li><em>From:</em> Mark A. Verschell</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00442.html">Re: Emacs ferret-mode?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00127.html">Reading Ascii data file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00442.html">Thread Prev</a>][<a href="msg00127.html">Thread Next</a>][<A HREF="threads.html#00443">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

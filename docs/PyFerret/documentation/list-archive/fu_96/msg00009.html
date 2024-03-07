@@ -1,0 +1,205 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re:re: Namelist record problems on IBM RS/6000 -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Fri, 16 Feb 1996 11:19:55 &#45;0800 -->
+<!--X-Message-Id: 9602161128.ZM15343@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 9602161234.AA16681@raptor.palmod.uni&#45;bremen.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re:re: Namelist record problems on IBM RS/6000</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00008.html">Thread Prev</a>][<a href="msg00010.html">Thread Next</a>][<A HREF="threads.html#00009">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re:re: Namelist record problems on IBM RS/6000</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re:re: Namelist record problems on IBM RS/6000</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Fri, 16 Feb 1996 11:28:43 -0800</li>
+<li>Cc: <A HREF="mailto:anma@DOMAIN.HIDDEN">anma@xxxxxxxxxxxxxxxxxxxxxxxxxxx</A>, <A HREF="mailto:kobrien@DOMAIN.HIDDEN">kobrien@xxxxxxxxxxxxx</A>,       <A HREF="mailto:davison@DOMAIN.HIDDEN">davison@xxxxxxxxxxxxx</A></li>
+<li>In-reply-to: anma@raptor.palmod.uni-bremen.de (Andreas Manschke)       &quot;Namelist record problems on IBM RS/6000&quot; (Feb 16,  1:34pm)</li>
+<li>References: &lt;<a href="msg00008.html">9602161234.AA16681@raptor.palmod.uni-bremen.de</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+	* * * * Namelist READs on IBM/AIX * * * *
+
+Hi Andreas,
+
+I believe there is a simple environment variable change on IBM/AIX systems that
+can be used to make the Namelist READs work correctly. An example of the
+command to set this environment variable in the c shell is:
+
+	% setenv XLFRTEOPTS namelist=old
+
+This command can be inserted into the users .login file.
+
+IBM has changed the way it formats Namelists in its recent versions of &quot;xlf&quot;
+(a.k.a. &quot;f77&quot; in other Unix environments). They provided the environment
+variable XLFRTEOPTS as a means to restore the previous behavior. (Don't you
+love it!)
+
+We will insert an explanation regarding this environment variable into the file
+$FER_DIR/README.AIX for future anonymous ftp users. Thanks for pointing out the
+omission.
+
+	- steve
+
+=============================================================================
+
+On Feb 16,  1:34pm, Andreas Manschke wrote:
+&gt; Subject: Namelist record problems on IBM RS/6000
+&gt; Hi,
+&gt;
+&gt; please excuse me if this topic is already known to the
+&gt; ferret community, but I'm quite new and don't know what
+&gt; has happend in this group before.
+&gt;
+&gt; I have just copied FERRET Version 4.12 for IBM RS/6000,
+&gt; all files are from abyss.pmel.noaa.gov:/pub/ibm_aix
+&gt;
+&gt; Installation was very easy, but during the tutorial
+&gt; ( GO tutorial ) there were problems with the description
+&gt; files:
+&gt;
+&gt; ME&gt; source /usr/local/lib/ferret_paths
+&gt; appending ferret path
+&gt; ME&gt; ferret
+&gt;         NOAA/PMEL TMAP
+&gt;         Program FERRET (no GUI)
+&gt;         Version 4.12 - 01/03/96
+&gt;         16-Feb-96 13:16
+&gt;
+&gt; yes? SET DATA etopo120.des
+&gt;  **TMAP ERR: Error in namelist record
+&gt;              Didn't find: FORMAT_RECORD; or file not descriptor file
+&gt;              Data set: /usr/local/ferret/fer_dsets/descr/etopo120.des
+&gt; yes?
+&gt;
+&gt;
+&gt; The problem remains for all fer_dsets/descr/*.des.
+&gt;
+&gt; The solution was to change all description files (fer_dsets/descr/*.des)
+&gt; to Fortran-90 NAMELIST standard, i.e. records begin with
+&gt; &amp;RECORD_NAME   (instead of $RECORD_NAME)
+&gt; and end with
+&gt; /              (instead of $END)
+&gt;
+&gt;
+&gt;
+&gt; The following small script should do the changes:
+&gt;
+&gt; #!/bin/sh
+&gt; for filename in `ls *.des`
+&gt; do
+&gt;   if [ -f $filename.1 ]
+&gt;      then
+&gt;      echo &quot;$filename.1 exists ! Overwrite ? (y/n)&quot;
+&gt;      read answer
+&gt;      if [ &quot;$answer&quot; = &quot;y&quot; -o &quot;$answer&quot; = &quot;Y&quot; ]
+&gt;         then
+&gt;         /bin/mv -i $filename $filename.orig
+&gt;         sed -e 's/\$END/\//g' $filename.orig &gt; $filename.1
+&gt;         sed -e 's/\$/\&amp;/g' $filename.1 &gt; $filename
+&gt;         /bin/rm $filename.1
+&gt;         echo &quot;$filename changed&quot;
+&gt;         else
+&gt;         echo &quot;Skipping $filename&quot;
+&gt;      fi
+&gt;      else
+&gt;      /bin/mv -i $filename $filename.orig
+&gt;      sed -e 's/\$END/\//g' $filename.orig &gt; $filename.1
+&gt;      sed -e 's/\$/\&amp;/g' $filename.1 &gt; $filename
+&gt;      /bin/rm $filename.1
+&gt;      echo &quot;$filename changed&quot;
+&gt;   fi
+&gt; done
+&gt;
+&gt;
+&gt;
+&gt; Andreas.
+&gt;
+&gt;
+&gt; --
+&gt; *****************************************************************************
+&gt; * Dr. Andreas Manschke              | E-Mail: anma@palmod.uni-bremen.de     *
+&gt; * Universitaet Bremen               | <A  HREF="http://www.palmod.uni-bremen.de/~anma">http://www.palmod.uni-bremen.de/~anma</A> *
+&gt; * Fachbereich 5 - Geowissenschaften | Tel: +49 (0)421 218 7190              *
+&gt; * Postfach 33 04 40                 | Fax: +49 (0)421 218 7040              *
+&gt; * D-28334 Bremen                    |                                       *
+&gt; * Germany                           |                                       *
+&gt; *****************************************************************************
+&gt;
+&gt;-- End of excerpt from Andreas Manschke
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00008" href="msg00008.html">Namelist record problems on IBM RS/6000</a></strong>
+<ul><li><em>From:</em> Andreas Manschke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00008.html">Namelist record problems on IBM RS/6000</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00010.html">mpeg animations</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00008.html">Thread Prev</a>][<a href="msg00010.html">Thread Next</a>][<A HREF="threads.html#00009">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

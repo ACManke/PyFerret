@@ -1,0 +1,303 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: D_TIME_UNIT (monthly axis time encoding) -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Thu, 20 Nov 1997 08:47:26 &#45;0800 -->
+<!--X-Message-Id: 9711200842.ZM6957@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 34742721.41C6@jungle.polytechnique.fr -->
+<!--X-Reference: patrick@jungle.POLYTECHNIQUE.FR -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: D_TIME_UNIT (monthly axis time encoding)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00199.html">Thread Prev</a>][<a href="msg00209.html">Thread Next</a>][<A HREF="threads.html#00202">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: D_TIME_UNIT (monthly axis time encoding)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>BROCKMANN_Patrick &lt;<A HREF="mailto:patrick@DOMAIN.HIDDEN">patrick@xxxxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: D_TIME_UNIT (monthly axis time encoding)</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Thu, 20 Nov 1997 08:42:42 -0800</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Encoding: 2 TEXT BOUNDARY, 110 MESSAGE, 2 TEXT BOUNDARY, 112 MESSAGE, 3 TEXT BOUNDARY</li>
+<li>In-reply-to: BROCKMANN_Patrick &lt;patrick@jungle.POLYTECHNIQUE.FR&gt;       &quot;D_TIME_UNIT in a multi netCDF descriptor file&quot; (Nov 20,  1:03pm)</li>
+<li>References: &lt;<a href="msg00199.html">34742721.41C6@jungle.polytechnique.fr</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+		*** HELP WITH FERRET MONTHLY AXES ***
+
+		see also discussion in the FAQ at
+    <A  HREF="http://tmap.pmel.noaa.gov/ferret/FAQ/data_management/equal_months.html">http://tmap.pmel.noaa.gov/ferret/FAQ/data_management/equal_months.html</A>
+
+--------------------------
+
+Hi Patrick,
+
+A &quot;month&quot; is always a problematic unit, since it is ambiguous. The best
+solution is to use a well-defined unit such as an hour (i.e. D_TIME_UNIT=3600
+seconds) and then encode your months in terms of the number of hours. I will
+attach the descriptor file coads_climatology.des that illustrates this
+approach.
+
+If you already have a collection of NetCDF files that have embedded in them a
+time step encoding of 1.0, 2.0, 3.0, ... representing month number then the
+easiest solution is fix the data set on-the-fly in a Ferret script using
+
+	use climatological_axes			! defines axis  &quot;MONTH_REG&quot;
+	cancel data climatological_axes		! axes are persistent
+
+	set data my_MC_data
+	LET/D=my_MC_data var1_corrected = var1[GT=MONTH_REG@ASN]
+	.
+	.
+	.
+
+Put these lines into a script called &quot;my_MC_data.jnl&quot; and then use
+&quot;yes? GO my_MC_data&quot; instead of &quot;yes? use my_MC_data&quot; -- the variables
+var1_corrected (etc.) will have the time encoding that you want.
+
+Note that Ferret does have a unit &quot;month&quot; defined. It is 2628000 seconds (730
+hours) ... 1/12 of a 365 day year (for modeling purposes). It is not a good
+idea to build a modulo climatological axis from this axis since it will &quot;drift&quot;
+significantly off over many years due to the absence of leap years.
+
+	- steve
+
+P.S. The bug you found earlier in the L=12 point of the climatological axis has
+been fixed in version 4.9 -- expect to see it early next week!
+
+========================================================================
+
+On Nov 20,  1:03pm, BROCKMANN_Patrick wrote:
+&gt; Subject: D_TIME_UNIT in a multi netCDF descriptor file
+&gt; Dear ferreters,
+&gt;
+&gt; Thank you for the trick to get the last timestep of
+&gt; a climatological axes (shade/L=12 clim[L=11:12]).
+&gt;
+&gt; But I still have a problem using this time climatological axes
+&gt; and my own Multi netCDF.
+&gt;
+&gt; The problem comes from the unrecognition of my time axis which
+&gt; is not read as monthly.
+&gt; To correct this, I'd like to know what is the exact value of
+&gt; the namelist entity called D_TIME_UNIT in the descriptor file if
+&gt; I want to represent months.
+&gt;
+&gt; I have already tried 2592000s (for a month of 30 days),
+&gt; 2629746s (for a month of 730.485 hours), 2635200 (for a month of 30.5
+&gt; days)
+&gt; but none of them are recognized when I open my multi netCDF
+&gt; and I look to the time axis.
+&gt;
+&gt; **************************************************
+&gt; yes? show grid/T AM_29
+&gt;     GRID GDV11
+&gt;  name       axis              # pts   start                end
+&gt;  LON       LONGITUDE          360mr   179.5W               179.5E(539.5)
+&gt;  LAT       LATITUDE           180 r   89.5S                89.5N
+&gt;  normal    Z
+&gt;  TIME8     TIME                24 r   17-JAN-1988 19:46    09-DEC-1989
+&gt; 22:53
+&gt;
+&gt;            L     T                 BOX_SIZE       TIME_STEP ()
+&gt;            1&gt;  17-JAN-1988 19:46:40  1              1056.5
+&gt;            2&gt;  16-FEB-1988 22:00:00  1              1057.5
+&gt;            3&gt;  18-MAR-1988 00:13:20  1              1058.5
+&gt;            4&gt;  17-APR-1988 02:26:40  1              1059.5
+&gt; ...
+&gt;
+&gt; --&gt; Nothing is written in the parenthesis after TIME_STEP
+&gt;
+&gt; **************************************************
+&gt;
+&gt; Thanks again
+&gt;
+&gt; --
+&gt; Patrick BROCKMANN - Laboratoire de Meteorologie Dynamique
+&gt; Groupe d'Analyse du Rayonnement Atmospherique
+&gt; Ecole Polytechnique - Route Departementale 36
+&gt; 91128 Palaiseau Cedex - FRANCE
+&gt; Tel: 01 69 33 31 91 - Fax: 01 69 33 30 05
+&gt; <A  HREF="mailto:Patrick@Jungle.Polytechnique.Fr">mailto:Patrick@Jungle.Polytechnique.Fr</A>
+&gt; <A  HREF="http://Jungle.Polytechnique.Fr">http://Jungle.Polytechnique.Fr</A>
+&gt;-- End of excerpt from BROCKMANN_Patrick
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+</pre>
+<pre>
+1 ********************************************************************************
+ *        NOAA/PMEL Tropical Modeling and Analysis Program, Seattle, WA.        *
+ ********************************************************************************
+ $FORMAT_RECORD
+ D_TYPE  = '  GT',
+ D_FORMAT        = '  1C',
+ D_SOURCE_CLASS  = 'OBSERVED DATA    ',
+ D_SOURCE        = ' ',
+ D_SUBSOURCE     = 'SURFACE MARINE',
+ D_PROG_REV      = '0.00'
+ $END
+ $BACKGROUND_RECORD
+ D_EXPNUM        = 'COAD',
+ D_MODNUM        = 'MNCL',
+ D_TITLE 	 = 'COADS Monthly Climatology (1946-1989)',
+ D_MOD_TITLE     = ' ',
+ D_FORCING_SET   = '???             ',
+ D_T0TIME        = '1-JAN-0000 00:00:00',
+ D_TIME_UNIT     =   3600.000    ,
+ D_TIME_MODULO   = .TRUE.,
+ D_NTEGRATE_TSTEP =   1.000000    ,
+ D_NTUPLE        =           1,
+ D_TIME_RUN      = '1-JUL-1991',
+ D_WHO_RANIT     = 'Jerry Davison',
+ D_TIME_MADE     = '1-JUL-1991',
+ D_WHO_MADEIT    = 'Jerry Davison',
+ D_AUX_MODNUM    = 6*'    ',
+ D_ADD_PARM      = 6*'      ',
+ d_grid_filename = 'coads.grd',5*' '
+ $END
+ $MESSAGE_RECORD
+ D_MESSAGE       = ' ',
+ D_ALERT_ON_OPEN = F,
+ D_ALERT_ON_OUTPUT = F
+ $END
+ $VARIABLE_RECORD
+ D_VAR_CODE      = 'SST',
+ D_VAR_TITLE     = 'SEA SURFACE TEMPERATURE',
+ D_VAR_TITL_MOD  = '                                        ',
+ D_VAR_UNITS     = 'Deg C',
+ D_GRID_NAME     = 'COADS',
+ D_MISSING_FLAG  = -1.0e34,
+ D_BAD_FLAG      = -1.0e34,
+ D_ORDERING      = 'WE', 'SN', 'UD', 'TI',
+ D_GRID_START    =          1,          1,           1,           1,
+ D_GRID_END      =        180,         90,           1,          12,
+ D_PRECISION     = 'SINGLE      ',
+ D_AUX_SET_NUM   =           0
+ $END
+ **************************************************
+ $VARIABLE_RECORD
+ D_VAR_CODE      = 'AIRT',
+ D_VAR_TITLE     = 'AIR TEMPERATURE',
+ D_VAR_UNITS     = 'DEG C'
+ $END
+ **************************************************
+ $VARIABLE_RECORD
+ D_VAR_CODE      = 'SPEH',
+ D_VAR_TITLE     = 'SPECIFIC HUMIDITY',
+ D_VAR_UNITS     = 'G/KG'
+ $END
+ **************************************************
+ $VARIABLE_RECORD
+ D_VAR_CODE      = 'WSPD',
+ D_VAR_TITLE     = 'WIND SPEED',
+ D_VAR_UNITS     = 'M/S'
+ $END
+ **************************************************
+ $VARIABLE_RECORD
+ D_VAR_CODE      = 'UWND',
+ D_VAR_TITLE     = 'ZONAL WIND',
+ $END
+ **************************************************
+ $VARIABLE_RECORD
+ D_VAR_CODE      = 'VWND',
+ D_VAR_TITLE     = 'MERIDIONAL WIND',
+ $END
+ **************************************************
+ $VARIABLE_RECORD
+ D_VAR_CODE      = 'SLP',
+ D_VAR_TITLE     = 'SEA LEVEL PRESSURE',
+ D_VAR_UNITS     = 'MB'
+ $END
+ **************************************************
+ $VARIABLE_RECORD
+ D_VAR_CODE = '**END OF VARS**'
+ $END
+ **************************************************
+ $EXTRA_RECORD
+ $END
+ **************************************************
+ $STEPFILE_RECORD
+ s_filename      = 'coads_climatology.001' ,
+ S_AUX_SET_NUM   =           0,
+ S_START =   366.0 ,
+ S_END   =   8401.336 ,
+ S_DELTA =   730.485 ,
+ S_NUM_OF_FILES  =           1,
+ S_REGVARFLAG    = '     ',
+ S_INDEX = '                       '
+ $END
+ * UNIX precision bug... S_END   =   8401.335 ,
+ **************************************************
+ $STEPFILE_RECORD
+ s_filename = '**END OF STEPFILES**'
+ $END
+ **************************************************
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00199" href="msg00199.html">D_TIME_UNIT in a multi netCDF descriptor file</a></strong>
+<ul><li><em>From:</em> BROCKMANN_Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00199.html">D_TIME_UNIT in a multi netCDF descriptor file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00209.html">Line types in plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00199.html">Thread Prev</a>][<a href="msg00209.html">Thread Next</a>][<A HREF="threads.html#00202">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

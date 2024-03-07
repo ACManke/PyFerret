@@ -1,0 +1,175 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Vector plots -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Tue, 22 Oct 1996 16:43:13 &#45;0700 -->
+<!--X-Message-Id: 9610221636.ZM7288@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 326B0550.345F@oar.com -->
+<!--X-Reference: dsd@oar.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Vector plots</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00089.html">Thread Prev</a>][<a href="msg00090.html">Thread Next</a>][<A HREF="threads.html#00092">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Vector plots</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Donald S. Dunbar&quot; &lt;<A HREF="mailto:dsd@DOMAIN.HIDDEN">dsd@xxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Vector plots</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Tue, 22 Oct 1996 16:36:00 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &quot;Donald S. Dunbar&quot; &lt;dsd@oar.com&gt;       &quot;Vector plots&quot; (Oct 20, 10:08pm)</li>
+<li>References: &lt;<a href="msg00089.html">326B0550.345F@oar.com</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+	* * * Two good questions regarding staggered grids * * *
+
+
+On Oct 20, 10:08pm, Donald S. Dunbar wrote:
+&gt; Subject: Vector plots
+&gt; The Ferret user's guide is not clear on one point concerning vector
+&gt; plots.  When the (U,V) components are on different grids (e.g., a
+&gt; staggered numerical model grid) what does Ferret do?
+
+Hi Donald,
+
+Good question. If you give the command
+
+	yes? VECTOR u,v
+
+where the variables U and V are actually on staggered grids what you will get
+is a plot which is
+  i) labelled correctly relative to the first variable (&quot;u&quot;)
+ ii) the i,j point on variable v will be associated with the i,j point of u
+	despite the fact that U(i,j) is not physically co-located with V(i,j)
+iii) you will get the warning message
+	&quot;X and Y components are offset&quot;
+     at the upper right on your plot
+
+&gt; With U (V) on the
+&gt; left (bottom) of a cell the command &quot;vector u[k=1],v[k=1]&quot; seems to
+&gt; generate the same plot as &quot;vector u[g=s,i=1:M,j=1:N,k=1],
+&gt; v[g=s,i=1:M,j=1:N,k=1]&quot; where s (the salinity) is located at the center
+&gt; of a cell.  Are the plots the same?
+
+I expect that they are actually subtly different as the u and v points are
+interpolated from neighboring points.
+
+&gt;Does Ferret regrid U and V
+&gt; automatically to locate them at the same point?
+
+No. And it places that warning label on the plot to let you know.
+
+&gt;And another thing.  Why
+&gt; do I need to put the &quot;i=1:M,j=1:N&quot; in the brackets (M and N are the No.
+&gt; or cols and rows)?  If I omit them I get the message:
+&gt;
+&gt; **ERROR: inconsistent sizes of data regions: X and Y vector components
+&gt;
+&gt; even though the U and V grids are the same size.  Explicitly putting in
+&gt; the i and j ranges fixes the problem.
+
+To see what is happening here use the STAT command. I believe STAT will show
+you that the number of points in the U and V fields differ. This is a common
+occurrence with staggered grids. It happens in two cases:
+
+  i) If you request a region using &quot;world coordinates&quot; (e.g. X=130e:80w)
+	instead of index values (e.g. I=50:100): In this case the differing
+	number of points may occur because the same geographical limits
+	actually contain different numbers of points.
+
+ ii) If regridding by linear interpolation is used but the region is left
+	unspecified: When regions are unspecified the regridded result will
+	contain only those result points for which there were surrounding
+	points on the source grid from which to interpolate. If the source
+	grids differ between the two variables you are regridding, the
+	ability to regrid at the edges of the grid may vary, too. Hence
+	the sizes of the result may vary. If, on the other hand, you request
+	an explicit range for a regridded result (as you did) then Ferret
+	will supply exactly that size result. The edge points of the result,
+	however, may be missing value flags.
+
+I hope this helps.
+
+	- steve
+
+&gt; --
+&gt; ------------------------------------------------------
+&gt; D.S. Dunbar (dsd@oar.com)  Ocean Applied Research Ltd.
+&gt; 1864 Duchess Ave.  West Vancouver BC  V7V 1R1  CANADA
+&gt; ------------------------------------------------------
+&gt;-- End of excerpt from Donald S. Dunbar
+
+
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00089" href="msg00089.html">Vector plots</a></strong>
+<ul><li><em>From:</em> Donald S. Dunbar</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00089.html">Vector plots</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00090.html">Plotting coasts</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00089.html">Thread Prev</a>][<a href="msg00090.html">Thread Next</a>][<A HREF="threads.html#00092">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

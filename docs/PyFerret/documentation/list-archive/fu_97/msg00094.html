@@ -1,0 +1,157 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: WA3 Data -->
+<!--X-From-R13: [nunyyl Yhqfl <znunyylNavzohf.hcguo.occg.tb.vq> -->
+<!--X-Date: Tue, 3 Jun 1997 18:24:44 &#45;0700 -->
+<!--X-Message-Id: 199706040115.IAA07103@nimbus.upthb.bppt.go.id -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>WA3 Data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00093.html">Thread Prev</a>][<a href="msg00095.html">Thread Next</a>][<A HREF="threads.html#00094">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>WA3 Data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>WA3 Data</strong></li>
+<li><strong>From</strong>: <strong>Mahally Kudsy &lt;<A HREF="mailto:mahally@DOMAIN.HIDDEN">mahally@xxxxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 4 Jun 1997 08:15:24 +0700</li>
+<li>Cc: <A HREF="mailto:mahally@DOMAIN.HIDDEN">mahally@xxxxxxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+I downloaded ocean data from nic.fb4.noaa.gov(/pub/ocean/clim2/wa3)
+and they look good. I want to change the format to make it easier
+to analyse and visualize using ferret. The data is an output of a model
+which has a dimension of (ixs112,iys=81,ks=27). The value of the data 
+however are store in a 2 dimensional array of x-z slabs. For 
+example: t, temperature. Since t was computed for every point of the
+model grid, there will be a 112x81x27 values of t. This is the fortran
+code to read the data
+
+PARAMETER(ixs=112,iys=81,ks=27)
+integer*4 mask(ixs,iys)
+      dimension xt(ixs),xv(ixs),yt(iys),yv(iys),z(ks),spc(6)
+dimension t(ixs,ks),s(ixs,ks),u(ixs,ks),v(ixs,ks),tc(ixs,ks)
+dimension taux(ixs),tauy(ixs),hflx(ixs),sflx(ixs),swfx(ixs)
+     1         ,ps(ixs)
+      open (11,file='wkly.anal',form='unformatted')
+      read(11) imt,jmt,km,xt,xv,yt,yv,z,mask,spc
+      n3dsp = spc(1)
+      ndays = spc(2)
+      iyr   = spc(3) - 1900
+      imo   = spc(4)
+      iday  = spc(5)
+      ihr   = spc(6)
+      print *,ndays,' days average, ending on:',iyr,imo,iday,ihr
+      DO 70 J=1,IYS
+         read (iun,end=2000) u,v,t,s,tc,taux,tauy,ps,hflx,swfx
+  70  continue
+      STOP
+      END
+
+To extract u , I add a few line in the code
+such as
+ open(14,file='u.dat',form='formatted')
+and for writing out the u field 
+ write(14,u)
+
+In the model z is not evenly spaced. 
+To change the format I wrote a cdl code like this
+
+netcdf ecean {
+dimensions:
+        XAXIS = 112 ;
+        YAXIS = 81 ;
+        ZAXIS = 27;
+variables:
+        double XAXIS(XAXIS) ;
+                XAXIS:units = &quot;degrees_east&quot; ;
+        double YAXIS(YAXIS) ;
+                YAXIS:units = &quot;degrees_north&quot; ;
+               YAXIS:point_spacing = &quot;even&quot; ;
+        double ZAXIS(ZAXIS);
+                ZAXIS:units = &quot;CENTIMETERS&quot; ;
+                ZAXIS:positive = &quot;down&quot;;
+        float U(ZAXIS, XAXIS, YAXIS) ;
+                U: missing_value = -9.9999998e+33f ;
+                U: _FillValue = -9.9999998e+33f ;
+                U: long_name = &quot;zonal velocity&quot; ;
+                U: units = &quot;cm/sec&quot; ;
+// global attributes:
+data:
+XAXIS = 122.25, 123.75, 125.25, 126.75, 128.25, 129.75, 131.25, 132.75,
+       .....
+        (112 value)
+YAXIS = -35, -34, -33, -32, -31, -30, -29, -28, -27, -26, -25, -24, -23,
+        ..... (81 value)
+ZAXIS = 500, 1500, 2500, 3500, 4500, 5500, 6500, 7500, 8500, 9500, 10625,
+       ... 27 values
+U = ...... (112 x 27 ) x 81 values
+
+using ncgen -f I will get ocean.cdl
+
+I an not convinced to the result, especially because the variable
+statement U(ZAXIS, XAXIS, YAXIS) ; Is this way of writing is 
+correct? I was forced by ferret only to that way of writing until
+no error of ncgen resulted
+Please comment on this Steve
+
+Mahally
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00093.html">NetCDF to ASCII</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00095.html">Filters</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00093.html">Thread Prev</a>][<a href="msg00095.html">Thread Next</a>][<A HREF="threads.html#00094">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

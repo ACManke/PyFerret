@@ -1,0 +1,121 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: U,V at the Mixed Layer Depth -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 28 Oct 1999 14:53:18 &#45;0700 -->
+<!--X-Message-Id: 3818C5D9.C3F6BEF@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: U,V at the Mixed Layer Depth</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00329.html">Thread Prev</a>][<a href="msg00331.html">Thread Next</a>][<A HREF="threads.html#00345">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: U,V at the Mixed Layer Depth</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:lczeschel@DOMAIN.HIDDEN">lczeschel@xxxxxxxxxxxxxxx</A>, <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: U,V at the Mixed Layer Depth</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<A HREF="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 28 Oct 1999 14:53:29 -0700</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Lars,
+
+The relevant part of the on-line documentation is:
+
+<A  HREF="http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/chapter3.html#_1_96">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/chapter3.html#_1_96</A>
+
+Look at the examples there to understand what follows.
+
+You need to use the @WEQ transform to create an &quot;integration kernel&quot; but
+the @WEQ transform expects an axis (Z) where you have only a value.  So
+we need to create a field on which the @WEQ transform can work.
+
+The following should solve your problem
+
+let depth = z[g=u]
+let zero_at_mixed_layer = depth - mixed_layer_depth
+let u_integrand = u * zero_at_mixed_layer[k=@weq]
+let u_at_mixed_layer = u_integrand[k=@sum]
+
+Notes:
+
+1) Get the depth values associated with the grid of u
+2) 'mixed_layer_depth' is 2D but will be automatically 'promoted' to 3D
+(replicated along the Z axis of 'depth') to yield a 3D result
+3) 'u_integrand' is a 3D field with missing values everywhere except
+where 'zero_at_mixed_layer' = 0
+4) We integrate because @WEQ does interpolation and can return 2 non-bad
+flags (see the documentation).
+
+I hope that solves your problem.
+
+
+-- Jonathan Callahan
+
+
+&gt; Hello, everybody,
+&gt; 
+&gt; In my netcdf-file i have 3d fields of u,v and the 2d variable of the
+&gt; mixed layer depth.How can I get u,v at the mixed layer depth,
+&gt; without temerature and salinity fields.
+&gt; 
+&gt; Thanks for any answers.
+&gt; 
+&gt; Lars
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00329.html">U,V at the Mixed Layer Depth</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00331.html">Re: Ferret 5 under Solaris 7?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00329.html">Thread Prev</a>][<a href="msg00331.html">Thread Next</a>][<A HREF="threads.html#00345">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

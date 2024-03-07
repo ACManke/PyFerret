@@ -1,0 +1,199 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret "how to": split Z&#45;axis plot -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Mon, 23 Oct 1995 13:24:27 &#45;0700 -->
+<!--X-Message-Id: 9510231328.ZM1624@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret &quot;how to&quot;: split Z-axis plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00011.html">Thread Prev</a>][<a href="msg00013.html">Thread Next</a>][<A HREF="threads.html#00012">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret &quot;how to&quot;: split Z-axis plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Ferret &quot;how to&quot;: split Z-axis plot</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Mon, 23 Oct 1995 13:28:48 -0700</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+	Ferret &quot;how to&quot;: split Z-axis plot
+
+&gt; On Oct 20, 11:33am, Dingming Hu wrote:
+&gt; &gt; Subject: different vertical scales in a cross-section
+&gt;
+&gt;    &gt; I am trying to plot depth and latitude
+&gt;    &gt; sections of temperature from a global OGCM with top 1000m ploted in the
+&gt;    &gt; upper 1/3 of the panel and bottom 4000m in the bottom 2/3 of the panel.
+
+My apologies,
+
+I misunderstood this rather interesting question. Below is a script which
+produces the desired plot - a plot in which the vertical axis is split into two
+scale factors so that near-surface waters are &quot;magnified&quot; relative to the water
+at depth.  The substance of this script was provided by Joachim Dengg
+(jcd@splash.Princeton.EDU).
+
+An usage example is contained in the comment lines of the script.
+
+Note that the email system may introduce some spurious breaking of long lines
+-- you may need to make some hand repairs. This script will be included with
+the next anonymous ftp release.
+
+	cheers - steve
+
+=-====================================================
+
+\cancel mode verify
+! split_z.jnl
+! 10/95 - based on a script submitted by Joachim Dengg
+! Description: make a CONTOUR,SHADE, or FILL plot with a split vertical axis
+! producing a &quot;magnified&quot; view of the near-surface waters
+
+! usage:	       $1       $2    $3  $4  $5   $6     $7
+!   yes? GO split_z command  qualifs var top mid bottom split
+! $1 - the plot command (SHADE,FILL or CONT)  (default, &quot;FILL&quot;)
+! $2 - qualifiers to the plot command - /LEVELS and /PALETTE (default, none)
+! $3 - the variable to be plotted (use quotation marks if it contains commas)
+! $4 - the depth at the      top    of the plot (default=0)
+! $5 - the depth at the split point of the plot (default=1000)
+! $6 - the depth at the    bottom   of the plot (default=5000)
+! $7 - the fractio of the page given to the upper viewport (default=0.33)
+
+! example:
+!   yes? SET DATA levitus_climatology
+!   yes? SET WINDOW/ASPECT=1
+!   yes? go split_z FILL &quot;/lev=(0,4,.5)(0,30,2)&quot; &quot;temp[X=160W,Y=45S:45N]&quot; 0 500
+4000 0.4
+! Note 1: a taller, thinner window looks nicer ...
+!         yes? SET WINDOW/ASPECT=1
+! Note 2: this procedure will not work in a viewport since it uses viewports
+
+! set default values and check for argument errors
+define symbol cmnd $1&quot;FILL&quot;
+define symbol quals $2&quot;set_up&quot;
+define symbol var  $3&quot;&lt;Usage: GO split_z cmnd quals var top mid bottom split&quot;
+define symbol topZ $4&quot;0&quot;
+define symbol splitZ $5&quot;1000&quot;
+define symbol botZ $6&quot;5000&quot;
+define symbol vp_split `1-$7&quot;.33&quot;`
+
+! clear the screen
+cancel viewports
+
+! define viewports for top and bottom panels
+! &quot;/text=...&quot; scales the viewports consistently
+define viewport/text=.6/y=($vp_split),1 sp_u   ! upper
+define viewport/text=.6/y=0,($vp_split) sp_l   ! lower
+
+! the upper frame with the Y axis coming right to its bottom
+set view sp_u
+define symbol upper_axlen `($ppl$yorg)+($PPL$YLEN)`
+define symbol orig_yorg ($ppl$yorg)
+ppl origin ,0
+ppl axlen ,($upper_axlen)
+(($cmnd)/($quals)/z=($topZ):($botZ)/ylimits=($topZ):($splitZ)/set_up ($var))
+ppl title   	! no title under plot
+ppl axset 1,0	! no lower axis
+ppl xlab	! no X axis label
+ppl shakey 0	! no key drawn for upper half
+ppl ($cmnd)
+ppl origin ,($orig_yorg)	! restore Y origin
+
+! the lower frame with the Y axis coming almost to its top
+set view sp_l
+define symbol axis_gap 0.15
+define symbol lower_axlen `($VP_HEIGHT)-($ppl$yorg)-($axis_gap)`
+ppl axlen ,($lower_axlen)
+(($cmnd)/($quals)/z=($topZ):($botZ)/ylimits=($splitZ):($botZ)/set_up ($var))
+ppl axset 0,1	! no upper axis
+ppl ylab	! no Y axis label on this part
+ppl labs
+
+! set up the color key
+define symbol lower_right_x `($ppl$xorg)+($ppl$xlen)`
+define symbol lower_right_y `($ppl$yorg)`
+! see &quot;Plot Plus for Ferret Manual&quot; for shakey description
+ppl shakey
+1,1,.12,,,,`($lower_right_x)+0.3`,`($lower_right_x)+0.9`,`($lower_right_y)`,`($lower_right_y)+($lower_axlen)+($axis_gap)+($upper_axlen)`
+
+! plot the lower half and the key
+ppl ($cmnd)
+
+! clean up
+ppl axset 1,1
+cancel symbol cmnd
+cancel symbol quals
+cancel symbol var
+cancel symbol topZ
+cancel symbol splitZ
+cancel symbol botZ
+cancel symbol vp_split
+cancel symbol upper_axlen
+cancel symbol orig_yorg
+cancel symbol lower_right_x
+cancel symbol lower_right_y
+cancel symbol axis_gap
+cancel symbol lower_axlen
+set mode/last verify
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00011.html">Plotting model data in sigma coordinates</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00013.html">P.S. on Ferret &quot;how to&quot;: split Z-axis plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00011.html">Thread Prev</a>][<a href="msg00013.html">Thread Next</a>][<A HREF="threads.html#00012">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

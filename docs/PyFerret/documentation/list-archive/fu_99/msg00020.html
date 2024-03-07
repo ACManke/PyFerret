@@ -1,0 +1,191 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Geostrophic velocities in Ferret -->
+<!--X-From-R13: Rnivq Akvyvn <bkvyvnNAQS.ADEF.SRG> -->
+<!--X-Date: Fri, 15 Jan 1999 12:05:33 &#45;0800 -->
+<!--X-Message-Id: 369F9F76.F2A7983C@oce.orst.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Geostrophic velocities in Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00017.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00020">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Geostrophic velocities in Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;,       Bruno Levier &lt;<A HREF="mailto:blevier@DOMAIN.HIDDEN">blevier@xxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Geostrophic velocities in Ferret</strong></li>
+<li><strong>From</strong>: <strong>David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 15 Jan 1999 12:05:10 -0800</li>
+<li>Organization: COAS</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Salut encore Bruno,
+
+Your problem is not trivial in ferret but I think still doable. Its
+not clear from your mail what data you have (do you have T and S 
+varying in 3D space?). At any rate, here's a stab at it. The thermal
+wind relation will give you the vertical gradients of the geostrophic
+field in terms of horizontal density gradients:
+
+	(rho*f*u)_z = + g*rho_y
+
+	(rho*f*v)_z = - g*rho_x
+
+Here, rho is the density of the fluid, f is the Coriolis parameter
+and g is gravity. Subscripts denote partial differentiation (perhaps
+this is all clear to you). In a Boussinesq ocean (see any standard
+reference, eg Pond and Pickard), a good approximation to the above
+equations is:
+
+	rho*f*u_z = + g*rho_y
+
+	rho*f*v_z = - g*rho_x
+
+Hence, what you need to compute first is the density field from
+your (S,T,p) data via the EOS (you can do this with the ferret
+function rho_un, see manual p42). You can then compute horizontal
+gradients of the density field and obtain the vertical geostrophic
+shear, u_z and v_z. Then, integrate these in the vertical
+to obtain the geostrophic field. Below is an outline UNTESTED ferret
+script (more of an algorithm I would say). You'll have to modify it 
+for your application.
+
+I hope this helps.
+
+David.
+
+P.S. Hi Scott, how's snowy Montreal? Say hi to David from me.
+
+-------------
+
+! Set your data file (I assume you have a netCDF file of model output)
+use SaltTemp
+
+! Set parameters
+let g = 9.81
+let pi = 3.14159
+let omega = 7.292e-5
+let f = 2*omega*sin(y*pi/180)
+
+! Set region to all space (use actual values for ni, nj and nk)
+set reg/i=1:ni/j=1:nj/k=1:nk
+
+! Compute density
+! I'll assume you have two variables S and T in your data file and that
+! your vertical levels are in dbars (meters would be pretty close)
+let rho = rho_un(S,T,z)
+
+! Compute vertical shears
+let gamma = g/(rho*f)
+let u_z = gamma*rho[y=@DDC]
+let v_z = gamma*rho[x=@DDC]*(-1)
+
+! Compute geostrophic field
+! To compute absolute velocity you either have to know some reference
+! velocity or assume a level of no motion (as is traditionally done)
+! The level of no motion argument is what is used when calculating
+! the surface geostrophic field from &quot;dynamic topography&quot;. You can
+! assume that the flow is zero at the bottom for example and then
+! integrate vertically to the level at which you want the flow field.
+
+! The flow field at the surface
+let u = u_z[k=@DIN]
+let v = v_z[k=@DIN]
+
+! The flow field at the base of a 100 m mixed layer assuming the
+! depth of no motion is at 5000 m.
+let um = u_z[z=5000:100@DIN]
+let vm = v_z[z=5000:100@DIN]
+
+Rob Scott wrote:
+&gt; 
+&gt; On Fri, 15 Jan 1999, Bruno Levier wrote:
+&gt; 
+&gt; &gt; Hi!
+&gt; &gt;
+&gt; &gt; I'm trying to calculate geostrophic velocities using ferret.
+&gt; &gt; Could you help me?
+&gt; &gt;
+&gt; &gt; Thanks
+&gt; &gt;
+&gt; &gt;   Bruno
+&gt; &gt;
+&gt; 
+&gt; Salut Bruno!
+&gt; I am assuming that you want to calculate the surface geostrophic current
+&gt; using dynamic topography data. Please forgive me if I have misunderstood
+&gt; your intention.
+&gt; Rob
+&gt; 
+&gt; ! have dynamic topography in variable ssh, units=[m], grid = grid_ssh
+&gt; SET GRID grid_ssh
+&gt; LET omega = 7.292e-5                        ! rotation rate of earth [rad/s]
+&gt; LET f = 2*omega*sin(y*3.14159/180)          ! Coriolis in [1/s]
+&gt; LET g = 9.8                                 ! see back of Gill 1982 for
+&gt;                                             ! more accurate g = g(y)[m/s^2]
+&gt; LET/TITLE=&quot;u_g&quot; u =  9.8/f*ssh[y=@DDC]*(-1) ! get u_g  [m/s] centred diff.
+&gt; LET/TITLE=&quot;v_g&quot; v =  9.8/f*ssh[x=@DDC]      ! get v_g  [m/s]
+
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+David Oxilia			Tel: (541) 737-2368
+COAS:Oregon State University	Fax: (541) 737-2064
+Ocean Admin. Bldg. 104		WWW: <A  HREF="http://www.oce.orst.edu/po">http://www.oce.orst.edu/po</A>
+Corvallis, OR 97331-5503	Email: oxilia@kundun.oce.orst.edu
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00017.html">Geostrophic velocities</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00021.html">30 day months in calendar</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00017.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00020">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

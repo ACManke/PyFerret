@@ -1,0 +1,240 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret how&#45;to:  Making MPEG animations -->
+<!--X-From-R13: xboevraNabnnczry.tbi (Febyy) -->
+<!--X-Date: Fri, 21 Jun 1996 07:33:33 &#45;0700 -->
+<!--X-Message-Id: 9606210743.ZM3026@lotus.noaapmel.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret how-to:  Making MPEG animations</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00038.html">Thread Next</a>][<A HREF="threads.html#00037">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret how-to:  Making MPEG animations</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Ferret how-to:  Making MPEG animations</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:kobrien@DOMAIN.HIDDEN">kobrien@xxxxxxxxxxxx</A> (Troll)</strong></li>
+<li>Date: Fri, 21 Jun 1996 07:43:51 -0700</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Ferret how_to:
+
+	******************************
+	* How to make MPEG animations*
+	******************************
+
+Making mpeg animations with ferret is a relatively simple, albeit a
+multi-step, process.  There are two basic methods of making
+animations.  One method involves saving ferret snapshots as &quot;gif&quot;
+files, while the other involves writing ferret snapshots in the &quot;hdf&quot; file
+format. In both cases, additional software is needed to complete the
+bridge between ferret snapshots and mpeg animations.
+
+
+MAKING MPEG ANIMATIONS USING &quot;GIF&quot; FILES
+---------------------------------------
+
+o  PICKING UP THE SOFTWARE
+
+First the mpeg encoding software must be picked up.  It can be found
+at:
+
+	Berkeley FTP archive (mm-ftp.CS.Berkeley.EDU)
+
+in directory:
+	/pub/multimedia/mpeg/encode
+
+
+That directory contains binaries for several systems, and if there
+exists a binary for your desired system, I recommend picking it up.
+The source code also exists and can be downloaded and compiled/linked
+if necessary
+
+Also needed is the routine &quot;giftoppm&quot;.  this can be found in the
+pbmplus package, which can be picked up froms:
+
+	ftp.luth.se
+
+in directory:
+	/pub/X11/R5contrib/pbmplus10dec91.tar.Z
+
+There may be a newer version of the pbmplus package, but this one does work.
+
+Once these are picked up, compile and build the executables.
+
+o CREATE GIF FILES VIA FERRET
+
+The naming scheme FERRET employes meshes well with the methodology of the
+mpeg encoding software.  To create a bunch of gif files in FERRET, simply:
+
+	yes? set data xxxxxx
+	.
+	.		! set up plot desirables, etc.
+	.
+	.
+	yes? repeat/l=1:25 (shade var; frame/file=movie_frame.gif)
+	yes? exit
+
+This will create 25 gif files, named:
+
+	movie_frame.gif
+ 	movie_frame.gif.~1~
+ 	movie_frame.gif.~2~
+	.
+	.
+	etc.
+
+o RUNNING MPEG_ENOCDE
+
+Once the gif files are ready, all that remains before creating an mpeg
+is setting up the paramater file which mpeg_encode uses to find the
+gif files, etc. The README file included with mpeg_encode software
+will elucidate this process.  Also included are a couple of example
+parameter files to help guide the way.
+
+
+
+MAKING MPEG ANIMATIONS USING HDF FILES
+--------------------------------------
+
+o  PICKING UP THE SOFTWARE
+
+The software used to convert hdf files to mpeg streams is called,
+surprisingly, hdf2mpeg. There are actually two parts to this software.
+One part is a converter which takes the hdf file and converts the
+images into YUV files.  The second part is an mpeg generator called
+&quot;mpeg&quot;, which takes the YUV files and creates an mpeg stream.  Both of
+these can be picked up at:
+
+	ftp.ncsa.uiuc.edu
+
+in the directory:
+
+	HDF/contrib/NCSA/HDF2MPEG/
+
+and the archives to pick up are:
+
+	MPEGv1.1.tar.Z			! Stanford Mpeg code
+	yuvconvert.shar			! hdf to yuv code
+	MPEGDOCv1.1.tar.Z		! documentation
+
+
+Again, once these are downloaded, compile and link as necessary.  The
+resulting binary files of interest will be:
+
+	yuvconvert 	! converts the hdf file to YUV files
+	mpeg		! converts the YUV files to mpeg stream
+
+
+o CREATE HDF FILES VIA FERRET
+
+Creating HDF files is similar to creating gif files, except when
+saving the graphic frame, use an &quot;.hdf&quot; extension rather than a &quot;.gif&quot;
+extension:
+
+	yes? repeat/l=1:25 (shade var; frame/file=movie.hdf)
+
+
+One hdf file is created which contains all of the frames of the movie.
+This can become quite large with a movie of many frames.
+
+
+o RUNNING HDF2MPEG
+
+hdf2mpeg is simpler to run than mpeg_encode because it needs no
+parameter file.  The usage of yuvconvert is:
+
+	Usage: yuvconvert hdfFile outFilePrefix [xdim ydim]
+
+so for our example:
+
+	%   yuvconvert movie.hdf mpeg_movie
+
+will run the convert program and then, once the YUV files are created,
+will automatically call the mpeg program to create an mpeg stream
+called mpeg_movie.mpg.  Also, a bunch of files named
+mpeg_movie.*.[YUV] will be created, but these can be deleted once the
+mpeg movie generation is finished.
+
+One desirable feature of hdf2mpeg is that the output size of the mpeg can
+be specified on the command line.  For example:
+
+
+	%   yuvconvert movie.hdf mpeg_movie 100 100
+
+
+will create a mpeg which is 100x100.
+
+
+Good luck and we'll see you at the movies!!
+
+Kevin O'Brien
+
+
+
+-- 
+Kevin O'Brien			Research Scientist	
+kobrien@pmel.noaa.gov		NOAA/PMEL/JISAO
+206-526-6751			
+Everytime I turn on the FM, I have to hear funky, get down, shake your booty. 
+And I don't waan' none of that.....
+					- Peter Tosh
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00036.html">T-S-Diagram with underlayed density contours</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00038.html">Reading Fortran unformatted files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00038.html">Thread Next</a>][<A HREF="threads.html#00037">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

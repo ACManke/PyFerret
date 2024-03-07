@@ -1,0 +1,279 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: [Fwd: Re: NetCDF Toolbox] -->
+<!--X-From-R13: Rnivq Akvyvn <bkvyvnNAQS.ADEF.SRG> -->
+<!--X-Date: Wed, 28 Jan 1998 17:23:16 &#45;0800 -->
+<!--X-Message-Id: 34CFDA04.5E73@oce.orst.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[Fwd: Re: NetCDF Toolbox]</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00016.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00020">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[Fwd: Re: NetCDF Toolbox]</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[Fwd: Re: NetCDF Toolbox]</strong></li>
+<li><strong>From</strong>: <strong>David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 28 Jan 1998 17:23:16 -0800</li>
+<li>Organization: COAS</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Dear Ferreters,
+
+Well, after trying to solve this netCDF file writing dilemma with
+the authors of the netCDF package for matlab I thought I'd inquire
+with you all.
+
+As I explain below (see forwarded message), I'd like to write a 
+netCDf file from matlab so that it is readable AND friendly to ferret.
+The problem lies in the multiple grids that I want to use for the single
+variable, XC, to be stored in the netCDF file. As I point out, I'd like
+XC to be defined over a grid of constant dimension but with the range
+of the x-axis to be a function of y. A 'show data' in ferret would
+give me:
+
+yes? show data
+     currently SET data sets:
+    1&gt; /home/server/scratch/oxilia/netcdf/posum_test.cdf  (default)
+ name     title          I         J         K         L
+ XC                     1:275     1:2       1:1       1:199
+
+My question is: How do I define a VARIABLE grid x(j)? For all j the
+dimension of i = [1:275], but the range of the axis in:
+
+yes? shade xc[j=1]
+
+will vary with j. For j=1, the x-axis will have limits [-10,10] say.
+For j=2, the limits will be [-7,7].
+
+Anybody know how to make matlab and ferret like eachother? Any
+comments would be appreciated.
+
+David.
+
+
+David Oxilia wrote:
+&gt; 
+&gt; Chuck,
+&gt; 
+&gt; Thanks for your reply. I must say that the netCDF format is a bit of
+&gt; a mystery to me. Your suggestions were useful but my problem remains.
+&gt; I'll try to explain it better. First I should mention that I am not
+&gt; clear what the difference is between 'axes variables' and 'axes
+&gt; dependent variables'. To my mind, the former specify a 'grid',
+&gt; for example, (x,t). The latter are variables which make use of this
+&gt; grid. For the above example we'd have say f(x,t).
+&gt; 
+&gt; The file I want to write consists of ONE single 3D variable, XC(x,y,t)
+&gt; which varies 'parametrically' with y. I'll write this as XC(x,t)|y,
+&gt; y = 1,...,N. Now, the DIMENSION of my grid (x,t) is constant for all
+&gt; y. However, the VALUES assigned to the axis variable x also vary with
+&gt; y. Thus, XC(x(y),t)|y is probably a better notation.
+&gt; 
+&gt; In essence I need to write a different x-axis grid for each y.
+&gt; The XC are then written for each y on a different grid even though
+&gt; the dimension of the grid doesn't change; only the numerical values
+&gt; of x and y.
+&gt; 
+&gt; I want to be able to read this file into other graphics software
+&gt; and make contour plots of XC(x,t). I'd like the plots to have
+&gt; labels specifying the y (actually latitude) for each XC(x,t) slice.
+&gt; The problem is that the range of values along the x-axis should
+&gt; dependent on y. For example, at 5N the x-axis will have a dimension
+&gt; of say 100 grid points and its range will be [-10,10]. At 10N
+&gt; the x-axis will still have 100 grid points but the range is now
+&gt; [-7,7].
+&gt; 
+&gt; Writing the file as follows:
+&gt; 
+&gt; % ------------------------------------------------------------
+&gt; % Dimensions
+&gt; nc('one') = 1;
+&gt; nc('latitude') = iymax;
+&gt; nc('t') = 2*m-1;
+&gt; nc('x') = n;
+&gt; 
+&gt; % Axes &amp; Variables
+&gt; nc{'latitude'} = 'latitude';                    % an axis
+&gt; nc{'t'} = 't';                                  % an axis
+&gt; nc{'x'} = {'one','one','latitude','x'};         % a 4D axis !!
+&gt; nc{'XC'} = {'t','one','latitude','x'};          % a &gt;4D variable?!
+&gt; 
+&gt; % Attributes
+&gt; nc{'latitude'}.units = 'degrees';
+&gt; nc{'t'}.units = 'days';
+&gt; nc{'x'}.units = 'km';
+&gt; nc{'XC'}.units = ' ';
+&gt; nc{'XC'}.long_name = 'Time-Longitude Lagged Cross-Correlations';
+&gt; 
+&gt; % Write data
+&gt; nc{'latitude'}(:) = yax;                        % a vector
+&gt; nc{'t'}(:) = tlax;                              % a vector
+&gt; nc{'x'}(:) = XLAX;                              % a 4D array
+&gt; nc{'XC'}(:) = CA;                               % a 4D array
+&gt; % ------------------------------------------------------------
+&gt; 
+&gt; allows me to write the CDF file but the grid used to write XC
+&gt; is not 4D since nc{'x'} is a 4D axis! XC believes it has a 7D
+&gt; grid rather than a 4D grid.
+&gt; 
+&gt; Well, I hope this isn't wasting too much of your time. If I
+&gt; undertood how grid axes differ from grid variables in CDF maybe
+&gt; I could figure out how to do this.
+&gt; 
+&gt; Thanks again for any suggestions.
+&gt; 
+&gt; David.
+
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+David Oxilia			Tel: (541) 737~2368
+COAS:Oregon State University	Fax: (541) 737~2064
+Ocean Admin. Bldg. 104		WWW: <A  HREF="http://joule.oce.orst.edu/po">http://joule.oce.orst.edu/po</A>
+Corvallis, OR 97331-5503	Email: oxilia@hejira.oce.orst.edu
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+</pre>
+<blockquote><small>---&nbsp;<i>Begin&nbsp;Message</i>&nbsp;---</small>
+<ul>
+<li><strong>To</strong>: <strong>Chuck Denham &lt;<A HREF="mailto:cdenham@DOMAIN.HIDDEN">cdenham@xxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: NetCDF Toolbox</strong></li>
+<li><strong>From</strong>: <strong>David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 28 Jan 1998 14:24:33 -0800</li>
+<li>Organization: COAS</li>
+<li>References: &lt;199801281955.LAA05762@dnsman.OCE.ORST.EDU&gt;</li>
+</ul>
+<pre>
+Chuck,
+
+Thanks for your reply. I must say that the netCDF format is a bit of
+a mystery to me. Your suggestions were useful but my problem remains.
+I'll try to explain it better. First I should mention that I am not
+clear what the difference is between 'axes variables' and 'axes
+dependent variables'. To my mind, the former specify a 'grid',
+for example, (x,t). The latter are variables which make use of this
+grid. For the above example we'd have say f(x,t).
+
+The file I want to write consists of ONE single 3D variable, XC(x,y,t)
+which varies 'parametrically' with y. I'll write this as XC(x,t)|y,
+y = 1,...,N. Now, the DIMENSION of my grid (x,t) is constant for all
+y. However, the VALUES assigned to the axis variable x also vary with
+y. Thus, XC(x(y),t)|y is probably a better notation.
+
+In essence I need to write a different x-axis grid for each y.
+The XC are then written for each y on a different grid even though
+the dimension of the grid doesn't change; only the numerical values
+of x and y.
+
+I want to be able to read this file into other graphics software
+and make contour plots of XC(x,t). I'd like the plots to have
+labels specifying the y (actually latitude) for each XC(x,t) slice.
+The problem is that the range of values along the x-axis should
+dependent on y. For example, at 5N the x-axis will have a dimension
+of say 100 grid points and its range will be [-10,10]. At 10N
+the x-axis will still have 100 grid points but the range is now
+[-7,7].
+
+Writing the file as follows:
+
+% ------------------------------------------------------------
+% Dimensions
+nc('one') = 1;
+nc('latitude') = iymax;
+nc('t') = 2*m-1;
+nc('x') = n;
+
+% Axes &amp; Variables
+nc{'latitude'} = 'latitude';			% an axis
+nc{'t'} = 't';					% an axis
+nc{'x'} = {'one','one','latitude','x'};		% a 4D axis !!
+nc{'XC'} = {'t','one','latitude','x'};		% a &gt;4D variable?!
+
+% Attributes
+nc{'latitude'}.units = 'degrees';
+nc{'t'}.units = 'days';
+nc{'x'}.units = 'km';
+nc{'XC'}.units = ' ';
+nc{'XC'}.long_name = 'Time-Longitude Lagged Cross-Correlations';
+
+% Write data
+nc{'latitude'}(:) = yax;			% a vector
+nc{'t'}(:) = tlax;				% a vector
+nc{'x'}(:) = XLAX;				% a 4D array
+nc{'XC'}(:) = CA;				% a 4D array
+% ------------------------------------------------------------  
+
+allows me to write the CDF file but the grid used to write XC
+is not 4D since nc{'x'} is a 4D axis! XC believes it has a 7D
+grid rather than a 4D grid.
+
+Well, I hope this isn't wasting too much of your time. If I 
+undertood how grid axes differ from grid variables in CDF maybe
+I could figure out how to do this.
+
+Thanks again for any suggestions.
+
+David.
+
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+David Oxilia                          Tel: (541) 737-2368
+COAS-Oregon State University          Fax: (541) 737-2064
+Ocean Admin. Bldg. 104
+Corvallis, OR 97331-5503              Email: oxilia@hejira.oce.orst.edu
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+</pre>
+<small>---&nbsp;<i>End Message</i>&nbsp;---</small></blockquote>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00016.html">Re: Solaris problems with ferret 4.90</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00021.html">Re: [Fwd: Re: NetCDF Toolbox]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00016.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00020">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

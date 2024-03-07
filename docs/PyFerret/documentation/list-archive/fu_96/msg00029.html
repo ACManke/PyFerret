@@ -1,0 +1,251 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Answer to Custom Contouring question (long) -->
+<!--X-From-R13: "[nex Hrefpuryy" <znexiNfurne.pbncf.sfh.rqh> -->
+<!--X-Date: Wed, 12 Jun 1996 16:14:42 &#45;0700 -->
+<!--X-Message-Id: 9606121922.ZM7394@shear.coaps.fsu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Answer to Custom Contouring question (long)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00028.html">Thread Prev</a>][<a href="msg00030.html">Thread Next</a>][<A HREF="threads.html#00029">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Answer to Custom Contouring question (long)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Answer to Custom Contouring question (long)</strong></li>
+<li><strong>From</strong>: <strong>&quot;Mark Verschell&quot; &lt;<A HREF="mailto:markv@DOMAIN.HIDDEN">markv@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 12 Jun 1996 19:22:56 -0400</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Steve (Hankin) was kind enough to point me in the right direction to solve my
+custom contouring question I posted earlier this week. He requested that once I
+get it working that I post a more complete explanation to the ferret
+listserver. So, here it is!
+
+The problem: I want to shade a variable in such a way that the values that are
+within 1 standard deviation about the mean are highlighted. Normally this can
+be done by using the STATISTICS command and then explicitly setting the levels
+in the SHADE command. However, I want to automate this since I have many of
+these plots to do. Calculating the mean and standard deviation is simple, but
+this can give you very strange shade levels if the values are not &quot;cleaned-up&quot;
+somewhat. For example, by default I might get the command:
+
+SHADE/LEV=(3.765434,8.234242,1.037464) var
+
+The easy answer is to use the PPLUS command %RANGE to select reasonable range
+limits and level increment. Two examples follow: (1) a simple &lt;?&gt; example in
+which just the values that are within one standard deviation about the mean are
+shaded; and (2) a more complicated example in which the values larger and
+smaller than the range in (1) are also shaded in one additional level at the
+endpoints of the desired range in (1).
+
+I don't claim that this is the most elegant solution, but it works. If there
+are any questions about this, please feel free to e-mail me. And if you can
+come up with any improvements and/or simplifications I would be very interested
+in hearing from you.
+
+
+EXAMPLE 1
+=========
+
+In this example the variable I want to shade is defined on an x-t grid. In my
+case, I call several journal routines with parameter substitution. However
+in this example I will just use the variable VAR1 and explicitly give the
+FERRET/PPLUS commands. If anyone is interested in the routines themselves, you
+can e-mail me and I will send copies.
+
+! Calculate the number of &quot;good&quot; data points on the grid
+let/quiet npt=VAR1[i=@ngd,l=@ave]*VAR1[l=@ngd,i=@ave]
+! Determine the mean and standard deviation of the data
+let/quiet mean=VAR1[i=@sum,l=@sum]/npt
+let/quiet var1s=VAR1*VAR1
+let/quiet sdev=((var1s[i=@sum,l=@sum]-npt*mean^2)/npt)^.5
+! Pass the values to PPLUS and calculate the range and increment for 8 levels
+ppl %range `mean-sdev` `mean+sdev` 8
+! Shade the variable
+shade/levels=(($PPL$RANGE_LOW),($PPL$RANGE_HIGH),($PPL$RANGE_INC)) VAR1
+
+That's it!
+
+
+EXAMPLE 2
+=========
+
+WARNING: This is much more complicated. I want 2 more levels shaded than in the
+above example, all the values less than 1 standard deviation in one level, then
+the same range as in example 1, and then all values greater than 1 standard
+deviation in the last level. At first this would seem to be not much more
+complicated than the above example, except that the &quot;raw&quot; results give you a
+FERRET command that is usually too long to process. Therefore, the values
+obtained from the %RANGE command need to be edited. Again, I will give the
+example using the explicit variable VAR2 and explicit PPLUS and FERRET
+commands,
+and will make the routines themselves available upon request.
+
+! Calculate the number of &quot;good&quot; data points on the grid
+let/quiet npt=VAR2[i=@ngd,l=@ave]*VAR2[l=@ngd,i=@ave]
+! Determine the minimum and maximum values and the mean and standard deviation
+! of the data
+let/quiet mean=VAR2[i=@sum,l=@sum]/npt
+let/quiet vmin=VAR2[i=@min,l=@min]
+let/quiet vmax=VAR2[i=@max,l=@max]
+let/quiet var2s=VAR2*VAR2
+let/quiet sdev=((var2s[i=@sum,l=@sum]-npt*mean^2)/npt)^.5
+! Calculate the middle range values first with 8 levels, results will be placed
+! in symbols cl4, cl5, and cl6
+ppl %range `mean-sdev` `mean+sdev` 8
+ppl set cl4 'ppl$range_low'
+! Search for 000, indicating too much precision in value, and get value length
+ppl set zl $locate(&quot;000&quot;,cl4) - 1
+ppl set el $length(cl4)
+! If there is no 000, don't edit value (must be done in FERRET)
+let/quiet fzl = if ($zl) le 2 then ($el) else ($zl)
+ppl set zl `fzl`
+! Pull off string before 000
+ppl set cl4a $extract(1,'zl',cl4)
+! Pull off string after 000
+ppl set zl 'zl' + 4
+ppl set cl4b $extract('zl','el',cl4)
+! Put the parts back together
+ppl set cl4 'cl4a''cl4b'
+! Remove any spaces in result
+ppl set cl4 $edit(cl4,collapse)
+! Repeat process for cl5
+ppl set cl5 'ppl$range_high'
+ppl set zl $locate(&quot;000&quot;,cl5) - 1
+ppl set el $length(cl5)
+let/quiet fzl = if ($zl) le 2 then ($el) else ($zl)
+ppl set zl `fzl`
+ppl set cl5a $extract(1,'zl',cl5)
+ppl set zl 'zl' + 4
+ppl set cl5b $extract('zl','el',cl5)
+ppl set cl5 'cl5a''cl5b'
+ppl set cl5 $edit(cl5,collapse)
+! Ditto for cl6
+ppl set cl6 'ppl$range_inc'
+ppl set zl $locate(&quot;000&quot;,cl6) - 1
+ppl set el $length(cl6)
+let/quiet fzl = if ($zl) le 2 then ($el) else ($zl)
+ppl set zl `fzl`
+ppl set cl6a $extract(1,'zl',cl6)
+ppl set zl 'zl' + 4
+ppl set cl6b $extract('zl','el',cl6)
+ppl set cl6 'cl6a''cl6b'
+ppl set cl6 $edit(cl6,collapse)
+! Next, calculate the lower range, values will be put in symbols cl1, cl2, and
+! cl3
+ppl %range `vmin` 'cl4' 1
+ppl set cl1 'ppl$range_low'
+! Again, edit cl1 as above
+ppl set zl $locate(&quot;000&quot;,cl1) - 1
+ppl set el $length(cl1)
+let/quiet fzl = if ($zl) le 2 then ($el) else ($zl)
+ppl set zl `fzl`
+ppl set cl1a $extract(1,'zl',cl1)
+ppl set zl 'zl' + 4
+ppl set cl1b $extract('zl','el',cl1)
+ppl set cl1 'cl1a''cl1b'
+ppl set cl1 $edit(cl1,collapse)
+! cl2 doesn't need to be edited since cl4 already was
+ppl set cl2 'cl4'
+! cl3 is the result of 2 edited variables so it's OK
+ppl set cl3 'cl2' - 'cl1'
+! Last, calculate the upper range, values will be put in symbols cl7, cl8, and
+! cl9
+ppl %range 'cl5' `vmax` 1
+! cl7 is fine
+ppl set cl7 'cl5'
+ppl set cl8 'ppl$range_high'
+! cl8 needs to be edited
+ppl set zl $locate(&quot;000&quot;,cl8) - 1
+ppl set el $length(cl8)
+let/quiet fzl = if ($zl) le 2 then ($el) else ($zl)
+ppl set zl `fzl`
+ppl set cl8a $extract(1,'zl',cl8)
+ppl set zl 'zl' + 4
+ppl set cl8b $extract('zl','el',cl8)
+ppl set cl8 'cl8a''cl8b'
+ppl set cl8 $edit(cl8,collapse)
+! cl9 is fine, also
+ppl set cl9 'cl8' - 'cl7'
+! Shade the results
+sha/lev=(($cl1),($cl2),($cl3))(($cl4),($cl5),($cl6))(($cl7),($cl8),($cl9)) VAR2
+
+
+So, is there anyone still reading this? I tried to edit this carefully, but
+there may be some errors for which I apologize in advance. Anyone who tries
+this (especially EXAMPLE 2), is probably FERRET-savvy enough to be able to
+debug any problems that pop-up. If not, please get in touch with me.
+
+
+	Mark
+
+-- 
+-------------------------------------------------------------------------------
+
+	      Mark Verschell (verschell@coaps.fsu.edu)
+	      Center for Ocean and Atmospheric Prediction Studies
+	      Florida State University
+              2035 E. Paul Dirac Drive
+              R.M. Johnson Bldg. - Suite 200
+	      Tallahassee, FL  32310
+	      (904) 644-6532              (904) 644-4841 (fax)
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00028.html">Custom contour question (long)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00030.html">cdl files for sigma co-ords</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00028.html">Thread Prev</a>][<a href="msg00030.html">Thread Next</a>][<A HREF="threads.html#00029">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

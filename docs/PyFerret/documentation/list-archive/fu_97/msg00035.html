@@ -1,0 +1,167 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: climatologies -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Thu, 10 Apr 1997 17:43:51 &#45;0700 -->
+<!--X-Message-Id: 9704101743.ZM30581@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.A41.3.95b.970410161125.14718A&#45;100000@dante19.u.washington.edu -->
+<!--X-Reference: emiliom@u.WASHINGTON.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: climatologies</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00034.html">Thread Prev</a>][<a href="msg00036.html">Thread Next</a>][<A HREF="threads.html#00035">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: climatologies</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilio Mayorga &lt;<A HREF="mailto:emiliom@DOMAIN.HIDDEN">emiliom@xxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: climatologies</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Thu, 10 Apr 1997 17:43:04 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: Emilio Mayorga &lt;emiliom@u.WASHINGTON.edu&gt;       &quot;climatologies&quot; (Apr 10,  4:35pm)</li>
+<li>References: &lt;<a href="msg00034.html">Pine.A41.3.95b.970410161125.14718A-100000@dante19.u.washington.edu</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Emilio,
+
+The misbehavior you describe is due to a bug in version 4.45 (and earlier) of
+Ferret. It has been located and fixed and it will be OK in the next Ferret
+version ... but (sigh) not in the version that you have. Here is an easy
+work-around.
+
+BUG:
+  When using an @MOD regridding and requesting the last element of the
+  modulo axis the data sometimes appear to be all missing values.
+WORK_AROUND:
+  The bug appears only in attempting to access the last element of the axis
+   **alone**. To work around it make sure that you are requesting at least
+   two points on the modulo axis.
+
+EXAMPLE:
+! this exhibits the bad behavior
+   SHADE/L=12 EET_MEANYR
+
+! but this is fine
+   SHADE/L=12 EET_MEANYR[L=11:12]
+
+! alternatively, this is also fine (by caching the correct result in Ferret)
+   CANCEL MEMORY/ALL
+   LOAD EET_MEANYR[L=11:12]	! cache a region of 2 points on the modulo axis
+   SHADE/L=12 EET_MEANYR
+
+I hope this helps.
+
+	- steve
+
+==========================================================
+
+On Apr 10,  4:35pm, Emilio Mayorga wrote:
+&gt; Subject: climatologies
+&gt;
+&gt; I have some strange and inconsistent behavior when following the Ferret
+&gt; FAQ and Manual to create a climatology variable. Maybe from the
+&gt; description of the error, someone can give me a hint as to where to look?
+&gt;
+&gt; I create a climatology variable, EET_MEANYR, out of a 7-year (1983-89)
+&gt; monthly data set, EET:
+&gt;
+&gt; let EET_MEANYR = EET[gt=MONTH_REG@MOD]
+&gt; (the climatological axis MONTH_REG is from climatological_axes.cdf)
+&gt;
+&gt; EET_MEANYR can then be plotted as a time series, and all 12 months show
+&gt; up. It can be displayed using SHADE in the XT or YT planes, and
+&gt; everything's fine.
+&gt;
+&gt; BUT in the XY plane SHADE works with all months, EXCEPT DECEMBER! When I
+&gt; try dec, eg, SHADE/T=15-dec EET_MEANYR, I get an error message:
+&gt;  **ERROR: all data have same value: data are all flagged as bad
+&gt;
+&gt; Also, when I use STATISTICS to examine the values, when done on ALL
+&gt; points, no bad data is detected; but when done on december only (L=12 or
+&gt; T=15-dec), ALL POINTS APPEAR TO BE BAD!
+&gt;
+&gt;
+&gt; Any clues? I appreciate your help.
+&gt;
+&gt; Emilio Mayorga
+&gt; _________________________________________________________________
+&gt; University of Washington
+&gt; School of Oceanography			emiliom@u.washington.edu
+&gt; Box 357940				ph. (206) 543-5334
+&gt; Seattle, WA  98195-7940	  USA		FAX (206) 685-3351
+&gt; <A  HREF="http://boto.ocean.washington.edu/staff_pages/emilio/">http://boto.ocean.washington.edu/staff_pages/emilio/</A>
+&gt;
+&gt;-- End of excerpt from Emilio Mayorga
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00037" href="msg00037.html">Slow Calculation Speed - Can it be Faster?</a></strong>
+<ul><li><em>From:</em> Mark Verschell</li></ul></li>
+<li><strong><a name="00036" href="msg00036.html">Re: climatologies</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00034" href="msg00034.html">climatologies</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00034.html">climatologies</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00036.html">Re: climatologies</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00034.html">Thread Prev</a>][<a href="msg00036.html">Thread Next</a>][<A HREF="threads.html#00035">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Plot buffer size -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Fri, 12 Feb 1999 09:02:46 &#45;0800 -->
+<!--X-Message-Id: 36C45E9A.9687D84B@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 36C37E4C.FBCA71AC@oce.orst.edu -->
+<!--X-Reference: 9902121004.ZM21686@amarone.gsfc.nasa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Plot buffer size</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00048.html">Thread Prev</a>][<a href="msg00050.html">Thread Next</a>][<A HREF="threads.html#00049">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Plot buffer size</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Mark A. Verschell&quot; &lt;<A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Plot buffer size</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 12 Feb 1999 09:02:18 -0800</li>
+<li>Cc: David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;,       Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>References: &lt;<a href="msg00047.html">36C37E4C.FBCA71AC@oce.orst.edu</a>&gt; &lt;<a href="msg00048.html">9902121004.ZM21686@amarone.gsfc.nasa.gov</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi David,
+
+Mark's solution is right on.
+
+Here's another -- using Ferret's lo:hi:delta notation:
+
+  yes? use coads_climatology
+  yes? vector/l=1 uwnd[i=1:180:5,j=1:90:3],vwnd[i=1:180:5,j=1:90:3]
+
+This plots every 5th point in longitude, and every 3rd in latitude --
+the same choice that Ferret would make by default if you had simply said
+&quot;yes? vector/l=1 uwnd,vwnd&quot;
+
+Note that the command 
+  yes? PPL LIST STATS
+can be used anytime to ask PLOT+ what data it is holding.
+
+	- steve
+
+============================================
+
+&quot;Mark A. Verschell&quot; wrote:
+&gt; 
+&gt; David,
+&gt; 
+&gt;         This IS a simple (but NOT trivial) problem. Your problem is not with
+&gt; the calculations but with the display of your results. The underlying PPLUS
+&gt; package (that handles the graphics) is limited to 495000 points to plot. Now,
+&gt; when you are doing the vector plot there is no way you will be plotting even
+&gt; 495000 vectors, much less more than that, because the PPLUS vector command will
+&gt; give you default XSKIP and YSKIP values. But PPLUS calculates the number of
+&gt; plotting points before the XSKIP and YSKIP are taken into account. Thus, the
+&gt; error occurs because you could CONCEIVABLY be asking for 832370 points.
+&gt; 
+&gt; So, if you want to look at the whole field, you need to divide the graphic up,
+&gt; so that you are never passing more than 495000 points to PPLUS. Here is my
+&gt; suggestion (plus some suggestions for the length and the skips that might look
+&gt; better):
+&gt; 
+&gt; Instead of:
+&gt; ! Plot the field for verification
+&gt; vec/length=5.0 txs,tys
+&gt; 
+&gt; Use:
+&gt; ! Plot the field for verification
+&gt; vec/length=.2/xskip=50/yskip=10/ylim=89s:89n/j=1:178 txs,tys
+&gt; vec/length=.2/xskip=50/yskip=10/ylim=89s:89n/over/nolab/pen=1/j=179:356 txs,tys
+&gt; vec/length=.2/xskip=50/yskip=10/ylim=89s:89n/over/nolab/pen=1/j=356:534 txs,tys
+&gt; 
+&gt; Mark Verschell
+&gt; 
+&gt; ================================================================================
+&gt; 
+&gt; On Feb 11,  5:05pm, David Oxilia wrote:
+&gt; &gt; Subject: Plot buffer size
+&gt; &gt; Ferreters,
+&gt; &gt;
+&gt; &gt; I have the feeling this will turn out to be trivial. I want to
+&gt; &gt; regrid coads winds onto etopo20's grid and then do some
+&gt; &gt; manipulations on the regridded fields (ie interpolating and
+&gt; &gt; smoothing). As a check on my procedure I'd also like to plot
+&gt; &gt; my final fields as a vecor plot.
+&gt; &gt;
+&gt; &gt; The code below shows what I'm doing. The script runs fine and
+&gt; &gt; writes my output fields as desired; however, when I go to
+&gt; &gt; vector plot these fields I get a:
+&gt; &gt;
+&gt; &gt; **ERROR: a program limit has been reached: 832370 points to plot
+&gt; &gt;           Plot buffer size is: 495000
+&gt; &gt;
+&gt; &gt; I'm unclear as to the relationship between the &quot;plot buffer size&quot;
+&gt; &gt; and allocated memory (which I've set to 15 MWords). I've ran my
+&gt; &gt; code in diagnostic mode and increased the desperate mode to twice
+&gt; &gt; the default (hence, 160,000) in hopes that the error is resulting
+&gt; &gt; from overly splitting the calculation. If anyone can tell me how
+&gt; &gt; to solve this I'd be grateful.
+&gt; &gt;
+&gt; &gt; Thanks, David.
+&gt; &gt;
+&gt; &gt; *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+&gt; &gt; David Oxilia                  Tel: (541) 737-2368
+&gt; &gt; COAS:Oregon State University  Fax: (541) 737-2064
+&gt; &gt; Ocean Admin. Bldg. 104                Email: oxilia@oce.orst.edu
+&gt; &gt; Corvallis, OR 97331-5503      WWW: <A  HREF="http://www.oce.orst.edu/po">http://www.oce.orst.edu/po</A>
+&gt; &gt; *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; ! Allocate memory for computation
+&gt; &gt; set memory/size=15                    ! 1 MWord = 4 MBytes
+&gt; &gt;
+&gt; &gt; ! Set data files
+&gt; &gt; set data etopo20
+&gt; &gt; set data coads_climatology
+&gt; &gt;
+&gt; &gt; ! WIND STRESS
+&gt; &gt; ! -----------
+&gt; &gt;
+&gt; &gt; ! Define wind stress grid as for etopo
+&gt; &gt; define grid/like=rose[d=1] etopoxy
+&gt; &gt;
+&gt; &gt; ! Compute annually averaged wind fields and map to grid
+&gt; &gt; let uwndt = uwnd[g=etopoxy,l=@ave]
+&gt; &gt; let vwndt = vwnd[g=etopoxy,l=@ave]
+&gt; &gt; let wspdt = wspd[g=etopoxy,l=@ave]
+&gt; &gt;
+&gt; &gt; ! Set constants
+&gt; &gt; let c_d = 1.e-3                       ! Drag coefficient
+&gt; &gt; let rho_air = 1.2                     ! Density of air in kg/m^3
+&gt; &gt;
+&gt; &gt; ! Define (tau_x,tau_y) by filling grid via linear interpolation
+&gt; &gt; let tx = rho_air*c_d*uwndt[x=@fln:3,y=@fln:3]*wspdt[x=@fln:3,y=@fln:3]
+&gt; &gt; let ty = rho_air*c_d*vwndt[x=@fln:3,y=@fln:3]*wspdt[x=@fln:3,y=@fln:3]
+&gt; &gt;
+&gt; &gt; ! Finally smooth the wind stress with a 5 point boxcar window
+&gt; &gt; let txs = tx[i=@sbx:5,j=@sbx:5]
+&gt; &gt; let tys = ty[i=@sbx:5,j=@sbx:5]
+&gt; &gt;
+&gt; &gt; ! Plot the field for verification
+&gt; &gt; vec/length=5.0 txs,tys
+&gt; &gt;-- End of excerpt from David Oxilia
+&gt; 
+&gt; --
+&gt;  Mark Verschell                     NASA/Goddard Space Flight Center
+&gt;  verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+&gt;  301-614-5669  Fax: 301-614-5666    Greenbelt, MD 20771
+&gt; 
+&gt;                   USQC Certified: 100% Microsoft Free
+
+-- 
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00047" href="msg00047.html">Plot buffer size</a></strong>
+<ul><li><em>From:</em> David Oxilia</li></ul></li>
+<li><strong><a name="00048" href="msg00048.html">Re: Plot buffer size</a></strong>
+<ul><li><em>From:</em> Mark A. Verschell</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00048.html">Re: Plot buffer size</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00050.html">Pre-release Announcement of Ferret Version 5.0</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00048.html">Thread Prev</a>][<a href="msg00050.html">Thread Next</a>][<A HREF="threads.html#00049">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

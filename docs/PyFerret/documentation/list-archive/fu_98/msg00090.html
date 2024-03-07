@@ -1,0 +1,196 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Time Axis Labels -->
+<!--X-From-R13: irefpuryNnznebar.UETQ.@OEO.UAH ([nex O. Hrefpuryy) -->
+<!--X-Date: Mon, 11 May 1998 10:41:54 &#45;0700 -->
+<!--X-Message-Id: 9805111352.ZM2749@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.OSF.3.91.980511182722.8290A&#45;100000@sokrates.ifm.uni&#45;kiel.de -->
+<!--X-Reference: nrix@ifm.UNI&#45;KIEL.DE -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Time Axis Labels</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00089.html">Thread Prev</a>][<a href="msg00092.html">Thread Next</a>][<A HREF="threads.html#00090">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Time Axis Labels</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>nils rix &lt;<A HREF="mailto:nrix@DOMAIN.HIDDEN">nrix@xxxxxxxxxxxxxxx</A>&gt;, <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Time Axis Labels</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A> (Mark A. Verschell)</strong></li>
+<li>Date: Mon, 11 May 1998 13:52:51 -0400</li>
+<li>In-reply-to: nils rix &lt;nrix@ifm.UNI-KIEL.DE&gt;       &quot;Time Axis Labels&quot; (May 11,  6:36pm)</li>
+<li>References: &lt;<a href="msg00089.html">Pine.OSF.3.91.980511182722.8290A-100000@sokrates.ifm.uni-kiel.de</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+The time axis is a separate deal from the x-axis and y-axis commands. To modify
+the time axis you use the following commands:
+
+TXLABP        establishes time axis label position (or absence)
+TXTYPE*       sets the style of the time axis
+TXLINT*       specifies which time axis tics will be labeled
+TXLSZE        sets height of time axis labels
+TXNMTC        sets number of small tics between large tics on time axis
+
+&gt;From the PPLUS manual:
+
+     TXLABP,n
+
+               Specifies time axis label position (-1 for below  plot,
+          0 for no label, or +1 for above plot).
+
+
+     TXLINT,low_int,hi_int
+
+               Specifies which time axis tics will be labeled.
+
+          Low_int = labeling interval for lowest level of tics
+                    (e.g. mon on mon/yr axis)
+          Hi_int = labeling interval for highest level of tics
+                    (e.g. yr on mon/yr axis)
+
+
+     TXLSZE,ht
+
+               Specifies height of time axis labels (inches).
+
+
+     TXNMTC,n
+
+               Specifies number of small tics between  large  tics  on
+          time  axis.   If NMTCT is -1 the major divisions are denoted
+          by large  tics  and  the  minor  divisions  by  small  tics,
+          otherwise  they  are  denoted  by thick tics and large tics,
+          respectively.
+
+
+     TXTYPE,type,style
+
+               Specifies type and style of time series axis.
+          type = DAYS
+                        style = HR (hour,day on 2 lines) (default)
+                                HRDAY (on 1 line)
+
+               = MON
+                        style = DAY (day,mon on 2 lines) (default)
+                                DAYMON (day,mon on 1 line)
+
+               = YR (default)
+                        style = MON1 (1-char month)
+                                MON3 (3-char month) (default)
+                                MONYR (month,yr on 1 line)
+
+So, to eliminate the year on your time axis:
+
+PPLUS TXTYPE,YR,MON3           ! For example
+PPLUS TXLINT,0,1               ! Print no years but display every month label
+
+As for the user coordinates in the label command, yes there is some
+&quot;difficulty&quot; in using user coordinates with a time axis. Ferret stores the time
+axis as a time step, and these depend on T0 (initial time that defines the
+axis), and the units. If you are using hours as your units the time steps can
+be large.
+
+Instead, use the interactive labeling facility to help in placement. Do your
+normal plotting command with the /SET qualifier, then do the labels as PPLUS
+commands:
+
+PPLUS LABS,1,,,,&quot;My Label&quot;    ! No values for X, Y, or JST
+
+then
+PPLUS (your plotting command)
+
+For every PPLUS LABS command without X,Y,JST being explicitly entered, you
+bring up an interactive plotting window. Click on one of the menu choices, and
+then click on your plot where you want the label to go. If you click on one of
+the two line options, the first click places the tail of the line, then you get
+another window to choose the justification of your label (which will be at the
+head of the line).
+
+To set this up for batch processing, ferret writes all the label commands in
+the file fort.41 - with the interactively selected coordinates. These label
+commands can be modified or adjusted and then placed in a .jnl file.
+
+Hope this helps, Mark
+
+On May 11,  6:36pm, nils rix wrote:
+&gt; Subject: Time Axis Labels
+&gt;
+&gt; Dear ferreters,
+&gt; I'm trying to customize a time-latitude contour plot. Say I have
+&gt; a monthly time axis for a specific year, then ferret
+&gt; writes abbreviations of the months onto the axis and the
+&gt; year below it. I'd like to change or omit the year (and maybe the monthly)
+&gt; label. Attempts to do this with &quot;ppl xlab ..&quot; fail though.
+&gt; I have similar problems using
+&gt; user coordinates with the label command and can't figure out how they
+&gt; need to be specified. Seems like using a time axis as an x/y-axis needs
+&gt; to be treated as in a special way.
+&gt; Does anybody have a clue and knows how this can be done?
+
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-286-2027  Fax: 301-286-1761    Greenbelt, MD 20771
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00089" href="msg00089.html">Time Axis Labels</a></strong>
+<ul><li><em>From:</em> nils rix</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00089.html">Time Axis Labels</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00092.html">mapping equal-area grids</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00089.html">Thread Prev</a>][<a href="msg00092.html">Thread Next</a>][<A HREF="threads.html#00090">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

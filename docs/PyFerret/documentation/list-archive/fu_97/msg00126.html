@@ -1,0 +1,155 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Ferret "how to": sequence of files as a time series -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Tue, 15 Jul 1997 15:58:16 &#45;0700 -->
+<!--X-Message-Id: 9707151556.ZM19640@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.3.91.970713111333.12406A&#45;100000@caos.iisc.ernet.in -->
+<!--X-Reference: sajani@caos.iisc.ERNET.IN -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Ferret &quot;how to&quot;: sequence of files as a time series</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00123.html">Thread Prev</a>][<a href="msg00127.html">Thread Next</a>][<A HREF="threads.html#00126">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Ferret &quot;how to&quot;: sequence of files as a time series</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ms S Sajani &lt;<A HREF="mailto:sajani@DOMAIN.HIDDEN">sajani@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Ferret &quot;how to&quot;: sequence of files as a time series</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Tue, 15 Jul 1997 15:56:48 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: Ms S Sajani &lt;sajani@caos.iisc.ERNET.IN&gt;       &quot;@ave from 12 nc files.&quot; (Jul 13, 11:18am)</li>
+<li>References: &lt;<a href="msg00123.html">Pine.LNX.3.91.970713111333.12406A-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Ferret how-to: treating a sequence of independent files as a time series
+
+On Jul 13, 11:18am, Ms S Sajani wrote:
+&gt; Subject: @ave from 12 nc files.
+&gt;
+&gt;
+&gt; Hi Netters,
+&gt;
+&gt; 	I have a simple question. I have 12 .nc
+&gt; files consists of daily data of 12 months. I
+&gt; wanted to compute the yearly average. How I can
+&gt; append the whole time points other than writing
+&gt; them into a single .nc output file.
+
+
+
+Hi Sajani,
+
+The above example could be addressed &quot;brute force&quot; as follows:
+
+	yes? USE file1.nc, file2.nc, file3.nc, ...
+	yes? LET ave = (v[d=1]+v[d=2]+v[d=3]+...+v[d=12])/12
+
+Alternatively, here is a general technique for converting a sequence of files
+into a time series, where each file contains a single time step of data. The
+technique applies equally well to NetCDF, ASCII, or binary files.
+
+The trick to this technique is to &quot;time stamp&quot; the files by defining a variable
+with a value everywhere of zero but which is defined on the appropriate time
+axis.
+
+==========
+
+! GOAL: combine variable &quot;V&quot; from 12 separate files into a monthly time series
+
+! initialize the files
+USE file1.cdf, file2.cdf, file3.cdf, ..., file12.cdf
+
+! define the time axis
+DEFINE AXIS/T=15-JAN:15-DEC/npoints=12 tmonth		! note 1
+
+! define the &quot;zero&quot; value
+LET zero = T[gt=tmonth] * 0				! note 2
+
+! define the time-stamped variable
+LET v_stamped = v + zero
+
+! save all 12 months in a time series
+REPEAT/L=1:12 (SET DATA `L`; SAVE/APPEND/FILE=T_series.cdf v_stamped)
+
+
+
+Note 1: A better way to define a climatological monthly time axis is
+	yes? SET DATA coads_climatology
+	yes? SHOW GRID sst      &lt;== use the time axis name
+
+Note 2:  look at what you defined with        yes? list/l=1:12 zero
+
+
+
+	Happy Ferreting - steve
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00123" href="msg00123.html">@ave from 12 nc files.</a></strong>
+<ul><li><em>From:</em> Ms S Sajani</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00123.html">@ave from 12 nc files.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00127.html">double converted to float</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00123.html">Thread Prev</a>][<a href="msg00127.html">Thread Next</a>][<A HREF="threads.html#00126">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: mp_aspect problems -->
+<!--X-From-R13: EBWZZO@SNB[SZ.@AOO.UAH -->
+<!--X-Date: Mon, 21 Jun 1999 09:51:32 &#45;0700 -->
+<!--X-Message-Id: 01JCNNSPR5RM8Y90LS@ZETA.PMEL.NOAA.GOV -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: mp_aspect problems</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00188.html">Thread Prev</a>][<a href="msg00180.html">Thread Next</a>][<A HREF="threads.html#00189">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: mp_aspect problems</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:a.larkin@DOMAIN.HIDDEN">a.larkin@xxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: mp_aspect problems</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:SPILLANE@DOMAIN.HIDDEN">SPILLANE@xxxxxxxxxxxxx</A></strong></li>
+<li>Date: Mon, 21 Jun 1999 09:51:20 -0700 (PDT)</li>
+<li>Cc: <A HREF="mailto:FERRET_USERS@DOMAIN.HIDDEN">FERRET_USERS@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello All,
+	Here is a script I wrote ages ago that I still fall back on
+when laying out a page with an arbitrary number of panels of arbitrary
+sizes.  For each panel call the (unix) script or spawn it within ferret
+as in 
+	yes? sp viewdef 8 10 5 2 1.5 6.5 1 1 v35
+This would set up a panel (say the 3rd of 5 on a page) where the page is
+8&quot; wide by 10&quot; high, the x and y axis lengths are 5&quot; and 2&quot;, with the
+lower left of the axes at (1.5&quot;,6.5&quot;) relative to the lower left of the
+8x10 page and 1&quot; in both x and y is a sufficient margin to accomodate
+axis and other labels (important when close to the edges of the page).
+	The script in this example creates &quot;v35.jnl&quot; so that a later call
+	yes? go v35
+makes that viewport or panel active.
+
+As listed below the script is assumed to be named &quot;viewdef&quot; and to reside
+in $home/bin.  Issuing the command
+	unix&gt; viewdef
+or	yes? sp viewdef
+without arguments brings up the beginning descriptive lines of the script.
+(You will need a suitable alias in your .cshrc
+	unix&gt; alias viewdef ~/bin/viewdef
+or to have the location of viewdef in your path.)
+Hope someone finds it of use,
+Mick Spillane.
+The script follows:
+========================================================================
+#
+# viewdef - script to produce a ferret viewport definition with
+#           the ferret lines needed written to &quot;name&quot;.jnl
+#
+# usage: viewdef px py ax ay ox oy fx fy name
+#                                  ___________________________ 
+# where px = page width            |&lt;----------px-----------&gt;| ^
+#       py = page height           |     ....................| |
+#       ax = x-axis length         |     .  ferret margin   .| |
+#       ay = y-axis length         |     .   ____________   .| |
+#       ox = x-component of origin |     &lt;fx&gt;|  plot    | ^ .| |
+#       oy = y-component of origin |     .   | region   | ay.| py
+#       fx = ferret margin in x    |(ox,oy)-&gt;!__________| v .| |
+#       fy = ferret margin in y    |     .             ^    .| | 
+# all values in inches and         |     .             fy   .| |
+#     name = name for viewport     |     ..............v.....| |
+#                                  |       overall page      | |
+# go name    will invoke viewport  |_________________________| v
+
+# viewdef (or spawn viewdef in ferret) without arguments will
+# display the usage and definition text above
+
+#!/bin/csh -f
+                       
+if ( $#argv &lt; 9 ) then 
+   head -19 $home/bin/viewdef
+else
+   set jnl = $9:r.jnl
+
+   echo $1 $2 $3 $4 $5 $6 $7 $8 $9  | awk '{           \
+   origx = ($5-$7)/$1    ; origy = ($6-$8)/$2        ; \
+   clipx = ($5+$3+$7)/$1 ; clipy = ($6+$4+$8)/$2     ; \
+   str1  = &quot;def view/size=1/orig=&quot; ; str2 = &quot;/clip=&quot; ; \
+   print &quot;ppl size&quot;,$1,$2 ; print &quot;ppl axlen&quot;,$3,$4  ; \
+   print &quot;ppl origin&quot;,$7,$8                          ; \
+   print str1 origx&quot;,&quot;origy str2 clipx&quot;,&quot;clipy,$9    ; \
+   print &quot;set view&quot;,$9 }' &gt;! $jnl
+endif
+
+# end of script
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00188.html">Re: mp_aspect problems</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00180.html">portraitNxN update</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00188.html">Thread Prev</a>][<a href="msg00180.html">Thread Next</a>][<A HREF="threads.html#00189">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

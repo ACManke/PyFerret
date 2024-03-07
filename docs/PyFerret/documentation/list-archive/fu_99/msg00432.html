@@ -1,0 +1,167 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Problems with @IIN integration -->
+<!--X-From-R13: Uyraa Qneire <Uyraa.QneireNngz.pu.pnz.np.hx> -->
+<!--X-Date: Mon, 13 Dec 1999 08:40:33 &#45;0800 -->
+<!--X-Message-Id: l03130305b47aca5f2af7@[131.111.112.149] -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Problems with @IIN integration</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00433.html">Thread Next</a>][<A HREF="threads.html#00432">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Problems with @IIN integration</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Problems with @IIN integration</strong></li>
+<li><strong>From</strong>: <strong>Glenn Carver &lt;<A HREF="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 13 Dec 1999 16:40:13 +0000</li>
+<li>Cc: <A HREF="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+I'd appreciate some help from someone experienced with the @IIN (indefinite
+integral) function in Ferret. I'm having a real tough time getting it to
+work correctly with my irregularly spaced z coord, but also there seems to
+be some inconsistency in the way ferret calcs. spacing (ie ZBOX) which is
+not helping.
+
+Essentially I'm trying to compute half-level pressures from isentropic
+(theta) levels using:  dp = -g.sigma.dtheta. In principle @IIN is precisely
+what I want. In Fortran the code to do this is dead easy:
+
+   ph(1) = 0.0     ! n.b. real :: ph(nlev+1), sigma(nlev) and ph(1) is
+always 0.
+   do k = 1, nlev
+   ph(k+1) = ph(k) + g * sigma(k)*dtheta(k)
+   end do
+
+The problem in Ferret centres around getting the integral to work
+correctly. In Ferret, SIGMA is on the model full levels which in my case
+look like:
+yes? list z[g=sigma], sigma
+ Column  1: Z is Z (axis THETA)
+ Column  2: SIGMA is Isentropic density (kg/(m2.K))
+                  Z     SIGMA
+344   / 1:  343.9950  16.97323
+373.2 / 2:  373.1750  11.09886
+404.8 / 3:  404.8350   7.45681
+439.2 / 4:  439.1750   5.10337
+
+I first thought something like  LET A = SIGMA[Z=330:5400@IIN] might work,
+but it doesn't because if the integral ranges are specified in world coords
+then it weights the first box by the fraction of the box in the range. So
+whereas I want  ((373.2-344)/2 - 330)*16.9   I get ((373.2-344)/2 -
+344)*16.9.
+
+So that's no good. Next I thought I'd try putting sigma on the half level
+grid which is defined as thetahalf = 0.5 (theta(k) + theta(k+1) ), and
+integrate on this z axis. But now another problem crops up. Here's the
+theta half levels (THDOTH happens to be variable on the theta half level
+axis).
+
+yes? list z[g=thdoth], zbox[g=thdoth]
+ Column  1: Z is Z (axis THETAHALF)
+ Column  2: ZBOX is ZBOX (axis THETAHALF)
+                  Z      ZBOX
+330   / 1:  330.0000  27.98999
+358   / 2:  357.9900  29.17999
+388.4 / 3:  388.3600  31.66000
+421.3 / 4:  421.3100  34.34001
+
+ZBOX is what's going to be used to weight the sigma values when the
+integral is done. Look at the value for k=1. You'll see it's z(2) - z(1).
+Ok there. Now, look at zbox for k=2. It's not z(3)-z(2), instead it's the
+distance between the the midpoints either side of this node. That is,
+zbox(2) = (0.5(z(2)-z(1)) - 0.5(z(3)-z(2)). This seems inconsistent because
+it means zbox(1) is overlapping with zbox(2). Or rather then endpoint zbox
+values are forward differences whereas the remainder are centred
+differences.
+
+This doesn't help me much when all I want is sigma(2)*(z(2)-z(1)).  It
+would be nice if Ferret treated [z=@iin] and [k=@iin] differently so that
+[z=@iin] was as now but [k=@iin] took the cell gridbox to be from the nodes
+rather than midpoints. ie. zbox(2) = z(3)-(2). But maybe that's too subtle
+and prone to confusion. Either way there doesn't seem anyway of using @IIN.
+
+At this point, I'm not sure how to proceed. I think I need to go back to
+the first approach and put sigma on a grid in which the z axis has been
+extended at either end, but I've not figured out how to do that yet and I'm
+not sure it would work anyway. Another way might be to do it by hand,
+compute the differences the way I want and then use RSUM to do the
+integration?
+
+If anyone can help or has done something similar with @IIN I'd appreciate
+hearing from them.
+
+Many thanks,
+
+              Glenn
+
+
+----
+Dr. Glenn Carver, Senior Research Associate,
+Centre for Atmospheric Science, Chemistry Dept., Cambridge University, UK
+<A  HREF="mailto:Glenn.Carver@atm.ch.cam.ac.uk">mailto:Glenn.Carver@atm.ch.cam.ac.uk</A>   <A  HREF="http://www.atm.ch.cam.ac.uk/~glenn/">http://www.atm.ch.cam.ac.uk/~glenn/</A>
+
+              &quot;I never think of the future, it comes soon enough&quot;
+                   - Albert Einstein
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00429.html">Problem with calculating derivatives</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00433.html">Problem defining time axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00433.html">Thread Next</a>][<A HREF="threads.html#00432">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

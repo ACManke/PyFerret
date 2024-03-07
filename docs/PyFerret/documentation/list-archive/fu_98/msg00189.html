@@ -1,0 +1,202 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: various misc. items -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 14 Sep 1998 10:51:26 &#45;0700 -->
+<!--X-Message-Id: 35FD57DF.F7C32117@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 001101bddda9$0219d1e0$020101de@Apollo.gods -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: various misc. items</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00185.html">Thread Prev</a>][<a href="msg00187.html">Thread Next</a>][<A HREF="threads.html#00189">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: various misc. items</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Donald S. Dunbar&quot; &lt;<A HREF="mailto:dsd@DOMAIN.HIDDEN">dsd@xxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: various misc. items</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 14 Sep 1998 10:52:31 -0700</li>
+<li>Cc: Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Organization: NOAA/PMEL</li>
+<li>References: &lt;<a href="msg00185.html">001101bddda9$0219d1e0$020101de@Apollo.gods</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+&gt; Donald S. Dunbar wrote:
+&gt; 
+&gt; I often use Ferret to plot data over small regions where the distance
+&gt; scale is constant.  I invariably want to add a nice looking distance
+&gt; scale, and do so during post-processing of a GIF image.  Is there a
+&gt; more direct way?  Has someone written a script that will do this on a
+&gt; Ferret plot?
+
+Hi Donald,
+
+Have a look at the &quot;%XAXIS&quot; and %YAXIS&quot; commands (in thre PLOT+ Users
+Guide in your $FER_DIR/docs directory). These should allow you to do
+what you are after.
+
+&gt; When I plot lon/lat axes for these small areas the axis tick labels
+&gt; are in decimal degrees.  It would be nice to have an option for deg,
+&gt; min, sec labels where the degree and or minute value appears only as
+&gt; many times as required (e.g., if the range were from 124.15 to 124.25
+&gt; then the degree label would appear only once).  At present I (again)
+&gt; do this during post-processing of a GIF image.
+
+Unfortunately, this style of formatting is not available.
+ 
+&gt; When I input west longitudes from a file in the format &quot;xx.xxW&quot; and
+&gt; plot the data, the X-axis is inverted.  For example, if the range is
+&gt; 135W to 133W then the axis is plotted from 133 to 135.  My solution is
+&gt; to input the angles as negative values; however, this results in
+&gt; negative tick labels.  Am I doing something wrong or is this a bug?
+
+Without more detail on the way in which the plot is constructed, I can
+suggest only some general approaches.
+
+The PLOT+ graphics are a bit fussy about the encoding of longitudes. In
+the PLOT+ Users guide you'll find &quot;LONW&quot; and &quot;LONE&quot; formatting options
+to handle east and west encoding.
+
+Alternatively, you can define a variable:
+	LET lon360 = my_longitude + 360
+and then base your plots on the variable &quot;lon360&quot;.
+
+&gt; On the subject of aspect ratios in windows.  It seems to me that if
+&gt; the X and Y scales are equal, then there should be a way of having
+&gt; Ferret generate the correct aspect ratio automatically after
+&gt; specifying either the X or Y dimension.  At present I am required to
+&gt; determine (min,max) ranges for both X and Y axes, do a little bit of
+&gt; arithmetic, then specify the ASPECT=Y/X option.  This strikes me as
+&gt; something that arises so frequently that a new option is warranted,
+&gt; thus letting Ferret do the math automatically.
+
+Actually, there is a very general approach to this kind of calculation
+-- Ferret &quot;immediate mode expressions&quot;. You can embed the simple
+arithmetic of the aspect ratio calculations into the SET WINDOW/ASPECT
+command directly. Example:
+
+ LET my_aspect = (my_y[Y=@max]-my_y[Y=@min])/(my_x[X=@max]-my_x[x=@min])
+ SET WINDOW/ASPECT=`my_aspect`:AX
+
+Note the grave accents to immediately execute the arithmetic and the
+&quot;:AX&quot; to specify it is the ratio of axis lengths that is being
+specified.  
+ 
+&gt; I sometimes want to have more than one color bar appear on a plot.  Is
+&gt; this possible?  When I overlay one shading on top of another I would
+&gt; expect both color keys to appear, however this does not
+&gt; happen&amp;mdash;only the original key appears.  Is there a way of having
+&gt; more than one color key? 
+
+This can be achieved only by using multiple viewports. You can define
+two identical viewports (layers on top of one another) and have complete
+independence of the graphic contents of each layer. The PPL SHASET
+command (again, the PLOT+ Users Guide -- Enhanced Features Supplement)
+allows you to control the placement of multiple keys.
+
+&gt; Also, can one control the labeling (e.g.,
+&gt; size, frequency, side of scale) and position (e.g., left or right side
+&gt; of plot) of the key?
+
+There are commands to control for all of these features. See Chapter 6:
+CUSTOMIZING PLOTS (esp. section 3.2) in the Ferret Users Guide (on the
+Web at
+<A  HREF="http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v44/chapter6.html#_1_143">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v44/chapter6.html#_1_143</A>).
+
+Good questions. I hope these answers help.
+
+	- steve
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt;   Donald S Dunbar &lt;dsd@oar.com&gt;
+&gt;   President/Physical Oceanographer
+&gt;   Ocean Applied Research Ltd
+&gt; 
+&gt;   Donald S Dunbar
+&gt;   President/Physical Oceanographer  &lt;dsd@oar.com&gt;
+&gt;   Ocean Applied Research Ltd
+&gt;   1864 Duchess Avenue               Work Voice: (604)925-9570
+&gt;   West Vancouver                    Home Voice: (604)926-8325
+&gt;   BC                                Voice Cellular: (604)970-2997
+&gt;   V7V 1R1                           Work Fax: (604)925-9580
+&gt;   Canada                            Home Fax: (604)925-9580
+&gt;   Additional Information:
+&gt;   Version        2.1
+&gt;   Last Name      Dunbar
+&gt;   First Name     Donald
+&gt;   Additional NameS
+&gt;   Label Work     1864 Duchess Avenue West Vancouver, BC V7V 1R1
+&gt;                  Canada
+&gt;   Label Home     1864 Duchess Avenue West Vancouver, BC V7V 1R1
+&gt;                  Canada
+&gt;   Revision       19980818T215252Z
+
+-- 
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00185" href="msg00185.html">various misc. items</a></strong>
+<ul><li><em>From:</em> Donald S. Dunbar</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00185.html">various misc. items</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00187.html">adding labels</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00185.html">Thread Prev</a>][<a href="msg00187.html">Thread Next</a>][<A HREF="threads.html#00189">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

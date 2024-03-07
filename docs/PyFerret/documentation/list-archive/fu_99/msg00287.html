@@ -1,0 +1,233 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: multiple vertical axis -->
+<!--X-From-R13: irefpuryNnznebar.tfsp.anfn.tbi ([nex O. Hrefpuryy) -->
+<!--X-Date: Wed, 15 Sep 1999 06:14:36 &#45;0700 -->
+<!--X-Message-Id: 9909150914.ZM27122@amarone.gsfc.nasa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: Pine.GSO.3.95q.990914180012.24545R&#45;100000@swan2 -->
+<!--X-Reference: wainer@usp.br -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: multiple vertical axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00286.html">Thread Prev</a>][<a href="msg00288.html">Thread Next</a>][<A HREF="threads.html#00287">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: multiple vertical axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ilana Wainer &lt;<A HREF="mailto:wainer@DOMAIN.HIDDEN">wainer@xxxxxx</A>&gt;, <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: multiple vertical axis</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A> (Mark A. Verschell)</strong></li>
+<li>Date: Wed, 15 Sep 1999 09:14:28 -0400</li>
+<li>Encoding: 2 TEXT BOUNDARY, 42 MESSAGE, 2 TEXT BOUNDARY, 110 MESSAGE, 3 TEXT BOUNDARY</li>
+<li>In-reply-to: Ilana Wainer &lt;wainer@usp.br&gt;       &quot;multiple vertical axis&quot; (Sep 14,  6:05pm)</li>
+<li>References: &lt;<a href="msg00286.html">Pine.GSO.3.95q.990914180012.24545R-100000@swan2</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Ilana,
+
+	Probably the fastest demo is the one provided by ferret. In
+$FER_DIR/examples you will find multi_variable_demo.jnl which I will attach
+just in case you don't have it for some reason. If this isn't enough let me
+know and I am sure I can track down another example.
+
+	Mark
+On Sep 14,  6:05pm, Ilana Wainer wrote:
+&gt; Subject: multiple vertical axis
+&gt;
+&gt; Fellow ferreters -
+&gt;
+&gt; does anyone have an example of how to draw 3 vertical axis on a simple x/y
+&gt; plot? (I have 3 time series with very different scales in y, same x)
+&gt;
+&gt; THANKS!!
+&gt;
+&gt; -I
+&gt; ==============================================================
+&gt;   Ilana Wainer
+&gt;   Dept. Oceanografia Fisica - Universidade de Sao Paulo
+&gt;   Praca do Oceanografico 191 - 05508-900, Sao Paulo - Brazil
+&gt;   Phone: +55-11 818 6578     Fax: +55-11 818 6610
+&gt;   <A  HREF="http://www.labmet.io.usp.br">http://www.labmet.io.usp.br</A>
+&gt; ==============================================================
+&gt;-- End of excerpt from Ilana Wainer
+
+
+
+
+-- 
+ Mark Verschell                     NASA/Goddard Space Flight Center
+ verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+ 301-614-5669  Fax: 301-614-5666    Greenbelt, MD 20771
+
+
+		     Better Living Through Denial
+               ** USQC Certified: 100% Microsoft Free **
+</pre>
+<pre>
+\cancel mode verify
+
+! Description: show some styles of plots with multiple dependent axes
+
+cancel viewports
+set data levitus_climatology
+set window/aspect=.6/size=0.6
+set mode verify
+alias WAITING MESSAGE
+
+! **********   MULTIPLE-VARIABLE PLOTTING TOOLS  *************
+
+! This demonstration will introduce some options for multi-variable plotting
+! using separate axes for each variable on the plot
+
+! As the demonstration runs please continue to read the text on the screen.
+! You will see exactly the commands that are controlling the FERRET program.
+! Lines that begin with &quot;!&quot; are comment lines - for your information only.
+
+! ********************************************************************
+WAITING
+
+! FIRST, THE DEFAULT FOR FERRET - VARIABLES SHARING THE SAME Y AXIS
+! No special tools are required for these plots.  For example,
+
+set region/y=0/z=0/x=130e:80w 				! a line in X
+plot temp[z=0], temp[z=50], temp[z=100], temp[z=200]
+
+waiting
+
+! * A COMMON REQUIREMENT - 2 VARIABLES WITH DIFFERENT AXES
+!   An attractive and simple style is to locate 2 axes left and right
+
+set region/y=0/z=0/x=130e:80w     ! line in X
+go left_axis_plot temp
+go right_axis_plot salt
+
+waiting
+
+! ** QUICK AND DIRTY - NO ADVANCE PLANNING
+!    Use this if one variable has already been plotted and you want
+!    to overlay additional variables quickly using new Y axes
+
+let dens = rho_un(salt,temp,0) - 1000
+set region/y=0/z=0/x=130e:80w	! line in X
+plot temp			! quick and dirty plot
+go multi_yaxis_overlay	salt	! quick and dirty multi-axis overlay
+go multi_yaxis_overlay	dens 2	! &quot;2&quot; indicating a second overlay
+
+waiting
+
+! ** ... WITH JUST A LITTLE PLANNING:
+!   we can set up several variables more attractively
+
+set region/y=0/z=0/x=130e:80w		! line in X
+go multi_yaxis_plot1 temp 2		! &quot;2&quot; variables to follow
+go multi_yaxis_overlay salt 1 &quot;-&quot;	! overlay #1 left of axis (&quot;-&quot;)
+go multi_yaxis_overlay dens 2 &quot;-&quot;	! overlay #2 left of axis (&quot;-&quot;)
+
+waiting
+
+! ** ... SIMILARLY ...
+! ** 3 variables using differing X axes
+
+set window/aspect=1.5
+set region/y=0/x=160e/Z=0:500		! line in Z
+let dens = rho_un(salt,temp,0) - 1000
+go multi_xaxis_plot1 temp 2		! &quot;2&quot; variables to follow
+go multi_xaxis_overlay salt 1 &quot;-&quot;	! overlay #1 below axis (&quot;-&quot;)
+go multi_xaxis_overlay dens 2 &quot;-&quot;	! overlay #2 below axis (&quot;-&quot;)
+
+waiting
+
+! ** CUSTOM CONTROLS:
+! for detailed customization of these plots additional arguments are
+! provided.  The arguments are documented in the files multi_xaxis_overlay.jnl,
+! etc.  Here is a quick example in which customizations are applied to
+! axis scaling, axis labels, axis spacing, tic label sizes, and tic spacing
+
+set window/aspect=.6
+set region/y=0/z=0/x=130e:80w		! line in X
+let dens = rho_un(salt,temp,0) - 1000
+go multi_yaxis_plot1 temp 3 &quot;0.21  @CRPlot With Customized Axes&quot;
+go multi_yaxis_overlay salt 1 &quot;-&quot; &quot;33,36,0.5&quot; &quot;My Salinity&quot; 0.25 1.5
+go multi_yaxis_overlay dens 2 &quot;-&quot; &quot; &quot; @CI&quot;Density&quot; .3 1.5  &quot;,1,,,.13,(1PG10.3)&quot;
+
+waiting
+
+set window/aspect=0.8
+! *** MULTI-VARIAABLE PLOT STYLES INSIDE VIEWPORTS
+
+set view ul			! upper left
+set region/y=0/z=0/x=130e:80w
+plot temp[z=0], temp[z=50]
+set view ur			! upper right
+go left_axis_plot temp &quot;Double Variable Plot&quot;
+go right_axis_plot salt
+set view ll			! lower left
+let dens = rho_un(salt,temp,0) - 1000
+go multi_yaxis_plot1 temp 1
+go multi_yaxis_overlay salt 1 &quot;-&quot;
+set view lr			! lower right
+set region/x=160E/y=0/z=0:200
+go multi_xaxis_plot1 temp 1
+go multi_xaxis_overlay salt 1 &quot;-&quot;
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00286" href="msg00286.html">multiple vertical axis</a></strong>
+<ul><li><em>From:</em> Ilana Wainer</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00286.html">multiple vertical axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00288.html">vectors of v and omega</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00286.html">Thread Prev</a>][<a href="msg00288.html">Thread Next</a>][<A HREF="threads.html#00287">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

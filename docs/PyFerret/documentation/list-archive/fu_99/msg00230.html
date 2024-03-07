@@ -1,0 +1,202 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: log&#45;depth&#45;axis contour plot -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 5 Aug 1999 09:45:27 &#45;0700 -->
+<!--X-Message-Id: 37A9BEA7.51B50784@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 199908021359.PAA01640@odysseus.mpch&#45;mainz.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: log-depth-axis contour plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00225.html">Thread Prev</a>][<a href="msg00222.html">Thread Next</a>][<A HREF="threads.html#00230">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: log-depth-axis contour plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Patrick Joeckel &lt;<A HREF="mailto:joeckel@DOMAIN.HIDDEN">joeckel@xxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: log-depth-axis contour plot</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 05 Aug 1999 09:41:11 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00220.html">199908021359.PAA01640@odysseus.mpch-mainz.mpg.de</a>&gt;</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Patrick,
+
+Here is a more general technique that gives you full control over all
+details of the axis labelling. I believe that it will work on Z axes, as
+well.
+
+    - steve
+
+===========================
+
+! suppose you have some data on a grid x=1:100:1, y=1:100:1
+ define axis/x=1:100:1 xax
+ define axis/y=1:100:1 yax
+ let/title=&quot;test data&quot; a = LOG(x[gx=xax]/8)+y[gy=yax]/100    ! some made up
+data
+
+ ! plot untransformed data
+ contour a
+
+ ! define a new axis with the LOG transform of the X coordinates
+ define axis/from/name=xlog/x LOG(x[gx=xax])
+
+ ! plot quick and dirty LOG-transformed data  in the upper plot
+ ! NOTE: X axis labels will be LOG values rather than exponents
+ set window/new
+ set view upper
+ contour a[gx=xlog@asn]
+
+! *** here's how to do a nicely labelled plot ***
+set view lower
+
+! base plot with large tics, only, unlabelled
+ppl axlabp 0
+contour/xlimits=0:2:1/title=&quot; &quot; a[gx=xlog@asn]
+
+! add 2 decades of minor tics
+repeat/j=1:2:1 (repeat/i=1:10:1 ppl aline 1,`LOG(i)+j-1`,0,`LOG(i)+j-1`,-4)
+
+! label the major tics with powers of 10
+repeat/j=1:3:1 label `j-1`,-18,0,0,.1 &quot;@SR10^`j-1`&quot;
+
+! label 2,3,5 of the minor tics
+repeat/j=1:2:1 label `LOG(2)+j-1`,-15,0,0,.08 &quot;@SR2&quot;
+repeat/j=1:2:1 label `LOG(3)+j-1`,-15,0,0,.08 &quot;@SR3&quot;
+repeat/j=1:2:1 label `LOG(5)+j-1`,-15,0,0,.08 &quot;@SR5&quot;
+
+============================
+
+
+
+
+Patrick Joeckel wrote:
+
+&gt; Dear Ferret Users,
+&gt;
+&gt; On Fri, 19 Feb 1999 13:38:47 +0100 (MET)
+&gt; Rodrigo Caballero Augi gave the following example to do log-log contour
+&gt; plots and achieve a proper log-axis, i.e.
+&gt; 'the contours rescaled to the log axes *and* the &quot;ppl axtype 2,2&quot;-style
+&gt; tic marks - that is, with the ticks unevenly spaced'.
+&gt;
+&gt; However, if I try this with a /DEPTH-defined axis,
+&gt; ferret exits with this messages :
+&gt; YLO,YHI                                   on DEC-Alpha (Version 5)
+&gt;
+&gt; STOP: YLO,YHI
+&gt; Warning: Floating underflow occurred      on a Linux-PC (Version 5)
+&gt;
+&gt; Does anybody have a solution ?
+&gt;
+&gt; Thank you for your help !
+&gt;
+&gt; Sincerely,
+&gt;
+&gt;                Patrick Joeckel
+&gt;
+&gt; here is the above cited suggestion for non /DEPTH-defined axes:
+&gt; !!!!!!
+&gt;  ! suppose you have some data on a grid x=1:100:1, y=1:100:1
+&gt;  define axis/x=1:100:1 xax
+&gt;  define axis/y=1:100:1 yax
+&gt;  define grid/x=xax/y=yax gg
+&gt;  set grid gg
+&gt;  let a = LOG(x/10)+y/100    ! some made up data
+&gt;
+&gt;  ! plot untransformed data in the upper plot
+&gt;  set view upper
+&gt;  ppl axtype 1,1
+&gt;  contour a
+&gt;
+&gt;  ! define a new axis with the LOG transform of the X coordinates
+&gt;  define axis/from/name=xlog/x LOG(x)
+&gt;
+&gt;  ! plot LOG-transformed data in the lower plot
+&gt;  set view lower
+&gt;  ppl axtype 2,1
+&gt;  contour a[gx=xlog@asn]*0
+&gt;  ppl axtype 1,1
+&gt;  contour/over/pen=1/nolab a[gx=xlog@asn]
+&gt; !!!! end of example
+&gt;
+&gt; ---------------------------------------------------------------
+&gt; Patrick Joeckel
+&gt; Max Planck Institute for Chemistry
+&gt; Joh.-J. Becher Weg 27
+&gt; 55128 Mainz                   phone:++49-6131-305452
+&gt; Germany                       fax  :++49-6131-305436
+&gt;                              e-mail:joeckel@mpch-mainz.mpg.de
+&gt;                          <A  HREF="http://www.mpch-mainz.mpg.de/~joeckel">http://www.mpch-mainz.mpg.de/~joeckel</A>
+&gt; ---------------------------------------------------------------
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00220" href="msg00220.html">log-depth-axis contour plot</a></strong>
+<ul><li><em>From:</em> Patrick Joeckel</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00225.html">Re: log-depth-axis contour plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00222.html">Line colors and thicknesses...</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00225.html">Thread Prev</a>][<a href="msg00222.html">Thread Next</a>][<A HREF="threads.html#00230">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

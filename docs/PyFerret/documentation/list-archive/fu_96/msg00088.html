@@ -1,0 +1,128 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Reading ASCII files in FERRET: problem solved -->
+<!--X-From-R13: Yvz Dhqrra <ehqrraNpnrfha16.zfq.enl.pbz> -->
+<!--X-Date: Fri, 18 Oct 1996 07:29:54 &#45;0700 -->
+<!--X-Message-Id: 199610181414.KAA12134@caehp6.msd.ray.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Reading ASCII files in FERRET: problem solved</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00086.html">Thread Prev</a>][<a href="msg00089.html">Thread Next</a>][<A HREF="threads.html#00088">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Reading ASCII files in FERRET: problem solved</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Reading ASCII files in FERRET: problem solved</strong></li>
+<li><strong>From</strong>: <strong>Kim Rudeen &lt;<A HREF="mailto:rudeen@DOMAIN.HIDDEN">rudeen@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 18 Oct 96 10:14:01 EDT</li>
+<li>Mailer: Elm [revision: 70.85]</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Steve Hankin recently solved a problem for me in reading
+an ASCII file in FERRET.  He asked me to post his solution
+to ferret_users.
+
+The problem involved reading an ASCII data file of the form
+
+ 76 85
+   -10.492  -42.000  -30.310
+   -10.836  -41.000  -30.680
+   -11.172  -40.000  -31.041
+     .
+     .
+     .
+
+The file contains three variables in two dimensions.  Each
+line after the first is an (X,Y,Z) triple.  The first line is 
+the row and column breakdown of the file data, in this case 
+76 rows, 85 columns.
+
+I needed to read the first two values in order to set up a grid to 
+input the remainder of the data.
+
+Steve's solution was as follows:
+
+define symbol myskip 0            ! could be any value
+define axis/x=1:1/npoints=1 one_pt
+define grid/x=one_pt gg
+file/grid=gg/skip=($myskip)/var=ny,nx ref3d.plt
+define symbol nnx `nx`     ! note: grave accents for immediate execution
+define symbol nny `ny`
+cancel data ref3d.plt
+
+	define symbol myskip `($myskip)+1`     ! increment definition
+	DEFINE AXIS/X=1:($nnx):1 xrows
+	DEFINE AXIS/Y=1:($nny):1 yrows
+	DEFINE GRID/X=xrows/Y=yrows gdata
+	FILE/VAR=&quot;xs,ys,zs&quot;/GRID=gdata/skip=($myskip) ref3d.plt
+
+In other words:
+
+First, define a dummy grid and read the first two values, which are
+stored in symbols nnx and nny.
+
+Then input the data again, this time skipping the first line and
+using the values stored in nnx and nny to define the data grid.
+
+This did the trick.  Thanks, Steve.
+
+Kim Rudeen
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00086.html">Character strings in Ferret and PPL</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00089.html">Vector plots</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00086.html">Thread Prev</a>][<a href="msg00089.html">Thread Next</a>][<A HREF="threads.html#00088">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

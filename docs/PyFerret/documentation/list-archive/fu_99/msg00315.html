@@ -1,0 +1,189 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: MC netCDF datasets -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 30 Sep 1999 09:29:12 &#45;0700 -->
+<!--X-Message-Id: 37F38FD8.9CF916E0@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: MC netCDF datasets</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00314.html">Thread Prev</a>][<a href="msg00316.html">Thread Next</a>][<A HREF="threads.html#00315">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: MC netCDF datasets</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:monge@DOMAIN.HIDDEN">monge@xxxxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: MC netCDF datasets</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<A HREF="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 30 Sep 1999 09:29:12 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Jean-Louis,
+
+Jonathan Callahan here, developer of the new LAS.
+
+If you're using the latest release of LAS (called LAS2 and written in
+perl), everything you want to do is available through configuration of
+the server.  The interface can display a dataset with many variables,
+each of which lives in a separate file.  When the interface sends a
+request to the server, the variable sent in can have a particular
+dataset name override the one that was sent in.
+
+An example:
+
+On our demonstration server
+
+<A  HREF="http://ferret.wrc.noaa.gov/las-bin/LiveAccess">http://ferret.wrc.noaa.gov/las-bin/LiveAccess</A>
+
+there is a dataset titled 
+
+    ETOPO topography/bathymetry
+
+with variables titled
+
+    60 minute resolution
+    20 minute resolution
+     5 minute resolution
+
+
+The file which configures the web interface, TMAP_DATA.js, specifies
+
+etopo = new Dataset(&quot;etopo&quot;,
+  &quot;ETOPO topography/bathymetry&quot;,
+  null,
+  &quot;/las-doc/data_documents/etopo.html&quot;,
+  null, null);
+
+with (etopo) {
+  aV(&quot;rose60&quot;, &quot;60 minute resolution&quot;, &quot;XY&quot;, &quot;m&quot;);
+  aV(&quot;rose20&quot;, &quot;20 minute resolution&quot;, &quot;XY&quot;, &quot;m&quot;);
+  aV(&quot;rose05&quot;, &quot; 5 minute resolution&quot;, &quot;XY&quot;, &quot;m&quot;);
+}
+
+
+The file which configures the server, TMAP_DATA.pl, specifies
+
+#########################################
+# etopo
+#########################################
+
+$dset_list{&quot;etopo&quot;}{&quot;default&quot;}{&quot;land_type&quot;}     = &quot;contour&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;default&quot;}{&quot;palette&quot;}     = &quot;dark_land_sea&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;default&quot;}{&quot;fill_levels&quot;}  = 
+&quot;(-10500,-5500,5000)(-5500,0,500)(0,2000,250)(2000,6000,1000)&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose60&quot;}{&quot;dataset_name&quot;}     = &quot;etopo60&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose60&quot;}{&quot;variable_name&quot;}     = &quot;rose&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose20&quot;}{&quot;dataset_name&quot;}     = &quot;etopo20&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose20&quot;}{&quot;variable_name&quot;}     = &quot;rose&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose20&quot;}{&quot;land_type&quot;}     = &quot;none&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose05&quot;}{&quot;dataset_name&quot;}     = &quot;etopo5&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose05&quot;}{&quot;variable_name&quot;}     = &quot;rose&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose05&quot;}{&quot;land_type&quot;}     = &quot;none&quot;;
+$dset_list{&quot;etopo&quot;}{&quot;rose05&quot;}{&quot;fill_levels&quot;}  = &quot;20c&quot;;
+
+
+As you can see, I've used the &quot;dataset_name&quot; and &quot;variable_name&quot;
+properties to convert the incoming request for
+(dataset=etopo,variable=rose60) into a Ferret request for
+(dataset=etopo60,variable=rose).
+
+You can use this mechanism to create an interface which displays a
+single dataset with 21 variables, yet associate separate dataset names
+wich each of your variables.
+
+I hope that helps.
+
+And I'd LOVE to take a look at your server when you get it up and
+running.  Our goal is to put LAS2 sites in touch with each other so that
+they can ultimately access each other's data.
+
+Salut!
+
+
+-- Jonathan Callahan
+
+
+
+&gt; Hi Ferret users,
+&gt; 
+&gt; I use NCEP reanalysis monthly means files from noaa/cdc.
+&gt; The filenames are as follows :
+&gt;         air.mon.mean.nc 
+&gt;         hgt.mon.mean.nc 
+&gt;         omega.mon.mean.nc 
+&gt;         pottmp.mon.mean.nc 
+&gt;         ...
+&gt; (21 variables).
+&gt; 
+&gt; Each file contains 1 scientific variable.
+&gt; All files share a common time axis which spans from 1958 to 1999, with a timestep
+&gt; of 1 month.
+&gt; 
+&gt; I would like to build a Multi netCDF dataset with all these files, to allow
+&gt; my Live Access Server to point to it as a single dataset with 21 variables.
+&gt; 
+&gt; I have browsed the manual, the FAQ, the mail archive, the .des sample files included in the
+&gt; distribution and also the gt_des_annot.txt . 
+&gt; 
+&gt; I am still unable to understand how to build the .des file.
+&gt; Are MC datasets useful only for concatenation along the time axis ?
+&gt; 
+&gt; Can anyone help me ?
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00314.html">MC netCDF datasets</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00316.html">[no subject]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00314.html">Thread Prev</a>][<a href="msg00316.html">Thread Next</a>][<A HREF="threads.html#00315">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: netCDF file errors -->
+<!--X-From-R13: Rnivq Akvyvn <bkvyvnNAQS.ADEF.SRG> -->
+<!--X-Date: Tue, 23 Mar 1999 16:52:36 &#45;0800 -->
+<!--X-Message-Id: 36F8374C.A69A14A@oce.orst.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>netCDF file errors</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00073.html">Thread Prev</a>][<a href="msg00077.html">Thread Next</a>][<A HREF="threads.html#00076">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>netCDF file errors</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>netCDF file errors</strong></li>
+<li><strong>From</strong>: <strong>David Oxilia &lt;<A HREF="mailto:oxilia@DOMAIN.HIDDEN">oxilia@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 23 Mar 1999 16:52:28 -0800</li>
+<li>Organization: COAS</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Ferreters,
+
+I'm a bit stomped with ferret complaining about a netCDF file
+produced by a fortran program (which took days to write if I
+remember correctly...) I've used this code in the past to read
+binary dumps from model output. However, until now the domain
+of my runs was of the North Pacific whereas the data I'm
+using now is from a global domain. I should also mention that
+the binary dumps are produced by a little endian machine. 
+Previouly, I compiled the fortran code under DEC UNIX and 
+asked the compiler to do byte swapping (since DEC is big endian).
+This worked fine for the Pacific domains. Nonetheless, I have
+had no luck running the same code on the same machine for the
+global data dumps (A segmentation fault occurrs immediately). 
+
+I decided that it might be best anyway to compile and run the code
+on a SUN (little endian) with no byte swapping. This would read the
+binary dumps produced by a machine of the same architecture (a
+CM500). Compilation and running proceeds without error messages
+leaving me with the desired netCDF file.
+
+BUT... here's the catch. Upon asking ferret to read the netCDF
+file I get the following:
+
+yes? use global
+ error in netCDF file
+ More than one record dimension in &quot;slab_min_index&quot;: ub
+
+ub is a barotropic variable and has dimension k=1:1. Although
+its grid definition is 4D, there is only one layer in these
+variables. Here's the header info from an ncdump:
+
+netcdf tmp {
+dimensions:
+        xz = 1080 ;
+        xh = 1080 ;
+        yh = 384 ;
+        yz = 384 ;
+        layer = 10 ;
+        time = UNLIMITED ; // (1 currently)
+        grid_definition = 1 ;
+variables:
+        float xz(xz) ;
+                xz:units = &quot;degrees&quot; ;
+                xz:point_spacing = &quot;even&quot; ;
+        float xh(xh) ;
+                xh:units = &quot;degrees&quot; ;
+                xh:point_spacing = &quot;even&quot; ;
+        float yh(yh) ;
+                yh:units = &quot;degrees&quot; ;
+                yh:point_spacing = &quot;even&quot; ;
+        float yz(yz) ;
+                yz:units = &quot;degrees&quot; ;
+                yz:point_spacing = &quot;even&quot; ;
+        float layer(layer) ;
+                layer:units = &quot;layer~&quot; ;
+                layer:positive = &quot;down&quot; ;
+        float time(time) ;
+                time:units = &quot;days&quot; ;
+        char u_grid(grid_definition) ;
+                u_grid:axes = &quot;xz yh layer time&quot; ;
+        char v_grid(grid_definition) ;
+                v_grid:axes = &quot;xh yz layer time&quot; ;
+        char h_grid(grid_definition) ;
+                h_grid:axes = &quot;xh yh layer time&quot; ;
+        char z_grid(grid_definition) ;
+                z_grid:axes = &quot;xz yz layer time&quot; ;
+        char ub_grid(grid_definition) ;
+                ub_grid:axes = &quot;xz yh normal time&quot; ;
+        char vb_grid(grid_definition) ;
+                vb_grid:axes = &quot;xh yz normal time&quot; ;
+        char hb_grid(grid_definition) ;
+                hb_grid:axes = &quot;xh yh normal time&quot; ;
+        float up(time, layer, yh, xz) ;
+                up:long_name = &quot;Baroclinic zonal velocity&quot; ;
+                up:units = &quot;m/sec&quot; ;
+                up:slab_min_index = 0s, 1s, 0s, 1s ;
+                up:slab_max_index = 0s, 1080s, 0s, 384s ;
+...
+        float ub(time, yh, xz) ;
+                ub:long_name = &quot;Barotropic zonal velocity&quot; ;
+                ub:units = &quot;m/sec&quot; ;
+                ub:parent_grid = &quot;ub_grid@&quot; ;
+                ub:slab_min_index = 0s, 1s, 0s, 1s ;
+                ub:slab_max_index = 0s, 1080s, 0s, 384s ;
+
+
+
+The dilemma: Does this seem like an error in the netCDF libraries? What
+else could this be caused by? Any ideas on why the DEC compiled binary
+would produce a segmentation fault at runtime (it happens immediately)?
+
+Any advice or tips would be appreciated.
+
+Thanks, David.
+
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+David Oxilia			Tel: (541) 737-2368
+COAS:Oregon State University	Fax: (541) 737-2064
+Ocean Admin. Bldg. 104		Email: oxilia@oce.orst.edu
+Corvallis, OR 97331-5503	WWW: <A  HREF="http://www.oce.orst.edu/po">http://www.oce.orst.edu/po</A>
+*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00073.html">Binary 2 netCDF</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00077.html">Ferret under BeOS?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00073.html">Thread Prev</a>][<a href="msg00077.html">Thread Next</a>][<A HREF="threads.html#00076">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

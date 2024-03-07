@@ -1,0 +1,161 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Fill plotting question -->
+<!--X-From-R13: unaxvaNebthr.czry.abnn.tbi (Egrir Vnaxva) -->
+<!--X-Date: Mon, 20 May 1996 18:28:43 &#45;0700 -->
+<!--X-Message-Id: 9605201838.ZM21661@rogue.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Fill plotting question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00025.html">Thread Prev</a>][<a href="msg00027.html">Thread Next</a>][<A HREF="threads.html#00026">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Fill plotting question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Fill plotting question</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A> (Steve Hankin)</strong></li>
+<li>Date: Mon, 20 May 1996 18:38:28 -0700</li>
+<li>Sender: owner-ferret_users</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+	*** End point considerations when contouring on a modulo axis ***
+
+Hi Mark,
+
+The SHADE command does not perform any interpolation so it colors the L=1 grid
+cell from the start of that cell (which is before t=&quot;6-jan:02:00&quot;) to the end
+of the L=36 cell (which is actually after &quot;26-dec:22:00&quot;)
+
+CONTOUR (and FILL), by contrast, do perform interpolations. Thus to contour
+before L=1 (t=&quot;6-jan:02:00&quot;) requires that the L=36 point be adjacent and to
+contour after L=36 (&quot;26-dec:22:00&quot;) requires that the L=1 point be adjacent.
+
+By default Ferret fetches only the actual data requested (L=1:36). It needs to
+be coached to fetch before the L=1 and after the L=36 points. In this solution
+you'll see that can be achieved by requesting &quot;myvar[l=0:37]&quot;
+
+  define axis/x=125:286.5:.25/units=longitude xc
+  define axis/modulo/t=&quot;6-jan:02:00&quot;:&quot;26-dec:22:00&quot;/np=36/t0=&quot;01-jan-0000&quot; tc
+  define grid/x=xc/t=tc gc
+
+  set grid gc
+  let myvar = i+l	! a quickly made-up variable
+
+  fill/ylimits=1-jan:31-dec myvar[l=0:37]
+
+
+	Happy Ferreting
+
+	- steve
+
+==============================================================
+
+--- Forwarded mail from &quot;Mark Verschell&quot; &lt;markv@shear.coaps.fsu.edu&gt;
+
+To: ferret_users@ferret.wrc.noaa.gov
+
+I have a climatology file defined on the following grid:
+
+define axis/x=125:286.5:.25/units=longitude xc
+define axis/modulo/t=&quot;6-jan:02:00&quot;:&quot;26-dec:22:00&quot;/np=36/t0=&quot;01-jan-0000&quot; tc
+define grid/x=xc/t=tc gc
+
+If I shade a variable defined on this grid I get a plot that has a time axis
+from January to December that is completely filled in (i.e. no blank space
+inside the axis lines). However, if I contour or fill this same variable I get
+a plot where the plotted information runs from &quot;6-jan:02:00&quot;:&quot;26-dec:22:00&quot;
+with the same time axis as the shade plot (January to December), with lots of
+blank space inside the axis lines. I tried a bunch of different set region
+commands and the closest I could come was when I set the region to l=35:73, in
+which case the plotted information and the time axis in the plot also included
+the leading December and trailing January (i.e. 14 months). The solution I came
+up with was to explicitly set the region and the time axis limits thusly:
+
+fill/ylimits=8785:17544 ct[l=35:73]
+
+where ct is the variable I want to plot.
+
+I am not that surprised at this behavior, but I would like to know if anyone
+has a more elegant method of accomplishing this.
+
+Thanks, Mark
+
+--
+-------------------------------------------------------------------------------
+
+	      Mark Verschell (verschell@coaps.fsu.edu)
+	      Center for Ocean and Atmospheric Prediction Studies
+	      Florida State University
+              2035 E. Paul Dirac Drive
+              R.M. Johnson Bldg. - Suite 200
+	      Tallahassee, FL  32310
+	      (904) 644-6532              (904) 644-4841 (fax)
+
+
+--- End of forwarded mail from &quot;Mark Verschell&quot; &lt;markv@shear.coaps.fsu.edu&gt;
+
+
+-- 
+
+		|  NOAA/PMEL               |  ph. (206) 526-6080  
+Steve Hankin	|  7600 Sand Point Way NE  |  FAX (206) 526-6744
+		|  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00025.html">Fill plotting question</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00027.html">NetCDF</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00025.html">Thread Prev</a>][<a href="msg00027.html">Thread Next</a>][<A HREF="threads.html#00026">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.erl.noaa.gov">ERL</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://dread.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>
