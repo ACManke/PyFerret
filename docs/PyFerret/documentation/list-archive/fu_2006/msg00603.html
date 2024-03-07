@@ -1,0 +1,686 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 20 Sep 2006 11:02:54 &#45;0700 -->
+<!--X-Message-Id: 4511824D.3070008@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: F83C6ACE124F3E4D83B3A90C9CA0922D2E5085@exwa3&#45;per.nexus.csiro.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00602.html">Thread Prev</a>][<a href="msg00604.html">Thread Next</a>][<A HREF="threads.html#00603">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Yun.Li@DOMAIN.HIDDEN">Yun.Li@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 20 Sep 2006 11:02:53 -0700</li>
+<li>Cc: <a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00600.html">F83C6ACE124F3E4D83B3A90C9CA0922D2E5085@exwa3-per.nexus.csiro.au</a>&gt;</li>
+<li>References: &lt;<a href="msg00600.html">F83C6ACE124F3E4D83B3A90C9CA0922D2E5085@exwa3-per.nexus.csiro.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.7 (Windows/20060909)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+The examples in the Users List archives work fine, but here's another
+script, which does not depend on building up a variable with a REPEAT
+loop and writing an intermediate file.&nbsp; Just adding to the archives to
+close this thread...<br>
+<br>
+<br>
+<tt><br>
+! Create a time series containing only June,July, Augst data <br>
+! from a monthly data set.<br>
+<br>
+use monthly_navy_winds<br>
+<br>
+! Get a list of the month numbers representing June ,July, August<br>
+! This is correct since the data start in January, otherwise we<br>
+! would need an offset<br>
+<br>
+let nmon = `uwnd,return=Lend`<br>
+let tt = t[t=1:`nmon`]<br>
+let june = if mod(tt,12) ge 6 then tt<br>
+let june_aug = if mod(june,12) le 8 then june<br>
+list june_aug<br>
+</tt><br>
+! The number of summer months.<br>
+<tt>let nja = `june_aug[t=@ngd]`<br>
+<br>
+let just_summer = compressl(june_aug)<br>
+list just_summer[L=1:`nja`]<br>
+<br>
+! Now sample the Lth point of uwnd for the summer months<br>
+let uwnd_jja = samplel(uwnd,just_summer[l=1:`nja`])<br>
+<br>
+! Define a calendar axis containing these months.<br>
+def axis/t0="`uwnd,return=t0`"/units="months" tsummer =
+just_summer[l=1:`nja`]<br>
+<br>
+! Put the sampled summer data on the calendar axis<br>
+let uwnd_summer = uwnd_jja[gt=tsummer@asn]<br>
+list/x=180/y=0 uwnd_summer<br>
+</tt><br>
+<br>
+<a class="moz-txt-link-abbreviated" href="">Yun.Li@csiro.au</a> wrote:
+<blockquote
+ cite=""
+ type="cite">
+  
+  
+  <o:SmartTagType
+ namespaceuri="urn:schemas-microsoft-com:office:smarttags" name="place">
+  <o:SmartTagType
+ namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="country-region"><!---->
+  </o:SmartTagType></o:SmartTagType>
+  <div class="Section1">
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Hi Jaison,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Thanks for your help. The example is very
+useful. I have obtained a
+solution to my problem following the lines of the example. <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >A minor question is why the extra item
+"(X=18.8E:18.8E(378.8),
+Y=91.3S:91.3N)" appears in the title of new variable UWND_JJA (see
+following lines). <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >yes? use uwnd_jja_mean.nc<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >yes? show data<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; currently SET data sets:<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp; 1&gt; .\uwnd_jja_mean.nc&nbsp; (default)<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;
+title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;UWND_JJA JJA Seasonal Mean
+UWND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:144&nbsp;&nbsp;&nbsp;&nbsp; 1:73&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:11<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (X=18.8E:18.8E(378.8),
+Y=91.3S:91.3N)<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >This extra item "(X=18.8E:18.8E(378.8),
+Y=91.3S:91.3N)" also appeared
+in my SLP_JJA case. How can I remove it?<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Best regards,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Yun<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+  lang="EN-US">-----Original Message-----<br>
+From: Jaison Kurian [<a class="moz-txt-link-freetext" href="">mailto:jaison@caos.iisc.ernet.in</a>] <br>
+Sent: Wednesday, 20 September 2006 4:16 PM<br>
+To: Li, Yun (CMIS, Floreat)<br>
+Cc: <a class="moz-txt-link-abbreviated" href="">Ansley.B.Manke@noaa.gov</a>; <a class="moz-txt-link-abbreviated" href="">oar.pmel.ferret_users@noaa.gov</a><br>
+Subject: RE: [ferret_users] How can I produce a time series of JJA
+averages (or
+other intervals) from a monthly time series?</span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Hi Yun,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Here is an example using
+monthly_navy_winds dataset.<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Also see these two mails, which deals with
+somewhat similar<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >questions :<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><a class="moz-txt-link-freetext" href="">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2004/msg00575.html</a><o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><a class="moz-txt-link-freetext" href="">http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_2005/msg00018.html</a><o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Hope this helps...<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >Jaison<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >!-------Example : JJA seasonal mean from
+monthly data-----------<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >!<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >\ cancel mode verify<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >! Drawbacks : Data should start at January of
+a year. Otherwise<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+"yr_months" variable should be modified accordingly. <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >!<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >! monthly navy winds : 16-JAN-1982 to
+17-DEC-1992<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >!-----------------------------------------------------------<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; use monthly_navy_winds<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! create a mask such that only JJA is
+valid
+and all other months<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; !&nbsp;&nbsp;&nbsp; are set to missing value<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let L_indx&nbsp;&nbsp;&nbsp; = L[GT=uwnd]<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let yr_months = L_indx-
+12*INT((L_indx-1)/12) <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; list yr_months<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! JJA --&gt;&nbsp; L is 6-8<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let mask_other_months = IF yr_months GT
+5 AND
+yr_months LT 9 THEN 1<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; list yr_months, mask_other_months<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! Apply the mask<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let uwnd_masked = uwnd[d=1] *
+mask_other_months<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; list/x=60/y=10 uwnd_masked <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! Club the JJA values together<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let uwnd_compr&nbsp; = COMPRESSL(uwnd_masked)<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; list/x=60/y=10 uwnd_compr<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! 1982-1992 --&gt; 11 years --&gt;
+11*3=33
+data points<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! we need to average this data points in
+pairs
+of 3 to find the<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; !&nbsp; seasonal mean. Easy way is to use two
+abstract axes, one<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; !&nbsp; with 33 points (ranging from 1-33)
+and
+another one with<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; !&nbsp; 11 points (ranging from 2-32) and
+regrid using @AVE.<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; define axis/t=1:33:1 t33<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let uwnd_jja_all =
+uwnd_compr[gt=t33@ASN] <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; list/x=60/y=10 uwnd_jja_all<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; define axis/t=2:32:3 t11&nbsp; ! for the
+exact
+seasonal mean<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let uwnd_jja_av&nbsp; =
+uwnd_jja_all[gt=t11@AVE]<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! now assign a proper yearly time axis
+defined
+over 1982-1992<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; !&nbsp; here we dont need any interpolation
+but the grid change<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; !&nbsp; ..so use @ASN regridding<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; define axis/t=1982:1992:1/units=years
+tyear<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; let uwnd_jja&nbsp; = uwnd_jja_av[gt=tyear@ASN]<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; list/x=60/y=10 uwnd_jja ! 6.36 7.99
+7.12&nbsp;
+8.51 9.46 9.32<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; set var/title="JJA Seasonal Mean
+UWND"/units="m/s" uwnd_jja<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! save to a NetCDF file for future use<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! sp rm -f uwnd_jja_mean.nc<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&nbsp;&nbsp;&nbsp;&nbsp; ! save/file=uwnd_jja_mean.nc/APPEND
+uwnd_jja<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >!-------------end of
+example-------------------------------------<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >On Wed, 20 Sep 2006 <a class="moz-txt-link-abbreviated" href="">Yun.Li@csiro.au</a> wrote:<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Hi Ansley,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; I am trying to do "Leaving only JJA SLP
+data" from a
+monthly NCEP SLP<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; data "slp.mon.mean.nc". I have looked at<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;
+<a class="moz-txt-link-freetext" href="">http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/seasonal_masking.html</a>.<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; But I could not get a solution because
+of my poor ferret
+skills.&nbsp; Could<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; you please give me a help here?<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Thanks,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Yun<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp;&nbsp; _____&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; From: Ansley Manke
+[<a class="moz-txt-link-freetext" href="">mailto:Ansley.B.Manke@noaa.gov</a>] <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Sent: Wednesday, 20 September 2006 3:02
+AM<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; To: Li, Yun (CMIS, Floreat)<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Cc: <a class="moz-txt-link-abbreviated" href="">oar.pmel.ferret_users@noaa.gov</a><o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Subject: Re: [ferret_users] How can I
+produce a time series of JJA<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; averages (or other intervals) from a
+monthly time series?<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Hi Yun,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Here are a couple of FAQ's for you to
+look at - if one of these is
+the<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; kind of thing you want to do. If you
+need help applying the ideas,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; please write back to the users list.<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; This FAQ makes a "seasonal mask" to pick
+out data from
+part of each<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; year.&nbsp; It does the problem with units of
+time in days; but if
+you're<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; starting with monthly data you could do
+a similar thing with
+months,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; with JJA being months 6,7,8.&nbsp; You could
+combine this with the
+COMPRESS<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; functions to remove the missing data and
+leave only the JJA data.<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;
+<a class="moz-txt-link-freetext" href="">http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/seasonal_masking.html</a><o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Or, did you have in mind a climatology,
+averaging all of the JJA
+data<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; for all years, and returning just one
+point?&nbsp; In that case,
+see<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; "climatology, creating" in the Users
+Guide, and this FAQ
+for more<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; examples<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;
+<a class="moz-txt-link-freetext" href="">http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/climatologies.html</a><o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Ansley<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <a class="moz-txt-link-abbreviated" href="">Yun.Li@csiro.au</a> wrote: <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Dear Ferreters,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; I am trying to produce a seasonal time
+series (such as JJA time
+series)<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; from a monthly time series. <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; There is an example from the Ferret FAQ
+on "How can I produce
+a time<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; series of annual averages (or other
+intervals) from a monthly time<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; series?"<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;
+<a class="moz-txt-link-freetext" href="">http://ferret.wrc.noaa.gov/Ferret/FAQ/analysis/annual_from_monthly.html</a><o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; I would be most grateful if you can let
+me know how to produce a<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; seasonal averaged time series (such as
+June-July-August average
+time<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; series) from a monthly time series by
+modifying the code used to
+produce<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; annual time series in the above web
+page, that is,<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yes?&nbsp; SET DATA
+monthly_navy_winds<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yes?&nbsp; DEFINE
+AXIS/EDGES/T0=1-jan-1900/UNITS=days tann82_92 =<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; DAYS1900(X[i=1982:1993:1],1,1)<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yes?&nbsp; PLOT/X=180/Y=0 uwnd<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; yes?&nbsp; PLOT/X=180/Y=0/over
+uwnd[gt=tann82_92@ave]&nbsp;&nbsp;&nbsp;&nbsp; ! the above<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; plot <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Thanks, <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt;&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; Yun Li<o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; CSIRO, <st1:country-region w:st="on"><st1:place
+ w:st="on">Australia</st1:place></st1:country-region><o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  <p class="MsoPlainText"><font face="Courier New" size="2"><span
+ >&gt; <o:p></o:p></span></font></p>
+  </div>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a class="moz-txt-link-abbreviated" href="">ansley.b.manke@noaa.gov</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00600" href="msg00600.html">RE: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</a></strong>
+<ul><li><em>From:</em> Yun.Li</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00602.html">Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00604.html">RE: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00602.html">Thread Prev</a>][<a href="msg00604.html">Thread Next</a>][<A HREF="threads.html#00603">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] custom jnl worked in las6.4.2 but not las 6.5.12 and ferret5.81 -->
+<!--X-From-R13: uratxrxNahf.rqh.ft -->
+<!--X-Date: Wed, 4 Jan 2006 20:43:36 &#45;0800 -->
+<!--X-Message-Id: 43BCA3F1.2000208@nus.edu.sg -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] custom jnl worked in las6.4.2 but not las 6.5.12 and ferret5.81</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00005.html">Thread Prev</a>][<a href="msg00007.html">Thread Next</a>][<A HREF="threads.html#00006">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] custom jnl worked in las6.4.2 but not las 6.5.12 and ferret5.81</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] custom jnl worked in las6.4.2 but not las 6.5.12 and ferret5.81</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></strong></li>
+<li>Date: Thu, 05 Jan 2006 12:43:29 +0800</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Greetings<br>
+<br>
+I've a custom .jnl file that draws a very detailed coastline that worked 
+in las6.4.2/ferret5.70 but broke in las6.5.12/ferret5.81.  I'm 
+suspecting it has to do with ferret.  Notes are as follows:<br>
+<br>
+- In &quot;las/server/jnls/std_gif.tmpl&quot;, I changed &quot;go land&quot; to &quot;go myland&quot;.<br>
+<br>
+- The variable (e.g. depth) is plotted but not the coastline.<br>
+<br>
+- When I changed back to &quot;go land&quot; in std_gif.tmpl, the coarse coastline 
+is drawn.<br>
+<br>
+- When I use &quot;go myland&quot; in a regular (non-LAS) ferret5.81 session, it 
+works somewhat as expected.  In ferret5.70, &quot;go myland thick overlay&quot; 
+gave a thick coastline, but in ferret5.81 it gave the normal &quot;thin&quot; 
+coastline.<br>
+<br>
+- &quot;myland.jnl&quot; is a symlink in &quot;/usr/local/ferret/go/&quot;.<br>
+<br>
+- The src for &quot;/usr/local/ferret/go/myland.jnl&quot; (below) is a mod of 
+&quot;land.jnl&quot;.<br>
+<br>
+- A las6.4.2/ferret5.81 combo also failed to produce the &quot;myland&quot; coastline.<br>
+<br>
+- &quot;uname -a&quot; gives &quot;Linux host1 2.4.20-8smp #1 SMP Thu Mar 13 17:45:54 
+EST 2003 i686 i686 i386 GNU/Linux&quot;<br>
+<br>
+I'd be grateful for clues/advice as to how to fix this or how to debug it.<br>
+<br>
+Regards<br>
+-Kek<br>
+Physical Oceanography<br>
+Singapore<br>
+<br>
+<br>
+------------------------------------------------------<br>
+src of myland.jnl:<br>
+------------------------------------------------------<br>
+\cancel mode verify     ! ... now overlaying coastal outline ...<br>
+<br>
+! Description: Plot outlines of my coastline<br>
+<br>
+!                       arg 1<br>
+! usage:   GO land [pen]<br>
+<br>
+! pens  may be &quot;0&quot;(background), &quot;1&quot;(foreground), &quot;thick&quot;(same as pen 7),<br>
+!       &quot;black&quot;, &quot;red&quot;, &quot;green&quot;, &quot;blue&quot;, or 2-18.<br>
+! arg 2 may be &quot;basemap&quot;, &quot;overlay&quot;, &quot;fast&quot; (fast, 20e:20e overlay) or 
+omitted<br>
+<br>
+!       Note 1: A pen color of &quot;black&quot; will actually pen number 1<br>
+!               -- normally white if the window background is black<br>
+!       Note 2: An &quot;N&quot; for the continent pen means no continents<br>
+!               -- use this for the special case of geo-political<br>
+!                  overlay without continents.<br>
+<br>
+! examples:<br>
+!   GO land red           - overlay continents using red pen (2)<br>
+!   GO land  10           - overlay continents using pen number 10<br>
+! Notes:<br>
+!  2) use  GO line_samples    to view the first 6 pen numbers<br>
+!       Higher pen numbers cycle with thicker lines (max 18)<br>
+<br>
+! test argument before performing any actions<br>
+query/ignore 
+$1%1|black|red|green|blue|thick|0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|<br>
+15|16|17|18|N|&lt;GO land [pen or &quot;N&quot;] [&quot;basemap&quot;] [pen] [pen] with pen = 
+0(back),<br>
+1(fore), thick, 2-18 or a color%<br>
+<br>
+! introduce the outline data set<br>
+set data/save<br>
+use my-coastline.nc<br>
+PLOT/VS/OVERLAY/NOLAB/LINE lon,lat<br>
+<br>
+cancel data my-coastline.nc<br>
+set data/restore<br>
+set mode/last verify<br>
+-----------------------------------<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00007" href="msg00007.html">Re: [ferret_users] custom jnl worked in las6.4.2 but not las 6.5.12and ferret5.81</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00005.html">[ferret_users] can't plot over another plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00007.html">Re: [ferret_users] custom jnl worked in las6.4.2 but not las 6.5.12and ferret5.81</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00005.html">Thread Prev</a>][<a href="msg00007.html">Thread Next</a>][<A HREF="threads.html#00006">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

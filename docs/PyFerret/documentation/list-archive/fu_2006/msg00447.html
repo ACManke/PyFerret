@@ -1,0 +1,179 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How to plot Monthly Global dataset of singlevariable? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 6 Jul 2006 03:22:58 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0607061551440.30648@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f83b83e40607060213t41a141a2jdf6992183c06c3b7@mail.gmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How to plot Monthly Global dataset of singlevariable?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00446.html">Thread Prev</a>][<a href="msg00448.html">Thread Next</a>][<A HREF="threads.html#00447">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to plot Monthly Global dataset of singlevariable?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ashley Watson &lt;<a href="mailto:ashleywats@DOMAIN.HIDDEN">ashleywats@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to plot Monthly Global dataset of singlevariable?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 06 Jul 2006 15:54:48 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00446.html">f83b83e40607060213t41a141a2jdf6992183c06c3b7@mail.gmail.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00446.html">f83b83e40607060213t41a141a2jdf6992183c06c3b7@mail.gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ashley,
+      Your dataset appears to be 3 dimensional. You tried to read
+the data on to a 2D grid (X &amp; T) first and then RESHAPE'd it on
+to a 3D grid. If you know the exact lat/lon/time coordinates of
+the dataset, you can directly read data onto the destination grid
+consisting of these coordinate axes. Proceed as shown below. It is
+a better to name the axes beginning with the letter representing that
+dimension (ie. x_binary is a better axis name than binary_x).
+While defining time axis, it is always better to use &quot;DAYS&quot; as
+time units (if possible). For a monthly time axis, you can set the
+time increment as `365.2425/12`. This will get rid of the warning
+message.
+
+Let me know if you face any problems. Sometimes you have to flip
+the Y-axis. First you proceed as shown below. Get the plot and
+see whether it is OK.
+
+Regards,
+
+Jaison
+
+
+!------------------------------------------------------------------------------
+     cancel reg/all ; cancel data/all
+     set memory/size=80
+
+     define axis/x=0.5:359.5:1/units=longitudes xlon  ! MODULO stuff will be
+                                                      ! taken careoff
+     define axis/y=-89.5:89.5:1/units=latitudes ylat
+     define axis/t=15-DEC-1981:14-FEB-2003:`365.2425/12`/\
+                      units=days/T0=31-DEC-1980 time
+
+     ! suppose you want to check howmany points are there along
+     ! each axes then
+
+     SAY &quot;   X-Axis xlon have `x[gx=xlon],r=iend`  points&quot;
+     SAY &quot;   Y-Axis ylat have `y[gy=ylat],r=jend`  points&quot;
+     SAY &quot;   T-Axis time have `t[gt=time],r=lend`  points&quot;
+
+     ! Now define a grid using these axes
+
+     define grid/x=xlon/y=ylat/t=time gbin
+
+     ! Open/Read the binary file and set the missing value
+
+     FILE/FORMAT=stream/grid=gbin/var=sst/title=&quot;OI SST&quot; OISST_198112_200302
+
+     set var/bad=-999.99  ! give proper missing value here
+
+     set reg/t=15-JAN-1982
+
+     FILL/lev=(-5,30,1) sst
+     go land
+
+!----------------------------------------------------------------------------
+
+On Thu, 6 Jul 2006, Ashley Watson wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi all,
+    I have monthly global dataset  of  255 months  from  198112 to 200302
+. ( file size 66096000 bytes ). I read the data with the following commands.
+I think there is no problem in reading the data.
+
+
+Set memory/size=80
+DEFINE AXIS/X=1:`360*180`:1 binary_x
+DEFINE AXIS/T=1:255:1 binary_t
+DEFINE GRID/X=binary_x/T=binary_t binary_g
+FILE/FORMAT=stream/G=binary_g/VAR=sst OISST_198112_200302
+
+
+Then I worked to define the grid for data according to section 4.1.3 of
+Chapter 2.
+
+DEFINE AXIS/MODULO/X=0.5:359.5:1 onedeg_x
+DEFINE AXIS/Y=-89.5:89.5:1 onedeg_y
+DEFINE AXIS/T=15-Dec-1981:15-Feb-2003:1/UNITS=month month_t
+DEFINE GRID/X=onedeg_x/Y=onedeg_y/T=month_t onedeg_g
+LET dummy = x[GX=onedeg_g] + y[GY=onedeg_g] + t[GT=onedeg_g]
+LET field = RESHAPE(sst[i=1:`360*180`],dummy)
+
+I got following message while defining time axis,
+
+*** NOTE: /UNIT=MONTHS is ambiguous ... using 1/12 of 365.2425 days
+
+I tried &quot;shade sst[l=1] &quot; but got the error
+**ERROR: dimensions improperly specified: must be a 2D region
+
+I dont understand how to view my data with shade/fill  commnad after these
+steps.
+Looking forward for help.
+
+Ashley
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00446" href="msg00446.html">[ferret_users] How to plot Monthly Global dataset of single variable?</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00446.html">[ferret_users] How to plot Monthly Global dataset of single variable?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00448.html">[ferret_users] Reading fortran stream file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00446.html">Thread Prev</a>][<a href="msg00448.html">Thread Next</a>][<A HREF="threads.html#00447">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

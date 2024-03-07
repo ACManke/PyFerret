@@ -1,0 +1,230 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] EASE&#45;Grid Data in Ferret -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 14 Jan 2008 15:32:33 &#45;0800 -->
+<!--X-Message-Id: 478BF110.9070609@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.44.0801131909280.9340&#45;200000@cep.rutgers.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] EASE-Grid Data in Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00031.html">Thread Prev</a>][<a href="msg00033.html">Thread Next</a>][<A HREF="threads.html#00032">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] EASE-Grid Data in Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>John Krasting &lt;<a href="mailto:krasting@DOMAIN.HIDDEN">krasting@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] EASE-Grid Data in Ferret</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 14 Jan 2008 15:32:32 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.44.0801131909280.9340-200000@DOMAIN.HIDDEN">Pine.LNX.4.44.0801131909280.9340-200000@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:Pine.LNX.4.44.0801131909280.9340-200000@DOMAIN.HIDDEN">Pine.LNX.4.44.0801131909280.9340-200000@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi John,
+</pre><tt>Ferret can read this data, and there are a couple of possible ways to 
+</tt><tt>regrid it to a rectilinear grid.  Here's a script that shows how to read 
+</tt><tt>the data and do a regridding.
+</tt><pre style="margin: 0em;">
+
+
+! The first problem is reading this ascii data, getting
+! the 12 columns of data which contain the precip data
+! into a single variable in X-T with X being the cell number,
+! and the columns representing months.
+
+! Define an x axis with the number of records, and a time
+! axis.  (Note there are a number of ways that a monthly
+! axis can be defined: are the data centered on each month,
+! or at the start of each month?  Does this represent model
+! data where the months were defined as equal-length? I'll do
+! just a very simple definition, equally-spaced with the first
+! month centered on the middle of January 1990 but you should
+! read the documentation and look into what's correct for
+! this data.)
+
+yes? DEFINE AXIS/X=1:39926:1 xax
+</pre><tt>yes? DEFINE 
+</tt><tt>AXIS/T=1:12:1/UNITS=months/T0=&quot;15-jan-1990:12:00&quot;/UNITS=months tax
+</tt><pre style="margin: 0em;">
+
+! First read the longitude and latitude data from the file
+! and save them to a netCDF file. This command reads the
+! cell number, but we don't need it so I'll ignore it.
+! longitude and latitude are on an x grid only:
+
+yes? DEFINE GRID/X=xax xgrid
+yes? FILE/SKIP=2/GRID=xgrid/VAR=&quot;nn,lat,lon&quot;/GRID=xgrid td9813_prcp_1990.txt
+
+! We need to read the input ascii data in two different ways,
+! so save these variables to a file, and then go back and
+! read the ascii data again.
+
+yes? SAVE/CLOBBER/FILE=precip_1990.nc lon, lat
+
+! Now we'll do a second read on the file, and get the
+! precip data onto an XT grid. The format statement skips
+! over the first part of each record and reads only the
+! 12 months.  See Section 2.5 in the Users Guide, examples
+! reading ascii data - this is like the example of 1 variable,
+! 2 dimensions
+
+yes? CANCEL DATA/ALL
+yes? DEFINE GRID/X=xax/T=tax xtgrid
+</pre><tt>yes? FILE/SKIP=2/FORMAT=(36X,12F8.1)/COLUMNS=12/GRID=xtgrid/VAR=precip 
+</tt><tt>td9813_prcp_1990.txt
+</tt><pre style="margin: 0em;">
+
+! Add this to the netCDF file
+
+yes? SAVE/APPEND/FILE=precip_1990.nc precip
+
+! Now the data is in a file, 1-dimensional lon and lat, and
+! 2-dimensional variable precip.
+
+yes? CANCEL DATA/ALL
+yes? CANCEL VARIABLE/ALL
+
+yes? USE precip_1990
+yes? SHOW data
+
+!     currently SET data sets:
+!    1&gt; ./precip_1990.nc  (default)
+! name     title      I         J       K       L
+! LON      LON       1:39926   ...     ...     ...
+! LAT      LAT       1:39926   ...     ...     ...
+! PRECIP   PRECIP    1:39926   ...     ...     1:12
+
+! Let's take a look at the location data:
+
+yes? PLOT/VS lon, lat
+yes? PAUSE
+
+! This plot makes me think this is a curvilinear grid -
+! Ferret has tools for dealing with such data, but only when
+! it's on a 2-D curviliear grid (see Chapter 8, section 8 in
+! the Users Guide). If the data is available in that form,
+! we can work with that. Plowing on, however, let's just
+! regrid this to a rectilinear grid.
+
+yes? DEFINE AXIS/X=-180:179:1/UNIT=deg longax
+yes? DEFINE AXIS/Y=45:85:1/UNIT=deg latax
+
+! Here's one way this data could be regridded to the rectilinear
+! grid. Again, please check the documentation on the scat2grid
+! functions to choose the arguments for the regridding:
+
+</pre><tt>yes? LET precip_grid = SCAT2GRIDGAUSS_XY (lon, lat, precip, 
+</tt><tt>x[gx=longax], y[gy=latax], 2, 2, 2, 0)
+</tt><pre style="margin: 0em;">
+
+! Give the variable a title explaining where it came from.
+</pre><tt>yes? SET VAR/TITLE=&quot;Precipitation interpolated from Groisman archive, 
+</tt><tt>regridded&quot; precip_grid
+</tt><pre style="margin: 0em;">
+
+yes? SHADE/L=1 precip_grid
+
+yes? SAVE/CLOBBER/FILE=precip_regridded.nc precip_grid
+
+
+
+</pre><tt>This could be repeated for more years, appending the regridded data to 
+</tt><tt>the file. Again, you'll want to take some care about the definition of 
+</tt><tt>the time axis.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+John Krasting wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Ferret Users:
+
+I was wondering if you could help show me how to import data like this
+into Ferret.  It is on an 25-km EASE-Grid.
+
+The first columns give the record number, lat, lon, etc.,  and the
+remaining columns are precipitation for each month.  Ultimately I
+would like to regrid these data to a uniform 1 degree lat-lon grid.
+
+I have a total of 50 files like this that I would need to import. It
+would also be nice to aggregate all 600 months onto the same time axis
+in the same file.
+
+Can this be done???
+
+Thanks,
+John
+
+</pre><tt>PS - The attached file has more than 39,000 records.   I only pasted the 
+</tt><tt>first 20 lines as an example.
+</tt><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00031" href="msg00031.html">[ferret_users] EASE-Grid Data in Ferret</a></strong>
+<ul><li><em>From:</em> John Krasting</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00031.html">[ferret_users] EASE-Grid Data in Ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00033.html">[ferret_users] Trick to enhance SHADE figures under a vector graphics software</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00031.html">Thread Prev</a>][<a href="msg00033.html">Thread Next</a>][<A HREF="threads.html#00032">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

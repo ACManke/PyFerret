@@ -1,0 +1,188 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Re: [las_users] limit on storage -->
+<!--X-From-R13: Xbanguna Qnyynuna <Xbanguna.E.QnyynunaNabnn.tbi> -->
+<!--X-Date: Wed, 23 Aug 2006 14:47:24 &#45;0700 -->
+<!--X-Message-Id: 44ECCCEC.4030202@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: BAY114&#45;F38D332BB6E5BC075C20726C4540@phx.gbl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Re: [las_users] limit on storage</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00516.html">Thread Prev</a>][<a href="msg00544.html">Thread Next</a>][<A HREF="threads.html#00543">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: [las_users] limit on storage</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jerome King &lt;<a href="mailto:jejeking@DOMAIN.HIDDEN">jejeking@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: [las_users] limit on storage</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<a href="mailto:Jonathan.S.Callahan@DOMAIN.HIDDEN">Jonathan.S.Callahan@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 23 Aug 2006 14:47:24 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>, <a href="mailto:oar.pmel.las_users@DOMAIN.HIDDEN">oar.pmel.las_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00514.html">BAY114-F38D332BB6E5BC075C20726C4540@phx.gbl</a>&gt;</li>
+<li>References: &lt;<a href="msg00514.html">BAY114-F38D332BB6E5BC075C20726C4540@phx.gbl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Jerome,<br>
+<br>
+<b><tt>&lt;rant&gt;</tt></b><br>
+This topic has me immediatlely climbing on my soapbox to talk about
+data management in general.&nbsp; The following opinions are therefore my
+own and not necessarily shared by others in the LAS group.<br>
+<br>
+THREDDS aggregation is a wonderful thing but it can mask over some
+fundamental problems in the way data is accessed.&nbsp; Many data providers
+generate data in a time sliced fashion with each 1-3D file containing
+1-N separate variables.&nbsp; This is convenient for the data providers but
+inconvenient for those wishing to provide interactive access to the
+data.<br>
+<br>
+LAS gives users the illusion that they are working with a 4D file with
+N variables.&nbsp;&nbsp; Typical requests might be for an XY slice at a
+particular time and height/depth or a time series or profile at a
+particular location.&nbsp; More than one variable may be requested but it
+would be atypical for a&nbsp; user to request hundreds of variables at once.<br>
+<br>
+Thus, for LAS, the optimal data storage strategy would be to have each
+variable in its own 4D file.&nbsp; For very long time series you might break
+up the file into yearly segments of ~ 1Gb and then aggregate the
+segments.&nbsp; Data requests will force remote servers to open at most a
+few files.&nbsp; In your case it seems you have a THREDDS aggregation with
+thousands of irregular timesteps so that any time series request will
+force the THREDDS aggregation server to open thousands of separate
+files -- an expensive bunch of IO that will most likely result in
+non-interactive performance.<br>
+<br>
+So, even though you can create THREDDS aggregations of many separate
+temporal snapshots, it's not necessarily a wise thing to do <i>if you
+want to provide time series access</i>.&nbsp; (You could of course configure
+a special LAS UI behavior that allowed users to select a time but not
+provide access to 'views' with a time axis.&nbsp; Check the bottom of this
+page for an example:&nbsp; <a
+ href="">http://ferret.pmel.noaa.gov/LASdoc/serve/cache/50.html</a>)<br>
+<br>
+In the best of all possible worlds, data managers would take the data
+that is created by data providers and, where necessary, reformat it so
+as to provide optimal performance for data users.&nbsp; After all, the work
+of reformatting only has to be done once but the work of opening 10K
+separate snapshot files has to be done every single time a user makes a
+time series request.<br>
+<br>
+As it turns out, for irregular time axes Ferret will have to open up
+all those files twice -- once to read in the time axes and once to read
+in the data.&nbsp; Yes, caching inside of Ferret and OPeNDAP will improve
+performance but the right way to solve the problem is to <u>manage
+your data for the benefit of the end users, not the data providers</u>.<br>
+<b><tt>&lt;/rant&gt;</tt></b><br>
+<br>
+-- Jon<br>
+<br>
+Jerome King wrote:
+<blockquote cite=""
+ type="cite">Hi Ferreters and LASers,
+  <br>
+  <br>
+I am not a Ferret expert as I have rarelly used it. I have been dealing
+indirectly with it because of the customization I do with the Live
+Access Server.
+  <br>
+  <br>
+With new technologies such as THREDDS that allows to aggregate several
+datasets together, one can end up with really big files with a lot of
+time steps.
+  <br>
+  <br>
+I have been reaching the infamous error message several times now:
+  <br>
+**TMAP ERR: limit on storage for coordinates has been
+  <br>
+reached MAX=750000
+  <br>
+  <br>
+I am aggregating unevenly spaced data over time which probably makes
+things worse.
+  <br>
+  <br>
+I was wondering if anyone found a way around this problem or if the
+Ferret developers plan on improving this. There is a message in the
+archive about using dynamic storage and this may solve the issue. Are
+there any updates about this?
+  <br>
+  <br>
+Thanks a lot!
+  <br>
+Jerome King.
+  <br>
+  <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00544" href="msg00544.html">[ferret_users] Re: [las_users] limit on storage</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00514" href="msg00514.html">[ferret_users] limit on storage</a></strong>
+<ul><li><em>From:</em> Jerome King</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00516.html">Re: [las_users] Re: [ferret_users] limit on storage</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00544.html">[ferret_users] Re: [las_users] limit on storage</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00516.html">Thread Prev</a>][<a href="msg00544.html">Thread Next</a>][<A HREF="threads.html#00543">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

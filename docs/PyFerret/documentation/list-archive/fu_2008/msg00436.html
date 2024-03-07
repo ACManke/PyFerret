@@ -1,0 +1,242 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] scat2gridgauss not functioning properly -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 26 Aug 2008 11:03:26 &#45;0700 -->
+<!--X-Message-Id: 48B4456E.9020406@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: f33c82242fc5.48ac8569@fsu.edu -->
+<!--X-Reference: 55238.169.232.145.149.1219283430.squirrel@mail.atmos.ucla.edu -->
+<!--X-Reference: f9feb9ac5d16.48acb17e@fsu.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] scat2gridgauss not functioning properly</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00428.html">Thread Prev</a>][<a href="msg00437.html">Thread Next</a>][<A HREF="threads.html#00436">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] scat2gridgauss not functioning properly</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] scat2gridgauss not functioning properly</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 26 Aug 2008 11:03:26 -0700</li>
+<li>Cc: <a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:f9feb9ac5d16.48acb17e@DOMAIN.HIDDEN">f9feb9ac5d16.48acb17e@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f33c82242fc5.48ac8569@DOMAIN.HIDDEN">f33c82242fc5.48ac8569@xxxxxxx</a>&gt; &lt;<a href="mailto:55238.169.232.145.149.1219283430.squirrel@DOMAIN.HIDDEN">55238.169.232.145.149.1219283430.squirrel@xxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:f9feb9ac5d16.48acb17e@DOMAIN.HIDDEN">f9feb9ac5d16.48acb17e@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.16 (Windows/20080708)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Stephen,<br>
+The underlying code that scat2gridlaplace calls to do the gridding
+operation has some work space that's hardwired in size to 50,000
+points. Your data is 960*367 = 352367 points so the code eventually
+overwrites memory and causes the crash. We should at least put in a
+test for that limit being exceeded so you'd get a useful error message
+- but I should be able to set up the work space with
+dynamically-allocated memory so it'd work correctly.<br>
+<br>
+Ansley<br>
+<br>
+Stephen Guimond wrote:
+<blockquote cite="" type="cite">
+  <pre wrap="">Hi Jaison,
+
+Thank you for your response, using a 1-D axis for x and y input values worked.  I suppose the "objective_analysis_demo" script should be fixed because it shows 2-D axes for x and y input.
+
+Another thing I found was that using "scat2gridlaplace" causes a crash of FERRET.  I used similar input as I did with "scat2gridgauss", but with cay and nrng both equal to 5.  I am using FERRET v6.1  for 32-bit Linux.  Have you found anything similar?
+
+Thanks,
+Steve
+
+
+----- Original Message -----
+From: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:jaison@xxxxxxxxxxxxxx">jaison@xxxxxxxxxxxxxx</a>
+Date: Wednesday, August 20, 2008 9:51 pm
+Subject: Re: [ferret_users] scat2gridgauss not functioning properly
+To: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:guimond@xxxxxxxxxxxxx">guimond@xxxxxxxxxxxxx</a>
+Cc: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:ferret_users@xxxxxxxx">ferret_users@xxxxxxxx</a>
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi Steve,
+          According to documentation (and from experience), the 
+first two
+input arguments to SCAT2GRIDGAUSS function should be defined on 
+either X
+(and ZT) or Y (and ZT) axis, but NOT on both X and Y at the same time.
+(see  Ch3 Sec2.3.37.  SCAT2GRIDGAUSS_XY). In your script add the 
+followinglines
+
+  let xx1D = XSEQUENCE(xx)
+  let yy1D = XSEQUENCE(yy)
+
+then use these variables in SCAT2GRIDGAUSS function as
+
+  let sgrid = scat2gridgauss_xy(xx1D, yy1D, .........)
+
+Ok. The last argument (9th one) is not used in newer versions of 
+Ferret.The 3 arguments before that, XSCALE, YSCALE and CUTOFF need 
+to be chosen
+to match your destination grid. Read the documentation carefully for
+CUTOFF. You can try few different values to choose between high-
+data loss
+(smaller SCALE and CUTOFF) and high-smoothing (higher SCALE and 
+CUTOFF),with respect to the destination grid. For example, if 
+CUTOFF is 2, then
+XSCALE can be dx (of destination grid) and YSCALE can be dy.
+
+Also note that, it is always a good habit to add proper units while
+defining axis, and use proper names (xlon, ylat or xkm, ykm etc).
+
+Please let me  know if you have any questions.
+
+Thanks and Regards,
+
+Jaison
+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Hello Ferreters,
+
+I am trying to put scattered data onto a regular grid and tried 
+      </pre>
+    </blockquote>
+    <pre wrap="">with the scat2gridgauss
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">function.
+
+Here is my code:
+
+! the scattered data axes...
+def axis/x=1:960:1 x;def axis/y=1:367:1 y;def grid/x=x/y=y g
+file/format=stream/grid=g/var="xx,yy,zz,dbz" output.dat
+! the regular grid axes...
+def axis/x=-240:240:0.5 nx;def axis/y=-240:240:0.5 ny
+let sgrid = scat2gridgauss_xy(xx, yy, dbz, x[gx=nx], y[gy=ny], 
+      </pre>
+    </blockquote>
+    <pre wrap="">2.,2.,2.,0)&gt;
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">The result does not work (toying with the last few parameters 
+      </pre>
+    </blockquote>
+    <pre wrap="">makes no difference),
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">although it does have the grid I expect.  I'm assuming the same 
+      </pre>
+    </blockquote>
+    <pre wrap="">will be true for the
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">scat2gridlaplace functions as well.
+
+Any ideas?
+
+Thanks,
+Steve
+
+
+=======================================================
+Stephen R. Guimond
+Graduate Research Assistant
+Florida State University
+Center for Ocean-Atmospheric Prediction Studies (COAPS)
+=======================================================
+
+      </pre>
+    </blockquote>
+    <pre wrap="">
+
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+=======================================================
+Stephen R. Guimond
+Graduate Research Assistant
+Florida State University
+Center for Ocean-Atmospheric Prediction Studies (COAPS)
+=======================================================
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00437" href="msg00437.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Stephen Guimond</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00426" href="msg00426.html">[ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Stephen Guimond</li></ul></li>
+<li><strong><a name="00427" href="msg00427.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> jaison</li></ul></li>
+<li><strong><a name="00428" href="msg00428.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Stephen Guimond</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00428.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00437.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00428.html">Thread Prev</a>][<a href="msg00437.html">Thread Next</a>][<A HREF="threads.html#00436">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

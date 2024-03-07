@@ -1,0 +1,236 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] bug with Ferret v6 ? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 29 Sep 2006 13:11:09 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0609300137240.7833@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY114&#45;F7912A70837CBC7A9E4512C4180@phx.gbl -->
+<!--X-Reference: 451D68FB.10509@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] bug with Ferret v6 ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00630.html">Thread Prev</a>][<a href="msg00640.html">Thread Next</a>][<A HREF="threads.html#00634">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] bug with Ferret v6 ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] bug with Ferret v6 ?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 30 Sep 2006 01:46:17 +0530 (IST)</li>
+<li>Cc: Jerome King &lt;<a href="mailto:jejeking@DOMAIN.HIDDEN">jejeking@xxxxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.las_users@DOMAIN.HIDDEN">oar.pmel.las_users@xxxxxxxx</a>,       <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00630.html">451D68FB.10509@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00629.html">BAY114-F7912A70837CBC7A9E4512C4180@phx.gbl</a>&gt;&lt;<a href="msg00630.html">451D68FB.10509@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ansley &amp; Jerome,
+                     It seems like Ferret_V6 assigns &quot;0&quot; as the
+missing value if the &quot;variable in NetCDF file&quot; does not have an
+explicit &quot;missing_value&quot; attribute. (It was &quot;-1.E+34&quot; with earlier
+versions of Ferret). Here the first value of trange is &quot;0&quot; and 
+hence it will be set to &quot;missing value&quot; in Ferret_V6.
+
+[jaison@mercury jerome]$ f
+        NOAA/PMEL TMAP
+        FERRET v6
+        Linux(g77) 2.4.21-32 - 08/23/06
+        30-Sep-06 01:32
+
+yes? use 259da1dac3f7750fe1fc83930e5a24b6.nc
+yes? say `trange,r=bad`
+ !-&gt; MESSAGE/CONTINUE 0
+0
+yes? say `r_temp,r=bad`
+ !-&gt; MESSAGE/CONTINUE -9999
+-9999
+yes? say `numprofs,r=bad`
+ !-&gt; MESSAGE/CONTINUE 0
+0
+yes? say `numobs,r=bad`
+ !-&gt; MESSAGE/CONTINUE 0
+0
+yes?
+
+Variables &quot;trange&quot;, &quot;numprofs&quot; and &quot;numobs&quot; does not have any 
+explicit missing_value attribute, hence Ferret_V6 assigns &quot;0&quot;
+as the missing value. For those variables (like r_temp) which 
+have a valid missing_value attribute and value, Ferret_V6 behaves
+properly.
+
+ This problem with missing_value appers to be there only for the
+variables readed in from a NetCDF file. If we define a new variable
+in Ferret_V6, the missing value is &quot;-1.E+34&quot; as with earlier versions.
+
+Hope this helps,
+
+Jaison
+
+On Fri, 29 Sep 2006, Ansley Manke wrote:
+
+&gt; Hi Jerome,
+&gt; Thanks for sending the file. Indeed, running Ferret from the command 
+&gt; line, with Ferret v5.81 the variable TRANGE is read correctly, but with 
+&gt; Ferret v6.0
+&gt; 
+&gt;             NOAA/PMEL TMAP
+&gt;             FERRET v6 
+&gt;             Linux(g77) 2.4.21-32 - 08/23/06
+&gt;             29-Sep-06 11:34    
+&gt; 
+&gt;     yes? use 259da1dac3f7750fe1fc83930e5a24b6.nc
+&gt;      
+&gt;     yes? list trange
+&gt;                  VARIABLE :   (hours)
+&gt;                  FILENAME : 259da1dac3f7750fe1fc83930e5a24b6.nc
+&gt;                  SUBSET   : 2 points (TIME)
+&gt;      JAN-2001 / 1:    ....
+&gt;      DEC-2002 / 2:  17496.
+&gt; 
+&gt; 
+&gt; we'll track down why this is.
+&gt; 
+&gt; Ansley
+&gt; 
+&gt; Jerome King wrote:
+&gt; &gt; Hi,
+&gt; &gt;
+&gt; &gt; I am having an issue with using LAS with Ferret v6. I am not having 
+&gt; &gt; this problem using LAS with Ferret 5.81. Both LAS are exactly the same 
+&gt; &gt; (6.5.1), same xml files, same query.
+&gt; &gt; So I am thinking it's a bug with Ferret v6 but I am not sure.
+&gt; &gt;
+&gt; &gt; The issue happens after LAS creates a NetCDF file with the insitu 
+&gt; &gt; package and asks Ferret to make a plot.
+&gt; &gt; There seems to be an issue with Ferret reading &quot;trange&quot;.
+&gt; &gt; I have attached the NetCDF file created by LAS. and I have copied 
+&gt; &gt; below the debug ferret part for both Ferret version.
+&gt; &gt; I hope this helps find out what the issue is.
+&gt; &gt; Hope this helps,
+&gt; &gt; Jerome.
+&gt; &gt;
+&gt; &gt; With Ferret 5.81, I get a nice plot:
+&gt; &gt; ------------------------------------------------------------------------------------------------------------------------- 
+&gt; &gt;
+&gt; &gt; yes? cancel mode verify
+&gt; &gt; yes? cancel mode interp
+&gt; &gt; yes? set mem/size=80
+&gt; &gt; Cached data cleared from memory
+&gt; &gt; yes? define symbol memsize = 80
+&gt; &gt; yes? canc data/all
+&gt; &gt; yes? go std_initialize &quot;output/259da1dac3f7750fe1fc83930e5a24b6.nc&quot; 
+&gt; &gt; &quot;1&quot; &quot;1&quot; &quot;R_TEMP&quot;
+&gt; &gt; yes? set 
+&gt; &gt; region/x=&quot;-126.8&quot;:&quot;-117.1&quot;/y=&quot;34.1&quot;:&quot;38.0&quot;/z=&quot;0&quot;:&quot;0&quot;/t=&quot;01-Jan-2001 
+&gt; &gt; 00:00:00&quot;:&quot;31-Dec-2002 00:00:00&quot;
+&gt; &gt; yes? GO &quot;jnls/insitu/insitu_setup.jnl&quot; 
+&gt; &gt; &quot;output/259da1dac3f7750fe1fc83930e5a24b6.nc&quot; &quot;TAX&quot; &quot;CalCOFI Report 
+&gt; &gt; Data&quot; &quot;Temperature&quot;
+&gt; &gt; yes? go insitu_meta_xy &quot;output/259da1dac3f7750fe1fc83930e5a24b6.nc&quot; 
+&gt; &gt; TAX -126.8:-117.1 34.1:38.0 0:0
+&gt; &gt; yes? FRAME/FORMAT=gif/FILE=&quot;output/3ccada4923f5f69e8e049265df5437b1.gif&quot;
+&gt; &gt; yes? quit
+&gt; &gt; Waiting for program to exit...
+&gt; &gt; program exited...
+&gt; &gt; LAS::Server::Handler::run(): 0.003233 secs to perform all 
+&gt; &gt; 'postExecute' activities (none typically)
+&gt; &gt; ----------------------------------------------------------------------------------------------------------------------------------------- 
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; With Ferret v6, I get an error:
+&gt; &gt; ------------------------------------------------------------------------------------------------------------------------- 
+&gt; &gt;
+&gt; &gt; yes? cancel mode verify
+&gt; &gt; yes? cancel mode interp
+&gt; &gt; yes? set mem/size=80
+&gt; &gt; Cached data cleared from memory
+&gt; &gt; yes? define symbol memsize = 80
+&gt; &gt; yes? canc data/all
+&gt; &gt; yes? go std_initialize &quot;output/259da1dac3f7750fe1fc83930e5a24b6.nc&quot; 
+&gt; &gt; &quot;1&quot; &quot;1&quot; &quot;R_TEMP&quot;
+&gt; &gt; yes? set 
+&gt; &gt; region/x=&quot;-126.8&quot;:&quot;-117.1&quot;/y=&quot;34.1&quot;:&quot;38.0&quot;/z=&quot;0&quot;:&quot;0&quot;/t=&quot;01-Jan-2001 
+&gt; &gt; 00:00:00&quot;:&quot;31-Dec-2002 00:00:00&quot;
+&gt; &gt; yes? GO &quot;jnls/insitu/insitu_setup.jnl&quot; 
+&gt; &gt; &quot;output/259da1dac3f7750fe1fc83930e5a24b6.nc&quot; &quot;TAX&quot; &quot;CalCOFI Report 
+&gt; &gt; Data&quot; &quot;Temperature&quot;
+&gt; &gt; **ERROR: command syntax: bad
+&gt; &gt; define axis/t=bad:17496/npoints=100/unit=hours/t0=&quot;01-JAN-2001 
+&gt; &gt; 00:00:00&quot; tfull
+&gt; &gt; Command file, command group, or REPEAT execution aborted
+&gt; &gt;
+&gt; &gt; killing...Waiting for program to exit...
+&gt; &gt; program exited...
+&gt; &gt; killing...Waiting for program to exit...
+&gt; &gt; program exited...
+&gt; &gt; ------------------------------------------------------------------------------------------------------------------------------------------ 
+&gt; &gt;
+&gt; &gt;
+&gt; 
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00640" href="msg00640.html">Re: [ferret_users] bug with Ferret v6 ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00629" href="msg00629.html">[ferret_users] bug with Ferret v6 ?</a></strong>
+<ul><li><em>From:</em> Jerome King</li></ul></li>
+<li><strong><a name="00630" href="msg00630.html">Re: [ferret_users] bug with Ferret v6 ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00630.html">Re: [ferret_users] bug with Ferret v6 ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00640.html">Re: [ferret_users] bug with Ferret v6 ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00630.html">Thread Prev</a>][<a href="msg00640.html">Thread Next</a>][<A HREF="threads.html#00634">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

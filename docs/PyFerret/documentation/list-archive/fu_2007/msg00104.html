@@ -1,0 +1,251 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: RE: [ferret_users] shifting a variable on a modular axis -->
+<!--X-From-R13: [nex Ivyyvnzf <[nex.IvyyvnzfNobz.tbi.nh> -->
+<!--X-Date: Fri, 9 Feb 2007 01:29:14 &#45;0800 -->
+<!--X-Message-Id: F8B8E3DDB0042A479698D7F333E165A355680D@officeho2.bom.gov.au -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: F8B8E3DDB0042A479698D7F333E165A355680B@officeho2.bom.gov.au -->
+<!--X-Reference: Pine.LNX.4.58.0702090043280.21569@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>RE: [ferret_users] shifting a variable on a modular axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00103.html">Thread Prev</a>][<a href="msg00102.html">Thread Next</a>][<A HREF="threads.html#00104">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: [ferret_users] shifting a variable on a modular axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>RE: [ferret_users] shifting a variable on a modular axis</strong></li>
+<li><strong>From</strong>: <strong>Mark Williams &lt;<a href="mailto:Mark.Williams@DOMAIN.HIDDEN">Mark.Williams@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 09 Feb 2007 20:29:04 +1100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>References: &lt;<a href="mailto:F8B8E3DDB0042A479698D7F333E165A355680B@DOMAIN.HIDDEN">F8B8E3DDB0042A479698D7F333E165A355680B@xxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0702090043280.21569@DOMAIN.HIDDEN">Pine.LNX.4.58.0702090043280.21569@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>Thread-index: AcdLtBOqObfANpakSr+kadGhl1I6pQAdxwNw</li>
+<li>Thread-topic: [ferret_users] shifting a variable on a modular axis</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<address>Title: <strong>Re: [ferret_users] shifting a variable on a modular axis</strong></address>
+
+
+
+
+
+<P><FONT SIZE=2>Hi Jaison
+</FONT></P>
+<P><FONT size=2>Thank you very much for spending so much time on this one.&nbsp; 
+You have made the explanation of what is going on very clear.&nbsp;&nbsp;I had 
+an inkling that it was something like this, but I could not put my finger on 
+it..&nbsp; I also tried LOAD and other commands.&nbsp; I will use your solution 
+as I think it is better than using temporary files.</FONT></P>
+<P><FONT size=2>From time to time it would be useful to be able to sort of LOAD 
+and HOLD or FIX an _expression_ as if it were read from a file, in other words 
+evaluate it at&nbsp;some point and go from there.&nbsp; You can do it with 
+variables which are not arrays, but not arrays.</FONT></P>
+<P><FONT size=2>Regards</FONT></P>
+<P><FONT size=2>Mark</FONT></P>
+<P><FONT size=2></FONT>&nbsp;</P>
+<P><FONT size=2>Hi Mark,<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Yes, there is an alternate way to achieve this. But before<BR>
+seeing it, let me explain why this problem occurs :<BR>
+<BR>
+Rule : if you define a variable in ferret, whenever you access this variable<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; in an "action" (Ch3 Sec2.) command, ferret will go back and use this<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "definition" to get its values.<BR>
+<BR>
+So what ?? ......Let us see an example :<BR>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; define axis/x=-10:10:1/MODULO xax_mod<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let var&nbsp;&nbsp;&nbsp;&nbsp; = x[gx=xax_mod]<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let var_shf =
+    var[x=@SHF:10]<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; list var, var_shf<BR>
+<BR>
+We expected -10 as var_shf[i=12] but we got 11 !! From the definition of<BR>
+var and xax_mod, it follows that var_shf went straight ahead to i=22 of<BR>
+the basic _expression_ for var, instead of looping back to the i=1 value.<BR>
+<BR>
+Is there any way to tell Ferret "please don't evaluate the variable<BR>
+definition anymore" ? ......NO (if i am correct), because Ferret will<BR>
+always go back and look for the variable definition (even though it is<BR>
+deeply nested), irrespective of the steps you taken in between.<BR>
+<BR>
+&nbsp;&nbsp; 1. Since we deal with an array, we cannot force immediate evaluation<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; and hence defining an intermediate variable is not effective.<BR>
+&nbsp;&nbsp; 2. Using the "var" in some action commands before applying @SHF also does<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; not help. Even commands like "load", "set grid" are not effective.<BR>
+&nbsp;&nbsp; 3. Specifying modulo length also didn't work.<BR>
+<BR>
+Ok. What happens when you use the variable from a file ? Ferret will not<BR>
+have access to the "variable definition" --&gt; it won't go back to evaluate any<BR>
+more expressions. Hence you will get expected results with @SHF regridding.<BR>
+&nbsp;<BR>
+&nbsp; So the the solution i could figure out is the usage of 2 shifting operations<BR>
+(one forward and one backward) on the variable and then merging these shifted<BR>
+expressions to get the desired result. Let us see this method for the above<BR>
+example (here we don't need a modulo axis) :<BR>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; define axis/x=-10:10:1 xax<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let var = x[gx=xax]<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let shfpt =
+    10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! +ve SHF --&gt; either "left" or "up"<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let xsz&nbsp;&nbsp; =
+    `var,r=iend`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! number of points along X<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let var_shf_p = var[x=@SHF:`shfpt`]&nbsp;&nbsp;&nbsp;&nbsp; ! shift backward (left/up)<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let var_shf_n =
+    var[x=@SHF:-`xsz-shfpt`]! shift forward&nbsp; (right/down)<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let var_shf_1 = XCAT(var_shf_p[i=1:`xsz-shfpt`],var_shf_n[i=`xsz-shfpt+1`:`xsz`])<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let var_shf&nbsp;&nbsp; =
+    var_shf_1[gx=var@ASN]&nbsp;&nbsp; ! XCAT will change X-axis,<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !&nbsp;&nbsp;&nbsp; put back original X-axis<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; list var, var_shf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<BR>
+&nbsp;<BR>
+Why don't use IF/THEN/ELSE instead of XCAT ? Because XCAT is better to<BR>
+deal with the possible missing values in the "real world" variables. Don't<BR>
+be frightened by seeing these many lines....you just need to tune "shfpt"<BR>
+to get proper shifting (if you apply this example for some actual data).<BR>
+Also see the a modified version of your example below.<BR>
+<BR>
+NOTE : In my experience, writing temporary file/s may be the one and only<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; one possible solution sometimes ....<BR>
+<BR>
+Hope this mail was usefull....<BR>
+<BR>
+Regards,<BR>
+<BR>
+Jaison<BR>
+<BR>
+!------------example starts here--------------------------<BR>
+\ cancel mode verify<BR>
+<BR>
+&nbsp;&nbsp;&nbsp; define axis/x=-18:18:0.1 x_mod_axis<BR>
+&nbsp;&nbsp;&nbsp; define axis/y=-5:5:0.1&nbsp;&nbsp; y_axis<BR>
+ &nbsp;&nbsp;&nbsp; definegrid/x=x_mod_axis/y=y_axis my_grid<BR>
+&nbsp;&nbsp;&nbsp; set grid my_grid<BR>
+&nbsp;&nbsp;&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; let my_var = exp((-1) * y^2) * exp((-1) * (x * 0.3)^2)<BR>
+&nbsp;&nbsp;&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; shade my_var[x=-18:18]<BR>
+&nbsp;&nbsp;&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; pause<BR>
+<BR>&nbsp;&nbsp;&nbsp; let shfpt =
+    180&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; let xsz&nbsp;&nbsp; = `my_var,r=iend`<BR>
+<BR>&nbsp;&nbsp;&nbsp; let var_shf_p =
+    my_var[x=@SHF:`shfpt`]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<BR>&nbsp;&nbsp;&nbsp; let var_shf_n =
+    my_var[x=@SHF:-`xsz-shfpt`]&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; let var_shf_1 = XCAT(var_shf_p[i=1:`xsz-shfpt`],var_shf_n[i=`xsz-shfpt+1`:`xsz`])<BR>&nbsp;&nbsp;&nbsp; let var_shf&nbsp;&nbsp; =
+    var_shf_1[gx=my_var@ASN]<BR>
+&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; shade var_shf<BR>
+!------------example ends&nbsp;&nbsp; here--------------------------<BR>
+<BR>
+On Wed, 7 Feb 2007, Mark Williams wrote:<BR>
+<BR>
+&gt; Hello all<BR>
+&gt;&nbsp;<BR>
+&gt; I have a question relating to the shifting a variable on a modular axis and requiring it to wrap around in a modular fashion.<BR>
+&gt;&nbsp;<BR>
+&gt; Suppose I define a variable and set a grid with a modular axis and apply the @shf transform as follows:<BR>
+&gt;&nbsp;<BR>
+&gt; define axis/modulo/x=-18:18:0.1 x_mod_axis<BR>
+&gt; define axis/y=-5:5:0.1 y_axis<BR>
+ &gt; definegrid/x=x_mod_axis/y=y_axis my_grid<BR>
+&gt; set grid my_grid<BR>
+&gt; let my_var = exp((-1) * y^2) * exp((-1) * (x * 0.3)^2)<BR>
+&gt; shade my_var[x=-18:18]<BR>
+&gt;&nbsp;<BR>
+&gt; I see a bulls eye as to be expected.<BR>
+&gt; then:<BR>
+&gt;&nbsp;<BR>
+&gt; shade my_var[x=-18:18@shf:180]<BR>
+&gt;&nbsp;<BR>
+&gt; results in the bullseye being shifted to the left boundary, but no "wrapping" around onto the right hand side.<BR>
+&gt;&nbsp;<BR>
+&gt; If I then go down the path a making a temporary data set and then plotting I get the result I want as follows:<BR>
+&gt;&nbsp;<BR>
+&gt; let my_var_sv =&nbsp; my_var[x=-18:18]<BR>
+&gt; save/clob/file=mvs.nc my_var_sv<BR>
+&gt; can var my_var_sv<BR>
+&gt; use mvs.nc<BR>
+ &gt; shademy_var_sv[d=mvs.nc,x=-18:18]<BR>
+&gt;&nbsp;<BR>
+&gt; bulls eye in the middle<BR>
+&gt;&nbsp;<BR>
+ &gt; shademy_var_sv[d=mvs.nc,x=-18:18@shf:180]<BR>
+&gt;&nbsp;<BR>
+&gt; Bullseye wrapped around the boundaries as I want.<BR>
+&gt;&nbsp;<BR>
+&gt; When applying the @shf transformation to any data_set which has a modular axis then the data are shifted as I would expect, but I can't get it to do the same using user defined variables.&nbsp; I feel that I have overlooked something.&nbsp; Is there a way without using a temporary data_sets (which is not the ferret way!!)<BR>
+&gt;&nbsp;<BR>
+&gt; I am now using ferret 6.0 on SUSE Linux 10.1<BR>
+&gt;&nbsp;<BR>
+&gt; Thanks<BR>
+&gt;&nbsp;<BR>
+&gt; Mark<BR>
+&gt;&nbsp;<BR>
+&gt;&nbsp;<BR>
+&gt;<BR>
+&gt;<BR></P></FONT>
+
+
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00101" href="msg00101.html">[ferret_users] shifting a variable on a modular axis</a></strong>
+<ul><li><em>From:</em> Mark Williams</li></ul></li>
+<li><strong><a name="00103" href="msg00103.html">Re: [ferret_users] shifting a variable on a modular axis</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00103.html">Re: [ferret_users] shifting a variable on a modular axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00102.html">[ferret_users] Ferret on a MacBook Pro: bus error</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00103.html">Thread Prev</a>][<a href="msg00102.html">Thread Next</a>][<A HREF="threads.html#00104">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

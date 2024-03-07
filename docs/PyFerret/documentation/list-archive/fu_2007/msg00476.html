@@ -1,0 +1,157 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to calculate the streamfunction and velocity potential -->
+<!--X-From-R13: "jvyyvnz f. xrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 8 Aug 2007 16:10:43 &#45;0700 -->
+<!--X-Message-Id: 72CABF42&#45;4A5A&#45;4EAD&#45;BAC9&#45;CF8FDAEB8C22@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 71cc5ca20708062359y1d3302d7ifec39e666300c560@mail.gmail.com -->
+<!--X-Reference: Pine.LNX.4.58.0708071414290.9168@caos.iisc.ernet.in -->
+<!--X-Reference: 71cc5ca20708070629h311918bar45f5dba2e4e5ca94@mail.gmail.com -->
+<!--X-Reference: Pine.LNX.4.58.0708090246390.6707@caos.iisc.ernet.in -->
+<!--X-Reference: 46100.169.226.43.169.1186610221.squirrel@webmail.lmd.ens.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to calculate the streamfunction and velocity potential</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00475.html">Thread Prev</a>][<a href="msg00477.html">Thread Next</a>][<A HREF="threads.html#00476">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to calculate the streamfunction and velocity potential</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:nguyen@DOMAIN.HIDDEN">nguyen@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to calculate the streamfunction and velocity potential</strong></li>
+<li><strong>From</strong>: <strong>&quot;william s. kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Aug 2007 16:10:41 -0700</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:46100.169.226.43.169.1186610221.squirrel@DOMAIN.HIDDEN">46100.169.226.43.169.1186610221.squirrel@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:71cc5ca20708062359y1d3302d7ifec39e666300c560@DOMAIN.HIDDEN">71cc5ca20708062359y1d3302d7ifec39e666300c560@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0708071414290.9168@DOMAIN.HIDDEN">Pine.LNX.4.58.0708071414290.9168@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:71cc5ca20708070629h311918bar45f5dba2e4e5ca94@DOMAIN.HIDDEN">71cc5ca20708070629h311918bar45f5dba2e4e5ca94@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0708090246390.6707@DOMAIN.HIDDEN">Pine.LNX.4.58.0708090246390.6707@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:46100.169.226.43.169.1186610221.squirrel@DOMAIN.HIDDEN">46100.169.226.43.169.1186610221.squirrel@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>Hi Hanh - try the script pasted below for the streamfunction. I  
+</tt><tt>haven't done the velocity potential. Billy K
+</tt><pre style="margin: 0em;">
+
+On 8Aug 2007, at 2:57 PM, nguyen@xxxxxxxxxx wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi ferreters
+
+</pre><tt>I need to calculate the streamfunction and the velocity potential  
+</tt><tt>from u
+</tt><pre style="margin: 0em;">
+and v fields, do someone have an idea?
+Thanks in advance for your help
+
+Hanh
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>! compute the horizontal streamfunction from vertically integrated u  
+</tt><tt>and v fields
+</tt><pre style="margin: 0em;">
+! note that u and v must occur on the same spatial points (B-grid)
+! arg1=variable name for u
+! arg2=variable name for v
+! arg1=x0 (must be on a gridpoint or set mode interp)
+! arg2=y0 (likewise)
+! psi=int(y0,y)u(x,y)dy - int(x0,x)v(x,y0)dx
+! u=d(psi)/dy, v=-d(psi)/dx
+set mode interp
+! find y0 and x0
+let y1a=y[g=$2,j=1]
+def sym y1 `y1a`
+def sym y0 `$4`
+let x1a=x[g=$1,i=1]
+def sym x1 `x1a`
+def sym x0 `$3`
+! ferret has a problem with blanks and @iin
+let ub=if $1 then $1 else 0
+let vb=if $2 then $2 else 0
+! second term
+</pre><tt>let t2=vb[z=@din,l=@ave,y=($y0),x=@iin]-vb[z=@din,l=@ave,y=($y0),x= 
+</tt><tt>($x1):($x0)@din]
+</tt><pre style="margin: 0em;">
+! first term
+let t1=ub[z=@din,l=@ave,y=@iin]-ub[k=@din,l=@ave,y=($y1):($y0)@din]
+!! streamfunction
+let strmfnxy=t1-t2
+let usf=strmfnxy[y=@ddc]
+let vsf=strmfnxy[x=@ddc]*(-1)
+say x0=`($x0)`  y0=`($y0)`
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00477" href="msg00477.html">Re: [ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00465" href="msg00465.html">[ferret_users] how to convert decimal date to date and time</a></strong>
+<ul><li><em>From:</em> Yogesh Tiwari</li></ul></li>
+<li><strong><a name="00468" href="msg00468.html">Re: [ferret_users] how to convert decimal date to date and time</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00469" href="msg00469.html">Re: [ferret_users] how to convert decimal date to date and time</a></strong>
+<ul><li><em>From:</em> Yogesh Tiwari</li></ul></li>
+<li><strong><a name="00474" href="msg00474.html">Re: [ferret_users] how to convert decimal date to date and time</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00475" href="msg00475.html">[ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+<ul><li><em>From:</em> nguyen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00475.html">[ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00477.html">Re: [ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00475.html">Thread Prev</a>][<a href="msg00477.html">Thread Next</a>][<A HREF="threads.html#00476">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

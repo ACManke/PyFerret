@@ -1,0 +1,259 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] reading ascii data and regridding -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Tue, 12 Jun 2007 08:55:49 &#45;0700 -->
+<!--X-Message-Id: 7A39B8C7&#45;97C9&#45;45F0&#45;8BE5&#45;DA72D2F5AFC3@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 880971.54271.qm@web50610.mail.re2.yahoo.com -->
+<!--X-Reference: Pine.LNX.4.58.0706121952260.24956@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] reading ascii data and regridding</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00357.html">Thread Prev</a>][<a href="msg00355.html">Thread Next</a>][<A HREF="threads.html#00359">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] reading ascii data and regridding</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] reading ascii data and regridding</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 12 Jun 2007 08:55:45 -0700</li>
+<li>Cc: Prakya Shree Ram &lt;<a href="mailto:srprakhya@DOMAIN.HIDDEN">srprakhya@xxxxxxxxx</a>&gt;,        Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.58.0706121952260.24956@DOMAIN.HIDDEN">Pine.LNX.4.58.0706121952260.24956@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:880971.54271.qm@DOMAIN.HIDDEN">880971.54271.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0706121952260.24956@DOMAIN.HIDDEN">Pine.LNX.4.58.0706121952260.24956@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Thanks again to Jaison for his typically thorough discussion.
+
+</pre><tt>This might be one of those cases where it is better to make an  
+</tt><tt>intermediate file for checking before proceeding to a final  
+</tt><tt>interpolation. I would write out the (combined) profiles made in  
+</tt><tt>Jaison's step 2 as a grid with dimensions (z,t). There are several  
+</tt><tt>reasons for this: First, to plot the z-interpolated profiles against  
+</tt><tt>the original data, to be sure that the vertical resolution is  
+</tt><tt>sufficient to capture the observations (especially at the top and  
+</tt><tt>bottom ends, where some profiles may be missing data); Second,  
+</tt><tt>because profile data sets like this often contain spikes or other  
+</tt><tt>data errors, which should be caught before they contaminate a gridded  
+</tt><tt>product; Third, because the horizontal gridding requires choices that  
+</tt><tt>will produce quite different results, some experimentation will be  
+</tt><tt>required in Jaison's step 3.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Use the method described in Chapter 2, Section 10 of the manual,  
+</tt><tt>Example 3 (appending multiple timesteps), to create an intermediate  
+</tt><tt>netcdf file with the data on a (regular-z,index-t) grid. That is,  
+</tt><tt>each time you read and vertically-interpolate a profile, append it to  
+</tt><tt>the netcdf file using a &quot;timestep&quot; as the profile number. Include the  
+</tt><tt>lat/lon information on the same index-t grid. With that file in hand  
+</tt><tt>(and checked against the original), you can easily experiment with  
+</tt><tt>the horizontal gridding algorithms.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>In general, it is better not to proceed blindly through several steps  
+</tt><tt>of processing irregular data to a final result, but to stop and  
+</tt><tt>reflect at each major step. After producing the intermediate (z,t)  
+</tt><tt>file, make many test plots, check variances and any other statistics  
+</tt><tt>you can, to be sure that you are not propagating errors or faulty  
+</tt><tt>assumptions into your gridded product.
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+On Jun 12, 2007, at 7:27 AM, Jaison Kurian wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hello Sriram,
+               Your mail have 3 questions. I will try to answer them
+separately.
+
+Assuming :
+     -  all variables are in &quot;numeric format&quot;, including longitude and
+           latitude (ie. no &quot;N&quot; or &quot;E&quot; associated with the values)
+     -  no comments anywhere in the datafile,
+     -  data is for 1 particular float, and for a particular profile
+
+1. Reading ASCII data
+---------------------
+
+   define axis/Z=0:100:1/units=meters/DEPTH zfile
+   define grid/z=zfile gfile
+</pre><tt>   FILE/grid=gfile/var=&quot;fid, yr, mon, date, lon, lat, press, te,  
+</tt><tt>sa&quot; ascii.txt
+</tt><pre style="margin: 0em;">
+
+2. Interpolating to standard depth levels
+-----------------------------------------
+
+</pre><tt>   ! first regrid the temp. data onto pressure axis (units dbar/ 
+</tt><tt>meters)
+</tt><pre style="margin: 0em;">
+
+   define axis/z/units=meters/DEPTH/from_data zpress=press[d=1]
+   let te_pr = te[d=1,gz=zpress@ASN]
+
+   ! now, on to the destination standard depth axis
+
+</pre><tt>   let zstdr = ZSEQUENCE 
+</tt><tt>({0,10,20,30,40,50,75,100,150,200,300,400,500,750,1000})
+</tt><pre style="margin: 0em;">
+   define axis/z/units=meters/DEPTH/from_data zstnd=zstdr
+</pre><tt>   let temp  = te_pr[gz=zstnd]   ! the default linear interpolation  
+</tt><tt>is assumed
+</tt><pre style="margin: 0em;">
+
+3. Profiles to X-Y Gridded data
+--------------------------------
+
+</pre><tt>   To remap the profile data (on standard depth or pressure axis)  
+</tt><tt>on to a
+</tt><pre style="margin: 0em;">
+   uniformly spaced XY grid, you have to use external functions like
+</pre><tt>   SCAT2GRIDGAUSS_XY or SCAT2GRIDLAPLACE_XY. For this purpose, you  
+</tt><tt>need the
+</tt><pre style="margin: 0em;">
+   lat and lon information for each profile.
+
+</pre><tt>These are the general steps you have to go. Steps 1 and 2 will  
+</tt><tt>depend on the
+</tt><tt>&quot;exact&quot; format of the ascii data when you have multiple profiles.  
+</tt><tt>For example,
+</tt><tt>if the pressure levels are different for different profiles, then  
+</tt><tt>you have to
+</tt><pre style="margin: 0em;">
+repeat the definition of zpress for all the profiles.
+
+</pre><tt>You can incorporate the time axis information during any of the  
+</tt><tt>above steps
+</tt><pre style="margin: 0em;">
+or at the final stage.
+
+Relevant sections in user manual are :
+
+  Ch2 Sec5.1.    Reading ASCII files
+  Ch2 Sec5.2.    Reading &quot;DELIMITED&quot; data files
+  Ch2 Sec6.      TRICKS TO READING BINARY AND ASCII FILES
+  Ch3 Sec2.3.37  SCAT2GRIDGAUSS_XY
+  Ch3 Sec2.3.40  SCAT2GRIDLAPLACE_XY
+
+</pre><tt>In Ferret Mail archives, you can find many threads discussing these  
+</tt><tt>topics.
+</tt><tt>However, the &quot;Search the Archives&quot; tool at Ferret website is not  
+</tt><tt>working I
+</tt><pre style="margin: 0em;">
+guess. But you can try searching in google.
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+
+On Mon, 11 Jun 2007, Prakya Shree Ram wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Friends,
+
+I am trying to read ascii data which contains the
+vertical profiles of temperature and salinity. My data
+file contains 9 columns (float ID, year, month, date,
+longitude, latitude, pressute, temperature and
+salinity). The observations are at random locations, I
+want to do interpolation of temperature and salinity
+for standard depths and then into 0.25 X 0.25
+horizontal. Can anybody suggest me the best possible
+way to do this?
+
+Any help in this regard is highly appreciated.
+
+Thanks in advance and regards,
+Sriram
+
+
+
+</pre><tt>_____________________________________________________________________ 
+</tt><tt>_______________
+</tt><pre style="margin: 0em;">
+Sucker-punch spam with award-winning protection.
+Try the free Yahoo! Mail Beta.
+<a  rel="nofollow" href="http://advision.webevents.yahoo.com/mailbeta/features_spam.html">http://advision.webevents.yahoo.com/mailbeta/features_spam.html</a>
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00354" href="msg00354.html">[ferret_users] reading ascii data and regridding</a></strong>
+<ul><li><em>From:</em> Prakya Shree Ram</li></ul></li>
+<li><strong><a name="00357" href="msg00357.html">Re: [ferret_users] reading ascii data and regridding</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00357.html">Re: [ferret_users] reading ascii data and regridding</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00355.html">[ferret_users] calculating the area of each cell.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00357.html">Thread Prev</a>][<a href="msg00355.html">Thread Next</a>][<A HREF="threads.html#00359">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

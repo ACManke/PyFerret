@@ -1,0 +1,161 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] undesirable missing_value -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 10 Feb 2006 09:55:05 &#45;0800 -->
+<!--X-Message-Id: 43ECD378.8080108@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200602100838.k1A8c3114866@phy&#45;33.io&#45;warnemuende.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] undesirable missing_value</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00094.html">Thread Prev</a>][<a href="msg00098.html">Thread Next</a>][<A HREF="threads.html#00097">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] undesirable missing_value</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Martin Schmidt &lt;<a href="mailto:mschmidt@DOMAIN.HIDDEN">mschmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] undesirable missing_value</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 10 Feb 2006 09:55:04 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>, <a href="mailto:climater@DOMAIN.HIDDEN">climater@xxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00094.html">200602100838.k1A8c3114866@phy-33.io-warnemuende.de</a>&gt;</li>
+<li>References: &lt;<a href="msg00094.html">200602100838.k1A8c3114866@phy-33.io-warnemuende.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi everyone,<br>
+What Martin says is absolutely correct, but there is a way to specify 
+the region of interest without writing intermediate files.  If you want 
+to average over some region, specify that region within the square brackets<br>
+<br>
+  temp[x=138:290@ave,y=-23.5:23.5@ave]<br>
+<br>
+This is one number (for each depth and time that the variable may have)<br>
+<br>
+The expression,<br>
+<br>
+  temp[x=@ave,y=@ave]<br>
+<br>
+is not evaluated until an &quot;action&quot; command is issued -- a plotting 
+command, a LIST command to list data to the screen or a file, or a LOAD 
+command to load a variable containing the expression into memory.  
+Whatever contxt is in effect for the action will determine the range of 
+X and Y over which the average is applied.<br>
+<br>
+Ansley<br>
+<br>
+Martin Schmidt wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi David,<br>
+<br>
+the operation<br>
+<br>
+list/x=140w/y=0 temp, newtemp<br>
+<br>
+limits the region of temp and newtemp. Hence temp[x=@ave,y=@ave]<br>
+gets a different meaning. This is often not taken into account.<br>
+Please note also, that temp is defined at x=140.5 and x=139.5. So some<br>
+interpolation is done here.<br>
+<br>
+What helps.<br>
+<br>
+- save newtemp to a new file. 
+<br>
+save/clobber/file=newtemp.nc newtemp<br>
+<br>
+- delete the variable newtemp<br>
+<br>
+cancel var newtemp<br>
+<br>
+- get the complete set newtemp from newtemp.nc<br>
+<br>
+use newtemp.nc<br>
+list/x=140w/y=0 temp[d=1], newtemp   ! testing<br>
+<br>
+It should be now, what you expect. 
+<br>
+My experience with ferret is the following: Doing things with<br>
+averaging, filling or shift operation and applying some<br>
+regional limits later gives unexpected results. These are not<br>
+errors but is a &quot;misunderstanding&quot; between user and ferret. 
+Ferret executes commands, when output is required. When you<br>
+define newtemp about nothing happens. In matlab the field would<br>
+be generated, ferret says &quot;yessir - understood&quot; and waits what 
+really is to do and is so much faster in many cases. If you list<br>
+newtemp at x=140w and y=0 ferret executes the commands defined<br>
+previously only for a small region around x=140w. If you<br>
+really want the average over all x and y you have to tell ferret<br>
+to execute this. Saving to a file does exactly this. Making<br>
+a figure with &quot;shade&quot; also. However, issuing the list command later,<br>
+ferret gets &quot;oops, the same again, but now only for x=140w and y=0.&quot;<br>
+<br>
+One could try to &quot;think like ferret&quot;. However, a saver way is to save complete<br>
+intermediate variables to intermediate files, remove the variable definition<br>
+and to read data from file. This &quot;stores&quot; the ferret results.<br>
+This seems to  be slower and expensive in compute power but is save and there is no need<br>
+for error search. Finally one gets the desired result much faster.<br>
+<br>
+Regards,<br>
+Martin Schmidt<br>
+<br>
+ 
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00094" href="msg00094.html">Re: [ferret_users] undesirable missing_value</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00094.html">Re: [ferret_users] undesirable missing_value</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00098.html">Re: [ferret_users] undesirable missing_value</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00094.html">Thread Prev</a>][<a href="msg00098.html">Thread Next</a>][<A HREF="threads.html#00097">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

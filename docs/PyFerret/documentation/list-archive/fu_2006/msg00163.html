@@ -1,0 +1,270 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] [Ferret_Users] sampling lon and lat -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 13 Mar 2006 02:33:27 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.61.0603131602001.10699@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1141722091.4531.78.camel@wave.ees.hokudai.ac.jp -->
+<!--X-Reference: 440E0A46.5090205@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] [Ferret_Users] sampling lon and lat</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00156.html">Thread Prev</a>][<a href="msg00152.html">Thread Next</a>][<A HREF="threads.html#00163">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] [Ferret_Users] sampling lon and lat</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] [Ferret_Users] sampling lon and lat</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Mar 2006 16:03:12 +0530 (IST)</li>
+<li>Cc: Vinu K V &lt;<a href="mailto:vinu@DOMAIN.HIDDEN">vinu@xxxxxxxxxxxxxxxxx</a>&gt;,       Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00156.html">440E0A46.5090205@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00150.html">1141722091.4531.78.camel@wave.ees.hokudai.ac.jp</a>&gt;&lt;<a href="msg00156.html">440E0A46.5090205@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Vinu &amp; Steve,
+                   It was an interesting question...ofcourse not
+easy to do. Because
+
+  1. @LOC and @WEQ will work only for the first occurrence of the
+          given value --&gt; hence not useful to find/extract the
+          positions of a &quot;contour&quot; --&gt; otherwise you have to design
+          some tricky procedure
+
+  2. @EVNT will give all the events of occurrence of given value
+          (but no interpolation will be done as in @LOC case
+          or no fraction business as in @WEQ) --&gt; the extracted
+          points will be at the resolution of the data.
+
+  3. IF/ELSE masking cannot be used since a particular contour
+          may be a result of interpolation between the grid points.
+
+How to do it using @EVNT
+-------------------------
+
+  1. Use @ENVT once along X-direction and then long Y-direction
+         (fixing K and L if necessary)
+
+  2. Use @SHF regridding  transformation to find the grid point
+         where all the event is incremented by 1 (to both the
+         variables from 1.)
+
+  3. combine the X and Y variables from 2 and then set all other
+         values than the &quot;event increment by 1&quot; to missing value
+
+  4. Use the variable from 3. to mask the unnecessary points in
+         2D variables of lat and lon
+
+  5. Make 1D lat and lon data from 2D lat and lon variables from 4.
+
+  6. Use &quot;COMPRESS&quot; function over variables from 5. and remove the
+         unwanted missing values. Assign a proper axis to the final
+         variable.
+
+     It is done !!!!
+
+Comments
+--------
+
+  You will not get the position of zero contour line &quot;precisely&quot;
+..because @EVNT labels the events &quot;on grid points&quot; and not in
+between grid points --&gt; hence the resulting lat-lon points will be
+at model resolution.
+
+See the example using levitus_climatology below : Please note that
+this is just an example ....it passed the simple tests for me.....
+if it fails for you, please let me know. Please read the
+documentation for @EVNT before using this example.
+
+Regards,
+
+Jaison
+
+!------------------------------------------------------------------
+\ cancel mode verify
+!
+! Example for finding the lat and lon points zero contour line of a
+!   field using functions availbe in Ferret.
+!
+!------------------------------------------------------------------
+
+    cancel reg/all
+    set data levitus_climatology
+    set reg/k=6/y=-20:25         ! keep it HERE ITSELF
+
+    let var = temp[d=1]-27       ! to make a variable with 0 contour
+
+! Find events of occurance of 0 and save it to a file (very
+!        IMPORTANT). Also make lat and lon values to 2D variable and
+!        then save this also.
+
+    let zero_x_1  = var[x=@EVNT:0]
+    let zero_y_1  = var[y=@EVNT:0]
+    let lon_pts   = var*0 + x[gx=var]
+    let lat_pts   = var*0 + y[gy=var]
+
+    sp rm -f test_01.nc
+    save/file=test_01.nc/append zero_x_1, zero_y_1, lon_pts, lat_pts
+
+! Use the variables in the new dataset to extract the position of
+!    the zero contour line
+                                                    ! keep this line
+    cancel var zero_x_1, zero_y_1, lon_pts, lat_pts !  here itself
+    set data test_01.nc
+
+    let zero_x      = zero_x_1[d=2,i=@SHF:1]-zero_x_1[d=2]
+    let zero_y      = zero_y_1[d=2,j=@SHF:1]-zero_y_1[d=2]
+
+    let zero_xy_1   = zero_x + zero_y
+    let zero_xy     = IF zero_xy_1 GE 1 THEN 1
+
+    let lon_zero_0  = lon_pts[d=2]*zero_xy
+    let lat_zero_0  = lat_pts[d=2]*zero_xy
+
+    let lon_zero_1D = XSEQUENCE(lon_zero_0)
+    let lat_zero_1D = XSEQUENCE(lat_zero_0)
+
+    let lon_zero_2  = COMPRESSI(lon_zero_1D)
+    let lat_zero_2  = COMPRESSI(lat_zero_1D)
+
+    let npts        = lon_zero_2[i=@NGD]
+
+    let lon_zero_3  = lon_zero_2[i=1:`npts`]
+    let lat_zero_3  = lat_zero_2[i=1:`npts`]
+
+    define axis/x=1:`npts`:1 xdum
+
+    ! the final variables you want to get
+    ! lon_zero --&gt; lon points of zero contour &quot;lines&quot;, 1D array in X
+    ! lat_zero --&gt; lat points of zero contour &quot;lines&quot;, 1D array in X
+
+    let lon_zero    = lon_zero_3[gx=xdum@ASN]
+    let lat_zero    = lat_zero_3[gx=xdum@ASN]
+
+    !save this variables to a file if you want to use it later
+    !   sp rm -f  xypts_zerocont.nc
+    !   save/file=xypts_zerocont.nc/append lon_zero, lat_zero
+
+    !use &quot;SAMPLEXY&quot; function if you want to get some other variable
+    !   on this contour line
+    !
+    ! let something = SAMPLEXY(variable,lon_zero,lat_zero)
+
+! do a cross check
+
+    fill/lev=(-10,10,1)/line/key/pal=light_rainbow var
+    shade/ov/nolab/nokey/pal=red lat_zero_0[k=1] ! this k=1 is needed
+                                                 ! here irrespective
+                                                 !   of k for var
+    plot/ov/vs/nolab/color=4 lon_zero, lat_zero
+
+
+! the following lines are necessary for repeated execution of the
+!      script in the same ferret session
+
+    cancel data 2
+    sp rm -f test_01.nc
+
+!---------------------------------------------------------------
+
+
+On Tue, 7 Mar 2006, Steve Hankin wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Vinu,<br>
+<br>
+Depending upon the character of your data (i.e. the path of the corresponding 
+contour line) and the manner in which you want to use the results there are 
+two functions that may deliver something similar to what you are after:<br>
+<br>
+  * @loc -- (&quot;location of&quot;) can find the lats and longs for fields<br>
+    that hit the contour line value just once<br>
+  * @evn - (&quot;event&quot;) more complex, but can be used if the field hits<br>
+    the same value multiple times<br>
+<br>
+  - steve<br>
+<br>
+============================<br>
+<br>
+Vinu K V wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi all,
+
+	Is there any way to sample the longitude
+and latitude points through which a particular contour line passes?
+
+
+I want to sample the longitude and latitude of the
+zero_contour line of a variable.
+
+Thanks in advance
+
+-Vinu
+
+
+</pre>
+</blockquote><pre>
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00150" href="msg00150.html">[ferret_users] [Ferret_Users] sampling lon and lat</a></strong>
+<ul><li><em>From:</em> Vinu K V</li></ul></li>
+<li><strong><a name="00156" href="msg00156.html">Re: [ferret_users] [Ferret_Users] sampling lon and lat</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00156.html">Re: [ferret_users] [Ferret_Users] sampling lon and lat</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00152.html">[ferret_users] Estimating the volume transport</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00156.html">Thread Prev</a>][<a href="msg00152.html">Thread Next</a>][<A HREF="threads.html#00163">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

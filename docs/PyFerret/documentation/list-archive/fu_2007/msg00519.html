@@ -1,0 +1,179 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc -->
+<!--X-From-R13: zhlva jnat <zhlva.jnatNabnn.tbi> -->
+<!--X-Date: Fri, 17 Aug 2007 16:20:13 &#45;0700 -->
+<!--X-Message-Id: 46C62D2D.4080303@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 46C5CEFA.4050401@ec.gc.ca -->
+<!--X-Reference: 89407EDD&#45;E2D3&#45;4C05&#45;85E6&#45;58C351B01CA9@noaa.gov -->
+<!--X-Reference: 46C5FF7D.5010204@ec.gc.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00517.html">Thread Prev</a>][<a href="msg00518.html">Thread Next</a>][<A HREF="threads.html#00519">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Fabian Lienert &lt;<a href="mailto:cccma-student-003@DOMAIN.HIDDEN">cccma-student-003@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc</strong></li>
+<li><strong>From</strong>: <strong>muyin wang &lt;<a href="mailto:muyin.wang@DOMAIN.HIDDEN">muyin.wang@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 17 Aug 2007 16:20:13 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:46C5FF7D.5010204@DOMAIN.HIDDEN">46C5FF7D.5010204@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:46C5CEFA.4050401@DOMAIN.HIDDEN">46C5CEFA.4050401@xxxxxxxx</a>&gt; &lt;<a href="mailto:89407EDD-E2D3-4C05-85E6-58C351B01CA9@DOMAIN.HIDDEN">89407EDD-E2D3-4C05-85E6-58C351B01CA9@xxxxxxxx</a>&gt; &lt;<a href="mailto:46C5FF7D.5010204@DOMAIN.HIDDEN">46C5FF7D.5010204@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.6 (Macintosh/20070728)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi, Fabian:
+</pre><tt>I did a test before, and found that using 2.5x2.5 degree horizontal 
+</tt><tt>resolution basically give you the same answer as 5x5 degree resolution.
+</tt><tt>So for your case, I suggest that reducing the grid points before 
+</tt><tt>calculating your EOFs. This will solve the memory problem, and you can 
+</tt><tt>use your monthly data, too!
+</tt><pre style="margin: 0em;">
+Good luck!
+Muyin
+
+
+Fabian Lienert wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Billy,
+
+Thanks for answering so quickly. You are right that according to theory
+one needs to calculate all EOFs. But isn't the maximum memory usage the
+spatial covariance matrix with in my case 134 by 89 points of data?
+134*89*(32 bit), 48MB, right?
+
+I am talking about model data and the point of interest is muti-decadal
+variations. Taking the annual mean data would be interesting as well.
+
+I would like to use your fortran code to optimize the calculations.
+
+Thanks a lot for your help,
+Fabian
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Fabian -
+
+</pre><tt>There is no way to find only some of the eigenvalues. I think that is 
+</tt><tt>true in theory (please correct me if I am wrong), but it is certainly 
+</tt><tt>true of these routines. One way to see this is that inverting the 
+</tt><tt>covariance matrix employs a series of operations on the whole matrix 
+</tt><tt>(turning it into tridiagonal form), that inherently find all the 
+</tt><tt>eigenvalues (or at least do all the work up to a final few trivial 
+</tt><tt>steps). Another (equivalent) point of view is that when the singular 
+</tt><tt>value decomposition is written out, it is seen to involve matrix 
+</tt><tt>multiplications that inherently use all rows and all columns.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Somehow I doubt if there are really 3960 significant months worth of 
+</tt><tt>SST information in the North Pacific (is this a model or 
+</tt><tt>observations?). It seems likely that interannual or decadal 
+</tt><tt>variations are of interest in such a case, so the problem could be 
+</tt><tt>greatly reduced by taking annual averages before doing the EOFs.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The other thing to note is that the number of non-zero eigenvalues is 
+</tt><tt>the MINIMUM of (number of timesteps, number of spatial locations). If 
+</tt><tt>you have more timesteps than locations, the calculation is wasting 
+</tt><tt>CPU and memory and disk space with lots of identically-zero 
+</tt><tt>eigenvalues and EOFs. I have routines to reverse the array, find the 
+</tt><tt>eigenvalues/EOFs, and then reinterpret as the original, but these are 
+</tt><tt>fortran, not Ferret. Let me know if you'd like to use this code 
+</tt><tt>(unsupported/no guarantee!).
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+On 17Aug 2007, at 9:38 AM, Fabian Lienert wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ferreters,
+
+Is it possible to calculate only the first couple of EOFs using
+the functions eof_space and eof_tfunc?
+
+</pre><tt>Or is it necessary to know all EOFs in order to judge which one is 
+</tt><tt>of first importance?
+</tt><pre style="margin: 0em;">
+
+I get an error in efcn_compute() while allocating 570MB of memory while
+analyzing 3960 months of SSTs in the northern Pacific.
+
+Any help appreciated. Thank you.
+Fabian
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00514" href="msg00514.html">[ferret_users] first couple of eofs only using eof_space, eof_tfunc</a></strong>
+<ul><li><em>From:</em> Fabian Lienert</li></ul></li>
+<li><strong><a name="00515" href="msg00515.html">Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc</a></strong>
+<ul><li><em>From:</em> william s. kessler</li></ul></li>
+<li><strong><a name="00517" href="msg00517.html">Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc</a></strong>
+<ul><li><em>From:</em> Fabian Lienert</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00517.html">Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00518.html">Re: [ferret_users] first couple of eofs only using eof_space, eof_tfunc</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00517.html">Thread Prev</a>][<a href="msg00518.html">Thread Next</a>][<A HREF="threads.html#00519">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

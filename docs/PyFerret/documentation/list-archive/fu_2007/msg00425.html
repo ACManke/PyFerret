@@ -1,0 +1,236 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] choosing a grid point -->
+<!--X-From-R13: Xbua Rbaaref <w.qbaarefNernqvat.np.hx> -->
+<!--X-Date: Thu, 12 Jul 2007 08:33:17 &#45;0700 -->
+<!--X-Message-Id: 2A83EFF9&#45;877A&#45;4E12&#45;85B3&#45;2E571A32469D@reading.ac.uk -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4696364A.9080804@zmaw.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] choosing a grid point</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00424.html">Thread Prev</a>][<a href="msg00426.html">Thread Next</a>][<A HREF="threads.html#00425">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] choosing a grid point</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] choosing a grid point</strong></li>
+<li><strong>From</strong>: <strong>John Donners &lt;<a href="mailto:j.donners@DOMAIN.HIDDEN">j.donners@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 13 Jul 2007 00:33:04 +0900</li>
+<li>Dkim-signature: a=rsa-sha1; c=relaxed/relaxed;        d=gmail.com; s=beta; h=domainkey-signature:received:received:mime-version:in-reply-to:references:content-type:message-id:content-transfer-encoding:from:subject:date:to:x-mailer:sender; b=k0iS5e+47fmpg7BXyQek0q9tqvzMeLyFoXkI1khe5FWwBphEHVkn6FXmrLpJPHILrLIuxmMOpXiaTG9y1e6KZOir98QaX+nbBzyFkJr9QJZx6STF+zWu42p9Draxq7QJYPiZ84LAw8LMLtOex81dWaH1xmrBaYRuLFiaB3HepYU=</li>
+<li>Domainkey-signature: a=rsa-sha1; c=nofws;        d=gmail.com; s=beta; h=received:mime-version:in-reply-to:references:content-type:message-id:content-transfer-encoding:from:subject:date:to:x-mailer:sender; b=h8xVYLYfI1gHoGMAQSMJsc/NEbK1kvSTsIvFoyElFjXI+f0UJTPuar0sG9GQpTYRZq3VbHU51dumWBw6FLUa9v72fQzLIsh995n+s3aplbGvbT3bl2doVN1BEc85hzjRS2f3RngcyFzCYEisDFVfauHbCC/73vq1mf31Pz303Gk=</li>
+<li>In-reply-to: &lt;<a href="mailto:4696364A.9080804@DOMAIN.HIDDEN">4696364A.9080804@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4696364A.9080804@DOMAIN.HIDDEN">4696364A.9080804@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Anup,
+
+</pre><tt>the problem is not with ferret, but the definitions in the original  
+</tt><tt>NetCDF files. These are not set correctly, and ferret doesn't infer  
+</tt><tt>the correct longitude/latitude axes for your variable ZO. Therefore  
+</tt><tt>it uses indices instead of longitudes for the axis values. The  
+</tt><tt>longitude and latitude is defined in the variables LON and LAT, but  
+</tt><tt>they are not recognized as such, because the name of these variables  
+</tt><tt>is not the same as the name of the dimension they are defined on.  
+</tt><tt>What you need is the NCO utilities (<a  rel="nofollow" href="http://nco.sf.net">http://nco.sf.net</a> if it is not  
+</tt><tt>available on your system yet), and more specifically the utility  
+</tt><tt>ncrename.
+</tt><pre style="margin: 0em;">
+Another utility that you need is ncdump.
+
+Run ncdump -h ZETA.nc and you could see something like:
+
+netcdf seamask {
+dimensions:
+        LONGITUDE = 288 ;
+        LATITUDE = 217 ;
+        SURFACE = 1 ;
+        T = UNLIMITED ; // (1 currently)
+variables:
+        double LONGITUDE(LONGITUDE) ;
+                LONGITUDE:units = &quot;degrees_east&quot; ;
+                LONGITUDE:modulo = 360. ;
+                LONGITUDE:point_spacing = &quot;even&quot; ;
+                LONGITUDE:AXIS = &quot;X&quot; ;
+        double LATITUDE(LATITUDE) ;
+                LATITUDE:units = &quot;degrees_north&quot; ;
+                LATITUDE:point_spacing = &quot;even&quot; ;
+                LATITUDE:AXIS = &quot;Y&quot; ;
+        double SURFACE(SURFACE) ;
+                SURFACE:units = &quot;level&quot; ;
+                SURFACE:point_spacing = &quot;even&quot; ;
+                SURFACE:AXIS = &quot;Z&quot; ;
+        double T(T) ;
+                T:units = &quot;days since 1978-09-01 00:00:00&quot; ;
+                T:time_origin = &quot;01-SEP-1978 00:00:00&quot; ;
+                T:calendar = &quot;360_DAY&quot; ;
+        float SEA(T, SURFACE, LATITUDE, LONGITUDE) ;
+                SEA:missing_value = -1.e+34f ;
+                SEA:_FillValue = -1.e+34f ;
+                SEA:long_name = &quot;0*SSM+1&quot; ;
+                SEA:history = &quot;From higem_seafrac.nc&quot; ;
+
+</pre><tt>The important thing here is the variables LONGITUDE and LATITUDE,  
+</tt><tt>which are defined along the dimension with exactly the same names.  
+</tt><tt>This enables ferret to infer the correct axes. You can either rename  
+</tt><tt>the dimension or the variable name with ncrename to match both values  
+</tt><tt>for your file, e.g. ncrename -v LON,longitude ZETA.nc. The new file  
+</tt><tt>should now be recognized correctly by ferret and you should be able  
+</tt><tt>to do as was mentioned before. You'll also notice that the variables  
+</tt><tt>for longitude and latitude have disappeared in ferret when the  
+</tt><tt>dataset is shown.
+</tt><pre style="margin: 0em;">
+
+Cheers,
+John
+
+On 12 Jul 2007, at 23:10, Anup Sherchan wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear ferret users
+</pre><tt>         Thanks to all who replied but my problem still exists. I'm  
+</tt><tt>trying to create a harmonic analysis of tides. I chose some  
+</tt><tt>coordinates say California, England (1W, 54N ), Philippines and I  
+</tt><tt>want to have the plot of sea level [depth in meter] wrt time  
+</tt><tt>[days]. I can do so by choosing the location using ncview as seeing  
+</tt><tt>what the corresponding values of i and j at that position might be,  
+</tt><tt>but I want the exact coordinates, as 1 W, 54 N for Immingham, England.
+</tt><pre style="margin: 0em;">
+
+/<a  rel="nofollow" href="http://lpas.epfl.ch/MOD/manuals/ferret/chapter4.html/">http://lpas.epfl.ch/MOD/manuals/ferret/chapter4.html/</a>
+
+/yes? SET DATA levitus_climatology
+yes? SET REGION/X=180/Y=0                      ! true profile
+yes? PLOT/Z=0:5000 temp
+yes? DEFINE AXIS/DEPTH/Z=100:2000:100  zfalse
+yes? DEFINE GRID/LIKE=temp/Z=zfalse  gfalse    ! false profile
+yes? PLOT/Z=0:5000/OVERtemp[G=gfalse@ASN] /
+
+</pre><tt>The above mentioned weblink shows some similarity but doesn't work  
+</tt><tt>in my case, when I execute the first 3 lines as shown above, gives  
+</tt><tt>me the following error
+</tt><pre style="margin: 0em;">
+
+/yes? show data/full
+    currently SET data sets:
+   1&gt; ./ZETA.nc  (default)
+
+</pre><tt>name     title                             I         J          
+</tt><tt>K         L
+</tt><tt>LON      longitude                        1:120      
+</tt><tt>1:101     ...       ...
+</tt><pre style="margin: 0em;">
+            degrees on grid GIH1 with -1.000000E+34 for missing data
+            X=0.5:120.5  Y=0.5:101.5
+LON_BOUNDS
+</pre><tt>                                          1:4       1:120      
+</tt><tt>1:101     ...
+</tt><pre style="margin: 0em;">
+              on grid GIH2 with -1.000000E+34 for missing data
+            X=0.5:4.5  Y=0.5:120.5  Z=0.5:101.5
+</pre><tt>LAT      latitude                         1:120      
+</tt><tt>1:101     ...       ...
+</tt><pre style="margin: 0em;">
+            degrees on grid GIH1 with -1.000000E+34 for missing data
+            X=0.5:120.5  Y=0.5:101.5
+LAT_BOUNDS
+</pre><tt>                                          1:4       1:120      
+</tt><tt>1:101     ...
+</tt><pre style="margin: 0em;">
+              on grid GIH2 with -1.000000E+34 for missing data
+            X=0.5:4.5  Y=0.5:120.5  Z=0.5:101.5
+</pre><tt>TIME                                      ...       ...       ...      
+</tt><tt>  1:8760
+</tt><pre style="margin: 0em;">
+      (invalid coordinate axis)
+</pre><tt>            day as %Y%m%d.%f on grid GIH3 with -1.000000E+34 for  
+</tt><tt>missing data
+</tt><pre style="margin: 0em;">
+
+</pre><tt>ZO       sealevel                         1:120      
+</tt><tt>1:101     ...       1:8760
+</tt><pre style="margin: 0em;">
+            m on grid GIH4 with -1.000000E+34 for missing data
+            X=0.5:120.5  Y=0.5:101.5
+
+ time range: 1 to 8760/
+/yes? plot zo[l=1:8760]
+**ERROR: dimensions improperly specified: specified data is not a line
+          - its a 3D region: &quot;plot zo[l=1:8760]&quot;
+yes? set region/x=1W/y=54N
+yes? plot/l=1:8760 zo
+**ERROR: illegal limits: &quot;ZO&quot; is not in the range X=359
+         Axis extremes are X=0.5:120.5
+/
+Help needed. Thanks.
+
+Anup Sherchan
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00424" href="msg00424.html">[ferret_users] choosing a grid point</a></strong>
+<ul><li><em>From:</em> Anup Sherchan</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00424.html">[ferret_users] choosing a grid point</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00426.html">Re: [ferret_users] choosing a grid point</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00424.html">Thread Prev</a>][<a href="msg00426.html">Thread Next</a>][<A HREF="threads.html#00425">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

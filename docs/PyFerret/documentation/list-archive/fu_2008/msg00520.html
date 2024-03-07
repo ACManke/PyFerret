@@ -1,0 +1,163 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] How can I check existence of a variable -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 9 Oct 2008 09:09:31 &#45;0700 -->
+<!--X-Message-Id: 48EE2CB1.7070400@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 48EE0C73.3010608@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] How can I check existence of a variable</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00519.html">Thread Prev</a>][<a href="msg00521.html">Thread Next</a>][<A HREF="threads.html#00520">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How can I check existence of a variable</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How can I check existence of a variable</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 09 Oct 2008 09:09:21 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:48EE0C73.3010608@DOMAIN.HIDDEN">48EE0C73.3010608@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:48EE0C73.3010608@DOMAIN.HIDDEN">48EE0C73.3010608@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.17 (Windows/20080914)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Patrick,
+</pre><tt>That's a good idea, to have a RETURN hand us back the word ERROR; it 
+</tt><tt>would come in handy when writing scripts.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>For your case, you can get the information you want right now, using the 
+</tt><tt>attribute-handling capabilities of Ferret. For a full description of all 
+</tt><tt>this, see section 3.1.8 in the Users guide - 
+</tt><tt><a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/variables-xpressions/VARIABLES#_VPINDEXENTRY_277">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/variables-xpressions/VARIABLES#_VPINDEXENTRY_277</a>
+</tt><pre style="margin: 0em;">
+
+Scroll on down in this section to section 3.1.8.2, Attribute Keywords
+
+</pre><tt>We will be using the attribute keyword, varnames, to define a variable 
+</tt><tt>containing the names of the variables in the current dataset
+</tt><pre style="margin: 0em;">
+
+  yes? use levitus_climatology.cdf
+</pre><tt>  yes? let allnames = ..varnames  
+</tt><tt>
+</tt><pre style="margin: 0em;">
+  yes? let temp_exists = IS_ELEMENT_OF_STR (allnames, &quot;TEMP&quot;)
+
+</pre><tt>Note that this is case-sensitive -- we could use a version of the 
+</tt><tt>IS_ELEMENT_OF_STR function which makes a case-insensitive comparison, 
+</tt><tt>but you could of course do
+</tt><pre style="margin: 0em;">
+
+  yes? let temp_exists = `IS_ELEMENT_OF_STR (allnames, &quot;TEMP&quot;) OR \
+       IS_ELEMENT_OF_STR (allnames, &quot;TEMP&quot;)`
+
+
+Ansley
+
+
+Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+
+In 2005, someone asks how to check if a variable exists.
+</pre><tt>Read 
+</tt><tt><a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2005/msg00828.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2005/msg00828.html</a> 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+
+I have tried to use return value but the error message is not trappable
+
+yes? use levitus_climatology.cdf
+yes? def sym isexist=`temp,return=dsetnum`
+!-&gt; def sym isexist=1
+yes? def sym isexist=`abcd,return=dsetnum`
+**ERROR: variable unknown or not in data set: ABCD
+
+</pre><tt>So is there a way to improve return value mechanism to trap the error 
+</tt><tt>message
+</tt><tt>and get a return value set to &quot;ERROR&quot;. It would be easy then to test 
+</tt><tt>it with
+</tt><pre style="margin: 0em;">
+a simple test:
+
+check.jnl
+
+def sym isexist=`($01),return=dsetnum`
+if `&quot;($isexist)&quot; eq &quot;ERROR&quot;` then
+       say &quot;($01) does not exist&quot;
+elif
+       say &quot;($01) exists&quot;
+fi
+
+Thanks
+Patrick
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00519" href="msg00519.html">[ferret_users] How can I check existence of a variable</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00519.html">[ferret_users] How can I check existence of a variable</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00521.html">[ferret_users] calculating spatial root mean square error</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00519.html">Thread Prev</a>][<a href="msg00521.html">Thread Next</a>][<A HREF="threads.html#00520">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

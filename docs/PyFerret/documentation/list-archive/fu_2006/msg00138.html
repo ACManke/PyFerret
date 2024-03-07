@@ -1,0 +1,168 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] vector, flowline and density -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 1 Mar 2006 15:24:27 &#45;0800 -->
+<!--X-Message-Id: 44062D28.9020401@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20060301101243.M48969@astr.ucl.ac.be -->
+<!--X-Derived: png00001.png -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] vector, flowline and density</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00135.html">Thread Prev</a>][<a href="msg00134.html">Thread Next</a>][<A HREF="threads.html#00138">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] vector, flowline and density</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;,       Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] vector, flowline and density</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 01 Mar 2006 15:24:24 -0800</li>
+<li>In-reply-to: &lt;<a href="msg00135.html">20060301101243.M48969@astr.ucl.ac.be</a>&gt;</li>
+<li>References: &lt;<a href="msg00135.html">20060301101243.M48969@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Emile,<br>
+The arrows on the flowline curves are scaled relative to the mean
+velocity of the arrows, so there is not now a good way to control them.
+This is already on our list of bugs to fix. The /LENGTH qualifier could
+be used to change the arrow head sizes, just as it changes the arrow
+lengths for the regular VECTOR command. I think that this is the real
+trouble with your particular data.&nbsp; I'll see if we can get this small
+change into the next release of Ferret.<br>
+<br>
+The /XSKIP and /YSKIP qualifiers are not&nbsp; used when we specify
+VECTOR/FLOWLINE. The /DENSITY qualifier is intended to do this, where
+DENSITY is a positive integer ( I have added this fact to the Users
+Guide.)&nbsp; In general, numbers like /DENSITY=2 gets you fewer curves than
+the default, and /DENSITY=8 and higher gives you more.&nbsp; /DENSITY=2, 3,
+4 may all look the same.&nbsp; The algorithm depends on the data and its
+grid. You can also send subsampled data to the command, but the
+flowline algorithm seems to try to fill in and make more flowline
+curves, especially around the edges.&nbsp; Compare<br>
+<br>
+&nbsp; yes? use monthly_navy_winds<br>
+&nbsp; yes? set region/L=50/y=-80:80<br>
+&nbsp;
+yes? vector/flow uwnd[i=1:144:4,j=1:73:4], vwnd[i=1:144:4,j=1:73:4]<br>
+<br>
+&nbsp;
+yes? vector/flow/DENSITY=2 uwnd, vwnd<br>
+&nbsp;
+yes? vector/flow/DENSITY=8 uwnd, vwnd<br>
+<br>
+I would recommend staying with the DENSITY qualifier. <br>
+<br>
+Emilie Vanvyve wrote:
+<blockquote cite="" type="cite">
+  <pre wrap="">Hi everyone,
+
+I have a question about the use of the command "VECTOR/flowline".
+With something as simple as this:
+
+shade temperature,lon,lat
+vector/overlay/flowline u,v,lon,lat
+
+I have been trying to draw a 2D wind field over a 2D temperature field, without any success 
+so far apart from loosing hair.
+The temperature is just plotted with SHADE. The wind field is drawn from the variables u and 
+v and I want it to appear as a flow line instead of the well known arrows.
+The latter is the tricky part: I can easily get the flow lines, but I can not decrease the number 
+of drawn flowlines. They are so many that the graphic is not legible at all (see attached 
+screen capture which is the best i could get so far).
+
+Until now, I have tried:
+- the "/density=..." qualifier. The bigger the number, the more numberous the flow lines are. 
+The best I could get is with a decimal number (any of them) between 0.1 and 0.9. Negative 
+numbers are not of any help.
+- the "/xskip=.../yskip=..." qualifiers. Except if the wind field is drawn as arrows instead of 
+flowlines, it doesn't change anything to the graph. I even tried the "pplus/...,xskip,yskip" 
+formula, unsuccessfully.
+- the "/length=..." qualifier. That doesn't work.
+- different amusing combinations of all possible qualifiers, without any success.
+- a different way to give my variables u and v. I indicated u
+[x=-1000:1000:100,y=-1000:1000:100] (units=km), idem for v, hoping Ferret would be 
+forced to use only a sample of u and v, but that didn't work either.
+
+Does anyone have a solution for that?
+By the way, I couldn't reduce the size of the arrows drawn on the flowline, any hint about this 
+would be very welcomed too!
+
+Thanks in advance for any help,
+
+Emilie 
+
+
+P.S.: I am using Ferret v5.81 on a Linux(g77) 2.4.18, according to the Ferret header.
+
+  </pre>
+  <br>
+  <hr size="4" width="90%"><br>
+  <center><img src="png00001.png"></center>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00135" href="msg00135.html">[ferret_users] vector, flowline and density</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00135.html">[ferret_users] vector, flowline and density</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00134.html">[ferret_users] wire or ppl view or vis5D</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00135.html">Thread Prev</a>][<a href="msg00134.html">Thread Next</a>][<A HREF="threads.html#00138">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

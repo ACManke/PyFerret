@@ -1,0 +1,196 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] overlays + ppl = no overlays? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 11 Sep 2007 01:33:37 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0709111407580.17324@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: p06240801c30b895af5ab@[134.89.11.100] -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] overlays + ppl = no overlays?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00563.html">Thread Prev</a>][<a href="msg00565.html">Thread Next</a>][<A HREF="threads.html#00564">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] overlays + ppl = no overlays?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>John Graybeal &lt;<a href="mailto:graybeal@DOMAIN.HIDDEN">graybeal@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] overlays + ppl = no overlays?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 11 Sep 2007 14:19:20 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:p06240801c30b895af5ab@DOMAIN.HIDDEN"><a href="msg00563.html">p06240801c30b895af5ab@[134.89.11.100]</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:p06240801c30b895af5ab@DOMAIN.HIDDEN"><a href="msg00563.html">p06240801c30b895af5ab@[134.89.11.100]</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi John,
+          Sometimes the PPL command usage may be confusing. But, if you know
+the rules, it is very easy to handle them. Relevant details are given below.
+As an answer to your question, a simple example is also given toward the end.
+
+  1. According to Ferret philosophy, the major PPL commands (like that for
+       the plot title, axis labels/tics etc.) should be supplied with the
+       very first plot (not with the overlays, it won't work!).
+
+  2. In case you need to use a PPL command with an overlay plot, you need to
+ 
+         plot/......./over/set_up
+                            ! insert ppl commands here
+         PPL plot/OVER
+
+     The /OVER qualifier should be present both in plot command and in the
+     ending &quot;PPL plot&quot; command. Sometimes, the script may work just fine 
+     with a /OVER only to &quot;PPL plot&quot;, but not safe with the vector commands.
+
+  3. Some PPL Commands are stand alone (can be given anywhere in the script,
+     before making the plot), some are not (which should be used between 
+     &quot;plot/set_up.....&quot; and &quot;ppl plot&quot;) and some can be given only after making
+     the plot. Please have a look at the following mail for details
+
+     <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00413.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00413.html</a>
+
+
+  4. The ppl commands are sensitive to the syntax (commas etc.). So refer to
+     examples given in user manual, if a particular ppl command is not working
+     for you.
+
+Have a trial with the example given below. Please let me know if you have any
+questions.....
+
+Hope this helps....
+
+Regards
+
+Jaison
+
+
+!------------Example begins here-------------------------------------------
+\ cancel mode verify
+!
+! Description : A demo for the usage of ppl commands along with overlays. 
+! 
+! Doc         : On behaviour and usage of ppl commands 
+!               <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00413.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00413.html</a>
+!
+! Created On  : 11/Sep/2007, JK
+!
+!-------------------------------------------------------------------------
+
+  ! create two dummy variables
+
+    define axis/x=1:150:1 xax
+
+    let var1 = RANDU(x[gx=xax])
+    let var2 = RANDN(x[gx=xax])
+
+  ! ppl commands with the first plot
+
+    plot/symbol=19/size=.2/color=blue/nolab/vlim=-2:2/set_up var1
+       ppl title &quot;Profiler Velocity (up=profiling=blue, down=return=red)&quot;
+    ppl plot
+    plot/symbol=47/size=.2/color=red/nolab/over    var2
+
+    pause 
+
+  ! ppl commands with the second overlay plot 
+   
+    plot/symbol=19/size=.2/color=blue/nolab/vlim=-2:2    var1
+    plot/symbol=47/size=.2/color=red/nolab/over/set_up   var2
+       ! insert ppl commands here
+    ppl plot/over
+
+!------------Example ends here---------------------------------------------
+
+On Mon, 10 Sep 2007, John Graybeal wrote:
+
+&gt; I am trying to plot multiple scatterplots on a single pair of axes, as in:
+&gt; 
+&gt; 1)  plot/symbol=19/size=.2/color=blue/vlimit=0:1:0.25/nolabel upV
+&gt; 2)  plot/symbol=47/size=.2/color=red/vlimit=0:1:0.25/overlay/nolabel downV
+&gt; 
+&gt; This works.  Now I'd like to add custom labels, as in
+&gt; 
+&gt; 3)  ppl title &quot;Profiler Velocity (up=profiling=blue, down=return=red)&quot;
+&gt; 4)  ppl plot
+&gt; 
+&gt; This also works, except...the first plotted variable (upV) has disappeared, only downV is plotted.
+&gt; 
+&gt; I am aware of the concept of set_up and have tried it in various incantations (line 1, lines 1+2), tried making line 4 an overlay plot, tried mixing up the line orders...  I haven't found a sequence in which the final plot contains both sets of data AND the labels.  
+&gt; 
+&gt; The main documentation I found said &quot;You have to be careful about the order of the PPL commands.&quot;  So can someone help me be careful?
+&gt; 
+&gt; Earlier I set some window characteristics, if that matters (aspect, size, margins).
+&gt; 
+&gt; John
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00563" href="msg00563.html">[ferret_users] overlays + ppl = no overlays?</a></strong>
+<ul><li><em>From:</em> John Graybeal</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00563.html">[ferret_users] overlays + ppl = no overlays?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00565.html">[ferret_users] blank symbol</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00563.html">Thread Prev</a>][<a href="msg00565.html">Thread Next</a>][<A HREF="threads.html#00564">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

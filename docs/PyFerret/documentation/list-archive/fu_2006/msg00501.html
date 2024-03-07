@@ -1,0 +1,261 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Defining Viewport made easy : multi_view -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 31 Jul 2006 03:39:09 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0607311610490.10906@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Defining Viewport made easy : multi_view</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00498.html">Thread Prev</a>][<a href="msg00503.html">Thread Next</a>][<A HREF="threads.html#00501">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Defining Viewport made easy : multi_view</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Defining Viewport made easy : multi_view</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 31 Jul 2006 16:13:19 +0530 (IST)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+      Here is a GO script to define the desired number of viewports
+with desired size/position easily. The major advantage in using this 
+GO file are the following:
+
+  1. Just one &quot;GO&quot; will do all sort of actions (defining, tuning etc.
+        for as many viewports as you want with the same size)
+        and the viewports defined will be accessable from any part
+        of the script.
+  
+  2. Issues proper messages in case of errors with the arguments.
+
+  3. Overlaying made easy. Suppose you want to overlay the mixed layer 
+        depth on a time-depth section of temperature --&gt; call the 
+        multi_view.jnl two times with different values (like VL and VR)
+        for $9, then use the viewports accordingly;
+
+        go multi_view 2,2,0.20,0.10,0.03,0.14,0.10,0.017, VL
+        go multi_view 2,2,0.20,0.10,0.03,0.14,0.10,0.017, VR
+
+        set view VL21 ; ppl axset .....  ; ppl axlabp ....
+            fill/vlim=0:120:40/..... temp
+        
+        set view VR21 ; ppl axset ...... ; ppl axlabp ....
+            plot/vlim=120:0:40/...... mld
+
+There is a drawback to the current version of multi_view...
+
+  1. It will work for Ferret version 5.6 or higher. Since the
+      /AXES qualifier is used to define viewport, sometimes
+      Ferret may show some peculiar behaviour (please see
+      <a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/</a>
+      fu_2006/msg00080.html)
+ 
+
+Please see the comments at the beginning of the attached go 
+file (multi_view.jnl) for more details about its usage and 
+for examples.
+
+Suggestions are most welcome ...
+
+Jaison
+</pre>
+<pre>\ cancel mode verify
+!
+! Description : GO file to make desired number of viewports with desired 
+!                 size/position for portrait/landscape mode.
+!
+! Notes   1   : Please note that the version of Ferret should be 5.6 or 
+!                 later one which supports /AXES qualifier to 
+!                 &quot;define view&quot; command and /RANGE qualifier to &quot;REPEAT&quot;
+!                 command.
+! 
+!         2   : Works well in portrait/landscape mode. Since /AXES qualifier is
+!                 used with &quot;DEFINE VIEW&quot; command, Ferret may show some peculiar
+!                 behaviour sometimes (<a  href="http://ferret.pmel.noaa.gov/Ferret/">http://ferret.pmel.noaa.gov/Ferret/</a>
+!                 Mail_Archives/fu_2006/msg00080.html). 
+!
+!         3   : If the defined viewport is very small, /SIGDIG qualifier
+!                 to the CONTOUR command may not be effective. In this case
+!                 please use the fourth argument to /LEVELS qualifier to get
+!                 proper numeric labels for contours.
+!
+!                    /LEVELS=(lo, hi, delta, ndigits)  &amp; the usage is 
+!
+!                    ndigits = -1 for integer format
+!                            = -3 to omit numerical labels 
+!                            = 1/2/ for valid precision/significant digits
+!
+!         4   : To define two set of viewports of similar features 
+!                 (position &amp; size), call multi_view two times with 
+!                 different values for 9th argument (but exactly same 
+!                 values for arguments 1-8).  
+!
+!         5   : Internal variables to this GO file does have a prefix &quot;mv_&quot;.
+!
+!
+! Default   1 : Just &quot;go multi_view&quot; (ie without any arguments) will 
+! Behaviour       define 15 viewports in 5 rows and 3 columns with 
+!                 names v11, v12,...v53
+!
+!           2 : There is no mandatory arguments for this go file ; all
+!                 arguments are optional.
+!
+!                                $1       $2      $3      $4       $5 
+! USAGE       :  go multi_view [rows],[columns],[xsize],[xstart],[xgap],
+!                                      [ysize],[ystart],[ygap],[prefix]
+!                                         $6      $7       $8      $9 
+! Example  1: 6 viewports of similar size  
+!                 use coads_climatology
+!                 set reg/l=1/x=30:120/y=-30:30
+!                 set window/aspect=1.3
+!                 go multi_view 5, 3, 0.25, 0.1, 0.03, 0.15, 0.10, 0.02 
+!                 set view v11 ; ppl axlabp  1,-1 ; fill/nolab/line sst
+!                 set view v12 ; ppl axlabp  1, 0 ; fill/nolab/line sst
+!                 set view v13 ; ppl axlabp  1, 1 ; fill/nolab/line sst
+!                 set view v21 ; ppl axlabp -1,-1 ; fill/nolab/line sst
+!                 set view v22 ; ppl axlabp -1, 0 ; fill/nolab/line sst
+!                 set view v23 ; ppl axlabp -1, 1 ; fill/nolab/line sst
+!
+! Example 2: 2 viewports of similar size (tune xstart &amp; ystart to position it)
+!                 use coads_climatology
+!                 set reg/l=1/x=30:120/y=-30:30
+!                 set window/aspect=1.3
+!                 go multi_view 2, 1, 0.25, 0.25, 0.03, 0.15, 0.60, 0.02 
+!                 set view v11 ; ppl axlabp  1,-1 ; fill/nolab/line sst
+!                 set view v21 ; ppl axlabp -1,-1 ; fill/nolab/line sst
+! 
+!------------------------------------------------------------------------------
+!
+!                                               !-------|-------|-------|
+! Written By    : Jaison Kurian                 !  v11  |  v12  |  v13  |
+! Contact       : jaison@caos.iisc.ernet.in     !-------|-------|-------|
+!                 jaisonkurian@gmail.com        !  v21  |  v22  |  v23  |
+! Version       : multi_view                    !-------|-------|-------|
+! Date          : 27-FEB-2006                   !  v31  |  v32  |  v33  |
+! Comments      : None                          !-------|-------|-------|
+! Modifications : None                          !  v41  |  v42  |  v43  |
+!                                               !-------|-------|-------|
+!                                               !  v51  |  v52  |  v53  |
+!                                               !-------|-------|-------|
+!                                               
+!
+!-------------------------------------------------------------------------------
+
+! define internal variables
+
+    define symbol mv_r  = $1&quot;5&quot;      ! number of rows
+    define symbol mv_c  = $2&quot;3&quot;      ! number of columns
+    define symbol mv_xs = $3&quot;0.25&quot;   ! X size
+    define symbol mv_xb = $4&quot;0.10&quot;   ! X beginning
+    define symbol mv_xg = $5&quot;0.03&quot;   ! X gap 
+    define symbol mv_ys = $6&quot;0.15&quot;   ! Y size 
+    define symbol mv_yb = $7&quot;0.10&quot;   ! Y beginning
+    define symbol mv_yg = $8&quot;0.02&quot;   ! Y gap
+    define symbol prefx = $9&quot;v&quot;      ! Prefix for the viewport name
+
+! Issue a warning message if request values doesnot fit in
+
+    let mv_xh = `($mv_xb)+($mv_c)*($mv_xs)+(($mv_c)-1)*($mv_xg)`  ! X high
+    let mv_yh = `($mv_yb)+($mv_r)*($mv_ys)+(($mv_r)-1)*($mv_yg)`  ! Y high
+
+    IF `($mv_r) LT 1` THEN  ! minimum number of rows is 1
+          SAY ; SAY &quot; ERROR (small_view) : Number of rows should be &gt; 0&quot; ; SAY
+          EXIT
+    ENDIF 
+    IF `($mv_c) LT 1` THEN  ! minimum number of rows is 1
+          SAY ; SAY &quot; ERROR (small_view) : Number of columns should be &gt; 0&quot; ; SAY
+          EXIT
+    ENDIF 
+
+    IF `($mv_xb) GT 0.9 OR ($mv_xb) LT 0` THEN   ! upper/lower bound for xstart 
+          SAY ; SAY &quot; ERROR (small_view) : X_Start should be between 0.0 and 0.9&quot; ; SAY
+          EXIT
+    ENDIF
+    IF `($mv_yb) GT 0.9 OR ($mv_yb) LT 0` THEN   ! upper/lower bound for ystart 
+          SAY ; SAY &quot; ERROR (small_view) : Y_Start should be between 0.0 and 0.9&quot; ; SAY
+          EXIT
+    ENDIF
+    IF `mv_xh GT 1.0` THEN 
+          SAY 
+          SAY &quot; ERROR (small_view) : Exceeded Max Xsize --&gt; &quot;
+          SAY &quot;       Reduce Number of Columns or Xsize/Xstart/Xgap....&quot;
+          SAY ; EXIT
+    ENDIF
+    IF `mv_yh GT 1.0` THEN 
+          SAY 
+          SAY &quot; ERROR (small_view) : Exceeded Max Ysize --&gt; &quot;
+          SAY &quot;       Reduce Number of  Rows or Ysize/Ystart/Ygap....&quot;
+          SAY ; EXIT
+    ENDIF
+
+! IF arguments are valid, define the viewports
+
+    REPEAT/RANGE=1:`($mv_r)`:1/NAME=mv_ro ( ;\
+       let mv_ylo = ($mv_yb) + (($mv_r)-`mv_ro`)*($mv_yg) + (($mv_r)-`mv_ro`)*($mv_ys)     ;\
+       let mv_yhi = ($mv_yb) + (($mv_r)-`mv_ro`)*($mv_yg) + (($mv_r)-(`mv_ro`-1))*($mv_ys) ;\
+       REPEAT/RANGE=1:`($mv_c)`:1/NAME=mv_co (  ;\
+          let mv_xlo = ($mv_xb) + (`mv_co`-1)*($mv_xg) + (`mv_co`-1)*($mv_xs) ;\
+          let mv_xhi = ($mv_xb) + (`mv_co`-1)*($mv_xg) + `mv_co`*($mv_xs)     ;\
+          define view/axes/xlim=`mv_xlo`:`mv_xhi`/ylim=`mv_ylo`:`mv_yhi` ($prefx)`mv_ro``mv_co` ;\
+       ) ;\
+    )
+
+
+    set mode/last verify
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00498.html">[ferret_users] how to get the thicker box line?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00503.html">[ferret_users] Confidence interval shaded polygon on line plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00498.html">Thread Prev</a>][<a href="msg00503.html">Thread Next</a>][<A HREF="threads.html#00501">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

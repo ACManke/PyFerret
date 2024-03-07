@@ -1,0 +1,152 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [want real z&#45;axis]Re: [ferret_users] change axis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 18 Dec 2007 12:25:56 &#45;0800 -->
+<!--X-Message-Id: 47682CD4.9090202@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 22563293.1197994077952.JavaMail.root@webmail.kordi.re.kr -->
+<!--X-Derived: gifFZYJYEk6PG.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [want real z-axis]Re: [ferret_users] change axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00708.html">Thread Prev</a>][<a href="msg00704.html">Thread Next</a>][<A HREF="threads.html#00710">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [want real z-axis]Re: [ferret_users] change axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Chan Joo Jang &lt;<a href="mailto:cjjang@DOMAIN.HIDDEN">cjjang@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [want real z-axis]Re: [ferret_users] change axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 18 Dec 2007 12:25:56 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:22563293.1197994077952.JavaMail.root@DOMAIN.HIDDEN">22563293.1197994077952.JavaMail.root@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:22563293.1197994077952.JavaMail.root@DOMAIN.HIDDEN">22563293.1197994077952.JavaMail.root@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Chan Joo,
+</pre><tt>I was wrong before when I said that ZAXREPLACE wouldn't allow the second 
+</tt><tt>argument to vary in time.  It does.  Here is a script that works with 
+</tt><tt>the ARGO data. I'll put together an FAQ on this, as it'll be of general 
+</tt><tt>interest.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>In the figure are the pressure and temperature fields on the left, and 
+</tt><tt>the regridded temperature-on-pressure field to the right.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>It's important to define a fixed pressure axis for the result of the 
+</tt><tt>zaxreplace definition, rather than using a profile from a dataset, 
+</tt><tt>because a particular profile in a dataset may have missing data, and 
+</tt><tt>also because it makes the data consistent and comparable from one file 
+</tt><tt>to another. I made a list of pressures from one of the files, and 
+</tt><tt>rounded off the values to the nearest 5 or 10 or 100 and so on.
+</tt><pre style="margin: 0em;">
+
+
+
+! USE/ORDER=ZT 2900623_prof.nc
+USE/ORDER=ZT2900622_prof.nc
+
+! Define a time axis based on JULD
+
+DEF AXIS/T/T0=&quot;1-JAN-1950:00:00&quot;/UNITS=days tday=juld
+
+LET zz=Z[GZ=temp]
+DEF AXIS/Z/UNITS=levels/DEPTH zlev=zz
+
+! Put the temperature and pressure on this corrected time-layer grid
+
+LET/UNITS=&quot;`pres,R=units`&quot;/TITLE=&quot;`pres,R=title`&quot;/BAD=`pres,R=bad` \
+   pressure=pres[gz=zlev@asn,gt=tday@asn]
+
+LET/UNITS=&quot;`temp,R=units`&quot;/TITLE=&quot;`temp,R=title`&quot;/BAD=`temp,R=bad` \
+   temperature=temp[gz=zlev@asn,gt=tday@asn]
+
+SET VIEW ul
+SHADE pressure
+SET VIEW ll
+SHADE temperature
+
+! Define an output Z axis with units of pressure.
+
+DEFINE AXIS/Z/UNITS=decibars/DEPTH zpres= {5.,10.,15.,20.,25.,30.,34.,40.\
+,45.,50.,55.,60.,65.,70.,75.,80.,85.,90.,95.,100.,105.,110.,120.,130.,\
+140.,160.,180.,200.,225.,250.,275.,300.,325.,350.,375.,400.,450.,500.,\
+550.,600.,675.,750.,825.,900.,1000.,1100.,1200.}
+
+! Call zaxreplace to put the temperature data on this new pressure axis
+
+LET/UNITS=&quot;`temperature,R=units`&quot;/TITLE=&quot;`temperature,R=title`&quot; \
+   temp_on_pres=ZAXREPLACE(temperature,pressure,Z[GZ=zpres])
+
+SET VIEW ur
+SHADE temp_on_pres
+
+
+</pre><p><a href="gifFZYJYEk6PG.gif" ><img src="gifFZYJYEk6PG.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00708" href="msg00708.html">Re: [want real z-axis]Re: [ferret_users] change axis</a></strong>
+<ul><li><em>From:</em> Chan Joo Jang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00708.html">Re: [want real z-axis]Re: [ferret_users] change axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00704.html">[ferret_users] Fill command - white/blank spaces</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00708.html">Thread Prev</a>][<a href="msg00704.html">Thread Next</a>][<A HREF="threads.html#00710">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 21 Sep 2006 09:40:12 &#45;0700 -->
+<!--X-Message-Id: 4512C06B.6020705@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: F83C6ACE124F3E4D83B3A90C9CA0922D2E509A@exwa3&#45;per.nexus.csiro.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00604.html">Thread Prev</a>][<a href="msg00589.html">Thread Next</a>][<A HREF="threads.html#00605">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Yun.Li@DOMAIN.HIDDEN">Yun.Li@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 21 Sep 2006 09:40:11 -0700</li>
+<li>Cc: <a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00604.html">F83C6ACE124F3E4D83B3A90C9CA0922D2E509A@exwa3-per.nexus.csiro.au</a>&gt;</li>
+<li>References: &lt;<a href="msg00604.html">F83C6ACE124F3E4D83B3A90C9CA0922D2E509A@exwa3-per.nexus.csiro.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.7 (Windows/20060909)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Yun,<br>
+You're right. The trouble with my script is that the axis in the
+monthy_navy_winds dataset is defined in units of hours, so the t0 used
+there isn't really the one we'd want to use to define a monthly time
+series -- putting t0 in January of the first year means that for a
+monthly axis, 0=January, 1=February, and so on, so the script has
+6=July when it should be 7=July.<br>
+<br>
+If you're running v6.0 of Ferret, there are some new time axis
+functions which would let us construct the correct time axis origin.
+The function tax_year returns the year of any date. We know we want the
+time axis origin to be the middle of December of the year before the
+dataset's time axis starts. So, get the year of the first data point of
+the variable uwnd<br>
+<br>
+yes? show function tax_year<br>
+&nbsp;&nbsp; TAX_YEAR(A,B)<br>
+&nbsp;&nbsp;&nbsp; Returns years of time axis coordinate values<br>
+&nbsp;&nbsp;&nbsp; A: time steps to convert<br>
+&nbsp;&nbsp;&nbsp; B: variable with reference time axis<br>
+yes? show function tax*<br>
+<tt><br>
+! Define a calendar axis containing these months, and starting<br>
+! with the month before the first month in the original dataset.<br>
+<br>
+yes? let year0 = tax_year(t[gt=uwnd,L=1], uwnd) - 1<br>
+yes? def axis/t0="15-Dec-`year0`"/units="months" tsummer =
+just_summer[l=1:`nja`]</tt><big><br>
+</big>&nbsp;!-&gt; def axis/t0="15-Dec-1981"/units="months" tsummer =
+just_summer[l=1:33]<br>
+<br>
+Here just to illustrate, I've put the time origin at 15-Dec, and left
+off the hours:minutes - I think the specification within the month
+should be thought about more carefully; probably using the date, hours,
+and minutes from the monthly_navy_winds data for December values; the
+monthly_navy_winds data set has a regularly-spaced monthly time axis
+and we should match the dates it uses.<br>
+<br>
+<small><tt><big>yes? let day0 = tax_day(t[gt=uwnd,L=12], uwnd)<br>
+<br>
+yes? let dfrac = tax_dayfrac(t[gt=uwnd,L=12], uwnd)<br>
+yes? let hour0 = INT(dfrac*24)<br>
+yes? let minute0 = INT(60*(dfrac*24 - hour0))</big><br>
+<br>
+</tt></small><tt><small><font color="black"><font size="2"><small><big>yes?
+define axis/t0="`day0`-DEC-`year0` `hour0`:`minute0`"/units=months
+tsummer = just_summer[l=1:33]</big><br>
+</small></font></font><font color="black" size="2"><small><span
+ ></span></small></font></small></tt><font
+ size="2"><span ><br>
+</span></font><font size="2"><span
+ >(Or
+one could call the TAX_DATESTRING function for data at time step 12,
+and use string-editing functions to change the year from 1982 to 1981.)
+</span></font><br>
+<font size="2"><span
+ ><br>
+And to have a completely automatic script, the script should check that
+the first time step is in January.<br>
+<br>
+Here's a corrected version of my script:<br>
+<br>
+! Create a time series containing only June,July, Augst data <br>
+! from a monthly data set.<br>
+<br>
+use monthly_navy_winds<br>
+<br>
+! Get a list of the month numbers representing June ,July, August<br>
+! This is correct since the data start in January, otherwise we<br>
+! would need an offset<br>
+<br>
+let nmon = `uwnd,return=Lend`<br>
+let tt = t[t=1:`nmon`]<br>
+let june = if mod(tt,12) ge 6 then tt<br>
+let june_aug = if mod(june,12) le 8 then june<br>
+list june_aug<br>
+<br>
+let nja = `june_aug[t=@ngd]`<br>
+<br>
+let just_summer = compressl(june_aug)<br>
+list just_summer[L=1:`nja`]<br>
+<br>
+! Now sample the Lth point of uwnd for summer months<br>
+let uwnd_jja = samplel(uwnd,just_summer[l=1:`nja`])<br>
+<br>
+! Define a calendar axis containing these months, and starting<br>
+! with the month before the first month in the original dataset.<br>
+<br>
+let year0 = tax_year(t[gt=uwnd,L=1], uwnd) - 1<br>
+def axis/t0="15-Dec-`year0`"/units="months" tsummer =
+just_summer[l=1:`nja`]<br>
+<br>
+! Refine this, setting the Day and Hour as for December points of the
+original data.<br>
+let day0 = tax_day(t[gt=uwnd,L=12], uwnd)<br>
+<br>
+let dfrac = tax_dayfrac(t[gt=uwnd,L=12], uwnd)<br>
+let hour0 = INT(dfrac*24)<br>
+let minute0 = INT(60*(dfrac*24 - hour0))<br>
+<br>
+<br>
+define axis/t0="`day0`-DEC-`year0` `hour0`:`minute0`"/units=months
+tsummer = just_summer[l=1:33]<br>
+<br>
+! Put the sampled summer data on the calendar axis<br>
+let uwnd_summer = uwnd_jja[gt=tsummer@asn]<br>
+list/x=180/y=0 uwnd_summer<br>
+<br>
+<br>
+</span></font>
+<pre class="moz-signature" cols="75">
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00604" href="msg00604.html">RE: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</a></strong>
+<ul><li><em>From:</em> Yun.Li</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00604.html">RE: [ferret_users] How can I produce a time series of JJA averages (orother intervals) from a monthly time series?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00589.html">[ferret_users] More Climatology</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00604.html">Thread Prev</a>][<a href="msg00589.html">Thread Next</a>][<A HREF="threads.html#00605">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

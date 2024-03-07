@@ -1,0 +1,181 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Automated enlargement of a land mask with increasing depth slices -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 28 Mar 2007 04:56:54 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0703281732130.3592@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 2FBB0217&#45;8E44&#45;481B&#45;A686&#45;5A3AAA259B3D@noc.soton.ac.uk -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Automated enlargement of a land mask with increasing depth slices</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00184.html">Thread Prev</a>][<a href="msg00186.html">Thread Next</a>][<A HREF="threads.html#00185">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Automated enlargement of a land mask with increasing depth slices</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jonathan Lauderdale &lt;<a href="mailto:jml102@DOMAIN.HIDDEN">jml102@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Automated enlargement of a land mask with increasing depth slices</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 28 Mar 2007 17:39:39 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:2FBB0217-8E44-481B-A686-5A3AAA259B3D@DOMAIN.HIDDEN">2FBB0217-8E44-481B-A686-5A3AAA259B3D@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:2FBB0217-8E44-481B-A686-5A3AAA259B3D@DOMAIN.HIDDEN">2FBB0217-8E44-481B-A686-5A3AAA259B3D@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jon,
+        A quick solution is here. Please let me know if you have any
+questions.
+
+   Basically, you have to use &quot;immediate evaluation&quot; using grave accents
+to force Ferret to proper numeric value for the /LEVELS argument. See
+the example below for details.
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+
+!-----example starts here------------------------------------------
+\ cancel mode verify  
+
+! use datasets available with Ferret
+
+    set data levitus_climatology
+    set data etopo20
+
+    set region/x=180w:180w/y=90s:90n/l=1
+
+! extract the depth Z-axis values of of the variable to be shaded
+
+    let zvals = z[gz=temp,d=1] * -1  ! change sign, if required
+
+! Now make the plots. Name the output files according to the K-level.
+
+    REPEAT/K=15:1:-1 (                                ;\ 
+        shade/palette=chl temp[d=1]                   ;\
+        shade/over/nolabel/lev=&quot;(`zvals`)(10000)&quot;/pal=gray rose[d=2] ;\
+        say &quot; Current Ocean Depth =  `zvals`&quot; ; pause ;\
+        let klv = IF `K` LT 9 THEN &quot;0`k`&quot; ELSE &quot;`k`&quot;  ;\
+        FRAME/FILE=temp_slice_k`klv`.gif              ;\
+     )
+
+!-----example ends here--------------------------------------------
+
+On Wed, 28 Mar 2007, Jonathan Lauderdale wrote:
+
+&gt; Hi all,
+&gt; 
+&gt; I am running a model with 15 depth levels (non-uniform and in reverse  
+&gt; order, so i use the K index) and plotting each slice of ocean  
+&gt; temperature/salinity etc with a repeat statement:
+&gt; 
+&gt; use state.0004248000.glob.nc
+&gt; set region/x=180w:180w/y=90s:90n/l=1
+&gt; REPEAT/K=15:1:-1 (shade/palette=ocean_temp temp; shade/over/nolabel/ 
+&gt; noaxes/lev=&quot;(0)(10000)&quot;/pal=gray depth; FRAME/FILE=temp_slice.gif)
+&gt; 
+&gt; At the moment, the continents are masked out as they appear at the  
+&gt; sea surface and I know i can get the correct mask for each slice if I  
+&gt; change /lev&quot;(0)(10000)&quot; to /lev=&quot;(-2500)(10000)&quot; but is there a way  
+&gt; to do this within a repeat ie /lev&quot;(Z(k))(10000)&quot; ?? I just get  
+&gt; &quot;Error Syntax error&quot;
+&gt; 
+&gt; Thanks,
+&gt; Jon
+&gt; 
+&gt; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+&gt; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+&gt; Jonathan Lauderdale, PhD Student
+&gt; Ocean Observation and Climate Group
+&gt; National Oceanography Centre, Southampton
+&gt; European Way
+&gt; Southampton, SO14 3ZH
+&gt; U.K.
+&gt; Tel: +44 (0)23 80596488
+&gt; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+&gt; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+&gt; 
+&gt; This e-mail (and any attachments) is confidential and intended solely  
+&gt; for the use of the individual or entity to whom it is addressed. Both  
+&gt; NERC and the University of Southampton (who operate NOCS as a  
+&gt; collaboration) are subject to the Freedom of Information Act 2000.   
+&gt; The information contained in this e-mail and any reply you make may  
+&gt; be disclosed unless it is legally exempt from disclosure. Any  
+&gt; material supplied to NOCS may be stored in the electronic records  
+&gt; management system of either the University or NERC as appropriate.
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00186" href="msg00186.html">Re: [ferret_users] Automated enlargement of a land mask with increasing depth slices</a></strong>
+<ul><li><em>From:</em> Jonathan Lauderdale</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00184" href="msg00184.html">[ferret_users] Automated enlargement of a land mask with increasing depth slices</a></strong>
+<ul><li><em>From:</em> Jonathan Lauderdale</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00184.html">[ferret_users] Automated enlargement of a land mask with increasing depth slices</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00186.html">Re: [ferret_users] Automated enlargement of a land mask with increasing depth slices</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00184.html">Thread Prev</a>][<a href="msg00186.html">Thread Next</a>][<A HREF="threads.html#00185">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

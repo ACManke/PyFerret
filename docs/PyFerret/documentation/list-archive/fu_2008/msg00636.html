@@ -1,0 +1,220 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] surface plot &#45; using POLYGON -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Tue, 16 Dec 2008 14:30:39 &#45;0800 -->
+<!--X-Message-Id: 49482C0C.3040307@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 55448.7773.qm@web8905.mail.in.yahoo.com -->
+<!--X-Derived: jpg9LGuVLNffj.jpg -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] surface plot - using POLYGON</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00635.html">Thread Prev</a>][<a href="msg00637.html">Thread Next</a>][<A HREF="threads.html#00636">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] surface plot - using POLYGON</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:nag_ocean005@DOMAIN.HIDDEN">nag_ocean005@xxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] surface plot - using POLYGON</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 16 Dec 2008 14:30:36 -0800</li>
+<li>Cc: Ferret NOAA &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:55448.7773.qm@DOMAIN.HIDDEN">55448.7773.qm@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:55448.7773.qm@DOMAIN.HIDDEN">55448.7773.qm@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.18 (Macintosh/20081105)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Golla,
+</pre><tt>   Here is a method that might work for you.  The type of result is 
+</tt><tt>shown in the attached image where I've used the Smith-Sandwell 
+</tt><tt>bathymetry as a background on which to plot strips showing the surface 
+</tt><tt>temperature (from Levitus) along each of 5 zonal sections.
+</tt><pre style="margin: 0em;">
+   Hope it helps,
+      Mick
+</pre><tt>PS  There are other ways to do it of course.  There is the POLYMARK 
+</tt><tt>script, or you could just write the surface temperatures to an ASCII 
+</tt><tt>file on a suitable grid, with missing values where necessary, then read 
+</tt><tt>the file back and use SHADE.  But if you get used to POLYGON it turns 
+</tt><tt>out to be very flexible for generating other plots ... like histograms.
+</tt><pre style="margin: 0em;">
+--------------------------------------
+
+
+</pre><tt>Step 1: Read in your 5 datasets and determine the range of latitude and 
+</tt><tt>longitude needed to include them all, and also the overall range of 
+</tt><tt>temperature at the depth level you want.  For the demo I've extracted 
+</tt><tt>data from the Levitus climatology so each point represents a 1x1 degree 
+</tt><tt>area of the variable &quot;temp&quot;
+</tt><pre style="margin: 0em;">
+
+use zone1.nc ; use zone2.nc ; use zone3.nc ; use zone4.nc ; use zone5.nc
+let t0=temp[k=1]    ! temperature at  the depth you require
+set data 1 ; sho grid/all temp ; list/nohead t0[x=@min],t0[x=@max]
+...
+set data 5 ; sho grid/all temp ; list/nohead t0[x=@min],t0[x=@max]
+
+Step 2: Make the background plot - bathymetry with suitable aspect ratio
+
+use smith_sandwell_topo  ! or some other topo file you use
+ppl axlen,12,7.565 ; ppl size,14,9.565 ; ppl origin,1,1
+</pre><tt>shade/nolab/pal=dark_land_sea/lev=(-10000,10000,500)(-500,500,100)/x=180:220/y=-5:20 
+</tt><tt>rose
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Step 3 : Each value is going to appear as a colored rectangle, centered 
+</tt><tt>on the lat,lon of the point it represents, so what we need is to define 
+</tt><tt>the center points ...
+</tt><pre style="margin: 0em;">
+
+let xx=x[g=t0] ; let yy=y[g=t0]
+
+</pre><tt>... and increments to the vertices (in my case a 1x1 box) surrounding 
+</tt><tt>them. In your case, different increments in X and Y might be appropriate 
+</tt><tt>(there are ways using XBOXLO... to generalize the process though the 
+</tt><tt>script gets a bit harder to read)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>let bx=tsequence({-0.5,0.5,0.5,-0.5}) ; let 
+</tt><tt>by=tsequence({-0.5,-0.5,0.5,0.5})
+</tt><pre style="margin: 0em;">
+
+</pre><tt>(The four vertices were defined as a t-axis variable because the 
+</tt><tt>datasets use x,y and z axes.)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Step 4: Now we are ready to go.  Use the first point of the first 
+</tt><tt>section to make the colorbar ...
+</tt><pre style="margin: 0em;">
+here drawn across the top ...
+
+set data 1
+</pre><tt>poly/o/nolab/pal=inverse_redscale/lev=(24.8,28.1,0.1)/coord=t/key/i=1/set 
+</tt><tt>xx+bx,yy+by,t0
+</tt><pre style="margin: 0em;">
+ppl shakey,,0 ; ppl fillpoly/over
+
+then draw then entire set of 21 points for section#1
+
+</pre><tt>repeat/i=1:21 
+</tt><tt>(poly/o/nolab/pal=inverse_redscale/lev=(24.8,28.1,0.1)/coord=t/line=1 
+</tt><tt>xx+bx,yy+by,t0 ; ppl shaset reset)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>then add the other 4 sections (all my sections had 21 longitudes, you 
+</tt><tt>could change the value between sections if this were not so.
+</tt><pre style="margin: 0em;">
+
+set data 2
+</pre><tt>repeat/i=1:21 
+</tt><tt>(poly/o/nolab/pal=inverse_redscale/lev=(24.8,28.1,0.1)/coord=t/line=1 
+</tt><tt>xx+bx,yy+by,t0 ; ppl shaset reset)
+</tt><pre style="margin: 0em;">
+set data 3
+</pre><tt>repeat/i=1:21 
+</tt><tt>(poly/o/nolab/pal=inverse_redscale/lev=(24.8,28.1,0.1)/coord=t/line=1 
+</tt><tt>xx+bx,yy+by,t0 ; ppl shaset reset)
+</tt><pre style="margin: 0em;">
+set data 4
+</pre><tt>repeat/i=1:21 
+</tt><tt>(poly/o/nolab/pal=inverse_redscale/lev=(24.8,28.1,0.1)/coord=t/line=1 
+</tt><tt>xx+bx,yy+by,t0 ; ppl shaset reset)
+</tt><pre style="margin: 0em;">
+set data 5
+</pre><tt>repeat/i=1:21 
+</tt><tt>(poly/o/nolab/pal=inverse_redscale/lev=(24.8,28.1,0.1)/coord=t/line=1 
+</tt><tt>xx+bx,yy+by,t0 ; ppl shaset reset)
+</tt><pre style="margin: 0em;">
+
+
+
+
+golla nageswararao wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+</pre><tt>   I am having some 5 transects temperature data individually along 
+</tt><tt>different latitudes with depth in different netcdf files. I want to 
+</tt><tt>plot surface temperature (long vs lat) calling data at different 
+</tt><tt>latitudes. All depth values are same. How can I do that in ferret?
+</tt><pre style="margin: 0em;">
+
+/From,/
+
+    /G.Nageswara Rao,/
+    Scientist-'B',
+    NPOL,
+    Kochi.
+
+
+------------------------------------------------------------------------
+</pre><tt>Unlimited freedom, unlimited storage. Get it now 
+</tt><tt>&lt;<a  rel="nofollow" href="http://in.rd.yahoo.com/tagline_mail_2/*http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/tools-08.html/">http://in.rd.yahoo.com/tagline_mail_2/*http://help.yahoo.com/l/in/yahoo/mail/yahoomail/tools/tools-08.html/</a>&gt; 
+</tt></blockquote><pre style="margin: 0em;">
+
+
+</pre><p><a href="jpg9LGuVLNffj.jpg" ><img src="jpg9LGuVLNffj.jpg" alt="JPEG image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00635" href="msg00635.html">[ferret_users] surface plot</a></strong>
+<ul><li><em>From:</em> golla nageswararao</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00635.html">[ferret_users] surface plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00637.html">[ferret_users] Reading NetCDF files while they are being written	to</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00635.html">Thread Prev</a>][<a href="msg00637.html">Thread Next</a>][<A HREF="threads.html#00636">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

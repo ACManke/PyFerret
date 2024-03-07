@@ -1,0 +1,177 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Daily Averages from 6 hourly data -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 20 Jun 2007 06:15:30 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0706201852570.20439@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f83b83e40706200515p714edc6evc9bd34e76168f2d@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Daily Averages from 6 hourly data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00382">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Daily Averages from 6 hourly data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ashley Watson &lt;<a href="mailto:ashleywats@DOMAIN.HIDDEN">ashleywats@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Daily Averages from 6 hourly data</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 20 Jun 2007 19:01:36 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:f83b83e40706200515p714edc6evc9bd34e76168f2d@DOMAIN.HIDDEN">f83b83e40706200515p714edc6evc9bd34e76168f2d@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f83b83e40706200515p714edc6evc9bd34e76168f2d@DOMAIN.HIDDEN">f83b83e40706200515p714edc6evc9bd34e76168f2d@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ashley,
+           You can use @AVE regridding on time axis. However, it 
+should be noted that @AVE computes 'the average weighted by grid box 
+size&quot;. Hence you should be carefull while defining the destination'
+daily time axis. For more information, please see
+
+User Manual 
+             Ch3 Sec2.4.6.  @AVE-average
+FAQ          
+   <a  rel="nofollow" href="http://www.ferret.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html">http://www.ferret.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html</a>
+
+Mail Archives (discussions starting with the following one)
+   <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00679.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00679.html</a>
+
+A quick example is given below.
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+!----------example starts here---------------------------------
+\cancel mode verify
+!
+! Description : Example for regridding 6-hourly data to daily time axis
+!                 using @AVE.
+!
+! create some dummy data
+
+    define axis/t=&quot;01-OCT-1998:00&quot;:&quot;01-JUN-1999:18&quot;:6/units=hours\
+            /calendar=GREGORIAN/T0=&quot;30-SEP-1998:00&quot; t6hr
+
+    let var = RANDN(t[gt=t6hr])+ SIN(t[gt=t6hr]/200) 
+
+    plot var
+ 
+! suppose we want to average data at 00, 06, 12 and 18 hours to get daily
+!   value. In this case the time points on the daily time axis should
+!   be centered at (00+18)/2 = 09 hours. Use exactly the same calendar
+!   as that of 6-hourly time axis. If you are not sure, use return 
+!   command : yes? say `my_6hr_var,return=calendar`.
+
+    define axis/t=&quot;01-OCT-1998:09&quot;:&quot;01-JUN-1999:09&quot;:1/units=days\
+            /calendar=GREGORIAN/T0=&quot;30-SEP-1998:00&quot; tdaily
+
+    let var_daily = var[gt=tdaily@AVE]
+
+! check it : if your 6hrly data does not start at 00 hours, the
+!   following example may not work out....you have to choose proper
+!   L-range.
+
+    set list/precision=7
+    list/l=1:4 var       ! (first days values at 00,06,12 &amp; 18 hours)
+    list var[l=1:4@AVE]  ! average it on L, not on T
+    list/l=1 var_daily
+
+    plot/ov var_daily
+
+!-----------example ends here-----------------------------------------
+
+On Wed, 20 Jun 2007, Ashley Watson wrote:
+
+&gt; Hi ferreters,
+&gt;           I am trying to get daily averages of a varaible which has values
+&gt; from 01-oct-1998 to 01-jun-1999 with timestep of 6hours. As it spreads
+&gt; over two years 1998 and 1999, I am getting problem in defining output
+&gt; timestep. Any hint or suggestion how to calculate this daily average.
+&gt; 
+&gt; 
+&gt; yes? show data
+&gt;      currently SET data sets:
+&gt;     1&gt; ./latentheat.nc  (default)
+&gt;  name     title                             I         J           K
+&gt; L
+&gt;  LTH      Latent_Heat             1:150     1:130     ...       1:973
+&gt; 
+&gt; 
+&gt; Thanks in Advance
+&gt; Ashley
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00381" href="msg00381.html">[ferret_users] Daily Averages from 6 hourly data</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00381.html">[ferret_users] Daily Averages from 6 hourly data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00383.html">Re: [ferret_users] Daily Averages from 6 hourly data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00382">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

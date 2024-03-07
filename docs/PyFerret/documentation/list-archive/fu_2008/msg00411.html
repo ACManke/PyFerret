@@ -1,0 +1,160 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] filters -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 5 Aug 2008 10:15:46 &#45;0700 -->
+<!--X-Message-Id: 48988AC2.2060606@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.64.0808051342590.15262@email.cmmacs.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] filters</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00406.html">Thread Prev</a>][<a href="msg00407.html">Thread Next</a>][<A HREF="threads.html#00411">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] filters</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>C Kalyani Devasena &lt;<a href="mailto:kalyani@DOMAIN.HIDDEN">kalyani@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] filters</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 05 Aug 2008 10:15:46 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.64.0808051342590.15262@DOMAIN.HIDDEN">Pine.LNX.4.64.0808051342590.15262@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:Pine.LNX.4.64.0808051342590.15262@DOMAIN.HIDDEN">Pine.LNX.4.64.0808051342590.15262@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.16 (Windows/20080708)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Kalyani,<br>
+The weights are computed as follows<br>
+<br>
+LANCZOS(A,F1,F2,N)<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nn = (N-1)/2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; weight(0)&nbsp; = 2.*(f2-f1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; do k = 1,nn<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pik&nbsp;&nbsp; = pi*k<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aa&nbsp;&nbsp;&nbsp; = pik/nn<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sigma = sin(aa)/aa<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; aa&nbsp;&nbsp;&nbsp; = 2.*pik*f1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bb&nbsp;&nbsp;&nbsp; = 2.*pik*f2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; weight( k) = ( sin(bb)/pik - sin(aa)/pik )*sigma<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end do<br>
+<br>
+And then they are applied as follows (arg_1 is the data, and there are
+other loops over the x, y, z dimensions of arg_1, which accounts for
+the i, j, k indices)<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DO 100 l=res_lo_ss(T_AXIS)+nn, res_hi_ss(T_AXIS)-nn<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; do m = 1,nn<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; result(i,j,k,l) = result(i,j,k,l) + weight(m)* <br>
+&nbsp;&nbsp;&nbsp;&nbsp; .&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( arg_1(i,j,k,<b>l-m</b>) + arg_1(i,j,k,<b>l+m</b>)
+)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end do<br>
+100&nbsp;&nbsp;&nbsp;&nbsp; end do<br>
+<br>
+<br>
+C Kalyani Devasena wrote:
+<blockquote
+ cite=""
+ type="cite">Dear ferret users,
+  <br>
+  <br>
+I am using ferret function LANCZOS (filter), band-pass filter for
+analysising a time series data (trition buoy data) for identifying 6-30
+days and 30-90 day intraseasonal oscillation. The data is daily and I
+have 360 days of the data
+  <br>
+  <br>
+I am not able to understand how ferret is selecting the weights.
+  <br>
+  <br>
+May I request for some needy help!!!
+  <br>
+  <br>
+How to select correct weights in using the filter.
+  <br>
+  <br>
+Ex :!for 30-90days
+  <br>
+plot lanczos(az,0.0111,0.033,91) or plot/over
+lanczos(az,0.0111,0.033,61) shows lot of difference.
+  <br>
+  <br>
+I have some confusion&nbsp; in understanding the funtion application.
+  <br>
+  <br>
+with regards,
+  <br>
+kalyani
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00406" href="msg00406.html">[ferret_users] filters</a></strong>
+<ul><li><em>From:</em> C Kalyani Devasena</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00406.html">[ferret_users] filters</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00407.html">[ferret_users] Default Map Projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00406.html">Thread Prev</a>][<a href="msg00407.html">Thread Next</a>][<A HREF="threads.html#00411">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

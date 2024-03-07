@@ -1,0 +1,175 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] If then elif end if -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 24 Nov 2006 05:33:52 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.58.0611241911580.21661@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20061124114420.3998.qmail@web8907.mail.in.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] If then elif end if</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00749.html">Thread Prev</a>][<a href="msg00751.html">Thread Next</a>][<A HREF="threads.html#00750">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] If then elif end if</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>golla nageswararao &lt;<a href="mailto:nag_ocean005@DOMAIN.HIDDEN">nag_ocean005@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] If then elif end if</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 24 Nov 2006 19:13:06 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00749.html">20061124114420.3998.qmail@web8907.mail.in.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00749.html">20061124114420.3998.qmail@web8907.mail.in.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Nageswara,
+              The IF-THEN-ELSE-ENDIF block construct is only meant for 
+scalars in Ferret according to user manual, Ref Sec14.1. IF-THEN-ELSE 
+conditional execution :
+
+&quot;If the expression is a numeric expression, then it may be a digit (e.g. 1 or 
+0), a variable, or a symbol.  If it is a variable, it must evaluate to a 
+scalar, and be enclosed in grave accents to force its evaluation in the IF 
+expression.  If it is a symbol, it must be evaluated with ($symbolname).&quot;  
+
+Here is an example :
+
+ let x1 = 1
+ let x2 = 2
+
+ IF `x1 EQ x2` THEN
+    say &quot; x1 = x2&quot;
+ ELIF `x1 GT x2` THEN
+    say &quot; x1 &gt; x2&quot;
+ ELIF `x1 LT x2` THEN
+    say &quot; x1 &lt; x2&quot;
+ ENDIF
+
+Note : Ferret versions previous to 6.00 got a bug : Ferret attempted to parse 
+       commands even when they were not executed. For details see
+       <a  href="http://ferret.wrc.noaa.gov/Ferret/Documentation/Release_Notes/">http://ferret.wrc.noaa.gov/Ferret/Documentation/Release_Notes/</a>
+                        v600.html#if_immediate
+
+User manual continues as :
+If a variable is not a scalar, it cannot be used with this particular syntax 
+for conditional execution, however the use of masking allows you to operate on 
+a whole field based on a condition by defining a new variable (See Ch3 Sec2.5.
+IF-THEN logic (&quot;masking&quot;))
+
+So the answer to your question is to use successive &quot;masking&quot; steps instead
+of using a block/construct as above. Here is an example :
+
+Suppose we want to compare two arrays of similar dimensions (this is very 
+important), say var1 and var2. Our aim is to assign -1 for all points where
+var1 &lt; var2, 0 where var1 = var2 and 1 where var1 &gt; var2. Remember that the 
+negative values should be enclosed in brackets &quot;()&quot;. The most simpler 
+procedure will be as follows
+
+   let var1 = XSEQUENCE({1,2,3,4,5,6,7,8,9,10})
+   let var2 = XSEQUENCE({1,4,3,6,5,2,9,8,7,10}) 
+
+   let var_diff = var1 - var2
+   let var_m1   = IF var_diff LT 0 THEN (-1) ELSE var_diff ! var1 &lt; var2
+   let var_p1   = IF var_m1   GT 0 THEN   1  ELSE var_m1   ! var1 &gt; var2
+ 
+ ! please note that var1 = var2 case will be automatically taken care off
+ !   by var_diff and we used &quot;var_m1&quot; in the second IF construct for &quot;var_p1&quot;.
+ !   this is the trick --&gt; carry over variables from each step (or even you
+ !   can merge all masked variables at a later stage to get the final one).
+
+   list var1, var2, var_p1
+
+Please note that there are several examples on &quot;Masking&quot; in user manual and
+on Ferret FAQ page (<a  href="http://ferret.wrc.noaa.gov/Ferret/FAQ/ferret_FAQ.html">http://ferret.wrc.noaa.gov/Ferret/FAQ/ferret_FAQ.html</a>).
+
+Hope this helps,
+
+Jaison
+
+On Fri, 24 Nov 2006, golla nageswararao wrote:
+
+&gt; Hi all,
+&gt;   Can anyone say me how to use if then elif end if in
+&gt; ferret. I saw the ferret users guide but i didnt
+&gt; understand it and i cannot apply it to my application.
+&gt; If possible send me any jnl file which contains if
+&gt; then elif endif statement so that i can understand. i
+&gt; want multiple options for if.
+&gt; Thanks in advance. 
+&gt; 
+&gt; 
+&gt; From,
+&gt;     G.Nageswara Rao,
+&gt;   Research Scholar,
+&gt;   INCOIS,
+&gt;   Jeeidmetla,
+&gt;   Hyderabad.
+&gt;   
+&gt; 
+&gt; 
+&gt; 
+&gt; 		
+&gt; __________________________________________________________
+&gt; Yahoo! India Answers: Share what you know. Learn something new
+&gt; <a  href="http://in.answers.yahoo.com/">http://in.answers.yahoo.com/</a>
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00749" href="msg00749.html">[ferret_users] If then elif end if</a></strong>
+<ul><li><em>From:</em> golla nageswararao</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00749.html">[ferret_users] If then elif end if</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00751.html">[ferret_users] terminating infinite loop</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00749.html">Thread Prev</a>][<a href="msg00751.html">Thread Next</a>][<A HREF="threads.html#00750">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

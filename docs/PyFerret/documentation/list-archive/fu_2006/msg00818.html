@@ -1,0 +1,254 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] calculation of monthly means from 5&#45;day means -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 22 Dec 2006 11:04:42 &#45;0800 -->
+<!--X-Message-Id: C9B4FBD0&#45;A9E7&#45;47D7&#45;B9E7&#45;DF004CD07771@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 458BF7F8.20406@knmi.nl -->
+<!--X-Reference: F256F421&#45;3125&#45;4C5C&#45;88F6&#45;D69BD219791E@noaa.gov -->
+<!--X-Reference: 458C0D2F.6070707@splash.princeton.edu -->
+<!--X-Derived: gif00039.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] calculation of monthly means from 5-day means</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00817.html">Thread Prev</a>][<a href="msg00819.html">Thread Next</a>][<A HREF="threads.html#00818">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] calculation of monthly means from 5-day means</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Janeen &lt;<a href="mailto:janeen@DOMAIN.HIDDEN">janeen@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] calculation of monthly means from 5-day means</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 22 Dec 2006 11:04:40 -0800</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00817.html">458C0D2F.6070707@splash.princeton.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00814.html">458BF7F8.20406@knmi.nl</a>&gt;&lt;<a href="msg00815.html">F256F421-3125-4C5C-88F6-D69BD219791E@noaa.gov</a>&gt;&lt;<a href="msg00817.html">458C0D2F.6070707@splash.princeton.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Janeen -<br>
+<br>
+Imagine that the data contains a strong periodic signal with a period  
+of 31 days, and for simplicity that all months are 31 days long.  
+Suppose the data are given on 15-day intervals, starting with day 1  
+of month 1. Then month 1 will have 3 values (days 1,16,31), but month  
+2 will have only 2 (days 15 and 30). If the signal is sinusoidal,  
+with minimum on day 1 of month 1, then month 1 will sample two low  
+values and one high, and month 2 will sample one high and one low.  
+Thus the average of values within month 1 will be lower than that in  
+month 2, even though they should both be average zero since we have a  
+purely periodic signal. That would be aliasing (the poorly-sampled  
+high frequency contaminates the low). But if the values are  
+interpolated to daily, then smoothed with a filter that removes  
+periods shorter than a month, then subsampled once/month (shouldn't  
+matter which day the subsampling is done), then all months will have  
+the same value, as they should.<br>
+<br>
+The example shows that choosing a filter is crucial! In particular a  
+boxcar filter (@sbx) will do a very bad job in this case! (It will  
+produce an oscillation with the opposite phase, known as &quot;ringing&quot;;  
+see attached plot and simple example!). However, a triangle filter  
+(called Parzen (@spz) for silly historical reasons) will be much  
+better (see plot). In general the spectral properties of the triangle  
+filter are far superior to a boxcar in reduced ringing. In choosing a  
+filter, it is always a good idea to make a few plots comparing the  
+original and filtered time series to sheck.<br>
+<br>
+Billy K<br>
+<br>
+Example of ringing with a boxcar filter:<br>
+<br>
+yes? define axis/x=1:16:1 xax<br>
+yes? let xx=x[gx=xax]<br>
+yes? let pi=4*atan(1)<br>
+yes? let signal=sin(pi*(xx-.5))<br>
+yes? plot/line/sym=27 signal,signal[i=@sbx:3],signal[i=@spz:3]<br>
+<br>
+The reason the ringing occurs is because the boxcar average is  
+unweighted: (i=1+ i=2 + i=3)/3, namely 2 highs and one low, the  
+second is over 2 lows and one high, etc. The triangle filter  
+weighting removes this (particular) problem. This is a pathological  
+example, but many strange things can occur with filtering of  
+inadequately-sampled data. it is always essential to plot and check!<br>
+<br>
+<p><a href="gif00039.gif" ><img src="gif00039.gif" alt="GIF image"></a></p>
+<pre>
+On Dec 22, 2006, at 8:51 AM, Janeen wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi William,<br>
+<br>
+If you wouldn't mind explaining a bit more, could you expand on  
+what you mean by aliasing? I'm trying to follow along on this example.<br>
+<br>
+Janeen<br>
+<br>
+<br>
+William S. Kessler wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Wim-Paul -<br>
+<br>
+For 5-day data, taking the average of values that fall within a  
+given month would introduce some aliasing.<br>
+<br>
+Perhaps a better way to do this would be to interpolate the data  
+to daily, then smooth with a monthly filter, then subsample at the  
+15th day of each month:<br>
+<br>
+define axis/t=tstart:tend:1/t0=.../unit=day tday ! choose  
+tstart,tend as the time limits of the data<br>
+let tempfl = temp[gt=tday] ! interpolate (linearly by default)<br>
+let tempflsm = tempfl[l=@spz:31] ! a filter with half-power point  
+of about 37 days<br>
+define axis/t=15-monthstart-yrstart:15-monthend:yrend:1/t0=.../ 
+unit=month tmon ! will get the warning below<br>
+! *** NOTE: /UNIT=MONTHS is ambiguous ... using 1/12 of 365.2425 days<br>
+let tempmon=tempflsm[gt=tmon] ! subsample to monthly<br>
+<br>
+Billy K<br>
+<br>
+On Dec 22, 2006, at 7:21 AM, Wim-Paul Breugem wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear ferret users,<br>
+<br>
+I have a dataset of 5-day means. The corresponding dates on<br>
+a standard calender are given for the third day of the 5-day  
+interval.<br>
+As an example I show you here a subset of the data:<br>
+<br>
+yes? list/i=1/j=1/k=1/l=1:20 temp<br>
+<br>
+03-JAN-1958 12 / 1: 19.04<br>
+08-JAN-1958 12 / 2: 20.35<br>
+13-JAN-1958 12 / 3: 21.18<br>
+18-JAN-1958 12 / 4: 21.57<br>
+23-JAN-1958 12 / 5: 21.53<br>
+28-JAN-1958 12 / 6: 21.75<br>
+02-FEB-1958 12 / 7: 21.94<br>
+07-FEB-1958 12 / 8: 22.03<br>
+12-FEB-1958 12 / 9: 22.39<br>
+17-FEB-1958 12 / 10: 22.48<br>
+22-FEB-1958 12 / 11: 22.43<br>
+27-FEB-1958 12 / 12: 22.63<br>
+04-MAR-1958 12 / 13: 22.92<br>
+09-MAR-1958 12 / 14: 23.00<br>
+14-MAR-1958 12 / 15: 22.98<br>
+19-MAR-1958 12 / 16: 22.99<br>
+24-MAR-1958 12 / 17: 23.01<br>
+29-MAR-1958 12 / 18: 23.08<br>
+03-APR-1958 12 / 19: 23.10<br>
+08-APR-1958 12 / 20: 23.15<br>
+<br>
+Does anybody know how to calculate from this the corresponding  
+monthly<br>
+means? Thus, how do I obtain the monthly means for Jan 1958, Feb  
+1958, etc.?<br>
+Note that the 5-day means are usually not aligned with the edges  
+of the<br>
+months, so the 5-day means should not all have the same weight in  
+the<br>
+monthly averaging.<br>
+<br>
+I'm looking forward to a solution for this problem!<br>
+<br>
+With best regards,<br>
+<br>
+Wim-Paul Breugem<br>
+<br>
+--Wim-Paul Breugem KNMI, Oceanographic Research Dep.<br>
+P.O. Box 201, 3730 AE De Bilt<br>
+The Netherlands<br>
+tel./fax: +31-30-2206700/2202570<br>
+homepage: <a  href="http://www.knmi.nl/~breugem">http://www.knmi.nl/~breugem</a><br>
+-------------------------------------------------------------------- 
+---------------------------------------------------------------<br>
+Zie ook/see also: <a  href="http://www.knmi.nl/maildisclaimer.html">http://www.knmi.nl/maildisclaimer.html</a><br>
+<br>
+</blockquote><pre>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/people/kessler/">http://www.pmel.noaa.gov/people/kessler/</a>
+
+</pre>
+</blockquote></blockquote><pre>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/people/kessler/">http://www.pmel.noaa.gov/people/kessler/</a>
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00814" href="msg00814.html">[ferret_users] calculation of monthly means from 5-day means</a></strong>
+<ul><li><em>From:</em> Wim-Paul Breugem</li></ul></li>
+<li><strong><a name="00815" href="msg00815.html">Re: [ferret_users] calculation of monthly means from 5-day means</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+<li><strong><a name="00817" href="msg00817.html">Re: [ferret_users] calculation of monthly means from 5-day means</a></strong>
+<ul><li><em>From:</em> Janeen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00817.html">Re: [ferret_users] calculation of monthly means from 5-day means</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00819.html">Re: [ferret_users] calculation of monthly means from 5-day means</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00817.html">Thread Prev</a>][<a href="msg00819.html">Thread Next</a>][<A HREF="threads.html#00818">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

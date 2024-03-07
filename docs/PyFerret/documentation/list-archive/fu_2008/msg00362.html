@@ -1,0 +1,167 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] differences in conversion of real*4 constants -->
+<!--X-From-R13: Fbefgra Ervsreg <gbefgra.frvsregNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Mon, 7 Jul 2008 09:10:20 &#45;0700 -->
+<!--X-Message-Id: 48723FB4.7090200@io&#45;warnemuende.de -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] differences in conversion of real*4 constants</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00359.html">Thread Prev</a>][<a href="msg00367.html">Thread Next</a>][<A HREF="threads.html#00362">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] differences in conversion of real*4 constants</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] differences in conversion of real*4 constants</strong></li>
+<li><strong>From</strong>: <strong>Torsten Seifert &lt;<a href="mailto:torsten.seifert@DOMAIN.HIDDEN">torsten.seifert@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 07 Jul 2008 18:09:24 +0200</li>
+<li>Organization: IOW</li>
+<li>Reply-to: <a href="mailto:torsten.seifert@DOMAIN.HIDDEN">torsten.seifert@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Windows/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Dear Ferret users
+
+</pre><tt>please try the attached script, which demonstrates that the conversion 
+</tt><tt>of float constants may give different results (here using explicit 
+</tt><tt>constants an/or the `xa` syntax in definitions of axes).
+</tt><tt>The deviations are small, but definitely larger than is to be expected 
+</tt><tt>for real*4 (with a 24 bit mantissa the 7th digit may change, but not the 
+</tt><tt>6th digit).
+</tt><tt>I am wondering how that could happen. It is clear, that a constant 
+</tt><tt>assigned to a variable by let is converted into real*4 accuracy. I would 
+</tt><tt>assume that the same conversion is done if the constants are specified 
+</tt><tt>explicitly in the axis definition because they are assinged to internal 
+</tt><tt>buffers.
+</tt><tt>Listing the same constants with Fortran shows, that def_1 is right since 
+</tt><tt>no changes appear up to the 7th digit. Thus the conversions by `xa` etc. 
+</tt><tt>seem to give erroneous results. Couls that be fixed, please?
+</tt><pre style="margin: 0em;">
+
+Best regards
+
+Torsten
+
+--
+Dr. Torsten Seifert
+Leibniz-Institut f&#xFC;r Ostseeforschung
+(Baltic Sea Research Institute)
+Seestrasse 15
+D-18119 Rostock
+Tel. +49 381 5197 118
+Fax  +49 381 5197 4812
+</pre><pre>! sample script to show different conversion of real*4 constants
+
+! def_0: define axes with predefined constants
+let nx=577; let ny=257;
+let xa=-5.00081; let xe=31.2892
+let ya=51.8717;  let ye=68.0006
+def axis/x=`xa`:`xe`/npoints=`nx`/units=&quot;degrees_east&quot;  xax0
+def axis/y=`ya`:`ye`/npoints=`ny`/units=&quot;degrees_north&quot; yax0
+
+! def_1: define NOT THE SAME axis with the same explicit constants 
+def axis/x=-5.00081:31.2892/npoints=577/units=degrees_east xax1
+def axis/y=51.8717:68.0006/npoints=257/units=degrees_north yax1
+
+! def_2: define SAME axis with corrected explicit constants
+def axis/x=-5.00080:31.28900/npoints=577/units=degrees_east  xax2
+def axis/y=51.87200:68.00100/npoints=257/units=degrees_north yax2
+
+! show systematic deviation of def_1 (xax1,yax1)
+! def_2 = def_0 within real*4 accuracy
+set view upper; plot x[gx=xax0]-x[gx=xax1], x[gx=xax0]-x[gx=xax2]
+set view lower; plot y[gy=yax0]-y[gy=yax1], y[gy=yax0]-y[gy=yax2]
+
+! list prescribed constants with real*4 accuracy
+list/prec=7 xa,xe,ya,ye
+
+! show how constants are converted by `xa` etc.
+! this explains why def_1 != def_0, but def_2 = def_0
+! differences to list/prec=6 xa,xe,ya,ye exceed real*4 accuracy !?
+list/prec=7 `xa`,`xe`,`ya`,`ye`
+
+! this list shows that the axes start with exactly the explicit constants
+! and are therefore different from def_0
+list/prec=7/i=1:5 x[gx=xax0],x[gx=xax1],x[gx=xax2],x[gx=xax0]-x[gx=xax1]
+list/prec=7/j=1:5 y[gy=yax0],y[gy=yax1],y[gy=yax2],y[gy=yax0]-y[gy=yax1]
+</pre><pre>      program real4_conversion
+
+      xa=-5.00081
+      xe=31.2892
+      ya=51.8717
+      ye=68.0006
+      
+      write(*,'(4f11.5)') -5.00081,31.2892,51.8717,68.0006
+      write(*,'(4f11.6)') -5.00081,31.2892,51.8717,68.0006
+      write(*,'(4f11.5)') xa,xe,ya,ye
+      write(*,'(4f11.6)') xa,xe,ya,ye
+      
+      stop
+      end
+      
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00367" href="msg00367.html">Re: [ferret_users] differences in conversion of real*4 constants</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00359.html">[ferret_users] problem with 'SAMPLEXY'</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00367.html">Re: [ferret_users] differences in conversion of real*4 constants</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00359.html">Thread Prev</a>][<a href="msg00367.html">Thread Next</a>][<A HREF="threads.html#00362">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

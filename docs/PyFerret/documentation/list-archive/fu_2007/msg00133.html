@@ -1,0 +1,198 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] legend and dashed lines -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Thu, 1 Mar 2007 22:20:49 &#45;0800 -->
+<!--X-Message-Id: 2CB27B50&#45;FB14&#45;472A&#45;8A23&#45;D444A721B51C@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1172814095.5040.27.camel@localhost.localdomain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] legend and dashed lines</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00132.html">Thread Prev</a>][<a href="msg00134.html">Thread Next</a>][<A HREF="threads.html#00133">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] legend and dashed lines</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Alexa Griesel &lt;<a href="mailto:agriesel@DOMAIN.HIDDEN">agriesel@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] legend and dashed lines</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Mar 2007 22:20:55 -0800</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1172814095.5040.27.camel@DOMAIN.HIDDEN">1172814095.5040.27.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1172814095.5040.27.camel@DOMAIN.HIDDEN">1172814095.5040.27.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Alexa -
+
+</pre><tt>Have a look at the script below. You can make colored lines with dash  
+</tt><tt>patterns by using the syntax PLOT/DASH=(down1,up1,down2,up2)/ 
+</tt><tt>COLOR=.... Then do Fprint -l cps. You can make this work with the  
+</tt><tt>legend line script below by adding a 7th argument for a dash pattern,  
+</tt><tt>and modifying the plot/vs command near the bottom. (It could be  
+</tt><tt>general if you made a default of a full line that would have dash  
+</tt><tt>pattern (1,0,1,0)). (I haven't tested this but it should work).
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+
+On Mar 1, 2007, at 9:41 PM, Alexa Griesel wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear ferret users,
+
+What would be the best way to
+produce plots with different dashed line styles
+and the corresponding legend, that can be moved to
+a desired place ?
+I think the legline script only lets
+you use different colors ?
+(and I don't want to just omit the -l cps when converting
+to ps files).
+
+thanks so much, Alexa
+
+</pre></blockquote><pre style="margin: 0em;">
+
+\CANCEL MODE verify
+</pre><tt>!----------------------------------------------------------------------- 
+</tt><tt>------+
+</tt><tt>! Ferret v5.50 scripts                   E. Vanvyve 19.06.2003 (LM  
+</tt><tt>28.07.2003)
+</tt><pre style="margin: 0em;">
+!
+! MAKE A LEGEND LINE AND ITS LABEL
+!  script from Billy Kessler &lt;billy.kessler@xxxxxxxx&gt;, adapted since
+!  and again (use of PLOT/VS rather than ALINE)  16-dec-2006
+!
+! Syntax : go comm $1 $2 $3 $4 $5 $6
+!                  $1 = x-value of line starting point (nouser units)
+!                  $2 = length of line                 (nouser units)
+!                  $3 = y-value of line                (nouser units)
+!                  $4 = line type (number 1-19)
+</pre><tt>!                  $5 = text character height (negative for z pos  
+</tt><tt>down axes)
+</tt><tt>!                  $6 = label text (in double-quotes if more than 1  
+</tt><tt>word)
+</tt><pre style="margin: 0em;">
+!
+!                     ------&lt;-$2-&gt;------  &quot;$6($5)&quot;  [&lt; $3]
+!                     ^
+!                    [$1]
+!
+!          ! this one handles either z pos up or down axes
+</pre><tt>!----------------------------------------------------------------------- 
+</tt><tt>------+
+</tt><pre style="margin: 0em;">
+
+!LINE : xy coordinates in nouser units
+
+  !$ppl$yaxis_min : y axis minimum / $ppl$yaxis_max : y axis maximum
+  !$ppl$xaxis_min : x axis minimum / $ppl$xaxis_max : x axis maximum
+
+  !axis ranges/length
+! these are relative to the first x-value of the data ($xaxis_min)
+! see comments at the text label below
+</pre><tt>  DEFINE SYMBOL xr = `($xaxis_max) - ($xaxis_min)`                !   
+</tt><tt>user units
+</tt><tt>  DEFINE SYMBOL yr = `($yaxis_max) - ($yaxis_min)`                !   
+</tt><tt>user units
+</tt><tt>  DEFINE SYMBOL xl = `($ppl$xlen)`                                ! 
+</tt><tt>nouser units
+</tt><tt>  DEFINE SYMBOL yl = `($ppl$ylen)`                                ! 
+</tt><tt>nouser units
+</tt><pre style="margin: 0em;">
+  !space between y-axis and line beginning
+  DEFINE SYMBOL xs  = `($xr) / 30`
+
+!   ------------------  &quot;$6($5)&quot;  [&lt; y1]
+!   ^                ^
+!  [$x1]            [$x2]
+
+  DEFINE SYMBOL x1 = `($xaxis_min) + ($1) * ($xr)/($xl)`
+  DEFINE SYMBOL x2 = `($x1)        + ($2) * ($xr)/($xl)`
+  DEFINE SYMBOL y1 = `($yaxis_min) + ($3) * ($yr)/($yl)`
+
+! use plot/vs rather than aline
+  ppl window,off
+  plot/vs/over/nolab/line=$4 {`($x1)`,`($x2)`},{`($y1)`,`($y1)`}
+  ppl window,on
+
+!TEXT : xy coordinates in nouser units
+! note that these are relative to the beginning of the plot x-axis
+! this is not necessarily the same as ($xaxis_min)!
+  DEFINE SYMBOL tx = `($1) + ($2)+($2)/10`
+  DEFINE SYMBOL ty = `($3)-($5)/2`
+
+  !LABEL/[no]user xpos, ypos, center, angle, size   text
+  LABEL/nouser ($tx) ($ty) -1 0 ($5) ($6)
+
+CANCEL SYMBOL xr yr xl yl xs x1 x2 y1 tx ty
+SET MODE/last verify
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00132" href="msg00132.html">[ferret_users] legend and dashed lines</a></strong>
+<ul><li><em>From:</em> Alexa Griesel</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00132.html">[ferret_users] legend and dashed lines</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00134.html">[ferret_users] [ferret users: 5.70] Fprint</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00132.html">Thread Prev</a>][<a href="msg00134.html">Thread Next</a>][<A HREF="threads.html#00133">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

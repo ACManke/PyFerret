@@ -1,0 +1,233 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] remove zero from x&#45;axis -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 12 Oct 2006 09:25:20 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0610122154450.13389@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20061011170129.wr3rdajuhc8wksoc@webmail.fsu.edu -->
+<!--X-Reference: Pine.LNX.4.58.0610120334390.12757@caos.iisc.ernet.in -->
+<!--X-Reference: 20061012111315.45mxl17exscs404s@webmail.fsu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] remove zero from x-axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00671.html">Thread Prev</a>][<a href="msg00679.html">Thread Next</a>][<A HREF="threads.html#00672">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] remove zero from x-axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] remove zero from x-axis</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 12 Oct 2006 22:02:34 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00670.html">20061012111315.45mxl17exscs404s@webmail.fsu.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00667.html">20061011170129.wr3rdajuhc8wksoc@webmail.fsu.edu</a>&gt;&lt;<a href="msg00668.html">Pine.LNX.4.58.0610120334390.12757@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00670.html">20061012111315.45mxl17exscs404s@webmail.fsu.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Steve,
+           Ok. If i understood your question properly, here are few
+more ideas....
+
+1. two viewports joined together
+----------------------------------
+All lines are important including the ppl commands and &quot;/hlim&quot; &amp;
+&quot;/axes&quot; qualifiers to fill commad. Levels should be same for both
+fill command. You have to run this example (i mean jnl file) at
+least twice in the same Ferret session to get things properly.
+
+  let xpts = XSEQUENCE({-6,-5,-4,-3,-2,-1,1,2,3,4,5,6})
+  def axis/x xax=xpts
+  def axis/y=50:1000:50 yax
+
+  let var =sin(x[gx=xax]) + sin(y[gy=yax]) 
+
+  define view/axes/xlim=0.1:0.5/ylim=0.12:0.88 vl
+  define view/axes/xlim=0.5:0.9/ylim=0.12:0.88 vr
+
+  PPL AXNMTC 1,1
+  PPL AXLINT 1,1
+  set view vl
+    fill/set/hlim=-6:-0.5:1/axes=1,1,1,0/nokey/nolab/lev=(-2,2,0.5) var
+      ppl xfor (f4.1)
+    ppl fill
+
+  PPL AXLINT 1,0  ! need to set Y-AXLINT to zero
+  set view vr
+    fill/set/hlim=0.5:6:1/axes=1,1,0,1/nolab/lev=(-2,2,0.5) var
+      ppl xfor (f4.1)
+    ppl fill
+
+2) No data over Zero 
+--------------------
+If your X axis does not have a &quot;0&quot; point, masking bussiness may be
+difficult. Here you can use some combination of &quot;set reg&quot;  and 
+&quot;/HLIMITS&quot;...see below. LEVELS and HLIMITS should be same for both
+the fill command.
+
+  cancel reg/all  ! keep it here
+
+  let xpts = XSEQUENCE({-6,-5,-4,-3,-2,-1,1,2,3,4,5,6})
+  def axis/x/from_data xax=xpts
+  def axis/y=50:1000:50 yax
+
+  let var =sin(x[gx=xax]) + sin(y[gy=yax]) 
+
+  set reg/x=-6:-1 
+  fill/set/hlim=-6:6:1/lev=(-2,2,0.5) var
+     ppl xfor (f4.1)
+  ppl fill
+
+  set reg/x=1:6 
+  fill/set/hlim=-6:6:1/nolab/nokey/lev=(-2,2,0.5) var
+     ppl xfor (f4.1)
+  ppl fill/over
+
+Hope this helps,
+
+Jaison
+
+
+
+
+On Thu, 12 Oct 2006 guimond@coaps.fsu.edu wrote:
+
+&gt; Hi Jaison,
+&gt;   Thank you for your suggestion.  This procedure basically &quot;whites out&quot; 
+&gt; the 0.0, which is good but not ideally what I was looking for.  There 
+&gt; is a large gap between -1 and 1 where the &quot;0.0&quot; used to be and that may 
+&gt; be interpreted wrongly when someone looks at the graph.  It looks like 
+&gt; 0.0 has values associated with it, when in reality it does not exist on 
+&gt; my axis.  I may just assign missing values to 0.0, so there is a line 
+&gt; of white above 0.0.  Any other suggestions?
+&gt; 
+&gt; Steve
+&gt; 
+&gt; 
+&gt; 
+&gt; Quoting Jaison Kurian &lt;jaison@caos.iisc.ernet.in&gt;:
+&gt; 
+&gt; &gt; Hi Steve,
+&gt; &gt;          A weird solution to your problem...make a label
+&gt; &gt; &quot;0.0&quot; exactly at the postion of X axis 0 in the background
+&gt; &gt; color ! Here is an example..
+&gt; &gt;
+&gt; &gt; For the default plot, the background color is white. So
+&gt; &gt; define a new &quot;ppl color&quot; with values &quot;99,99,99&quot; (which
+&gt; &gt; is better than using &quot;100,100,100&quot; with most of the file
+&gt; &gt; formats)
+&gt; &gt;
+&gt; &gt;  def axis/x xax={-6,-5,-4,-3,-2,-1,1,2,3,4,5,6}
+&gt; &gt;  def axis/y=50:1000:50 yax
+&gt; &gt;
+&gt; &gt;  let var =sin(x[gx=xax]) + sin(y[gy=yax])
+&gt; &gt;
+&gt; &gt;  fill/set var
+&gt; &gt;    ppl xfor (f4.1)
+&gt; &gt;  ppl fill
+&gt; &gt;  ppl color 6,99,99,99
+&gt; &gt;  label 0,0,0,0,0.10,@C0060.0  ! no space between &quot;@C006&quot; and &quot;0.0&quot;
+&gt; &gt;
+&gt; &gt; You may have to tune the &quot;Y&quot; value for label to get it at right
+&gt; &gt; position.
+&gt; &gt;
+&gt; &gt; Hope this helps,
+&gt; &gt;
+&gt; &gt; Jaison
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Wed, 11 Oct 2006 guimond@coaps.fsu.edu wrote:
+&gt; &gt;
+&gt; &gt;&gt; Hi Ferreters,
+&gt; &gt;&gt;   I defined an xaxis like so:
+&gt; &gt;&gt;
+&gt; &gt;&gt; def axis/x xax={-6,-5,-4,-3,-2,-1,1,2,3,4,5,6}
+&gt; &gt;&gt;
+&gt; &gt;&gt; When I go to plot my data, &quot;0&quot; still shows up on the xaxis which I
+&gt; &gt;&gt; would like to remove.  Any ideas?
+&gt; &gt;&gt;
+&gt; &gt;&gt; Thanks Much,
+&gt; &gt;&gt; Steve
+&gt; &gt;&gt;
+&gt; &gt;&gt; =======================================================
+&gt; &gt;&gt; Stephen R. Guimond
+&gt; &gt;&gt; Graduate Research Assistant
+&gt; &gt;&gt; Center for Ocean-Atmospheric Prediction Studies (COAPS)
+&gt; &gt;&gt; Tallahassee, FL 32304
+&gt; &gt;&gt; =======================================================
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt; ----------------------------------------------------------------
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;
+&gt; &gt;
+&gt; 
+&gt; 
+&gt; 
+&gt; ----------------------------------------------------------------
+&gt; 
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00667" href="msg00667.html">[ferret_users] remove zero from x-axis</a></strong>
+<ul><li><em>From:</em> guimond</li></ul></li>
+<li><strong><a name="00668" href="msg00668.html">Re: [ferret_users] remove zero from x-axis</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00670" href="msg00670.html">Re: [ferret_users] remove zero from x-axis</a></strong>
+<ul><li><em>From:</em> guimond</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00671.html">Re: [ferret_users] remove zero from x-axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00679.html">[ferret_users] Details on using @AVE function correctly</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00671.html">Thread Prev</a>][<a href="msg00679.html">Thread Next</a>][<A HREF="threads.html#00672">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Re: external function samplexy_curv and modulo -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 1 Sep 2006 12:21:19 &#45;0700 -->
+<!--X-Message-Id: 44F8882F.2080507@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 44F854D2.2040906@cea.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Re: external function samplexy_curv and modulo</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00553.html">Thread Prev</a>][<a href="msg00560.html">Thread Next</a>][<A HREF="threads.html#00559">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: external function samplexy_curv and modulo</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: external function samplexy_curv and modulo</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 01 Sep 2006 12:21:19 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;44F854D2.2040906@cea.fr&gt;</li>
+<li>References: &lt;44F854D2.2040906@cea.fr&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.5 (Windows/20060719)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Patrick,<br>
+What you say is quite true.  For a general curvilinear grid, some of 
+which are very non-rectangular, the concept of modulo longitudes is 
+difficult to define. How will the algorithm know which lon,lat cell 
+should wrap to which cell across the branch cut?<br>
+<br>
+The function SAMPLEXY_CURV looks from one side only, for the &quot;closest&quot; 
+location.<br>
+<br>
+In fact your data shows a shortcoming of the algorighm in 
+samplexy_curv.  For the grid in your file samplexy_curv.nc the latitudes 
+in LAT are 0 at index j=74.  For j=74, and everywhere nearby, there are 
+no longitudes in LON anywhere near 0.  So the function should not return 
+a result for samplexy_curv(votemper, lon,lat, 0,0).  What the function 
+does is it finds where on each J line of LON the values of LON crosses 
+the xpoint requested, here 0.  It finds that LON crosses 0 only along 
+the line x=51, j=149, at the top of the grid (do a SHADE LON to see what 
+the LON coordinate variable is like), and it then looks in LAT and finds 
+the location closest to (51,149) where LAT = ypt, again 0 for this 
+example.  We need to implement a threshold, so that the function will 
+not return a result from halfway across the globe.<br>
+<br>
+Ansley<br>
+<br>
+Brockmann Patrick wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi all,<br>
+A question on the external function samplexy_curv<br>
+which does not consider modulo aspect. If I sample at (lon,lat) (0,0) 
+or (360,0),<br>
+the samplexy_curv gives different results.<br>
+<br>
+See scripts: 
+<a  href="http://dods.ipsl.jussieu.fr/brocksce/ferret_sample/samplexy_curv_test.jnl">http://dods.ipsl.jussieu.fr/brocksce/ferret_sample/samplexy_curv_test.jnl</a><br>
+<br>
+list samplexy_curv(votemper, lon,lat, 0,0)<br>
+            VARIABLE : SAMPLEXY_CURV(VOTEMPER, LON,LAT, 0,0)<br>
+            FILENAME : samplexy_curv.nc<br>
+            X        : 1<br>
+            Z        : 5<br>
+            T        : 1<br>
+         0.01885<br>
+list samplexy_curv(votemper, lon,lat, 360,0)<br>
+            VARIABLE : SAMPLEXY_CURV(VOTEMPER, LON,LAT, 360,0)<br>
+            FILENAME : samplexy_curv.nc<br>
+            X        : 1<br>
+            Z        : 5<br>
+            T        : 1<br>
+         30.29<br>
+<br>
+<br>
+What do I have to believe ?<br>
+Regards<br>
+Patrick<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00553.html">[ferret_users] how to set missing value on one fixed time</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00560.html">[ferret_users] Manipulating Data in netCDF files using conditional statements</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00553.html">Thread Prev</a>][<a href="msg00560.html">Thread Next</a>][<A HREF="threads.html#00559">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

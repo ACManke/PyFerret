@@ -1,0 +1,162 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] anomaly and climatology -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 8 Feb 2006 07:58:02 &#45;0800 -->
+<!--X-Message-Id: B315206C&#45;80A4&#45;4167&#45;8AFB&#45;37D0DFE0B9DA@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 43E9EFBE.2020800@msem.univ&#45;montp2.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] anomaly and climatology</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00083.html">Thread Prev</a>][<a href="msg00088.html">Thread Next</a>][<A HREF="threads.html#00084">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] anomaly and climatology</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] anomaly and climatology</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Feb 2006 07:57:44 -0800</li>
+<li>Cc: William Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00082.html">43E9EFBE.2020800@msem.univ-montp2.fr</a>&gt;</li>
+<li>References: &lt;<a href="msg00082.html">43E9EFBE.2020800@msem.univ-montp2.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Patrick's solution is fine, but since you have a monthly climatology,  
+you can do better by reading it in on a monthly climatological axis  
+to begin with:<br>
+<br>
+use climatological_axes   ! pre-made modular axes<br>
+can dat climatological_axes   ! don't need the file any more<br>
+define grid/t=month_reg gcl   ! use the modular monthly axis to  
+define the grid<br>
+file/format=(...)/var=pc/g=gcl filename_of_pc.dat   ! read in your  
+climatology on the modular grid<br>
+<br>
+! If pa is on any calendar time axis, then the regridding is easy:<br>
+let pc_rg = pc[gt=pa]    ! regrid the climatology onto the time axis  
+of pa<br>
+let p = pa + pc_rg            ! add them<br>
+<br>
+Note that this does not depend on pa being monthly. It can have any  
+calendar axis.<br>
+<br>
+A similar usage is to find anomalies from climatology of a variable:<br>
+<br>
+If q is a time series on any calendar axis, then<br>
+<br>
+let q_cl = q[gt=month_reg@mod]     ! make a climatology (12 average  
+months) from the data<br>
+let q_cl_rg = q_cl[gt=q]       ! regrid the monthly climatology back  
+to the original time axis<br>
+let q_anom = q - q_cl_rg     ! anomalies from climatology on the  
+original time axis<br>
+<br>
+The file climatological_axes.cdf also defines the axes seasonal_reg  
+and month_irreg, which have similar usage.<br>
+<br>
+Billy K<br>
+<br>
+On Feb 8, 2006, at 5:18 AM, DELCLAUX Francois wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ferret users,<br>
+<br>
+I have a grid(x,y) monthly time-series data of an anomaly variable,  
+say  : pa  (n values)<br>
+I have a grid(x,y)  monthly climatological variable, say pc (12  
+values)<br>
+<br>
+Now I would like to build a time series data of the real variable  
+p, on the same time-axis as pa<br>
+such as : (in the following, the index corresponds to L index  
+according to ferret  definition)<br>
+<br>
+p(1) = pa(1) + pc(1)<br>
+p(2) = pa(2) + pc(2)<br>
+p(12) = pa(12) + pc(12)<br>
+....<br>
+p(13) = pa(13) + pc(1)<br>
+p(14) = pa(14) + pc(2)<br>
+....<br>
+p(n) = pa(n) + pc(12)<br>
+<br>
+What is the best way for doing that operation ?<br>
+<br>
+Thanks a lot for answers.<br>
+<br>
+Sincerely yours.<br>
+<br>
+--<br>
+Francois DELCLAUX<br>
+------------------------------------------------------------<br>
+UMR HydroSciences Montpellier<br>
+Universite Montpellier II - Place Eugene Bataillon<br>
+Case courrier MSE<br>
+34095 Montpellier Cedex 5 FRANCE<br>
+<a  href="http://www.hydrosciences.org/">http://www.hydrosciences.org/</a><br>
+mailto: delclaux@msem.univ-montp2.fr<br>
+Tel : (33) (0)4 67 14 90 11 Fax : (33) (0)4 67 14 47 74<br>
+------------------------------------------------------------<br>
+<br>
+<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00082" href="msg00082.html">[ferret_users] anomaly and climatology</a></strong>
+<ul><li><em>From:</em> DELCLAUX Francois</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00083.html">Re: [ferret_users] anomaly and climatology</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00088.html">Re: [ferret_users] anomaly and climatology</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00083.html">Thread Prev</a>][<a href="msg00088.html">Thread Next</a>][<A HREF="threads.html#00084">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

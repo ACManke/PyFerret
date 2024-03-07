@@ -1,0 +1,175 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Listing gridded data to triplets -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 12 Apr 2006 23:11:33 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0604131139390.32280@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: C062A332.25DB%william.gustafson@pnl.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Listing gridded data to triplets</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00260.html">Thread Prev</a>][<a href="msg00263.html">Thread Next</a>][<A HREF="threads.html#00262">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Listing gridded data to triplets</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Gustafson, William I&quot; &lt;<a href="mailto:william.gustafson@DOMAIN.HIDDEN">william.gustafson@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Listing gridded data to triplets</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 13 Apr 2006 11:43:20 +0530 (IST)</li>
+<li>Cc: &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00260.html">C062A332.25DB%william.gustafson@pnl.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00260.html">C062A332.25DB%william.gustafson@pnl.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Bill,<br>
+          I think the easy way to do this is using the REPEAT loop.<br>
+Here is an example with monthly_navy_winds dataset available with Ferret.<br>
+Please find the explanations inside the example. Let me know if you have<br>
+any difficulties.<br>
+<br>
+Regards,<br>
+<br>
+Jaison<br>
+<br>
+!-------------------------------------------------------------------------<br>
+\ cancel mode verify<br>
+!<br>
+! Example : To list variable to an ascii file along with I,J,L indices<br>
+!.....................................................................<br>
+<br>
+   set data monthly_navy_winds      ! dataset,  change it accordingly<br>
+<br>
+   let var = uwnd[d=1]              ! variable, change it accordingly<br>
+<br>
+   define symbol ascii = myfile.txt ! output ascii filename<br>
+<br>
+   cancel reg/all                   ! remove this and use &quot;set reg&quot; if needed<br>
+<br>
+   let ilo = `var,r=istart`<br>
+   let ihi = `var,r=iend`<br>
+   let jlo = `var,r=jstart`<br>
+   let jhi = `var,r=jend`<br>
+   let llo = `var,r=lstart`<br>
+   let lhi = `var,r=lend`<br>
+<br>
+   ! 1. change the format statement as needed<br>
+   !<br>
+   ! 2. interchange the positions of I and J loop to get I varying faster<br>
+   !      than J<br>
+   !<br>
+   ! 3. col1  col2  col3  col4<br>
+   !<br>
+   !     L     J     I     VAR<br>
+   !<br>
+   ! 4. The script may take considerable time to finish if the number of<br>
+   !      data points are large...be patient<br>
+<br>
+   sp rm -f ($ascii)<br>
+   REPEAT/L=`llo`:`lhi` ( ;\<br>
+     REPEAT/J=`jlo`:`jhi` ( ;\<br>
+       REPEAT/I=`ilo`:`ihi` ( ;\<br>
+          List/nohead/file=($ascii)/FORMAT=(2x,3(f6.1,3x),f10.4)/quiet/APPEND 
+`L`,`J`,`I`, uwnd ;\<br>
+       ) ;\<br>
+     ) ;\<br>
+   )<br>
+<br>
+!-------------------------------------------------------------------------<br>
+<br>
+On Wed, 12 Apr 2006, Gustafson, William I wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi,
+
+I¹m sure this question has arisen before, but I haven¹t found the answer in
+the archive. I am using Ferret to analyze some data that is read in from
+gridded netCDF files with the resulting grid being (I,J,T). How can I get
+Ferret to list the results to a text file with each line containing the
+indices for time, I and J followed by the value? Each line would only
+contain data from one grid cell and time, first incrementing by the
+locations, and then incrementing by the times. Essentially, it would be
+something like the following for a 2x2 grid:
+
+   t1   i1   j1   value(i1,j1,t1)
+   t1   i1   j2   value(i1,j2,t1)
+   t1   i2   j1   value(i2,j1,t1)
+   t1   i2   j2   value(i2,j2,t1)
+   t2   i1   j1   value(i1,j1,t2)
+   etc.
+
+The ordering of the I and J isn¹t important, as long as it is predictable. I
+hope that makes sense.
+
+Thanks for any suggestions!
+
+-Bill
+
+
+--------------------------------------------------------------------
+William I. Gustafson Jr.
+Atmospheric Science and Global Change Division
+Pacific Northwest National Laboratory
+3200 Q Ave., MSIN K9-30
+Richland, WA 99352
+(509)372-6110
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00260" href="msg00260.html">[ferret_users] Listing gridded data to triplets</a></strong>
+<ul><li><em>From:</em> Gustafson, William I</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00260.html">[ferret_users] Listing gridded data to triplets</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00263.html">[ferret_users] Re: conditional missing_value filler</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00260.html">Thread Prev</a>][<a href="msg00263.html">Thread Next</a>][<A HREF="threads.html#00262">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Saving new dataset -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 24 May 2006 10:40:06 &#45;0700 -->
+<!--X-Message-Id: 44749A75.6000401@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 446A8ADB.10908@io.usp.br -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Saving new dataset</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00334.html">Thread Prev</a>][<a href="msg00338.html">Thread Next</a>][<A HREF="threads.html#00357">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Saving new dataset</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Sebastian Krieger &lt;<a href="mailto:sebastian@DOMAIN.HIDDEN">sebastian@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Saving new dataset</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 24 May 2006 10:40:05 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00334.html">446A8ADB.10908@io.usp.br</a>&gt;</li>
+<li>References: &lt;<a href="msg00334.html">446A8ADB.10908@io.usp.br</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Sebastian,<br>
+You are missing the /K=  qualifier on your  SAVE/APPEND commands. 
+<br>
+  SAVE/FILE=correl.cdf/APPEND/K=25   CORREL[k=25]<br>
+<br>
+the CORREL[k=25] specifies the data to append to the file, the /K=25 
+tells which step this corresponds to in the output file.  I have not 
+tried this, but I wonder if you should reorder your script so that you 
+write /K=1 first, then K=2, ... K=25.<br>
+<br>
+Ansley<br>
+<br>
+Sebastian Krieger wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi everyone!<br>
+<br>
+I want to make cross correlation (with time lag) between two variables 
+(such as SLP and SST). Referring to many sources, i.e. 
+<a  href="http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/correlations.html">http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/correlations.html</a> and 
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_97/msg00037.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_97/msg00037.html</a> I 
+managed to calculate the correlation. For further analysis I 
+introduced the timelag by shifting one of the time series. And now I 
+want to save a new dataset with the correlations and the timelag. As I 
+don't use the z axis I thought I could use it for the time lag. But 
+how was I supposed to save the information properly? Refering to 
+<a  href="http://ferret.wrc.noaa.gov/Ferret/FAQ/data_management/multi_dataset.html">http://ferret.wrc.noaa.gov/Ferret/FAQ/data_management/multi_dataset.html</a> 
+I had found the solution. So I wrote the script above, which tries to 
+save the time laged correlations to the z axis. But it doesn't work. 
+The only thing I achieve is a properly dimensioned grid, but always 
+with repeating values on the z axis.<br>
+<br>
+Can anyone explain me how I could save my data properly?<br>
+<br>
+Thanks,<br>
+Sebastian<br>
+<br>
+<br>
+! ----------------------------------------------------------------------<br>
+! Setting up for saving correl.cdf<br>
+!   - Defining Z axis interval (for the lag)<br>
+!   - Defining grid<br>
+!   - Sets every value CORREL's grid to zero<br>
+!   - Reseting file 'correl.cdf'<br>
+DEFINE AXIS/z=-12:12:1/UNIT=meters zmeters<br>
+DEFINE GRID/z=zmeters gg<br>
+!SPAWN rm correl.cdf<br>
+LET/QUIET/TITLE=&quot;CROSS CORRELATION OF P AND Q&quot; CORREL = (z[g=gg] + rPQ)*0<br>
+SAVE/FILE=correl.cdf/CLOBBER CORREL<br>
+<br>
+LET/QUIET/TITLE=&quot;CROSS CORRELATION OF P AND Q&quot; CORREL = z[g=gg]*0 + rPQ<br>
+LET/QUIET Qi = Q[l=@shf:12]<br>
+SAVE/FILE=correl.cdf/APPEND CORREL[k=25]<br>
+LET/QUIET Qi = Q[l=@shf:11]<br>
+SAVE/FILE=correl.cdf/APPEND CORREL[k=24]<br>
+LET/QUIET Qi = Q[l=@shf:10]<br>
+SAVE/FILE=correl.cdf/APPEND CORREL[k=23]<br>
+    :<br>
+    :<br>
+    :<br>
+! ----------------------------------------------------------------------<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00334" href="msg00334.html">[ferret_users] Saving new dataset</a></strong>
+<ul><li><em>From:</em> Sebastian Krieger</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00334.html">[ferret_users] Saving new dataset</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00338.html">[ferret_users] contours, hlimits=, x=, ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00334.html">Thread Prev</a>][<a href="msg00338.html">Thread Next</a>][<A HREF="threads.html#00357">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

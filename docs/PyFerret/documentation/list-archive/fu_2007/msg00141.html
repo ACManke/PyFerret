@@ -1,0 +1,182 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] reading BIG ascii files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 8 Mar 2007 11:03:17 &#45;0800 -->
+<!--X-Message-Id: 45F05DF4.8090001@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: fcc3ebe25cc1.45eedc91@ifm&#45;geomar.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] reading BIG ascii files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00138.html">Thread Prev</a>][<a href="msg00142.html">Thread Next</a>][<A HREF="threads.html#00141">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] reading BIG ascii files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Leticia Cotrim da Cunha &lt;<a href="mailto:lcotrim@DOMAIN.HIDDEN">lcotrim@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] reading BIG ascii files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 08 Mar 2007 11:03:16 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:fcc3ebe25cc1.45eedc91@DOMAIN.HIDDEN">fcc3ebe25cc1.45eedc91@xxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:fcc3ebe25cc1.45eedc91@DOMAIN.HIDDEN">fcc3ebe25cc1.45eedc91@xxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.10 (Windows/20070221)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Leticia,
+</pre><tt>Ferret can read HDF files directly, if they are on an OPeNDAP server. If 
+</tt><tt>that's available for the data you're using, you can bypass all of this 
+</tt><tt>and just point to the data using its OPeNDAP address. You would need to 
+</tt><tt>use the /ORDER= qualifier to reverse the Y axis as I show at the end of 
+</tt><tt>this but otherwise you'd be all set.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>To get the data from the axcii, file, here is an outline of what to do. 
+</tt><tt>When you know that the grid is regularly spaced, then it is far easier 
+</tt><tt>to just define the axes in Ferret and then read only the data field when 
+</tt><tt>reading the file. Ferret requires that latitudes run from south to 
+</tt><tt>north, but we can deal with that in a second step. First define the X 
+</tt><tt>axis and a Y axis which is the reverse of the Y axis you will want.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>  yes? define axis/x=-179.917:179.917/npoints=2160/units=degrees_east 
+</tt><tt>lon_ax
+</tt><tt>  yes? define axis/y=-89.917:89.917/npoints=1080/units=degrees_north 
+</tt><tt>rev_lat_ax
+</tt><pre style="margin: 0em;">
+
+  yes? define grid/x=lon_ax/y=rev_lat_x  xygrid
+  yes? file/var=&quot;dum1, dum2, npp&quot;/skip=1/grid=xygrid  my_file.dat
+
+</pre><tt>  yes? shade npp   ! the variable will be reversed in y with the south 
+</tt><tt>pole at the top.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If there is a missing-data  flag for the variable, set that after the 
+</tt><tt>FILE command, with the SET VARIABLE/BAD= command.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Now, Ferret can reverse coordinate axes if the data is coming in from a 
+</tt><tt>netCDF file (or an HDF file on an OPeNDAP server). If we save the data 
+</tt><tt>as netCDF, then we can visualize it correctly:
+</tt><pre style="margin: 0em;">
+
+  yes? save/file=nppdata.nc npp
+  yes? exit
+
+Then to read and access the data with the Y axis reversed
+
+&gt; ferret
+  yes? set data/ORDER=x-yt  nppdata.nc
+  yes? show grid npp
+  yes? shade npp
+
+
+Leticia Cotrim da Cunha wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hello,
+
+I tried to open big ASCII files organised in columns like this:
+
+lon               lat           NPP
+-179.917   89.917   -9999.
+-179.750   89.917   -9999.
+-179.583   89.917   -9999.
+etc
+
+The file has 1542035 lines.
+The format of the ASCII data is F10.3
+I wanted to use columns 1 and 2 (lon and lat) to define a grid for NPP.
+</pre><tt>Longitude (col1) goes from -179.917 to 179.917 at an interval of 0.167 
+</tt><tt>(2160 points).
+</tt><tt>Latitude (col2) goes from 89.917 to -89.917 at an interval of 0.167 
+</tt><tt>(1080 points).
+</tt><pre style="margin: 0em;">
+The files were extracted from 2160x1080 *.hdf files using SEADAS.
+
+</pre><tt>I tried to follow the instructions at Ferret documentation, but it did 
+</tt><tt>not work (are the files too big?) or I did not understand it (most 
+</tt><tt>probable).
+</tt><pre style="margin: 0em;">
+Any hints? Thanks a lot for your help!
+Best regards
+Leticia
+
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+
+</pre><tt>~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+Ansley Manke, NOAA/PMEL   ansley.b.manke@xxxxxxxx
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00138" href="msg00138.html">[ferret_users] reading BIG ascii files</a></strong>
+<ul><li><em>From:</em> Leticia Cotrim da Cunha</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00138.html">[ferret_users] reading BIG ascii files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00142.html">[ferret_users] Ferret 6.0 with Opendap</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00138.html">Thread Prev</a>][<a href="msg00142.html">Thread Next</a>][<A HREF="threads.html#00141">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Colobar with Text labels -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 16 Jan 2007 02:06:11 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.58.0701161540250.13735@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: d7fac9de0701120827k6ac9ecbds6ec44e39304d407d@mail.gmail.com -->
+<!--X-Reference: 1168619607.21221.92.camel@pike.atm.ch.cam.ac.uk -->
+<!--X-Reference: d7fac9de0701150619g67b2cd7bjbb843d77efe254e1@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Colobar with Text labels</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00038.html">Thread Prev</a>][<a href="msg00041.html">Thread Next</a>][<A HREF="threads.html#00040">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Colobar with Text labels</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>IMRAN NADEEM &lt;<a href="mailto:qphoton@DOMAIN.HIDDEN">qphoton@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Colobar with Text labels</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 16 Jan 2007 15:46:18 +0530 (IST)</li>
+<li>Cc: Paul Young &lt;<a href="mailto:paul.young@DOMAIN.HIDDEN">paul.young@xxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:d7fac9de0701150619g67b2cd7bjbb843d77efe254e1@DOMAIN.HIDDEN">d7fac9de0701150619g67b2cd7bjbb843d77efe254e1@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:d7fac9de0701120827k6ac9ecbds6ec44e39304d407d@DOMAIN.HIDDEN">d7fac9de0701120827k6ac9ecbds6ec44e39304d407d@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:1168619607.21221.92.camel@DOMAIN.HIDDEN">1168619607.21221.92.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:d7fac9de0701150619g67b2cd7bjbb843d77efe254e1@DOMAIN.HIDDEN">d7fac9de0701150619g67b2cd7bjbb843d77efe254e1@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Imran &amp; Paul,
+                  Here is an example for labelling the color key with
+given text strings. You can add more options to control the color/thickness
+or font style of the text labels in a similar manner to the way in which
+the alignment, font size and rotation is controlled in the present script.
+Please note that this method is not 100% fool proof but it works at least
+with this example.
+
+Hope this helps
+
+With Regards,
+
+Jaison
+
+!-----------example begins here--------------------------------
+
+\ cancel mode verify
+!
+! Example for text labels on color key. Color key is assumed to be
+!   in the default orientation. Options for color/thickness and 
+!   font style controls of text labels can be added.
+!
+! Note : If you face any problem (or peculiar behaviour) with repeat 
+!           execution of this script within the same ferret 
+!           session/prompt, try to run it in a new ferret session.
+!
+!------------------------------------------------------------------
+
+   set data levitus_climatology
+   
+   define view/xlim=0:0.83/ylim=0:1 v1 ; set view v1 ! make room for 
+                                                     ! text key labels
+   set reg/k=1/x=30:120/y=-30:30 
+
+! how to remove the default numerical labels on color key ?...not that
+!  easy. Font size 0 will not work, with this value Ferret will assign
+!  a meaningfull font size automatically. Labelling interval can be set
+!  to a very big number...but the first one will be labelled in any case!
+!  Setting significant digits to zero will remove the numerical labels
+!  but now &quot;*&quot; will appear instead....the final solution is to set the
+!  font size to a &quot;tiny&quot; value which cannot be distinguised on the plot!!!
+!  Please note that &quot;too tiny&quot; value may have the same effect as zero 
+!  according to the available precision. 1/1e10 works fine on my 32-bit
+!  Linux PC.
+
+   shade/set temp
+      ppl shakey , ,`1/1e10`
+   ppl shade
+   go land
+
+! Now label the key (here the orientation of the key is in the default way)
+
+   cancel reg/all  ! it is safe to cancel previously set X or I regions
+
+   let key_text = XSEQUENCE({&quot;desert&quot;,&quot;short grass&quot;,&quot;tundra&quot;,&quot;everg shrub&quot;,\
+                &quot;decid shrub&quot;,&quot;tall grass&quot;,&quot;crop&quot;,&quot;irrig crop&quot;,&quot;mixed tree&quot;,\
+                &quot;decid tree&quot;, &quot;everg tree&quot;})  ! order is key-bottom to key-top
+ 
+   let key_num  = `key_text,r=iend`  ! number of key entries
+   
+   let key_xlo  = 7.3                ! x position start
+   let key_ylo  =-0.05               ! y position start 
+   let key_xgap = 0.02               ! x gap between labels 
+   let key_ygap = 0.585              ! y gap between labels
+   let key_algn = -1                 ! text alignment
+   let key_rot  = 0                  ! text rotation
+   let key_fsz  = 0.15               ! text font size
+
+   let key_x    = key_xlo + key_xgap/2 ! initialize
+   let key_y    = key_ylo + key_ygap/2 !   &quot;
+
+   ! since the color key orientation is vertical, only key_y needs to
+   !  be updated within the repeat loop
+
+   REPEAT/RANGE=1:`key_num`:1/NAME=ky (;\ 
+      define symbol kky = `ky` ;\
+      label/nouser `key_x`,`key_y`,`key_algn`,`key_rot`,`key_fsz` `key_text[i=($kky)]`   ;\
+      let key_y = `key_y` + `key_ygap` ;\
+   )
+
+!----------end of example-------------------------------------------------
+
+On Mon, 15 Jan 2007, IMRAN NADEEM wrote:
+
+&gt; Hi Paul,
+&gt; 
+&gt;        Thanks for your reply. Although there are number of programs to do
+&gt; this, yet its much convenient if I can do this in ferret.
+&gt; 
+&gt; Imran
+&gt; 
+&gt; On 12 Jan 2007 16:33:27 +0000, Paul Young &lt; paul.young@xxxxxxxxxxxxxxxx&gt;
+&gt; wrote:
+&gt; &gt;
+&gt; &gt; Hi Imran,
+&gt; &gt;
+&gt; &gt; Perhaps the easiest way to get the text as you would like is to edit the
+&gt; &gt; post-script output in a program such as Adobe Illustrator. I often do
+&gt; &gt; this to add and move text labels for plots that I'm going to show. Sorry
+&gt; &gt; this isn't a 'ferret' answer!
+&gt; &gt;
+&gt; &gt; Paul
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Fri, 2007-01-12 at 16:27, IMRAN NADEEM wrote:
+&gt; &gt; &gt; Hi Ferret users,
+&gt; &gt; &gt;
+&gt; &gt; &gt;          I want to plot colorbar wtih text labels as shown in attached
+&gt; &gt; &gt; image. Can anyone give me some hints to do this in ferret?
+&gt; &gt; &gt;
+&gt; &gt; &gt; Imran
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; &gt; &gt; --
+&gt; &gt; &gt; Imran Nadeem
+&gt; &gt; &gt; PhD Student
+&gt; &gt; &gt; Institute of Meteorology
+&gt; &gt; &gt; Department of Water, Atmosphere and Environment
+&gt; &gt; &gt; Uni. of Natural Resources and Applied Life Sciences (BOKU)
+&gt; &gt; &gt;
+&gt; &gt; &gt; Peter-Jordan Strasse 82
+&gt; &gt; &gt; 1190 Vienna, Austria
+&gt; &gt; &gt;
+&gt; &gt; &gt; Mobile: +43 699 1194 3044
+&gt; &gt; &gt; Tel.: +43 1 47654 5614
+&gt; &gt; &gt; Fax: +43 1 47654 5610
+&gt; &gt;
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00041" href="msg00041.html">Re: [ferret_users] Colobar with Text labels</a></strong>
+<ul><li><em>From:</em> IMRAN NADEEM</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00032" href="msg00032.html">[ferret_users] Colobar with Text labels</a></strong>
+<ul><li><em>From:</em> IMRAN NADEEM</li></ul></li>
+<li><strong><a name="00033" href="msg00033.html">Re: [ferret_users] Colobar with Text labels</a></strong>
+<ul><li><em>From:</em> Paul Young</li></ul></li>
+<li><strong><a name="00038" href="msg00038.html">Re: [ferret_users] Colobar with Text labels</a></strong>
+<ul><li><em>From:</em> IMRAN NADEEM</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00038.html">Re: [ferret_users] Colobar with Text labels</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00041.html">Re: [ferret_users] Colobar with Text labels</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00038.html">Thread Prev</a>][<a href="msg00041.html">Thread Next</a>][<A HREF="threads.html#00040">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

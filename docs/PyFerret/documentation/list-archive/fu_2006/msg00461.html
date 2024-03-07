@@ -1,0 +1,200 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] reading FORTRAN sequential access data &#45; simplequestion -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Fri, 7 Jul 2006 02:25:33 &#45;0700 -->
+<!--X-Message-Id: 20060706.232528.74744213.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 44ADA0D8.5020006@noaa.gov -->
+<!--X-Reference: 20060706.161528.71096526.furue@hawaii.edu -->
+<!--X-Reference: Pine.LNX.4.61.0607071419380.29652@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00459.html">Thread Prev</a>][<a href="msg00463.html">Thread Next</a>][<A HREF="threads.html#00461">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 06 Jul 2006 23:25:28 -1000 (HST)</li>
+<li>In-reply-to: &lt;<a href="msg00459.html">Pine.LNX.4.61.0607071419380.29652@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00455.html">44ADA0D8.5020006@noaa.gov</a>&gt;&lt;<a href="msg00457.html">20060706.161528.71096526.furue@hawaii.edu</a>&gt;&lt;<a href="msg00459.html">Pine.LNX.4.61.0607071419380.29652@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jaison,
+
+| 1. Sequential access files with all the data written in a single
+|       stretch (as Bob wanted) should be readed in Ferret as
+|       &quot;Format=STREAM&quot; with /SKIP=1. (Don't be annoyed, it will
+|        work !!!). SKIP=1 will remove the first record information
+|        then the data is exactly same as that of &quot;Direct Access&quot;.
+|        You have to specify TYPE=R4 or R8 according to your Fortran
+|        program.
+
+I may be missing something, but what's the unit of &quot;skip&quot;?
+Is it a 4-byte word?   Otherwise, I don't understand why
+your Case_2 works.  But, if the unit of &quot;skip&quot; is a 4-byte
+word, what would you do if you want to skip the first three
+bytes of your binary file, for example?
+
+
+| 2. Sequential access files with data written inside the loop (as
+|        in the example i suggested earlier) should be readed in
+|        Ferret as &quot;Format=UNFORMATTED&quot;. Ferret will support only
+|        REAL*4 and not REAL*8 types.
+
+I've never used &quot;Format=UNFORMATTED&quot;, but it's very interesting.
+If you write a sequential file as you do in Case_3, each
+element (a real*4 number) of the array is surrounded by
+a header and trailer in the file.  So, Ferret assumes this,
+when given format=unformatted . . .  This is an odd thing
+to do, because your file will be three times the size of the
+real*4 array itself.
+
+Regards,
+Ryo
+
+========= Quoting from Jaison's message =====================
+
+Common to all cases
+-------------------
+       open(unit=10,access='sequential',form='unformatted',
+      #              file='seq.bin')
+
+
+case 1
+------
+   Fortran
+
+       real*4 hrmean(nx,ny,nz)
+       ..................
+       write(10) hrmean
+
+   Ferret
+
+       file/skip=1/format=stream/type=R4/var=hrmean/\
+                       grid=mygrid  seq.bin
+
+case 2
+------
+   Fortran
+
+       real*8 hrmean(nx,ny,nz)
+       ..................
+       write(10) hrmean
+
+   Ferret
+
+       file/skip=1/format=stream/type=R8/var=hrmean/\
+                     grid=mygrid  seq.bin
+
+case 3
+------
+
+   Fortran
+
+       real*4 hrmean(nx,ny,nz)
+       ...............
+       DO k =1,nz
+           Do j = 1,ny
+               Do i = 1,nx
+                     write(10) hrmean(i,j,k)
+               ENDDO
+           ENDDO
+       ENDDO
+
+   Ferret
+
+       file/format=unformatted/type=R4/var=hrmean/\
+                    grid=mygrid  seq.bin
+
+case 4
+------
+
+   Fortran
+
+       real*8 hrmean(nx,ny,nz)
+       ...............
+       DO k =1,nz
+           Do j = 1,ny
+               Do i = 1,nx
+                     write(10) hrmean(i,j,k)
+               ENDDO
+           ENDDO
+       ENDDO
+
+   Ferret
+
+       Ferret is not able to handle this dataset.
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00463" href="msg00463.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00455" href="msg00455.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+<li><strong><a name="00457" href="msg00457.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00459" href="msg00459.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00459.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00463.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00459.html">Thread Prev</a>][<a href="msg00463.html">Thread Next</a>][<A HREF="threads.html#00461">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Error information during climatological computing -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 10 Aug 2007 09:44:43 &#45;0700 -->
+<!--X-Message-Id: 46BC95EF.3070606@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 200708091022110623791@fio.org.cn -->
+<!--X-Derived: gif8sGOAwVLJn.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Error information during climatological computing</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00478.html">Thread Prev</a>][<a href="msg00481.html">Thread Next</a>][<A HREF="threads.html#00487">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Error information during climatological computing</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:liul@DOMAIN.HIDDEN">liul@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Error information during climatological computing</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 10 Aug 2007 09:44:31 -0700</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:200708091022110623791@DOMAIN.HIDDEN">200708091022110623791@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:200708091022110623791@DOMAIN.HIDDEN">200708091022110623791@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.12 (Windows/20070509)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+<font face="Times New Roman, Times, serif">Hi Liulin,<br>
+Your original data must be on a time axis that uses a calendar other
+than the default Gregorian calendar. See "calendar" in the Users Guide.
+To regrid this to a climatological
+axis, you must either regrid your original data to a Gregorian time
+axis of the same length as the original axis (using @LIN, @ASN or @NRST
+interpolation), or define a climatological time axis that uses the same
+calendar
+as the original axis.&nbsp; I would suggest that you create your own
+climatological axis to match the calendar of your data, since that
+would involve fewer regridding operations.<br>
+<br>
+Here is a previous entry which talks about this issue and has an
+example showing how to define a climatological axis for a different
+calendar.<br>
+<br>
+<a rel="nofollow" class="moz-txt-link-freetext"
+ href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2002/msg00224.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2002/msg00224.html</a><br>
+<br>
+That example did a regularly-spaced calendar axis. The command below
+will define a calendar axis with boundaries on the month boundaries,
+using&nbsp; /EDGES to show we're using the start and end day of each month
+in the definition. I start this at the end of year 0000 so that the
+first point lies in the middle of January, and so on.&nbsp; SHOW AXIS shows
+some of the details, and a LIST command shows the coordinates and the
+box sizes and upper and lower bounds.&nbsp; ( I did an example where I
+specified the calendar was Julian, so the list output would be a bit
+different if your calendar is something else.)&nbsp; Note that we could get
+the day-of-year for the first of each month from the function with the
+function TAX_JDAY, but since it's just this list of days I typed them
+in.<br>
+<br>
+yes? define
+axis/t/cal=`thetao,return=calendar`/t0=31-dec-0000/units=days/edges
+month_clim = {1,32,60,91,121,152,182,213,244,274,305,335,366}<br>
+<br>
+<br>
+yes? show axis month_clim<br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end<br>
+&nbsp;MONTH_CLIM TIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12 i&nbsp;&nbsp; 16-JAN 12:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 16-DEC 12:00<br>
+T0 = 31-DEC-0000<br>
+CALENDAR = JULIAN<br>
+&nbsp;&nbsp; Axis span (to cell edges) = 365<br>
+<br>
+yes? list t[gt=month_clim], tbox[gt=month_clim], tboxlo[gt=month_clim],
+tboxhi[gt=month_clim]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TIME: 01-JAN 00:00 to 01-JAN-0002 00:00 JULIAN<br>
+&nbsp;Column&nbsp; 1: T is T (axis MONTH_CLIM)<br>
+&nbsp;Column&nbsp; 2: TBOX is TBOX (axis MONTH_CLIM)<br>
+&nbsp;Column&nbsp; 3: TBOXLO is TBOXLO (axis MONTH_CLIM)<br>
+&nbsp;Column&nbsp; 4: TBOXHI is TBOXHI (axis MONTH_CLIM)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T&nbsp;&nbsp; TBOX&nbsp; TBOXLO TBOXHI<br>
+16-JAN 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 1:&nbsp;&nbsp; 16.5&nbsp; 31.00&nbsp;&nbsp;&nbsp; 1.0&nbsp;&nbsp; 32.0<br>
+15-FEB 00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 2:&nbsp;&nbsp; 46.0&nbsp; 28.00&nbsp;&nbsp; 32.0&nbsp;&nbsp; 60.0<br>
+16-MAR 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 3:&nbsp;&nbsp; 75.5&nbsp; 31.00&nbsp;&nbsp; 60.0&nbsp;&nbsp; 91.0<br>
+16-APR 00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 4:&nbsp; 106.0&nbsp; 30.00&nbsp;&nbsp; 91.0&nbsp; 121.0<br>
+16-MAY 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 5:&nbsp; 136.5&nbsp; 31.00&nbsp; 121.0&nbsp; 152.0<br>
+16-JUN 00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 6:&nbsp; 167.0&nbsp; 30.00&nbsp; 152.0&nbsp; 182.0<br>
+16-JUL 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 7:&nbsp; 197.5&nbsp; 31.00&nbsp; 182.0&nbsp; 213.0<br>
+16-AUG 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 8:&nbsp; 228.5&nbsp; 31.00&nbsp; 213.0&nbsp; 244.0<br>
+16-SEP 00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 9:&nbsp; 259.0&nbsp; 30.00&nbsp; 244.0&nbsp; 274.0<br>
+16-OCT 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / 10:&nbsp; 289.5&nbsp; 31.00&nbsp; 274.0&nbsp; 305.0<br>
+16-NOV 00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / 11:&nbsp; 320.0&nbsp; 30.00&nbsp; 305.0&nbsp; 335.0<br>
+16-DEC 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / 12:&nbsp; 350.5&nbsp; 31.00&nbsp; 335.0&nbsp; 366.0<br>
+<br>
+Now you could regrid with @MOD to the new axis we've just defined.<br>
+<br>
+liulin wrote:
+</font>
+<blockquote cite="" type="cite">
+  
+  
+  <div><font face="Times New Roman, Times, serif">Dear all,</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;&nbsp;&nbsp; I want to
+calculate the climatological temperature&nbsp; from
+monthly averaged data. But after I input the below _expression_, Ferret
+tell me the error is found. The detailed infor is listed below and I do
+not know why this infor appears? Please help me. Thank you!</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">-----------------------------------</font></div>
+  <div><font face="Times New Roman, Times, serif">use
+climatological_axes<br>
+&nbsp;*** NOTE: regarding d:\Program Files\TMAP\go\climatological_axes.cdf
+...<br>
+&nbsp;*** NOTE: Climatological axes SEASONAL_REG, MONTH_REG, and MONTH_IRREG
+defined<br>
+cancel data climatological_axes</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">let
+t_clima=thetao[gt=month_irreg@mod]</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">cont/l=1&nbsp;t_clima</font></div>
+  <div><font face="Times New Roman, Times, serif"><br>
+&nbsp;**ERROR: regridding: only @ASN, @LIN, or @NRST regridding between
+calendar type<br>
+s: NOLEAP, GREGORIAN<br>
+Command file, command group, or REPEAT execution aborted</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">----------------------------</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">Best Regard</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">Liulin</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif"><br>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>
+The First Institute of Oceanography<br>
+State Oceanic Administration<br>
+P. R. China<br>
+No. 6 Xian-Xia-Ling Road, Qingdao 266061 <br>
+Fax: 86-532-88967403</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <div><font face="Times New Roman, Times, serif">&nbsp;</font></div>
+  <font face="Times New Roman, Times, serif"><br>
+  </font>
+  <hr size="4" width="90%"><font face="Times New Roman, Times, serif"><br>
+  </font>
+  <center><font face="Times New Roman, Times, serif"><img
+ src="gif8sGOAwVLJn.gif"></font></center>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00478" href="msg00478.html">[ferret_users] Error information during climatological computing</a></strong>
+<ul><li><em>From:</em> liulin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00478.html">[ferret_users] Error information during climatological computing</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00481.html">[ferret_users] Data Extraction from NWP files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00478.html">Thread Prev</a>][<a href="msg00481.html">Thread Next</a>][<A HREF="threads.html#00487">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

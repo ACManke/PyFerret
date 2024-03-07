@@ -1,0 +1,157 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] [Ferret_Users] SAMPLEIJ of an array of size[680,380] -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 1 Jun 2006 09:09:09 &#45;0700 -->
+<!--X-Message-Id: 447F1123.3020803@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6.2.1.2.2.20060530234914.07f78440@gmaomail.gsfc.nasa.gov -->
+<!--X-Reference: Pine.LNX.4.61.0605312242160.18668@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] [Ferret_Users] SAMPLEIJ of an array of size[680,380]</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00382.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] [Ferret_Users] SAMPLEIJ of an array of size[680,380]</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] [Ferret_Users] SAMPLEIJ of an array of size[680,380]</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Jun 2006 09:09:07 -0700</li>
+<li>Cc: <a href="mailto:zhen.li@DOMAIN.HIDDEN">zhen.li@xxxxxxxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00381.html">Pine.LNX.4.61.0605312242160.18668@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00380.html">6.2.1.2.2.20060530234914.07f78440@gmaomail.gsfc.nasa.gov</a>&gt;&lt;<a href="msg00381.html">Pine.LNX.4.61.0605312242160.18668@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Zhen,<br>
+If what you want is a sub-sampling of the data at every second point (or 
+other regular interval) in a NetCDF file, then you can use the &quot;strides&quot; 
+syntax, [i=LO:HI:STRIDE,j=LO:HI:STRIDE]<br>
+<br>
+ yes? use ocean_density.res.nc<br>
+ yes? show grid RHO_TAUM1<br>
+<br>
+! I don't have the file, but if it shows 680 points in x and 380 points 
+in the y direction, then<br>
+! defining the following variable would read every second point in each 
+direction. This is done<br>
+! by the call to the netcdf library. 
+<br>
+ yes? let var_ij=RHO_TAUM1[i=2:680:2,j=2:380:2]<br>
+<br>
+! Any value can be used for the stride, and changing the start value 
+will sample different points.<br>
+<br>
+ yes? let var_ij = RHO_TAUM1[i=1:680:5,j=1:380:3]<br>
+<br>
+<br>
+Jaison Kurian wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi Zhen,
+          Yes, SAMPLEIJ needs same length for the ipts and jpts. The
+resulting variable from this external function will have only one
+abstract axis which corresponds to the length of ipts(=jpts) instead
+of X and Y (Z and T will be inherited from the original variable).
+
+  From the values given for ipts (=2,4,6,....,680) &amp; jpts (=2,4,6,..
+..,380) it seems that you are trying to regrid the density variable
+to a coarser grid (without any averaging) which does have alternate
+positions as grid points. For doing this there are proper methods like
+--&gt; defining a coarser destination grid, regrid the variable onto
+that grid using @XACT regridding. If you can explain what exactly
+you want to do, I can offer you a better help.
+
+Let me know if you have any questions.
+
+Regards,
+
+Jaison
+
+On Wed, 31 May 2006 zhen.li@gsfc.nasa.gov wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ferret_Users:<br>
+<br>
+It seems to me that SAMPLEIJ only subsamples the array that has the 
+same number of<br>
+points in &quot;i&quot; and &quot;j&quot; direction. For example, my effort to use the 
+following<br>
+script to subsample the array of size [680,380] failed, because it 
+only subsampled<br>
+the point in the &quot;I&quot; direction. The new array &quot;var_ij&quot; has a size of 
+[390,1]. I wonder<br>
+if anyone can help me with this case.<br>
+<br>
+!FILE/VAR=&quot;ipts&quot; ipts.dat (ipts=2,4,6,....,680)<br>
+!FILE/VAR=&quot;jpts&quot; jpts.dat (jpts=2,4,6,....,380)<br>
+!use ocean_density.res.nc<br>
+!let var_ij=sampleij(RHO_TAUM1,ipts[d=1],jpts[d=2])<br>
+<br>
+Thanks!<br>
+<br>
+Zhen<br>
+<br>
+<br>
+<br>
+</blockquote></blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00380" href="msg00380.html">[ferret_users] [Ferret_Users] SAMPLEIJ of an array of size [680,380]</a></strong>
+<ul><li><em>From:</em> zhen.li</li></ul></li>
+<li><strong><a name="00381" href="msg00381.html">Re: [ferret_users] [Ferret_Users] SAMPLEIJ of an array of size[680,380]</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00381.html">Re: [ferret_users] [Ferret_Users] SAMPLEIJ of an array of size[680,380]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00382.html">[ferret_users] Re: [Ferret_Users] SAMPLEIJ of an array of size [680,380]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00382.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] terminating infinite loop -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 27 Nov 2006 06:48:19 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.58.0611272026520.32237@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f83b83e40611270251q1e187454h12178515e390b93f@mail.gmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] terminating infinite loop</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00751.html">Thread Prev</a>][<a href="msg00753.html">Thread Next</a>][<A HREF="threads.html#00752">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] terminating infinite loop</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ashley Watson &lt;<a href="mailto:ashleywats@DOMAIN.HIDDEN">ashleywats@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] terminating infinite loop</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 27 Nov 2006 20:27:39 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00751.html">f83b83e40611270251q1e187454h12178515e390b93f@mail.gmail.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00751.html">f83b83e40611270251q1e187454h12178515e390b93f@mail.gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ashley,
+           Your mail have two questions and i will try to answer them
+separately.
+
+1. Infinite loop
+----------------
+   You can always mention the depth range as a qualifier for the list command 
+and can follow in two ways :
+
+           yes? set grid temp
+           yes? list/Z=100:750 K 
+ or  
+           yes? list/Z=100:750 K[GZ=temp]
+
+In the first method, the &quot;grid&quot; environment is fixed with reference to the
+variable temp (see Ref Sec31.5.  SET GRID in user manual). In the second
+method, the list command is explicitly supplied with the variable to which
+the Z-grid corresponds to, the simple method. 
+
+Above solutions may not be effective in some situations (for example if the 
+variable is extracted from another variable as var_new=var_old[Z=100:5000], 
+in this case the whole array is accessible but not individual array 
+elements). In this case the solution is to (a) define a new axis and 
+assign that axis to the sampled/extracted variable as follows 
+
+              yes? define axis/Z=100:5000:100/DEPTH/units=meters zax1
+              yes? let new_var = old_var[Z=@ASN] 
+              yes? list/Z=100:750 K[GZ=new_var]
+
+ Look at user manual for details about @ASN regridding (Ch4 Sec2.4.1.  
+Regridding transformations). ZSEQUENCE function (Ch3 Sec2.3.25. 
+ZSEQUENCE) also does something similar but may not be applicable if you want
+to extract K values in a meaningful way. If this explanation was not useful 
+for your problem, mail back with more details (like whether you are using a 
+NetCDF or ASCII data, what is your purpose of listing the K values...etc)
+
+2. Alias / Ferret start up file
+-------------------------------- 
+  The user manual explains everything about this question. Please read
+Ch9 Sec2.  FILES AND ENVIRONMENT VARIABLES USED BY FERRET. From User 
+Manual :
+
+.ferret--the Ferret initialization file. This optional file holds a list 
+of Ferret commands that will be executed immediately each time Ferret is 
+started, permitting Ferret to be tailored to individual needs and styles. 
+The file must be located in your $HOME (login) directory. 
+
+Ferret manual is available from Ferret Documentation page, in both PDF and 
+html formats :
+
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Documentation/ferret_documentation.html">http://ferret.pmel.noaa.gov/Ferret/Documentation/ferret_documentation.html</a>
+
+Hope this helps,
+
+Regards 
+
+Jaison
+
+
+
+On Mon, 27 Nov 2006, Ashley Watson wrote:
+
+&gt; Dear ferreters,
+&gt;           Can any one tell me how to kill a process in ferret without
+&gt; quiting ferret. For example, I list an abstract axis
+&gt; 
+&gt; yes? list K
+&gt;              VARIABLE : K
+&gt;                         axis ABSTRACT
+&gt;              SUBSET   : 9999999 points (Z)
+&gt;  1          /        1:  1.000E+00
+&gt;  2          /        2:  2.000E+00
+&gt;  3          /        3:  3.000E+00
+&gt;  4          /        4:  4.000E+00
+&gt;  5          /        5:  5.000E+00
+&gt;  6          /        6:  6.000E+00
+&gt;  7          /        7:  7.000E+00
+&gt;  ..............................
+&gt;  ..............................
+&gt;  ........upto 9999999 points..
+&gt; 
+&gt; 
+&gt; 
+&gt; Is there anyway to stop this  before displaying all 99999999 values. My
+&gt; second question is about alias. I define an alias in ferret. Is there any
+&gt; way to make this
+&gt; alias permanent so that I can use that alias whenever I use ferret.
+&gt; 
+&gt; 
+&gt; Ashley
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00751" href="msg00751.html">[ferret_users] terminating infinite loop</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00751.html">[ferret_users] terminating infinite loop</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00753.html">[ferret_users] Number of files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00751.html">Thread Prev</a>][<a href="msg00753.html">Thread Next</a>][<A HREF="threads.html#00752">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

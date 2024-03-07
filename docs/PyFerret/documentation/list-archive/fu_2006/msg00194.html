@@ -1,0 +1,210 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Re: Average with ferret vs nco -->
+<!--X-From-R13: [hlva Inat <zhlva.jnatNabnn.tbi> -->
+<!--X-Date: Tue, 21 Mar 2006 10:18:46 &#45;0800 -->
+<!--X-Message-Id: 44204385.20406@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 44202810.2020700@cls.fr -->
+<!--X-Reference: 442034F5.5090203@noaa.gov -->
+<!--X-Reference: 442037A1.8000509@cls.fr -->
+<!--X-Reference: 44203B20.9020904@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Re: Average with ferret vs nco</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00192.html">Thread Prev</a>][<a href="msg00189.html">Thread Next</a>][<A HREF="threads.html#00194">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Re: Average with ferret vs nco</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Re: Average with ferret vs nco</strong></li>
+<li><strong>From</strong>: <strong>Muyin Wang &lt;<a href="mailto:muyin.wang@DOMAIN.HIDDEN">muyin.wang@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 21 Mar 2006 10:18:45 -0800</li>
+<li>Cc: Tony Jolibois &lt;<a href="mailto:tjolibois@DOMAIN.HIDDEN">tjolibois@xxxxxx</a>&gt;,       ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;,       sophie baudel &lt;<a href="mailto:sbaudel@DOMAIN.HIDDEN">sbaudel@xxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00192.html">44203B20.9020904@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00187.html">44202810.2020700@cls.fr</a>&gt; &lt;<a href="msg00188.html">442034F5.5090203@noaa.gov</a>&gt;&lt;<a href="msg00191.html">442037A1.8000509@cls.fr</a>&gt; &lt;<a href="msg00192.html">44203B20.9020904@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Or to get rid of the area weight on lat/lon grid,
+use let xm=xin[x=@sum,y=@sum]/xin[x=@ngd,y=@ngd]
+
+this will do simple averages.
+Muyin
+
+Ansley Manke wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Tony,<br>
+Yes, if the grid is defined with units of degrees longitude and 
+latitude, then Ferret does compute with weighted averages.  A way to 
+compare with the nco computation is to set the units of the X and Y 
+axis to something else<br>
+<br>
+yes? set axis/units=&quot; &quot;  `temperature,return=xaxis`<br>
+yes? set axis/units=&quot; &quot;  `temperature,return=yaxis`<br>
+<br>
+And then compute the average - this will treat the units of the axes 
+as just numbers, and might compare with the nco computation.<br>
+<br>
+Ansley<br>
+<br>
+Tony Jolibois wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">    Hi Ansley,<br>
+<br>
+You're right for the correction, nco do not compute weighted average, 
+ferret yes, I think this is the difference (I tested average on 
+longitude only I have the same result with nco and ferret).<br>
+Thanks for your reponse,<br>
+Tony<br>
+<br>
+Ansley Manke wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Tony,<br>
+Could you send us the grid information, that is the output of:<br>
+<br>
+  ncdump -h mercatorPsy3v1R1v_med_levitus_1998_M01.nc<br>
+<br>
+One thing that could make a difference is whether the averaging 
+computes the area for each grid cell based on the latitude 
+correction for the location of each cell.  Also, whether the grid is 
+irregularly-spaced might have some impact. 
+<br>
+Ansley<br>
+<br>
+Tony Jolibois wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">       Hi all,<br>
+<br>
+I have to compute averages on longitude and latitude axes to have a 
+one value result, data are ocean model outputs (depth=0).<br>
+When I use ferret and nco to compute these averages, I don't find 
+the same result, I don't understand why. With nco I find a 
+temperature_averaged = 14.06548 and with ferret I find 14.38.<br>
+<br>
+Source file : mercatorPsy3v1R1v_med_levitus_1998_M01.nc (levitus 
+climatology over Mediterranean sea)<br>
+<br>
+    * With nco :<br>
+<br>
+ncwa -a latitude,longitude -d depth,0,0 
+mercatorPsy3v1R1v_med_levitus_1998_M01.nc 
+mercatorPsy3v1R1v_med_levitus_1998_M01_averaged.nc<br>
+result : temperature_averaged = 14.06548<br>
+<br>
+    * With ferret :<br>
+<br>
+yes? use mercatorPsy3v1R1v_med_levitus_1998_M01.nc<br>
+yes? define variable/unit=&quot;degC&quot;/title=&quot;Temperature (degC)&quot; 
+temperature_averaged = temperature[x=@AVE,y=@AVE,z=0]<br>
+yes? list temperature_averaged<br>
+             VARIABLE : Temperature (degC) (degC)<br>
+             DATA SET : MERCATOR PSY3V1R1 VITRINE CLIM (with bathy 
+mask)<br>
+             FILENAME : mercatorPsy3v1R1v_med_levitus_1998_M01.nc<br>
+             LONGITUDE: 6.1W(-6.1) to 45.1E(45.1)<br>
+             LATITUDE : 30N to 48N<br>
+             DEPTH (m): 0<br>
+          14.38<br>
+yes?<br>
+<br>
+Can someone help me ?<br>
+Tony<br>
+<br>
+--<br>
+Tony Jolibois<br>
+<br>
+CLS - Direction Océanographie Spatiale<br>
+8-10 rue hermès - 31520 Ramonville Saint-Agne<br>
+tjolibois@cls.fr<br>
+<br>
+Tél : +33 (0) 561 393 797<br>
+Fax : +33 (0) 561 393 782<br>
+ 
+<br>
+</blockquote>
+<br>
+Click here 
+&lt;<a  href="https://www.mailcontrol.com/sr/kLAXQ2OAfY+sg8rlqvO39eQW5+zPrcG%21+EgUFuWX7Qd21ga+VaqQIGy%21cYV+Gz6EGOSEfbdsqI84clXU5dBDqudA%21wHWYCkn2B7LV20df%215fKeR8dJPQzxXwarnKoyYCTTb8lrBLkxS%2104YlmMYgQgf1u3gfn8tFXuBGI263SbjrcpSnPdvffsPPhvPXK%2199DghS21ev4dbn5ZxYJVKoj2FRgKP94rKf">https://www.mailcontrol.com/sr/kLAXQ2OAfY+sg8rlqvO39eQW5+zPrcG%21+EgUFuWX7Qd21ga+VaqQIGy%21cYV+Gz6EGOSEfbdsqI84clXU5dBDqudA%21wHWYCkn2B7LV20df%215fKeR8dJPQzxXwarnKoyYCTTb8lrBLkxS%2104YlmMYgQgf1u3gfn8tFXuBGI263SbjrcpSnPdvffsPPhvPXK%2199DghS21ev4dbn5ZxYJVKoj2FRgKP94rKf</a>&gt; 
+to report this email as spam.<br>
+<br>
+</blockquote>
+--<br>
+Tony Jolibois<br>
+<br>
+CLS - Direction Océanographie Spatiale<br>
+8-10 rue hermès - 31520 Ramonville Saint-Agne<br>
+tjolibois@cls.fr<br>
+<br>
+Tél : +33 (0) 561 393 797<br>
+Fax : +33 (0) 561 393 782<br>
+ 
+<br>
+</blockquote></blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00187" href="msg00187.html">[ferret_users] Average with ferret vs nco</a></strong>
+<ul><li><em>From:</em> Tony Jolibois</li></ul></li>
+<li><strong><a name="00188" href="msg00188.html">[ferret_users] Re: Average with ferret vs nco</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00191" href="msg00191.html">[ferret_users] Re: Average with ferret vs nco</a></strong>
+<ul><li><em>From:</em> Tony Jolibois</li></ul></li>
+<li><strong><a name="00192" href="msg00192.html">[ferret_users] Re: Average with ferret vs nco</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00192.html">[ferret_users] Re: Average with ferret vs nco</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00189.html">Re: [ferret_users] Average with ferret vs nco</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00192.html">Thread Prev</a>][<a href="msg00189.html">Thread Next</a>][<A HREF="threads.html#00194">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

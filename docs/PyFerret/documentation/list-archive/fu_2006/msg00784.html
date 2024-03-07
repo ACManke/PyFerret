@@ -1,0 +1,146 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] how to refer to multiple identical filenames in Ferret -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Sun, 10 Dec 2006 20:58:31 &#45;0800 -->
+<!--X-Message-Id: C92D22DE&#45;0CD9&#45;4E89&#45;9985&#45;071DE5C1EF9A@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 456EAA84.1010505@palmod.uni&#45;bremen.de -->
+<!--X-Reference: 2360FCAB&#45;58F7&#45;474A&#45;9E16&#45;691EA62C4062@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] how to refer to multiple identical filenames in Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00764.html">Thread Prev</a>][<a href="msg00787.html">Thread Next</a>][<A HREF="threads.html#00784">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] how to refer to multiple identical filenames in Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] how to refer to multiple identical filenames in Ferret</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 10 Dec 2006 20:58:24 -0800</li>
+<li>Cc: William Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00764.html">2360FCAB-58F7-474A-9E16-691EA62C4062@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00763.html">456EAA84.1010505@palmod.uni-bremen.de</a>&gt;&lt;<a href="msg00764.html">2360FCAB-58F7-474A-9E16-691EA62C4062@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi all -<br>
+<br>
+This is an answer rather than a question. Maybe this is obvious to  
+some, but it wasn't to me ....<br>
+<br>
+When an OGCM is run repeatedly with different forcing, you may end up  
+with identical filenames in different directories. For example I run  
+MOM4 with various forcing anomalies, and the filenames describe the  
+date of each snapshot, while the directories they are in describe the  
+model run. For example I have files:<br>
+<br>
+/data/Models/mom4/seasonal_cycle/ocean_day_2002_10_05.nc		! a  
+seasonal cycle run<br>
+/data/Models/mom4/EXP_1003/ocean_day_2002_10_05.nc			! a run with  
+modified winds<br>
+<br>
+If typing in commands by hand, I can easily do operations on the  
+files, for example:<br>
+<br>
+yes? shade/z=0 temp[d=2] - temp[d=1]		! plot anomaly of SST<br>
+<br>
+But suppose I want to do this in a script that would open the two  
+files and do the comparison. Then I can't assume that the datasets  
+are 1 and 2. Nor can I use the filename to distinguish them, since  
+they are identical.<br>
+<br>
+You can do this in a script using unix soft links. Here's an example  
+script to do this:<br>
+---------------------------------------------------<br>
+! $1=experiment number (e.g. 1003)<br>
+! $2,3,4=yr,mon,day (e.g. 2002 10 05)<br>
+! $5=depth level<br>
+<br>
+! use the input values to construct the filename<br>
+def sym fname &quot;ocean_day_$2_$3_$4&quot;<br>
+<br>
+! use soft links to define temporary names for these files<br>
+! ==&gt;&gt; must be soft links (ln -s)!! Else will delete the actual file!  
+&lt;&lt;==<br>
+! first get rid of previous definitions<br>
+can dat/noerr seasonal<br>
+can dat/noerr anomalies<br>
+sp \rm seasonal.nc<br>
+sp \rm anomalies.nc<br>
+sp ln -s /data/Models/mom4/EXP_$1/($fname).nc anomalies.nc<br>
+sp ln -s /data/Models/mom4/seasonal_cycle/($fname).nc seasonal.nc<br>
+<br>
+! bring in and use the identical filenames under new descriptive names<br>
+use seasonal.nc<br>
+use anomalies.nc<br>
+<br>
+shade/z=$5 temp[d=anomalies] - temp[d=seasonal]<br>
+---------------------------------------------------<br>
+<br>
+Billy K<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00787" href="msg00787.html">Re: [ferret_users] how to refer to multiple identical filenames inFerret</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00763" href="msg00763.html">[ferret_users]</a></strong>
+<ul><li><em>From:</em> Joerg Franke</li></ul></li>
+<li><strong><a name="00764" href="msg00764.html">Re: [ferret_users] (viewport to leave room for color key labels)</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00764.html">Re: [ferret_users] (viewport to leave room for color key labels)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00787.html">Re: [ferret_users] how to refer to multiple identical filenames inFerret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00764.html">Thread Prev</a>][<a href="msg00787.html">Thread Next</a>][<A HREF="threads.html#00784">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

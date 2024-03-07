@@ -1,0 +1,241 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] count consecutive events -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Fri, 20 Jun 2008 10:00:39 &#45;0700 -->
+<!--X-Message-Id: 485BE293.70501@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 485AFC38.4090709@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] count consecutive events</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00307.html">Thread Prev</a>][<a href="msg00309.html">Thread Next</a>][<A HREF="threads.html#00308">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] count consecutive events</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] count consecutive events</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 20 Jun 2008 10:02:11 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:485AFC38.4090709@DOMAIN.HIDDEN">485AFC38.4090709@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:485AFC38.4090709@DOMAIN.HIDDEN">485AFC38.4090709@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Macintosh/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Patrick,
+
+</pre><tt>   I had a similar problem some years ago - counting runs in sequences 
+</tt><tt>of 0's and 1's -- but just thought of a better way to do it, using the 
+</tt><tt>@cia transformation.  One identifies &quot;start&quot; and &quot;end&quot; points in the 
+</tt><tt>sequence then, whereever a &quot;start&quot; is found, looking for where the &quot;next 
+</tt><tt>end above&quot; is located.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>   The method results in short, independent definitions for each run 
+</tt><tt>length, and lends itself to use in a repeat loop.  A demo script (when 
+</tt><tt>the sequence is along the x-axis) is attached but the key points are:
+</tt><pre style="margin: 0em;">
+
+! define start points (a 1 preceded by a 0) for the runs in the sequence &quot;v&quot;
+let/title=&quot;Run Starts&quot; start=if(v eq 1 and v[i=@shf:-1] eq 0)then 1
+! ... and end points (a 1 followed by a 0)
+let/title=&quot;Run Ends&quot; end=if(v eq 1 and v[i=@shf:1] eq 0)then 1
+! then the start points of runs of length &quot;n&quot; are given by the mask &quot;run&quot;
+let run=IF(START EQ 1 AND END[I=@CIA] EQ `n-1`)then 1
+! and to count them
+list run[i=@ngd]
+
+Hope it helps,
+Mick
+---------
+Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+
+Is there a way to count consecutive events ?
+From climate indice variables, I would like to have the number
+of continuous events, for 1, 2, 3, 4, ..., n events.
+
+              B   C1EVN  C2EVN  C3EVN  C4EVN
+1    /  1:  0.000   ....   ....   ....   ....
+2    /  2:  1.000  1.000   ....   ....   ....
+3    /  3:  0.000   ....   ....   ....   ....
+4    /  4:  1.000  1.000   ....   ....   ....
+5    /  5:  0.000   ....   ....   ....   ....
+6    /  6:  1.000  1.000   ....   ....   ....
+7    /  7:  0.000   ....   ....   ....   ....
+8    /  8:  1.000  1.000   ....   ....   ....
+9    /  9:  0.000   ....   ....   ....   ....
+10   / 10:  0.000   ....   ....   ....   ....
+11   / 11:  0.000   ....   ....   ....   ....
+12   / 12:  1.000   ....  1.000   ....   ....
+13   / 13:  1.000   ....   ....   ....   ....
+14   / 14:  0.000   ....   ....   ....   ....
+15   / 15:  1.000   ....  1.000   ....   ....
+16   / 16:  1.000   ....   ....   ....   ....
+17   / 17:  0.000   ....   ....   ....   ....
+18   / 18:  0.000   ....   ....   ....   ....
+19   / 19:  1.000   ....  1.000   ....   ....
+20   / 20:  1.000   ....   ....   ....   ....
+21   / 21:  0.000   ....   ....   ....   ....
+22   / 22:  0.000   ....   ....   ....   ....
+23   / 23:  1.000  1.000   ....   ....   ....
+24   / 24:  0.000   ....   ....   ....   ....
+25   / 25:  0.000   ....   ....   ....   ....
+26   / 26:  1.000   ....   ....   ....  1.000
+27   / 27:  1.000   ....   ....   ....   ....
+28   / 28:  1.000   ....   ....   ....   ....
+29   / 29:  1.000   ....   ....   ....   ....
+30   / 30:  0.000   ....   ....   ....   ....
+...
+
+C1EVN represents events for 1 period at 1
+C2EVN represents events for 2 consecutive periods at 1
+C3EVN represents events for 3 consecutive periods at 1
+C4EVN represents events for 4 consecutive periods at 1
+...
+
+</pre><tt>Attached is a exemple I have scripted. It works well for a 52 points 
+</tt><tt>variable
+</tt><pre style="margin: 0em;">
+when I look for for 1 to 4 consecutive events.
+
+As the real case is to compute this over a year of 360 days looking for
+</pre><tt>consecutive events of 30 days, I need to define variables from very 
+</tt><tt>long expressions.
+</tt><pre style="margin: 0em;">
+and in this case I get the message :
+**ERROR: expression too complex
+
+Let me know if there a solution to this.
+Patrick
+
+</pre></blockquote><pre style="margin: 0em;">
+&#xE5;&#xE5;
+</pre><pre>! Counting runs of 1's in a sequence of 0's and 1's
+
+! generate a series of 0's and 1's and list to a file ...
+let rv=if(randu(i) ge 0.45)then 1 else 0
+list/nohead/i=1:360/file=runtest.d/form=(f3.0) rv
+! ... then read them back
+def axis/x=1:360:1 xax ; def grid/x=xax grd
+file/form=free/var=v/g=grd runtest.d
+
+! define start points for the runs (a 1 preceded by a 0)
+let/title=&quot;Run Starts&quot; start=if(v eq 1 and v[i=@shf:-1] eq 0)then 1
+! ... and end points (a 1 followed by a 0)
+let/title=&quot;Run Ends&quot; end=if(v eq 1 and v[i=@shf:1] eq 0)then 1
+
+! define some simple runs (of 1, 2, 3, or 4 ones in a row)
+! a run of length 1 starts and ends at the same point
+! let run1=if(start*end eq 1)then 1
+! ... or equivalently
+let run1=if(start eq 1 and end[i=@cia] eq 0)then 1
+! a run of length 2 has its end &quot;one point ahead&quot; ...
+let run2=if(start eq 1 and end[i=@cia] eq 1)then 1
+! a run of length 3 has its end &quot;two points ahead&quot; ...
+let run3=if(start eq 1 and end[i=@cia] eq 2)then 1
+! and so on
+let run4=if(start eq 1 and end[i=@cia] eq 3)then 1
+! since these expressions are short and independent you can
+! define as many as you like ...
+
+! ... and verify that you match the results from a test listing
+list/nohead/i=1:52/form=(f2.0) v
+list/nohead/i=1:52 run1[i=@ngd],run2[i=@ngd],run3[i=@ngd],run4[i=@ngd]
+
+message
+
+! to look at multiple run lengths you could employ a repeat loop
+! --- lets increase the probability of &quot;ones&quot; to get some longer runs
+
+let rv=if(randu(i) ge 0.1)then 1 else 0
+list/nohead/i=1:10000/file=runtest.d/form=(f3.0)/clob rv
+can data 1 ; def axis/x=1:10000:1 xax ; def grid/x=xax grd
+file/form=free/var=v/g=grd runtest.d
+
+message
+
+! lets list the number of runs of lengths 1-30 in this 10000 point sequence
+sp touch run.results
+repeat/range=1:30/name=n (let run=IF(START EQ 1 AND END[I=@CIA] EQ `n-1`)then 1 ;\
+list/nohead/app/form=(2f6.0)/file=run.results n,run[i=@ngd] )
+
+! and make a bar chart of the results
+let bx=ysequence({-0.5,0.5,0.5,-0.5}) ; let by=ysequence({0,0,1,1})
+file/form=free/var=length,hits run.results
+poly/nolab/pal=black/coord=y/set bx+length,by*hits
+ppl yfor,(i3) ; ppl xfor,(i2) ; ppl xaxis,0.5,30.5,1 ; ppl axlint,1 ; ppl fillpoly
+
+q
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00309" href="msg00309.html">Re: [ferret_users] count consecutive events</a></strong>
+<ul><li><em>From:</em> jaison</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00305" href="msg00305.html">[ferret_users] count consecutive events</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00307.html">Re: [ferret_users] count consecutive events</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00309.html">Re: [ferret_users] count consecutive events</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00307.html">Thread Prev</a>][<a href="msg00309.html">Thread Next</a>][<A HREF="threads.html#00308">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

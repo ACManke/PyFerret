@@ -1,0 +1,193 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] reading ascii data and regridding -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 12 Jun 2007 07:11:31 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0706121952260.24956@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 880971.54271.qm@web50610.mail.re2.yahoo.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] reading ascii data and regridding</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00354.html">Thread Prev</a>][<a href="msg00359.html">Thread Next</a>][<A HREF="threads.html#00357">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] reading ascii data and regridding</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Prakya Shree Ram &lt;<a href="mailto:srprakhya@DOMAIN.HIDDEN">srprakhya@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] reading ascii data and regridding</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 12 Jun 2007 19:57:29 +0530 (IST)</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:880971.54271.qm@DOMAIN.HIDDEN">880971.54271.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:880971.54271.qm@DOMAIN.HIDDEN">880971.54271.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Sriram,
+               Your mail have 3 questions. I will try to answer them
+separately. 
+
+Assuming :
+     -  all variables are in &quot;numeric format&quot;, including longitude and 
+           latitude (ie. no &quot;N&quot; or &quot;E&quot; associated with the values)
+     -  no comments anywhere in the datafile,
+     -  data is for 1 particular float, and for a particular profile
+
+1. Reading ASCII data
+---------------------
+
+   define axis/Z=0:100:1/units=meters/DEPTH zfile
+   define grid/z=zfile gfile
+   FILE/grid=gfile/var=&quot;fid, yr, mon, date, lon, lat, press, te, sa&quot; ascii.txt
+
+2. Interpolating to standard depth levels 
+-----------------------------------------
+
+   ! first regrid the temp. data onto pressure axis (units dbar/meters)
+   
+   define axis/z/units=meters/DEPTH/from_data zpress=press[d=1]
+   let te_pr = te[d=1,gz=zpress@ASN]
+
+   ! now, on to the destination standard depth axis
+
+   let zstdr = ZSEQUENCE({0,10,20,30,40,50,75,100,150,200,300,400,500,750,1000})
+   define axis/z/units=meters/DEPTH/from_data zstnd=zstdr
+   let temp  = te_pr[gz=zstnd]   ! the default linear interpolation is assumed
+   
+3. Profiles to X-Y Gridded data
+--------------------------------
+
+   To remap the profile data (on standard depth or pressure axis) on to a 
+   uniformly spaced XY grid, you have to use external functions like 
+   SCAT2GRIDGAUSS_XY or SCAT2GRIDLAPLACE_XY. For this purpose, you need the 
+   lat and lon information for each profile.
+
+These are the general steps you have to go. Steps 1 and 2 will depend on the 
+&quot;exact&quot; format of the ascii data when you have multiple profiles. For example,
+if the pressure levels are different for different profiles, then you have to 
+repeat the definition of zpress for all the profiles. 
+
+You can incorporate the time axis information during any of the above steps
+or at the final stage.
+
+Relevant sections in user manual are : 
+
+  Ch2 Sec5.1.    Reading ASCII files 
+  Ch2 Sec5.2.    Reading &quot;DELIMITED&quot; data files 
+  Ch2 Sec6.      TRICKS TO READING BINARY AND ASCII FILES 
+  Ch3 Sec2.3.37  SCAT2GRIDGAUSS_XY
+  Ch3 Sec2.3.40  SCAT2GRIDLAPLACE_XY  
+
+In Ferret Mail archives, you can find many threads discussing these topics.
+However, the &quot;Search the Archives&quot; tool at Ferret website is not working I
+guess. But you can try searching in google.
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+
+On Mon, 11 Jun 2007, Prakya Shree Ram wrote:
+
+&gt; Dear Friends,
+&gt; 
+&gt; I am trying to read ascii data which contains the
+&gt; vertical profiles of temperature and salinity. My data
+&gt; file contains 9 columns (float ID, year, month, date,
+&gt; longitude, latitude, pressute, temperature and
+&gt; salinity). The observations are at random locations, I
+&gt; want to do interpolation of temperature and salinity
+&gt; for standard depths and then into 0.25 X 0.25
+&gt; horizontal. Can anybody suggest me the best possible
+&gt; way to do this?
+&gt; 
+&gt; Any help in this regard is highly appreciated.
+&gt; 
+&gt; Thanks in advance and regards,
+&gt; Sriram
+&gt; 
+&gt; 
+&gt;  
+&gt; ____________________________________________________________________________________
+&gt; Sucker-punch spam with award-winning protection. 
+&gt; Try the free Yahoo! Mail Beta.
+&gt; <a  rel="nofollow" href="http://advision.webevents.yahoo.com/mailbeta/features_spam.html">http://advision.webevents.yahoo.com/mailbeta/features_spam.html</a>
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00359" href="msg00359.html">Re: [ferret_users] reading ascii data and regridding</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00354" href="msg00354.html">[ferret_users] reading ascii data and regridding</a></strong>
+<ul><li><em>From:</em> Prakya Shree Ram</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00354.html">[ferret_users] reading ascii data and regridding</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00359.html">Re: [ferret_users] reading ascii data and regridding</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00354.html">Thread Prev</a>][<a href="msg00359.html">Thread Next</a>][<A HREF="threads.html#00357">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

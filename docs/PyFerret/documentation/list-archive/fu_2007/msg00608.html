@@ -1,0 +1,272 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Problem with @AVE gridding on intermitent time series data -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 16 Oct 2007 10:11:48 &#45;0700 -->
+<!--X-Message-Id: 20071016164608.M4455@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: F82344282A084F4C98F7235E896FEA5AE06FA1@chill.shore.mbari.org -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Problem with @AVE gridding on intermitent time series data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00610.html">Thread Prev</a>][<a href="msg00614.html">Thread Next</a>][<A HREF="threads.html#00608">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Problem with @AVE gridding on intermitent time series data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Problem with @AVE gridding on intermitent time series data</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 16 Oct 2007 23:17:16 +0630</li>
+<li>References: &lt;<a href="mailto:F82344282A084F4C98F7235E896FEA5AE06FA1@DOMAIN.HIDDEN">F82344282A084F4C98F7235E896FEA5AE06FA1@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Here is the reply i send to Mike.....but forgot to add the email address
+for the group....sorry about that...
+------------------------------------------------------------------
+
+Hi Mike, 
+          Some points to note :
+
+  1. There is no missing values information for the time points over which
+measurements does 
+        not exist. Instead, the time axis have only those time points over
+which data exists.
+        This creates the problem. Solution is to regrid the original data to
+an equally 
+        spaced (10 minute resolution) time axis first. (The @XACT regridding
+is ideal in this
+        case, but it is not working properly for this dataset. See the point 2
+below.)
+
+  2. When you define a time axis, take special care to see that the time axis
+values remains
+        reasonably smaller (ideally to get real values which can be precisely
+represented in
+        a 32 bit machine). To achieve this, always choose proper time units
+and T0. Also
+        start your time axis name with the letter &quot;T&quot;, which will help other
+programs to
+        identify time axis.
+
+ What is wrong with your dataset? Due to the violation of 2 above (try
+list/T=&quot;01-JUL-2007 19:50&quot;:&quot;10-JUL-2007 14:00&quot; t[gt=temperature], also notice
+that the time delta is not precisely
+10 minutes! all becase of this wierd time axis definition!), the time axis is
+not at all 
+friendly for any operation in Ferret. For the same reason, regridding
+operations like @AVE or
+@XACT may not result in expected values.
+
+I have some other ideas on a solution for this problem...but they are tedious.
+Let me see
+whether anybody have any quick fixes.
+
+Your questions are most welcome....
+
+Regards,
+
+Jaison
+
+On Mon, 15 Oct 2007 16:07:36 -0700, McCann, Mike wrote
+&gt; Hello,
+&gt; 
+&gt; I'm use the @AVE regridding transform to take in situ mooring data 
+&gt; and create regular hourly gridded data sets.
+&gt; 
+&gt; I've encountered a problem which I think might be a bug, namely 
+&gt; because the @AVE and @MAX transforms behave differently.  Here is an 
+&gt; example using an actual data set:
+&gt; 
+&gt; ! An original Conductivity Temperature Depth data &quot;10-minute&quot; time series
+&gt; USE
+&quot;<a  rel="nofollow" href="http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/m1_ctd0000_20070405_original.nc&quot">http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/m1_ctd0000_20070405_original.nc&quot</a>;
+&gt; 
+&gt; ! Define an hourly axis
+&gt; 
+&gt; DEFINE AXIS/T=&quot;12-Oct-2006 18:00:00&quot;:&quot;15-Oct-2007 
+&gt; 18:00:00&quot;:3600/T0=&quot;01-JAN-1970 00:00:00&quot;/UNITS=seconds HR_TIME
+&gt; 
+&gt; ! Set region for when telemetry was lost for 15 hours
+&gt; SET REGION/T=&quot;4-JUL-2007 20:00&quot;:&quot;5-JUL-2007 14:00&quot;
+&gt; 
+&gt; ! Show the data to see the gap
+&gt; LIST TEMPERATURE				
+&gt; 
+&gt; ! Grid the data with the @MAX gridding transform  This does the 
+&gt; appropriate thing: ! finds max from input and puts in missing values 
+&gt; for the time period of the gap. LIST TEMPERATURE[gt=HR_TIME@MAX]	
+&gt; 
+&gt; yes? LIST TEMPERATURE[gt=HR_TIME@MAX]
+&gt;              VARIABLE : Water Temperature (deg C)
+&gt;                         regrid: 3600 sec on T@MAX
+&gt;              DATA SET : Mooring M1 CTD data from MBARI at original 
+&gt; sampling intervals             FILENAME : m1_ctd0000_20070405_original.nc
+&gt;              FILEPATH :
+<a  rel="nofollow" href="http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/">http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/</a>
+&gt;              SUBSET   : 19 points (TIME)
+&gt;              LONGITUDE: 122W(-122)
+&gt;              LATITUDE : 36.8N
+&gt;              DEPTH (m): 0
+&gt;                             122W
+&gt;                               1
+&gt;  04-JUL-2007 20:00 / 6363:  11.30
+&gt;  04-JUL-2007 21:00 / 6364:  11.37
+&gt;  04-JUL-2007 22:00 / 6365:   ....
+&gt;  04-JUL-2007 23:00 / 6366:   ....
+&gt;  05-JUL-2007 00:00 / 6367:   ....
+&gt;  05-JUL-2007 01:00 / 6368:   ....
+&gt;  05-JUL-2007 02:00 / 6369:   ....
+&gt;  05-JUL-2007 03:00 / 6370:   ....
+&gt;  05-JUL-2007 04:00 / 6371:   ....
+&gt;  05-JUL-2007 05:00 / 6372:   ....
+&gt;  05-JUL-2007 06:00 / 6373:   ....
+&gt;  05-JUL-2007 07:00 / 6374:   ....
+&gt;  05-JUL-2007 08:00 / 6375:   ....
+&gt;  05-JUL-2007 09:00 / 6376:   ....
+&gt;  05-JUL-2007 10:00 / 6377:   ....
+&gt;  05-JUL-2007 11:00 / 6378:   ....
+&gt;  05-JUL-2007 12:00 / 6379:  11.96
+&gt;  05-JUL-2007 13:00 / 6380:  12.08
+&gt;  05-JUL-2007 14:00 / 6381:  12.13
+&gt; 
+&gt; ! Grid the data with the @AVE gridding transform.  This does an 
+&gt; unexpected thing: ! fills the time period of the gap with numbers 
+&gt; that are extrapolations of bounding ! good points except for the 
+&gt; center point which is an average of those two points. LIST 
+&gt; TEMPERATURE[gt=HR_TIME@AVE]	
+&gt; 
+&gt; yes? LIST TEMPERATURE[gt=HR_TIME@AVE]
+&gt;              VARIABLE : Water Temperature (deg C)
+&gt;                         regrid: 3600 sec on T@AVE
+&gt;              DATA SET : Mooring M1 CTD data from MBARI at original 
+&gt; sampling intervals             FILENAME : m1_ctd0000_20070405_original.nc
+&gt;              FILEPATH :
+<a  rel="nofollow" href="http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/">http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/</a>
+&gt;              SUBSET   : 19 points (TIME)
+&gt;              LONGITUDE: 122W(-122)
+&gt;              LATITUDE : 36.8N
+&gt;              DEPTH (m): 0
+&gt;                             122W
+&gt;                               1
+&gt;  04-JUL-2007 20:00 / 6363:  11.13
+&gt;  04-JUL-2007 21:00 / 6364:  11.33
+&gt;  04-JUL-2007 22:00 / 6365:  11.32
+&gt;  04-JUL-2007 23:00 / 6366:  11.32
+&gt;  05-JUL-2007 00:00 / 6367:  11.32
+&gt;  05-JUL-2007 01:00 / 6368:  11.32
+&gt;  05-JUL-2007 02:00 / 6369:  11.32
+&gt;  05-JUL-2007 03:00 / 6370:  11.32
+&gt;  05-JUL-2007 04:00 / 6371:  11.32
+&gt;  05-JUL-2007 05:00 / 6372:  11.79
+&gt;  05-JUL-2007 06:00 / 6373:  11.96
+&gt;  05-JUL-2007 07:00 / 6374:  11.96
+&gt;  05-JUL-2007 08:00 / 6375:  11.96
+&gt;  05-JUL-2007 09:00 / 6376:  11.96
+&gt;  05-JUL-2007 10:00 / 6377:  11.96
+&gt;  05-JUL-2007 11:00 / 6378:  11.96
+&gt;  05-JUL-2007 12:00 / 6379:  11.96
+&gt;  05-JUL-2007 13:00 / 6380:  12.04
+&gt;  05-JUL-2007 14:00 / 6381:  12.12
+&gt; 
+&gt; Am I interpreting these transforms properly?  Should @AVE have a 
+&gt; behavior similar to @MAX (and @MIN)?  I'd think that if there were 
+&gt; no data for a time period then that should be reflected with missing 
+&gt; data values for whatever gridding transform is used.
+&gt; 
+&gt; Thanks,
+&gt; Mike
+&gt; 
+&gt; --
+&gt; Mike McCann
+&gt; Software Engineer
+&gt; Monterey Bay Aquarium Research Institute
+&gt; 7700 Sandholdt Road
+&gt; Moss Landing, CA 95039-9644
+&gt; Voice: 831.775.1769  Fax: 831.775.1736 <a  rel="nofollow" href="http://www.mbari.org">http://www.mbari.org</a> 
+&gt; &lt;<a  rel="nofollow" href="http://www.mbari.org/">http://www.mbari.org/</a>&gt;
+&gt; 
+&gt; -- 
+&gt; This message has been scanned for viruses and
+&gt; dangerous content by MailScanner, and is
+&gt; believed to be clean.
+
+--
+Centre for Atmospheric
+       and
+  Oceanic Sciences,
+Indian Institute of Science
+Bangalore-560 012
+India
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00604" href="msg00604.html">[ferret_users] Problem with @AVE gridding on intermitent time series data</a></strong>
+<ul><li><em>From:</em> McCann, Mike</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00610.html">Re: [ferret_users] Problem with @AVE gridding on intermitent time series data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00614.html">RE: [ferret_users] Problem with @AVE gridding on intermitent time series data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00610.html">Thread Prev</a>][<a href="msg00614.html">Thread Next</a>][<A HREF="threads.html#00608">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] plot of differences, what pattern? -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 28 Apr 2006 08:55:51 &#45;0700 -->
+<!--X-Message-Id: 991143AD&#45;825B&#45;413D&#45;B04F&#45;5C0BE9758A72@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 7B45A91A&#45;E4B9&#45;4325&#45;98F5&#45;B134E75C1E47@astr.ucl.ac.be -->
+<!--X-Derived: gif00020.gif -->
+<!--X-Derived: gif00021.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] plot of differences, what pattern?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00285.html">Thread Prev</a>][<a href="msg00287.html">Thread Next</a>][<A HREF="threads.html#00286">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] plot of differences, what pattern?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] plot of differences, what pattern?</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 28 Apr 2006 08:55:57 -0700</li>
+<li>Cc: &quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;,       Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00285.html">7B45A91A-E4B9-4325-98F5-B134E75C1E47@astr.ucl.ac.be</a>&gt;</li>
+<li>References: &lt;<a href="msg00285.html">7B45A91A-E4B9-4325-98F5-B134E75C1E47@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Emilie -<br>
+<br>
+I suggest using symbols &quot;+&quot; and &quot;-&quot;, with their size scaled to the  
+absolute value. No shading. In general you can do this kind of thing  
+with labels, using a double repeat loop over i and j, after having  
+successively masked the XY variable to each of the intervals desired,  
+and using a different label size.<br>
+<br>
+Another approach is to draw the symbols by hand. A somewhat similar  
+situation is shown in the attached plots below, which are variance  
+ellipses (or their equivalent in crosses) drawn on a map. These are  
+one level more complex than your case, because the symbols are  
+rotated to show direction in addition to varying by size. (see many  
+more examples at <a  href="http://www.pmel.noaa.gov/~kessler/noumea/ORCA/">http://www.pmel.noaa.gov/~kessler/noumea/ORCA/</a> 
+ORCA2.html, including placing the ellipse at the head of each  
+vector). Your example will be simpler.<br>
+<br>
+My example below used the same symbol (cross) for everything. You  
+will have the complication of using 2 different symbols for positive  
+and negative values. Do this by overlaying two plots. Make the first  
+one with a &quot;+&quot; symbol after masking out the negative values. Then  
+make the second one with a &quot;-&quot; symbol after masking the positives.<br>
+<br>
+An additional enhancement might be to divide your values into 4  
+categories: value&lt;-.5, .5&lt;value&lt;0, 0&lt;value&lt;.5, .5&lt;value. Then use  
+line=1 for the smaller absolute values, and line=7 for the larger  
+ones (see repeat loop below).<br>
+<br>
+Note that one requirement of the following is that the aspect ratio  
+of your plot be consistent with the map coordinates (see definition  
+of DUHI below).<br>
+<br>
+I did these plots by first defining the major and minor axes of each  
+ellipse, and the angle of rotation (AMAJ,BMIN,THETAM). All of these  
+are fields in (x,y).<br>
+<br>
+! use the 3rd axis to define the shape (here simple crosses, but any  
+shape can be made):<br>
+let xfact={1,0,0,0,0,-1}       ! values to define a generic cross<br>
+let yfact={0,0,1,-1,0,0}<br>
+define axis/z=1:6:1 zdumax    ! dummy z-axis<br>
+let zdum=z[gz=zdumax]<br>
+let xfactz=reshape(xfact,zdum)     ! put the cross on the z-axis<br>
+let yfactz=reshape(yfact,zdum)<br>
+let xell=amaj*xfactz          ! stretch the cross according to the  
+shape of the variance ellipse<br>
+let yell=bmin*yfactz          ! in your case the equivalent to  
+AMAJ,BMIN will be identical, but will contain the size of the cross<br>
+! variables XELL,YELL are now 3-dimensional (x,y,z)<br>
+<br>
+! for the second plot you will define a simple horizontal line for  
+the minus sign .....<br>
+<br>
+! ellipse/cross points in the longitude/latitude frame (rotate by  
+thetam)<br>
+! this will not be necessary if rotation is omitted<br>
+let/q xellp = xell*cos(thetam) + yell*cos(thetam-pi/2)<br>
+let/q yellp = xell*cos(thetam+pi/2) + yell*cos(thetam)<br>
+<br>
+! above in units of scaled data. Now scale crosses to lat/long<br>
+! duhi converts data units to plot inches. It must be consistent for  
+x and y directions!<br>
+define symbol duhi [(map degrees longitude per inch)/(data units per  
+inch)]      ! as in vector scaling<br>
+let/q xellpsc = xellp * ($duhi)<br>
+let/q yellpsc = yellp * ($duhi)<br>
+<br>
+! place in correct location on map<br>
+let/q xx=x[gx=your_xy_var]<br>
+let/q yy=y[gy=your_xy_var]<br>
+let/q xellmap = xellpsc+xx<br>
+let/q yellmap = yellpsc+yy<br>
+<br>
+! make a basemap<br>
+go basemap  x=[your values]/hli=[your values]  y=[your values]/vli= 
+[your values]  05  lightgray  ! choose resolution, here etopo05<br>
+<br>
+! finally draw the crosses<br>
+! double repeat loop over i and j<br>
+! for each (i,j) location, the variables plotted are functions of z<br>
+! I had previously defined the I,J limits and skipvalues as symbols<br>
+! might use line=7 for the larger absolute values<br>
+repeat/i=($i1):($i2):($xskp) repeat/j=($j1):($j2):($yskp) plot/vs/ 
+line=1/over/nolab xellmap,yellmap<br>
+<br>
+Billy K<br>
+<br>
+On Apr 28, 2006, at 4:03 AM, Emilie Vanvyve wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi everyone,<br>
+<br>
+I'm trying to plot as clearly as possible a XY variable ranging  
+between -1 and 1 let's say, by 0.1 step. The variable is a bit  
+messy to the extent negative and positive values are next to each  
+other and no clear separation appears. With a grey scale (no colour  
+allowed this time), it's impossible to see what is negative, what  
+is positive.<br>
+<br>
+I'm wondering whether it'll be possible to plot a &quot;+&quot; symbol for  
+positive values and a &quot;-&quot; symbol for negative values (instead of a  
+filled gridmesh) and to mimic in the same time the pattern tool by  
+changing the colour of the &quot;+&quot; and the &quot;-&quot;. The closer the values  
+would be to |1|, the darker the &quot;+&quot; or &quot;-&quot; symbol would be.<br>
+<br>
+I've been playing with palette/pattern combinations, without any  
+real success  so far.<br>
+Is it possible to create one's own pattern?<br>
+<br>
+Thanks for any suggestion,<br>
+<br>
+Emilie<br>
+<br>
+______________________________________________________________<br>
+Emilie VANVYVE<br>
+Physicist, PhD student<br>
+Regional climate modelling, Tropical climate<br>
+<br>
+Université catholique de Louvain (UCL)<br>
+Institut d'astronomie et de géophysique G. Lemaître (ASTR)<br>
+Chemin du Cyclotron, 2, B-1348 Louvain-la-Neuve (Belgium)<br>
+Phone: +32 (0)10 473300   Fax: +32 (0)10 474722<br>
+E-mail: vanvyve@astr.ucl.ac.be   Web: www.astr.ucl.ac.be/u/vanvyve<br>
+<br>
+</blockquote><pre>
+</pre>
+<p><a href="gif00020.gif" ><img src="gif00020.gif" alt="GIF image"></a></p>
+<pre>
+</pre>
+<p><a href="gif00021.gif" ><img src="gif00021.gif" alt="GIF image"></a></p>
+<pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00285" href="msg00285.html">[ferret_users] plot of differences, what pattern?</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00285.html">[ferret_users] plot of differences, what pattern?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00287.html">Re: [ferret_users] plot of differences, what pattern?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00285.html">Thread Prev</a>][<a href="msg00287.html">Thread Next</a>][<A HREF="threads.html#00286">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] hand&#45;editing a variable -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 26 Apr 2006 04:23:48 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0604261647570.1706@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 20060426095809.M35760@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] hand-editing a variable</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00277.html">Thread Prev</a>][<a href="msg00279.html">Thread Next</a>][<A HREF="threads.html#00278">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] hand-editing a variable</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] hand-editing a variable</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 26 Apr 2006 16:55:16 +0530 (IST)</li>
+<li>Cc: Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00277.html">20060426095809.M35760@astr.ucl.ac.be</a>&gt;</li>
+<li>References: &lt;<a href="msg00277.html">20060426095809.M35760@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie,
+            Though it is easy to find a logic to do that, it is bit
+tricky to get it done in Ferret. Here is the logic and an example.
+
+ 1. List the &quot;L&quot; values of 12 time points (where all the variable to be
+       set to zero) to a text file. Read this 12 values to a new variable
+       and define a time axis (abstract one, NOT calendar) based on these
+       values.
+
+ 2. Use the &quot;L&quot; values of original variable to define an abstract time axis.
+       Regrid the above time axis to this one using @XACT transformation.
+
+ 3. Use IF condition to get 0 value at propoer time step (define a mask).
+
+ 4. Multiply original variable with this mask .... done !!!
+
+
+Please have a look at the example below. You may change the dataset
+numbers accordingly (d=1, d=2 stuff). Let me know if you face any problems.
+
+Hope this helps
+
+Regards
+
+Jaison
+
+!--------Example------------------------------------------------------
+\ cancel mode verify
+!
+! 3D variable (lon,lat,time), dt = 30 minutes,  time size = 1 year
+!
+! to do : set var=0 at each time when the time step equals the first of every
+!           month
+!-------------------------------------------------------------------------
+
+! let us create a dummy variable
+
+      define axis/x=30:120:2/units=longitudes xlon
+      define axis/y=-30:30:2/units=latitudes  ylat
+      define axis/t=&quot;01-JAN-2003:00&quot;:&quot;31-DEC-2003:00&quot;:30/units=minutes\
+           /T0=&quot;31-DEC-2002:00&quot; tmin
+
+      let var = SIN(X[gx=xlon]/20) + COS(y[gy=ylat]/20) + TAN(t[gt=tmin]/15)
+
+      fill/l=1 var
+
+! Extract the time points where var is to be set to zero
+
+      cancel reg/all  ! very important...keep it here itself
+
+      let l_start = `var,r=lstart`  ! let l_start = `var[d=1],r=lstart`
+      let l_end   = `var,r=lend`    ! let l_end   = `var[d=1],r=lend`
+
+      let months = TSEQUENCE({&quot;JAN&quot;,&quot;FEB&quot;,&quot;MAR&quot;,&quot;APR&quot;,&quot;MAY&quot;,&quot;JUN&quot;,&quot;JUL&quot;,\
+                              &quot;AUG&quot;,&quot;SEP&quot;,&quot;OCT&quot;,&quot;NOV&quot;,&quot;DEC&quot;})
+      sp rm -f dummy_L.dat
+      REPEAT/RANGE=1:12:1/NAME=mm ( ;\
+          define symbol mon = `mm`  ;\
+          LIST/nohead/file=dummy_L.dat/quiet/append \
+                   L[gt=var,t=&quot;01-`months[l=($mon)]`-2003:00&quot;] ;\
+      )
+
+! Read in the extracted time points
+
+      define axis/t=1:12:1 tax
+      define grid/t=tax    gfile
+
+      FILE/grid=gfile/var=lindex dummy_L.dat ! the default dataset now
+
+! do it !!
+
+      define axis/t=`l_start`:`l_end`:1 tabs
+
+      define axis/t/from_data tabs_12=lindex[d=1]  ! in ur case, lindex[d=2]
+
+      let t_mask_0 = t[gt=tabs_12]*0 + 100
+      let t_mask_1 = t_mask_0[gt=tabs@XACT]
+      let t_mask_2 = IF t_mask_1 THEN 0 ELSE 1
+      let t_mask   = t_mask_2[gt=var@ASN]
+
+      let var_masked = var * t_mask
+      pause ; shade/l=2 var_masked
+
+! remove intermediate files
+
+      sp rm -f dummy_L.dat
+
+!----------end of example---------------------------------------------------
+
+
+
+On Wed, 26 Apr 2006, Emilie Vanvyve wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi everyone,
+
+Isearched in the online help and the mail archives and couldn't find a solution
+to my problem, so here I am.
+
+I have a 3D variable (lon,lat,time), with a 30-minutes time step over a whole
+year. I'd like to replace my variable value by 0 each time the time step equals
+the first of every month, i.e.:
+if &quot;we are on the 1st of January 0:00&quot; then &quot;reset variable to zero&quot; else &quot;keep it
+as it is&quot;
+if &quot;we are on the 1st of February 0:00&quot; then &quot;reset variable to zero&quot; else &quot;keep
+it as it is&quot;
+etc.
+
+How can I achieve this? I tried with a simple if, it didn't work (here after, let's
+say the time step at which the variable &quot;var&quot; must be reset to 0 is the time
+step 100):
+
+if `L eq 100` then let new_var = 0*var else let new_var = var
+or
+let new_var = if `L eq 100` then 0*var else var
+
+It doesn't work. I always get something like:
+**ERROR: invalid command: grave accent doesnt evaluate to scalar
+         L eq 100
+
+I don't mind if the solution takes time to be implemented, as long as it works.
+I've only 12 changes to make in the variable.
+
+Thanks in advance for any suggestion!
+
+Emilie V.
+
+------------------------------------------------------
+Emilie VANVYVE
+Physicist, PhD student
+
+Université catholique de Louvain (UCL)
+Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+Chemin du Cyclotron, 2, B-1348 Louvain-la-Neuve, Belgium
+Phone: +32-(0)10-473300   Fax: +32-(0)10-474722
+E-mail: vanvyve@astr.ucl.ac.be   Web : www.astr.ucl.ac.be/u/vanvyve
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00277" href="msg00277.html">[ferret_users] hand-editing a variable</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00277.html">[ferret_users] hand-editing a variable</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00279.html">Re: [ferret_users] hand-editing a variable</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00277.html">Thread Prev</a>][<a href="msg00279.html">Thread Next</a>][<A HREF="threads.html#00278">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Trick to enhance SHADE figures under a vector graphics software -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 15 Jan 2008 12:03:31 &#45;0800 -->
+<!--X-Message-Id: 478D1194.70302@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 478CC08A.9010804@globetrotter.net -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Trick to enhance SHADE figures under a vector graphics software</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00033.html">Thread Prev</a>][<a href="msg00036.html">Thread Next</a>][<A HREF="threads.html#00034">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Trick to enhance SHADE figures under a vector graphics software</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Pierre.St-Laurent@DOMAIN.HIDDEN">Pierre.St-Laurent@xxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Trick to enhance SHADE figures under a vector graphics software</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 15 Jan 2008 12:03:32 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:478CC08A.9010804@DOMAIN.HIDDEN">478CC08A.9010804@xxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:478CC08A.9010804@DOMAIN.HIDDEN">478CC08A.9010804@xxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Pierre,
+</pre><tt>Thank you for contributing this. The question of those lines has come up 
+</tt><tt>before, and it's good to have a solution using graphics tools for 
+</tt><tt>post-processing the images after leaving Ferret. Sometimes a bit of 
+</tt><tt>editing on the image is the simplest way to get exactly what one wants 
+</tt><tt>when making final plots for publication.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+
+Pierre St-Laurent wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Ferret users,
+
+</pre><tt>I'm a beginner under ferret and I came up with a trick to enhance the 
+</tt><tt>appearance of my figures that involve the SHADE command. Perhaps it 
+</tt><tt>will be of interest to some of you.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Limitations: the trick does not work well with the FILL command (use 
+</tt><tt>SHADE instead), and is not suitable for figures having many (10+) 
+</tt><tt>levels inside the colorbar. The trick also requires the Inkscape 
+</tt><tt>graphics software (freely available over many platforms). Of course it 
+</tt><tt>should be possible to do the same under Corel Draw or Illustrator; I 
+</tt><tt>just don't have access to these tools.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>From what I understand by playing with figures produced with the SHADE 
+</tt><tt>command, ferret 'paints' these figures using thin rectangles (slabs), 
+</tt><tt>and starts a new rectangle each time it comes across a different color 
+</tt><tt>(a different level in the colorbar). If you open a postscript or pdf 
+</tt><tt>file under any viewer that uses anti-aliasing (most Acrobat Reader and 
+</tt><tt>the latest Evince have this feature enabled), the thin rectangles will 
+</tt><tt>show as ugly 'lines' covering the figure.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Figures produced with the FILL command do not show these lines, but 
+</tt><tt>they are somewhat bigger in size as the number of rectangles is nearly 
+</tt><tt>doubled (they are overlapped). These hundreds of rectangles make the 
+</tt><tt>figures hard to modify under vector graphics software.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The basic idea is to bring together all rectangles of the same color, 
+</tt><tt>so that they become a single entity (a filled path). The result looks 
+</tt><tt>like a jigsaw puzzle with each color (level) being one piece of the 
+</tt><tt>puzzle. It is then easy to apply changes such as modification of the 
+</tt><tt>colors, add gradients, simplify path, etc.
+</tt><pre style="margin: 0em;">
+
+Example:
+
+use etopo40
+! We want a postscript file
+set mode metafile
+! We will draw the North Atlantic
+set region/X=-80:0/Y=0:70
+! Roughly adjust window x/y aspect so that things are not too ugly
+set window/aspect=1.4
+! We will paint Earth with a solid color
+let earth = if rose[d=1] ge 0. then 0. else (-1.E+34)
+! Draw a few levels for ocean depths
+shade/levels=(-inf)(-4000,0,1000)/pal=bluescale rose[d=1]
+! Overlay the Earth, painted in dark gray
+shade/over/nokey/nolab/noaxes/pal=gray_dark earth
+! We could go fancier but stop here and close the metafile
+ppl clsplt
+! Convert metafile to postscript
+spawn Fprint -p portrait -o toto.ps metafile.plt
+! Convert postscript to svg (for Inkscape)
+spawn pstoedit -f plot-svg toto.ps toto.svg
+! done, now let's load the svg file into Inkscape.
+
+</pre><tt>Open the svg file into Inkscape. Note the ugly lines caused by the 
+</tt><tt>anti-aliasing of Inkscape.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Start by ungrouping the figure (shift-control-g). You will see that 
+</tt><tt>the SHADE command produced hundreds of thin individual slabs. We want 
+</tt><tt>to operate a fusion of the slabs sharing a same color. Thus we want to 
+</tt><tt>'Select objects by color'.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Let's start with Earth (dark gray slabs). Click on any of these Earth 
+</tt><tt>slab and hit shift-control-f which gives information about the color. 
+</tt><tt>Note the first 6 values of the color code in the bottom-right part 
+</tt><tt>(4c4c4c) which means dark gray. Now we will ask Inkscape to select all 
+</tt><tt>the objects sharing this attribute. Type ctrl-f (find) and insert the 
+</tt><tt>color code in the Style box. Hit 'Search'. Now all dark gray slabs 
+</tt><tt>should be selected.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The next step is to convert the dark gray slabs into one path. This 
+</tt><tt>function is under 'Path' menu, and then 'Union'. Note that the dark 
+</tt><tt>gray slabs are replaced by a unique solid, nice-looking dark gray 
+</tt><tt>Earth. Just do the same for the other colors inside the colorbar.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The resulting file is about twice the size of the original postscript. 
+</tt><tt>I find this a small price to pay as the resulting file allows all the 
+</tt><tt>advanced manipulations possible with paths. And the ugly lines are gone.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I'm far from being a ferret or inkscape wizard, so please keep me in 
+</tt><tt>touch if you have any suggestions or improvements over the above 
+</tt><tt>procedure.
+</tt><pre style="margin: 0em;">
+
+Pierre
+(Pierre.St-Laurent@xxxxxxxxxxxxxxxx)
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00033" href="msg00033.html">[ferret_users] Trick to enhance SHADE figures under a vector graphics software</a></strong>
+<ul><li><em>From:</em> Pierre St-Laurent</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00033.html">[ferret_users] Trick to enhance SHADE figures under a vector graphics software</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00036.html">[ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00033.html">Thread Prev</a>][<a href="msg00036.html">Thread Next</a>][<A HREF="threads.html#00034">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

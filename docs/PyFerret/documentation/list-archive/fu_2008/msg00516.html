@@ -1,0 +1,169 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] annual totals from monthly time series -->
+<!--X-From-R13: Oaql Xnpbofba <naql.wnpbofbaNabnn.tbi> -->
+<!--X-Date: Wed, 8 Oct 2008 10:36:32 &#45;0700 -->
+<!--X-Message-Id: 60DF180F&#45;EDC0&#45;4C15&#45;B0F7&#45;04D7ABDA36A0@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] annual totals from monthly time series</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00507.html">Thread Prev</a>][<a href="msg00517.html">Thread Next</a>][<A HREF="threads.html#00516">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] annual totals from monthly time series</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] annual totals from monthly time series</strong></li>
+<li><strong>From</strong>: <strong>Andy Jacobson &lt;<a href="mailto:andy.jacobson@DOMAIN.HIDDEN">andy.jacobson@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Oct 2008 11:36:23 -0600</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Howdy,
+
+</pre><tt>I'm trying to compute annual means from monthly time series.   My  
+</tt><tt>strategy has been to define a time axis with yearly resolution, then  
+</tt><tt>regrid to this time axis using the @ave transformation, like:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>define axis/edges/t=&quot;01-Jan-2000:00:00:00&quot;:&quot;01-Jan-2008:00:00:00&quot;:1/ 
+</tt><tt>UNITS=years tannual
+</tt><pre style="margin: 0em;">
+list nee[gt=tannual@ave]
+
+</pre><tt>The regridding strategy works.  The only problem I have is that I'd  
+</tt><tt>like the tannual axis edges to each fall right on 01-Jan 00:00 UTC,  
+</tt><tt>but they drift as shown by the TBOXLO values below:
+</tt><pre style="margin: 0em;">
+
+show axis/l=1:9 tannual
+ name       axis              # pts   start                end
+</pre><tt> TANNUAL   TIME                 9 r   01-JUL-2000 14:54    01- 
+</tt><tt>JUL-2008 13:28
+</tt><pre style="margin: 0em;">
+T0 = 15-JAN-1901
+   Axis span (to cell edges) = 9
+
+</pre><tt>       L     T                   TBOX      TBOXLO                 
+</tt><tt>TSTEP (YEARS)
+</tt><tt>       1&gt;  01-JUL-2000 14:54:36  1         01-JAN-2000 00:00:00    
+</tt><tt>99.46165
+</tt><tt>       2&gt;  01-JUL-2001 20:43:48  1         31-DEC-2000 05:49:12    
+</tt><tt>100.4616
+</tt><tt>       3&gt;  02-JUL-2002 02:33:00  1         31-DEC-2001 11:38:24    
+</tt><tt>101.4616
+</tt><tt>       4&gt;  02-JUL-2003 08:22:12  1         31-DEC-2002 17:27:36    
+</tt><tt>102.4616
+</tt><tt>       5&gt;  01-JUL-2004 14:11:24  1         31-DEC-2003 23:16:48    
+</tt><tt>103.4616
+</tt><tt>       6&gt;  01-JUL-2005 20:00:36  1         31-DEC-2004 05:06:00    
+</tt><tt>104.4616
+</tt><tt>       7&gt;  02-JUL-2006 01:49:48  1         31-DEC-2005 10:55:12    
+</tt><tt>105.4616
+</tt><tt>       8&gt;  02-JUL-2007 07:39:00  1         31-DEC-2006 16:44:24    
+</tt><tt>106.4616
+</tt><tt>       9&gt;  01-JUL-2008 13:28:12  1         31-DEC-2007 22:33:36    
+</tt><tt>107.4616
+</tt><pre style="margin: 0em;">
+
+I had hoped that I could specify the axis edges explicitly as in:
+
+</pre><tt>define axis/edges/t tannual={&quot;01-Jan-2000:00:00:00&quot;,&quot;01- 
+</tt><tt>Jan-2001:00:00:00&quot;,&quot;01-Jan-2002:00:00:00&quot;,&quot;01-Jan-2003:00:00:00&quot;,&quot;01- 
+</tt><tt>Jan-2004:00:00:00&quot;,&quot;01-Jan-2005:00:00:00&quot;,&quot;01-Jan-2006:00:00:00&quot;,&quot;01- 
+</tt><tt>Jan-2007:00:00:00&quot;,&quot;01-Jan-2008:00:00:00&quot;}
+</tt><pre style="margin: 0em;">
+
+...but ferret (v5.70 alpha, on OSX) emits:
+
+</pre><tt> **ERROR: illegal data type (float,string,...) for operation: {&quot;01- 
+</tt><tt>Jan-2000:00:00:00&quot;, ...
+</tt><pre style="margin: 0em;">
+
+So:
+
+(1) Is there a way to explicitly specify the dates of a time axis?
+(2) Am I thinking unferretly about how to compute annual totals?
+
+Thanks!
+
+Andy
+
+--
+Andy Jacobson
+andy.jacobson@xxxxxxxx
+
+NOAA Earth System Research Lab
+Global Monitoring Division
+325 Broadway
+Boulder, Colorado 80305
+
+303/497-4916
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00517" href="msg00517.html">Re: [ferret_users] annual totals from monthly time series</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00507.html">[ferret_users] curious Ambiguous coordinates on Z axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00517.html">Re: [ferret_users] annual totals from monthly time series</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00507.html">Thread Prev</a>][<a href="msg00517.html">Thread Next</a>][<A HREF="threads.html#00516">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

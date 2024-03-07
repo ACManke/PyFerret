@@ -1,0 +1,229 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to loop through many files? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 10 Jul 2007 10:58:10 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0707102338170.30226@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@tnc.org -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to loop through many files?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00412.html">Thread Prev</a>][<a href="msg00415.html">Thread Next</a>][<A HREF="threads.html#00414">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to loop through many files?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Zibiao Zhang &lt;<a href="mailto:zzhang@DOMAIN.HIDDEN">zzhang@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to loop through many files?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 10 Jul 2007 23:44:02 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@DOMAIN.HIDDEN">MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@DOMAIN.HIDDEN">MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Zibiao,
+            Two methods to loop through input files are give below. Pick
+the one, which fits best for your purpose. Few points about the usage of
+REPEAT command is given to the last part.
+
+ 1. Reading input filenames from an ASCII file.
+    -------------------------------------------
+      This method is best suited, if your filenames doesn't follow a
+    common syntax or have patterns which is difficult to construct
+    logically. What all you have to do is, in Linux
+
+       [user@machine]$ ls 200*.nc &gt; filenames.txt
+
+       [user@machine]$ wc -l filenames.txt
+
+    Now, say you have 12 input files (the output from &quot;wc -l&quot;). In
+    Ferret, use the following steps:
+
+       define axis/x=1:12:1  xfile
+       define grid/x=xfile   gfile
+       FILE/grid=gfile/FORMAT=DELIMITED/var=&quot;filenames&quot;   filenames.txt
+
+       REPEAT/RANGE=1:12:1/NAME=nf (         ;\
+            define symbol ff = `nf`          ;\
+            set data `filenames[i=($ff)]`    ;\
+            ...............................  ;\
+            cancel data `filenames[i=($ff)]` ;\
+       )
+
+   Between the FILE command and &quot;cancel data&quot;, you can add all the lines
+   for doing the required stuff with the datasets. Always remember that
+   the loaded NetCDF dataset will be d=2 (d=1 being the filenames.txt). 
+
+2. Construct the input filenames in Ferret
+   ---------------------------------------
+     This method is best suited, if your filenames follow a systematic
+   naming syntax, which can be constructed logically. Say your input
+   filenames are like 20050115.nc, 20050215.nc,......20071215.nc : that
+   is --&gt; yyyymm15.nc format. Now, in Ferret :
+
+       let year_start = 2005
+       let year_end   = 2006
+       let mon_start  = 5
+       let mon_end    = 10
+       
+       REPEAT/RANGE=`year_start`:`year_end`:1/NAME=yr  (           ;\
+          define symbol yy = `yr`                                  ;\
+          let m1 = IF `($yy) EQ year_start` THEN mon_start ELSE 1  ;\
+          let m2 = IF `($yy) EQ year_end`   THEN mon_end   ELSE 12 ;\
+          REPEAT/RANGE=`m1`:`m2`:1/NAME=mo (                       ;\
+             define symbol mm = `mo`                                 ;\
+             let m0    = IF `($mm) LT 10` THEN &quot;0($mm)&quot; ELSE &quot;($mm)&quot; ;\
+             let fname = &quot;($yy)&quot; + m0 + &quot;15.nc&quot;                      ;\
+             set data `fname`                                        ;\
+             cancel data `fname`                                     ;\ 
+          ) ;\
+       )
+
+   after the &quot;set data&quot; and &quot;cancel data&quot;, you can add the lines to do
+   required stuff.   
+
+   A similar trick can be found in the following mail :    
+   <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2004/msg00393.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2004/msg00393.html</a>
+
+With both 1 and 2 above, you can use he &quot;GO&quot; file option effectively. Write
+a separate script for doing calculation/making plots with these individual
+datasets (let us all it as some_calculation.jnl), and call it from the repeat
+loop in 1 or 2 above, as follows :
+
+           set data .......;\
+               GO some_calculation arg1, arg2 .... ;\
+           cancel data  ....;\ 
+
+NOTE : Don't forget to have a &quot;cancel data&quot; command in the same loop, where 
+         you opened it.....otherwise you will run into problems....
+
+
+Important Points Regarding REPEAT LOOP
+--------------------------------------
+ -  REPEAT Loops can be on abstract axes I,J,K and L or on an independent 
+       option &quot;RANGE&quot; (available only with Ferret versions 5.6 or later). 
+       If you are not working on independent coordinate axis, &quot;RANGE&quot; option
+       is the best.
+
+ -  All the commands within the REPEAT loop is considered as a single line,
+       separated by &quot;;&quot; (and with a &quot;\&quot; if you intend to continue on next line).
+       There is a length limitation and hence you cannot go beyond a certain
+       length. Hence, if you want to do some detailed stuff, use the GO file
+       option mentioned above.
+
+ -  Blank/commented lines are NOT ALLOWED within the REPEAT loop. If you want
+       to have them, do it with a preceeding &quot;;\&quot;, as follows :
+             
+             let something= 1*2  ;\ 
+             ;\
+             ;\  ! here goes my comment within a repeat loop
+             ;\
+             let others = 1/2  ;\ 
+  
+
+If you have any questions, please let me know.
+
+Regards,
+
+Jaison
+
+On Tue, 10 Jul 2007, Zibiao Zhang wrote:
+
+&gt; Hi Ferret users,
+&gt; 
+&gt; I need to loop through many files, which all have the same data structure, I
+&gt; know there get to be a way to easily loop through the file names, but I
+&gt; could not find the answer through user's guild and archives. I want if
+&gt; anybody here can help. My file name is as following:
+&gt; 
+&gt; 20050115.nc
+&gt; 20050215.nc
+&gt; 20050305.nc
+&gt; .
+&gt; .
+&gt; .
+&gt; 20071215.nc
+&gt; 
+&gt; It should be very easy, anybody can help?
+&gt; 
+&gt; Steven
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00415" href="msg00415.html">Re: [ferret_users] how to loop through many files?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00412" href="msg00412.html">[ferret_users] how to loop through many files?</a></strong>
+<ul><li><em>From:</em> Zibiao Zhang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00412.html">[ferret_users] how to loop through many files?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00415.html">Re: [ferret_users] how to loop through many files?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00412.html">Thread Prev</a>][<a href="msg00415.html">Thread Next</a>][<A HREF="threads.html#00414">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

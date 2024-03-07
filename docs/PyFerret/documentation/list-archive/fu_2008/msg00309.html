@@ -1,0 +1,221 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] count consecutive events -->
+<!--X-From-R13: wnvfbaNngzbf.hpyn.rqh -->
+<!--X-Date: Fri, 20 Jun 2008 13:40:48 &#45;0700 -->
+<!--X-Message-Id: 40462.169.232.145.149.1213994440.squirrel@mail.atmos.ucla.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 485AFC38.4090709@cea.fr -->
+<!--X-Reference: 485BE293.70501@noaa.gov -->
+<!--X-Derived: bincMKFtwCgy6.bin -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] count consecutive events</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00308.html">Thread Prev</a>][<a href="msg00310.html">Thread Next</a>][<A HREF="threads.html#00309">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] count consecutive events</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] count consecutive events</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxx</a></strong></li>
+<li>Date: Fri, 20 Jun 2008 13:40:40 -0700 (PDT)</li>
+<li>Cc: Brockmann Patrick &lt;<a href="mailto:patrick.brockmann@DOMAIN.HIDDEN">patrick.brockmann@xxxxxx</a>&gt;,        <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>, Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="mailto:485BE293.70501@DOMAIN.HIDDEN">485BE293.70501@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:485AFC38.4090709@DOMAIN.HIDDEN">485AFC38.4090709@xxxxxx</a>&gt; &lt;<a href="mailto:485BE293.70501@DOMAIN.HIDDEN">485BE293.70501@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: SquirrelMail/1.4.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+     Well, that was a very interesting question from Patrick. I also
+thought in the same line as Mick, but came up with sort of &quot;automated&quot;
+method. It involves the following steps (no adjustments to be done for
+your input field of 0's and 1's):
+
+   assume that variable is 1D, along time axis, with values
+        occurrence of an event : 1
+        absence of event      : 0
+
+    1. Find positions where event=1 is preceded by an event=0
+              --&gt; starting point of an event.
+    2. Find positions where event=1 is followed by an event=0
+              --&gt; ending  point of an event.
+    3. Make adjustments for end values.
+    4. Find corresponding L-indices
+    5. The difference between L-indices of ending and starting point
+          will give the length of consecutive events, with respect to
+          L-points.
+
+Once you get these details, you can define a cutoff period with &quot;IF THEN&quot;
+masking method on the length of consecutive events. As you know the starting
+and ending L-indices for a specific consecutive event, extracting data for
+that event is very straightforward. In addition, this method does not require
+any modification according to the &quot;length of the consecutive events&quot; you are
+interested in.
+
+This method can be easily adapted for wet or dry (cool or warm) spell
+analysis.
+
+Patrick, please have a trial with the attached demo file, with v1.nc you send
+earlier. Let me know if you have any questions.
+
+Thanks and Regards,
+
+Jaison
+
+
+
+&gt; Hi Patrick,
+&gt;
+&gt;     I had a similar problem some years ago - counting runs in sequences
+&gt; of 0's and 1's -- but just thought of a better way to do it, using the
+&gt; @cia transformation.  One identifies &quot;start&quot; and &quot;end&quot; points in the
+&gt; sequence then, whereever a &quot;start&quot; is found, looking for where the &quot;next
+&gt; end above&quot; is located.
+&gt;
+&gt;     The method results in short, independent definitions for each run
+&gt; length, and lends itself to use in a repeat loop.  A demo script (when
+&gt; the sequence is along the x-axis) is attached but the key points are:
+&gt;
+&gt; ! define start points (a 1 preceded by a 0) for the runs in the sequence &quot;v&quot;
+&gt; let/title=&quot;Run Starts&quot; start=if(v eq 1 and v[i=@shf:-1] eq 0)then 1
+&gt; ! ... and end points (a 1 followed by a 0)
+&gt; let/title=&quot;Run Ends&quot; end=if(v eq 1 and v[i=@shf:1] eq 0)then 1
+&gt; ! then the start points of runs of length &quot;n&quot; are given by the mask &quot;run&quot;
+&gt; let run=IF(START EQ 1 AND END[I=@CIA] EQ `n-1`)then 1
+&gt; ! and to count them
+&gt; list run[i=@ngd]
+&gt;
+&gt; Hope it helps,
+&gt; Mick
+&gt; ---------
+&gt; Brockmann Patrick wrote:
+&gt;&gt; Hi all,
+&gt;&gt;
+&gt;&gt; Is there a way to count consecutive events ?
+&gt;&gt; From climate indice variables, I would like to have the number
+&gt;&gt; of continuous events, for 1, 2, 3, 4, ..., n events.
+&gt;&gt;
+&gt;&gt;               B   C1EVN  C2EVN  C3EVN  C4EVN
+&gt;&gt; 1    /  1:  0.000   ....   ....   ....   ....
+&gt;&gt; 2    /  2:  1.000  1.000   ....   ....   ....
+&gt;&gt; 3    /  3:  0.000   ....   ....   ....   ....
+&gt;&gt; 4    /  4:  1.000  1.000   ....   ....   ....
+&gt;&gt; 5    /  5:  0.000   ....   ....   ....   ....
+&gt;&gt; 6    /  6:  1.000  1.000   ....   ....   ....
+&gt;&gt; 7    /  7:  0.000   ....   ....   ....   ....
+&gt;&gt; 8    /  8:  1.000  1.000   ....   ....   ....
+&gt;&gt; 9    /  9:  0.000   ....   ....   ....   ....
+&gt;&gt; 10   / 10:  0.000   ....   ....   ....   ....
+&gt;&gt; 11   / 11:  0.000   ....   ....   ....   ....
+&gt;&gt; 12   / 12:  1.000   ....  1.000   ....   ....
+&gt;&gt; 13   / 13:  1.000   ....   ....   ....   ....
+&gt;&gt; 14   / 14:  0.000   ....   ....   ....   ....
+&gt;&gt; 15   / 15:  1.000   ....  1.000   ....   ....
+&gt;&gt; 16   / 16:  1.000   ....   ....   ....   ....
+&gt;&gt; 17   / 17:  0.000   ....   ....   ....   ....
+&gt;&gt; 18   / 18:  0.000   ....   ....   ....   ....
+&gt;&gt; 19   / 19:  1.000   ....  1.000   ....   ....
+&gt;&gt; 20   / 20:  1.000   ....   ....   ....   ....
+&gt;&gt; 21   / 21:  0.000   ....   ....   ....   ....
+&gt;&gt; 22   / 22:  0.000   ....   ....   ....   ....
+&gt;&gt; 23   / 23:  1.000  1.000   ....   ....   ....
+&gt;&gt; 24   / 24:  0.000   ....   ....   ....   ....
+&gt;&gt; 25   / 25:  0.000   ....   ....   ....   ....
+&gt;&gt; 26   / 26:  1.000   ....   ....   ....  1.000
+&gt;&gt; 27   / 27:  1.000   ....   ....   ....   ....
+&gt;&gt; 28   / 28:  1.000   ....   ....   ....   ....
+&gt;&gt; 29   / 29:  1.000   ....   ....   ....   ....
+&gt;&gt; 30   / 30:  0.000   ....   ....   ....   ....
+&gt;&gt; ...
+&gt;&gt;
+&gt;&gt; C1EVN represents events for 1 period at 1
+&gt;&gt; C2EVN represents events for 2 consecutive periods at 1
+&gt;&gt; C3EVN represents events for 3 consecutive periods at 1
+&gt;&gt; C4EVN represents events for 4 consecutive periods at 1
+&gt;&gt; ...
+&gt;&gt;
+&gt;&gt; Attached is a exemple I have scripted. It works well for a 52 points
+&gt;&gt; variable
+&gt;&gt; when I look for for 1 to 4 consecutive events.
+&gt;&gt;
+&gt;&gt; As the real case is to compute this over a year of 360 days looking for
+&gt;&gt; consecutive events of 30 days, I need to define variables from very
+&gt;&gt; long expressions.
+&gt;&gt; and in this case I get the message :
+&gt;&gt; **ERROR: expression too complex
+&gt;&gt;
+&gt;&gt; Let me know if there a solution to this.
+&gt;&gt; Patrick
+&gt;&gt;
+&gt; &#xC3;&#xA5;&#xC3;&#xA5;
+&gt;
+</pre><p><strong>Attachment:
+<a href="bincMKFtwCgy6.bin" ><tt>count_events_demo.jnl</tt></a></strong><br>
+<em>Description:</em> Binary data</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00305" href="msg00305.html">[ferret_users] count consecutive events</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00308" href="msg00308.html">Re: [ferret_users] count consecutive events</a></strong>
+<ul><li><em>From:</em> mick spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00308.html">Re: [ferret_users] count consecutive events</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00310.html">[ferret_users] Calculating relative vorticity</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00308.html">Thread Prev</a>][<a href="msg00310.html">Thread Next</a>][<A HREF="threads.html#00309">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

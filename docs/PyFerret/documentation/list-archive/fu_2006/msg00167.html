@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Gridding Scattered Data:scat2grid functions -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 13 Mar 2006 11:21:15 &#45;0800 -->
+<!--X-Message-Id: 4415C629.90105@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20060313104508.kc61oq4o8gook0cg@webmail.fsu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Gridding Scattered Data:scat2grid functions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00166.html">Thread Next</a>][<A HREF="threads.html#00167">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Gridding Scattered Data:scat2grid functions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Gridding Scattered Data:scat2grid functions</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Mar 2006 11:21:13 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00165.html">20060313104508.kc61oq4o8gook0cg@webmail.fsu.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00165.html">20060313104508.kc61oq4o8gook0cg@webmail.fsu.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Steve,<br>
+Regarding the last argument to the scat2gridgauss functions, we've 
+changed the requirements of that argument, first requiring it as a 
+necessary argument, and then after consulting further with the author of 
+the underlying code, we made it unused.  If you're using a version of 
+Ferret prior to v5.81 you should set the last two arguments equal to 
+each other, and for v5.81 and after you can set the last argument to 
+anything.<br>
+<br>
+This sounds like a problem, however, that might be better solved as an 
+external function, using the code that you've written to put the data 
+into bins and then average it. Either do this as a Ferret external 
+function or run your Fortran code separately. This is going to be slow, 
+going through that much data and deciding which grid cell each point is 
+in. I don't think you need to go through the data multiple times though; 
+you might organize it as follows:<br>
+<br>
+Input variables for scattered points lon(npts), lat(npts), var(npts)<br>
+<br>
+Define the output grid; here its 0.1 degrees, with variable SUM and 
+COUNT which are initialized to 0.<br>
+If the data is in the range, say, 300 to 360 LON and 22 to 65 LAT, then 
+your Fortran grid could be<br>
+<br>
+SUM(3000:3600, 220:650)<br>
+COUNT(3000:3600, 220:650)<br>
+<br>
+loop through scattered points n = 1:npts<br>
+   iloc = INT(lon(n)*10 )<br>
+   jloc = INT(lat(n)*10 )<br>
+   SUM(iloc,jloc) = SUM(iloc,jloc) + var(n)<br>
+   COUNT(iloc,jloc) = COUNT(iloc,jloc) + 1.<br>
+end loop<br>
+<br>
+and then take the average SUM/COUNT for each i,j .<br>
+<br>
+This puts the value at (302.14, 29.87) would go in the bin  (3021,298). 
+You'll need to be careful about how the INT works and whether you want 
+the lon,lat values rounded off or truncated, but this is the idea.<br>
+<br>
+Ansley<br>
+<br>
+guimond@coaps.fsu.edu wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hello,<br>
+ I have a large set of scattered satellite data that I want to put 
+onto a regular lat-lon grid.  My data looks like this:<br>
+<br>
+dbz  i=1:105000<br>
+lat  i=1:105000<br>
+lon  i=1:105000<br>
+<br>
+I defined two axes of my destination grid like so:<br>
+<br>
+def axis/x=122:134:0.10/units=deg glon<br>
+def axis/y=27:33:0.10/units=deg glat<br>
+<br>
+and tried using the scat2gridgauss_xy function call like this:<br>
+<br>
+let a = scat2gridgauss_xy(lon,lat,dbz,x[gx=glon],y[gy=glat],0.5,0.5,2.,2)<br>
+<br>
+However, the graph that results does not look right.  Does anyone know 
+what I am doing wrong here?  I made a fortran routine to smooth my 
+satellite data to a 0.10deg grid and this looks right, but takes very 
+long to cycle through the file so many times.  Is there another FERRET 
+routine that does the sort of thing I am looking for?  I really just 
+want to average all satellite points that fall within a 0.10x0.10 deg 
+box to get a regular grid, but @AVE needs lat/lon grid on source 
+data.   One further note, the last argument to scat2gridgauss_** says 
+it can be zero since it is not used.  However, I get an error when I 
+don't put something greater than zero.<br>
+<br>
+Thanks for your help,<br>
+<br>
+Steve<br>
+<br>
+<br>
+=======================================================<br>
+Stephen R. Guimond<br>
+Graduate Research Assistant<br>
+Center for Ocean-Atmospheric Prediction Studies (COAPS)<br>
+Tallahassee, FL 32304<br>
+=======================================================<br>
+<br>
+<br>
+----------------------------------------------------------------<br>
+<br>
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00165" href="msg00165.html">[ferret_users] Gridding Scattered Data:scat2grid functions</a></strong>
+<ul><li><em>From:</em> guimond</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00165.html">[ferret_users] Gridding Scattered Data:scat2grid functions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00166.html">[ferret_users] Re: Calculating stream function from known velocity field.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00166.html">Thread Next</a>][<A HREF="threads.html#00167">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

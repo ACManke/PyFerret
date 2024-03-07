@@ -1,0 +1,199 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Problem with @AVE gridding on intermitent time series data -->
+<!--X-From-R13: "[pQnaa, [vxr" <zppnaaNzonev.bet> -->
+<!--X-Date: Mon, 15 Oct 2007 16:07:38 &#45;0700 -->
+<!--X-Message-Id: F82344282A084F4C98F7235E896FEA5AE06FA1@chill.shore.mbari.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Problem with @AVE gridding on intermitent time series data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00603.html">Thread Prev</a>][<a href="msg00605.html">Thread Next</a>][<A HREF="threads.html#00604">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Problem with @AVE gridding on intermitent time series data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Problem with @AVE gridding on intermitent time series data</strong></li>
+<li><strong>From</strong>: <strong>&quot;McCann, Mike&quot; &lt;<a href="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 15 Oct 2007 16:07:36 -0700</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>Thread-index: AcgPgC0OPQTBOev6QWOCeulhVGf8Qw==</li>
+<li>Thread-topic: Problem with @AVE gridding on intermitent time series data</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello,
+ 
+I'm use the @AVE regridding transform to take in situ mooring data and create regular hourly gridded data sets.
+
+I've encountered a problem which I think might be a bug, namely because the @AVE and @MAX transforms behave differently.  Here is an example using an actual data set:
+
+! An original Conductivity Temperature Depth data &quot;10-minute&quot; time series
+USE &quot;<a  rel="nofollow" href="http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/m1_ctd0000_20070405_original.nc&quot">http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/m1_ctd0000_20070405_original.nc&quot</a>;
+
+! Define an hourly axis
+DEFINE AXIS/T=&quot;12-Oct-2006 18:00:00&quot;:&quot;15-Oct-2007 18:00:00&quot;:3600/T0=&quot;01-JAN-1970 00:00:00&quot;/UNITS=seconds HR_TIME
+
+! Set region for when telemetry was lost for 15 hours
+SET REGION/T=&quot;4-JUL-2007 20:00&quot;:&quot;5-JUL-2007 14:00&quot;
+
+! Show the data to see the gap
+LIST TEMPERATURE				
+
+
+! Grid the data with the @MAX gridding transform  This does the appropriate thing:
+! finds max from input and puts in missing values for the time period of the gap.
+LIST TEMPERATURE[gt=HR_TIME@MAX]	
+
+yes? LIST TEMPERATURE[gt=HR_TIME@MAX]
+             VARIABLE : Water Temperature (deg C)
+                        regrid: 3600 sec on T@MAX
+             DATA SET : Mooring M1 CTD data from MBARI at original sampling intervals
+             FILENAME : m1_ctd0000_20070405_original.nc
+             FILEPATH : <a  rel="nofollow" href="http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/">http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/</a>
+             SUBSET   : 19 points (TIME)
+             LONGITUDE: 122W(-122)
+             LATITUDE : 36.8N
+             DEPTH (m): 0
+                            122W
+                              1
+ 04-JUL-2007 20:00 / 6363:  11.30
+ 04-JUL-2007 21:00 / 6364:  11.37
+ 04-JUL-2007 22:00 / 6365:   ....
+ 04-JUL-2007 23:00 / 6366:   ....
+ 05-JUL-2007 00:00 / 6367:   ....
+ 05-JUL-2007 01:00 / 6368:   ....
+ 05-JUL-2007 02:00 / 6369:   ....
+ 05-JUL-2007 03:00 / 6370:   ....
+ 05-JUL-2007 04:00 / 6371:   ....
+ 05-JUL-2007 05:00 / 6372:   ....
+ 05-JUL-2007 06:00 / 6373:   ....
+ 05-JUL-2007 07:00 / 6374:   ....
+ 05-JUL-2007 08:00 / 6375:   ....
+ 05-JUL-2007 09:00 / 6376:   ....
+ 05-JUL-2007 10:00 / 6377:   ....
+ 05-JUL-2007 11:00 / 6378:   ....
+ 05-JUL-2007 12:00 / 6379:  11.96
+ 05-JUL-2007 13:00 / 6380:  12.08
+ 05-JUL-2007 14:00 / 6381:  12.13
+
+ 
+! Grid the data with the @AVE gridding transform.  This does an unexpected thing:
+! fills the time period of the gap with numbers that are extrapolations of bounding 
+! good points except for the center point which is an average of those two points.
+LIST TEMPERATURE[gt=HR_TIME@AVE]	
+
+yes? LIST TEMPERATURE[gt=HR_TIME@AVE]
+             VARIABLE : Water Temperature (deg C)
+                        regrid: 3600 sec on T@AVE
+             DATA SET : Mooring M1 CTD data from MBARI at original sampling intervals
+             FILENAME : m1_ctd0000_20070405_original.nc
+             FILEPATH : <a  rel="nofollow" href="http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/">http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m1/200610/</a>
+             SUBSET   : 19 points (TIME)
+             LONGITUDE: 122W(-122)
+             LATITUDE : 36.8N
+             DEPTH (m): 0
+                            122W
+                              1
+ 04-JUL-2007 20:00 / 6363:  11.13
+ 04-JUL-2007 21:00 / 6364:  11.33
+ 04-JUL-2007 22:00 / 6365:  11.32
+ 04-JUL-2007 23:00 / 6366:  11.32
+ 05-JUL-2007 00:00 / 6367:  11.32
+ 05-JUL-2007 01:00 / 6368:  11.32
+ 05-JUL-2007 02:00 / 6369:  11.32
+ 05-JUL-2007 03:00 / 6370:  11.32
+ 05-JUL-2007 04:00 / 6371:  11.32
+ 05-JUL-2007 05:00 / 6372:  11.79
+ 05-JUL-2007 06:00 / 6373:  11.96
+ 05-JUL-2007 07:00 / 6374:  11.96
+ 05-JUL-2007 08:00 / 6375:  11.96
+ 05-JUL-2007 09:00 / 6376:  11.96
+ 05-JUL-2007 10:00 / 6377:  11.96
+ 05-JUL-2007 11:00 / 6378:  11.96
+ 05-JUL-2007 12:00 / 6379:  11.96
+ 05-JUL-2007 13:00 / 6380:  12.04
+ 05-JUL-2007 14:00 / 6381:  12.12
+
+
+Am I interpreting these transforms properly?  Should @AVE have a behavior similar to @MAX (and @MIN)?  I'd think that if there were no data for a time period then that should be reflected with missing data values for whatever gridding transform is used.
+
+Thanks,
+Mike
+
+--
+Mike McCann
+Software Engineer
+Monterey Bay Aquarium Research Institute
+7700 Sandholdt Road
+Moss Landing, CA 95039-9644
+Voice: 831.775.1769  Fax: 831.775.1736 <a  rel="nofollow" href="http://www.mbari.org">http://www.mbari.org</a> &lt;<a  rel="nofollow" href="http://www.mbari.org/">http://www.mbari.org/</a>&gt; 
+
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00608" href="msg00608.html">Re: [ferret_users] Problem with @AVE gridding on intermitent time series data</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00605" href="msg00605.html">Re: [ferret_users] Problem with @AVE gridding on intermitent time series data</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00603.html">[ferret_users] New Ferret documentation format</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00605.html">Re: [ferret_users] Problem with @AVE gridding on intermitent time series data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00603.html">Thread Prev</a>][<a href="msg00605.html">Thread Next</a>][<A HREF="threads.html#00604">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

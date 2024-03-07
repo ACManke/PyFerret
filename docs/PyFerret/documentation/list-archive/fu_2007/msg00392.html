@@ -1,0 +1,215 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Problem with Longitude too -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 29 Jun 2007 07:58:08 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0706292021520.20195@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20070629153240.1vrzofu9qcdcgsgs@eleves.enpc.fr -->
+<!--X-Reference: 42678.169.226.43.169.1183126849.squirrel@webmail.lmd.ens.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Problem with Longitude too</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00391.html">Thread Prev</a>][<a href="msg00393.html">Thread Next</a>][<A HREF="threads.html#00392">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Problem with Longitude too</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:nguyen@DOMAIN.HIDDEN">nguyen@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Problem with Longitude too</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 29 Jun 2007 20:41:24 +0530 (IST)</li>
+<li>Cc: seah siang-chye &lt;<a href="mailto:seahs@DOMAIN.HIDDEN">seahs@xxxxxxxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:42678.169.226.43.169.1183126849.squirrel@DOMAIN.HIDDEN">42678.169.226.43.169.1183126849.squirrel@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20070629153240.1vrzofu9qcdcgsgs@DOMAIN.HIDDEN">20070629153240.1vrzofu9qcdcgsgs@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:42678.169.226.43.169.1183126849.squirrel@DOMAIN.HIDDEN">42678.169.226.43.169.1183126849.squirrel@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Siang and Han,
+                   The point is that, while defining an X-axis with 
+&quot;E&quot;/&quot;W&quot; with the numerical values or explicit units like /units=longitudes
+or /units=degrees, Ferret will issue a modulo attribute BY DEFAULT ONLY IF
+
+     the difference between first x-point and last x-point is DELTA_X
+
+here is an example :
+
+     define axis/x=0E:360E:1.875 xlon    ! first point = last point
+     show axis xlon
+
+   name       axis              # pts   start                end
+    XLON      LONGITUDE          193 r   0E                   0E(360)
+   Axis span (to cell edges) = 361.875
+
+  here &quot;193 r&quot; --indicates the axis is not modulo, since we have violated
+above rule.
+
+Now,
+
+     define axis/x=0E:358.125E:1.875 xlon
+     show axis xlon
+
+   name       axis              # pts   start                end
+   XLON      LONGITUDE          192mr   0E                   1.875W
+   Axis span (to cell edges) = 360 (modulo length = axis span)
+  
+it is modulo by default (indicated by &quot;192mr&quot;), 
+    since (take 0E=360E) 360-358.125  = 1.875    
+
+
+A similar exercise will show you that the X-axis you have defined was
+not modulo by default. Now, you can force the modulo behaviour by
+adding a /modulo attribute to the 'define axis' command. A similar
+step with a NetCDF file will be 
+             
+         yes? set axis/modulo  `variable_name,return=xaxis`
+
+Please note that you have to use GRAVE ACCENTS instead of DOUBLE QUOTES
+(this was the mistake with your attempt).
+ 
+However, forcing a modulo nature will not make sense if your axis is not 
+wrapping around with respect you x_start, x_end and x_delta. You may see 
+unexpected results if the above mentioned condition is not satisfied.
+
+If you still have questions, please mail back with the following details
+  
+  1.  Precise values of X_start, X_end and X_delta
+  2.  Same for Y-axis too.
+  3.  How is your ascii file oriented --&gt; howmany rows and columns?
+
+Then i will be able to offer a better help.
+
+Regards,
+
+Jaison  
+ 
+
+
+On Fri, 29 Jun 2007 nguyen@xxxxxxxxxx wrote:
+
+&gt; Hi Siang Chye
+&gt; when define your lat and lon axes, add the qualifier /unit=degrees like that:
+&gt; DEF AXIS/y=87.9S:87.9N/npoints=64/unit=degrees y1
+&gt; DEF AXIS/x=0E:2.8W/npoints=128/unit=degrees x1
+&gt; your xaxis will inherently &quot;modulo&quot;, indicating that the axis wraps
+&gt; around?the first point immediately following the last
+&gt; 
+&gt; Or you can also specify your xaxis with the qualifier /modulo
+&gt; cheers
+&gt; 
+&gt; Hanh
+&gt; 
+&gt; 
+&gt; &gt; Dear all,
+&gt; &gt;
+&gt; &gt; I am trying to plot a graph of Europe i.e from 31.7W to 33.7E, but the
+&gt; &gt; longitude
+&gt; &gt; stops at greenwich. I had read the data from an ascii file and I am not
+&gt; &gt; sure if
+&gt; &gt; this might be the problem as I do not have a problem plotting Europe with
+&gt; &gt; a
+&gt; &gt; netCDF file I obtained from MeteoFrance.
+&gt; &gt;
+&gt; &gt; The Ferret commands I had used to read from the ascii file are as follows:
+&gt; &gt;
+&gt; &gt; DEF AXIS/y=87.9S:87.9N/npoints=64 y1
+&gt; &gt; DEF AXIS/x=0E:2.8W/npoints=128 x1
+&gt; &gt; DEF GRID/x=x1/y=y1 g1
+&gt; &gt; FILE/VAR=&quot;alpha&quot;/GRID=g1 alpha.dat
+&gt; &gt;
+&gt; &gt; I also tried converting the ascii file to a netCDF file using the
+&gt; &gt; following
+&gt; &gt; command:
+&gt; &gt;
+&gt; &gt; SAVE/FILE=&quot;alpha.nc&quot; alpha
+&gt; &gt;
+&gt; &gt; but I still had problems with the longitudes. When I typed
+&gt; &gt;
+&gt; &gt; SET AXIS/modulo &quot;alpha,return=xaxis&quot;,
+&gt; &gt;
+&gt; &gt; a solution I found from one of the archived mails, I was returned the
+&gt; &gt; following
+&gt; &gt; error message:
+&gt; &gt;
+&gt; &gt; invalid command: unknown axis: alpha,return=xaxis
+&gt; &gt;
+&gt; &gt; I would greatly appreciate if someone could advice me how to overcome the
+&gt; &gt; problem. Thank you.
+&gt; &gt;
+&gt; &gt; Best Regards,
+&gt; &gt; Siang Chye
+&gt; &gt;
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00390" href="msg00390.html">[ferret_users] Problem with Longitude too</a></strong>
+<ul><li><em>From:</em> seah siang-chye</li></ul></li>
+<li><strong><a name="00391" href="msg00391.html">Re: [ferret_users] Problem with Longitude too</a></strong>
+<ul><li><em>From:</em> nguyen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00391.html">Re: [ferret_users] Problem with Longitude too</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00393.html">[ferret_users] [ferrret_users] Viewport operations made easy with multi_view</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00391.html">Thread Prev</a>][<a href="msg00393.html">Thread Next</a>][<A HREF="threads.html#00392">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

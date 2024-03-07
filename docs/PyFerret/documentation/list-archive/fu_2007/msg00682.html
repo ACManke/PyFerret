@@ -1,0 +1,201 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Ascii and scatteredgridgauss -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 12 Dec 2007 11:14:44 &#45;0800 -->
+<!--X-Message-Id: 47603323.5020007@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 475FF0E4.9030908@meteo.fr -->
+<!--X-Derived: gifIp5rD6F8eN.gif -->
+<!--X-Derived: gif89Gj5zyCxt.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Ascii and scatteredgridgauss</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00680.html">Thread Prev</a>][<a href="msg00684.html">Thread Next</a>][<A HREF="threads.html#00682">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Ascii and scatteredgridgauss</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>orain &lt;<a href="mailto:francoise.orain@DOMAIN.HIDDEN">francoise.orain@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Ascii and scatteredgridgauss</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 12 Dec 2007 11:14:43 -0800</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:475FF0E4.9030908@DOMAIN.HIDDEN">475FF0E4.9030908@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:475FF0E4.9030908@DOMAIN.HIDDEN">475FF0E4.9030908@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Fran&#xE7;oise,<br>
+In this case, you want to read the data as a simple list of triples,
+(lon, lat, sst) and then use the scat2gridgauss function to put them
+onto a grid defined by your axes.&#xA0; So you do not want to define a 2D
+grid to read in the data.<br>
+<blockquote><tt>&#xA0;&#xA0;&#xA0;&#xA0; ! Read in the data, which will just be on an<br>
+&#xA0;&#xA0;&#xA0;&#xA0; ! abstract 1-dimensional axis<br>
+yes? SET DATA/EZ/VARIABLES="lon,lat,sst" scat_test.dat<br>
+  <br>
+&#xA0;&#xA0;&#xA0;&#xA0; ! Define axes for the result of scat2gridgauss_xy&#xA0; <br>
+yes? DEFINE AXIS/x=-24:49:0.5 lons<br>
+yes? DEFINE AXIS/y=31:60:0.5 lats<br>
+  <br>
+yes? LET gsst = scat2gridgauss_xy(lon,lat,sst, x[gx=lons],y[gy=lats],
+1.,1.,2.,0)<br>
+yes? SHADE gsst </tt><br>
+</blockquote>
+You could improve on this by adding <tt>/UNITS=deg to the axis
+definitions, and perhaps this before plotting:<br>
+</tt>
+<blockquote><tt>yes? SET VAR/units="Deg C"/Title="description of the
+data" gsst</tt><br>
+</blockquote>
+Then, if you save gsst to a netCDF file, the dataset will be
+self-documenting.<br>
+<br>
+Another useful command as you're exploring data like this is PLOT/VS
+which makes a point at each of the locations. It's a good way to see
+the range of the location data and how the points are arranged.<br>
+<blockquote><tt>yes? PLOT/VS/title="PLOT/VS lon,lat" lon, lat</tt><br>
+</blockquote>
+For your general question, the issue with ASCII data is that one has to
+convey the shape of the underlying grid to the program. This is always
+a problem to be solved, whether you're using existing software or
+writing your own code. I would suggest studying how to read ASCII data
+by working through the examples in Chapter 2 of the Ferret Users Guide,
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/data-set-basics/ASCII-DATA">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/data-set-basics/ASCII-DATA</a>&#xA0;
+and build up some example scripts for yourself. Probably the kinds of
+ascii data you're dealing with will fall into a few categories and
+you'll soon have several tools to read various ascii files.<br>
+<br>
+We do not have much experience with GRIB files. The libraries Ferret
+uses for netCDF and OPeNDAP data do not directly read GRIB formatted
+data, but it's my understanding that Ferret can read GRIB data if it is
+on a a GrADS/DODS Server (GDS) or THREDDS data Server (TDS).&#xA0; The
+server reads the data and sends it to Ferret in the OPeNDAP protocol,
+and then from Ferret's point of view it's just like a netCDF file.<br>
+<br>
+Ansley<br>
+<br>
+orain wrote:
+<blockquote cite="" type="cite"><br>
+hello,
+  <br>
+I'm a beginner in Ferret for ASCII files
+  <br>
+  <br>
+I've a file ASCII lon lat sst , but lon lat are not on regular grid (
+Lambert projection from model )
+  <br>
+I want to have a lon lat sst regular on a picture , so I thought using
+scat2gridgauss_xy but I've got some trouble.
+  <br>
+  <br>
+I am not sure I well understood the way of using scat2gridgauss, and
+perhaps it is'nt the answer to my problem .
+  <br>
+Could you help me ?
+  <br>
+  <br>
+1) Here it is my .jnl
+  <br>
+  <br>
+DEFINE AXIS/x=-24:49:0.5 lons
+  <br>
+yes? DEFINE AXIS/y=31:60:0.5 lats
+  <br>
+yes? DEFINE GRID/X=lons/Y=lats grilles
+  <br>
+yes? SET DATA/EZ/VARIABLES="lon,lat,sst"/COLUMNS=3/GRID=grilles test
+  <br>
+yes? LET gsst = scat2gridgauss_xy (lon, lat, sst , x[gx=lons],
+y[gy=lats], 1.,1.,2.,0)
+  <br>
+yes? shade gsst
+  <br>
+  <br>
+2)
+  <br>
+my file is test&#xA0; the joined piece
+  <br>
+  <br>
+sorry for this simple question but we often have to compare netcdf data
+(easy for Ferret)&#xA0; ocean file to meteo data&#xA0; ASCII : lon lat not
+regular (not easy for ferret ) or GRIB (not simple at all) for me ?
+  <br>
+  <br>
+Thanks for your help
+  <br>
+Fran&#xE7;oise Orain
+  <br>
+</blockquote>
+
+
+</font></td></tr></table><p><a href="gifIp5rD6F8eN.gif" ><img src="gifIp5rD6F8eN.gif" alt="GIF image"></a></p>
+<p><a href="gif89Gj5zyCxt.gif" ><img src="gif89Gj5zyCxt.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00680" href="msg00680.html">[ferret_users] Ascii and scatteredgridgauss</a></strong>
+<ul><li><em>From:</em> orain</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00680.html">[ferret_users] Ascii and scatteredgridgauss</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00684.html">Re: [ferret_users] Ascii and scatteredgridgauss</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00680.html">Thread Prev</a>][<a href="msg00684.html">Thread Next</a>][<A HREF="threads.html#00682">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

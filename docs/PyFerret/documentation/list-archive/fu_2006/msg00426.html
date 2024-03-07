@@ -1,0 +1,142 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] ferret question (plot/vs) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 22 Jun 2006 14:12:52 &#45;0700 -->
+<!--X-Message-Id: 449B07D3.3010705@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20060622163604.6g0lq5mlcg4skwko@fire.palmod.uni&#45;bremen.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] ferret question (plot/vs)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00423.html">Thread Prev</a>][<a href="msg00425.html">Thread Next</a>][<A HREF="threads.html#00426">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ferret question (plot/vs)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:igaratza@DOMAIN.HIDDEN">igaratza@xxxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ferret question (plot/vs)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 22 Jun 2006 14:12:51 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00423.html">20060622163604.6g0lq5mlcg4skwko@fire.palmod.uni-bremen.de</a>&gt;</li>
+<li>References: &lt;<a href="msg00423.html">20060622163604.6g0lq5mlcg4skwko@fire.palmod.uni-bremen.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.4 (Windows/20060516)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi,<br>
+I am not sure I understand what you are asking, but here are some ideas 
+for looking at the relation between two parameters.  You have found the 
+PLOT/VS command.  There are a couple of scripts which will let you 
+compute statistics.  To see what the scripts do, use GO/HELP to view the 
+script.<br>
+<br>
+yes? go/help regresst  
+yes? go/help variance<br>
+<br>
+For both of these, you define variables p and q to equal your variables 
+of interest, and the script defines variables such as CORREL and COVAR 
+from the variance script for the correlation and covariance; or the 
+SLOPE, INTERCEP and RSQUARE of a regression.  (There are more scripts 
+regressx.jnl, regressy.jnl, regressz.jnl if you data lie on a line in X, 
+Y, or Z).<br>
+<br>
+If you want to know the mean of one variable when the other is in a 
+particular range, the thing to do is called &quot;masking&quot;.  You create a 
+mask which is 1 in your desired range and missing elsewhere, and 
+multiply the other variable by that mask.<br>
+<br>
+If your temperature variable is called temp, and the concentration is 
+called concen, and assuming that they are time series data, then this 
+might look like this:<br>
+<br>
+yes? LIST concen[L=@AVE]   ! the average of all the concentration values<br>
+<br>
+yes? LET mask1 = IF temp GT 12 THEN 1    ! there is an implied ELSE missing<br>
+yes? LET mask2 = IF temp LT 23 THEN 1<br>
+yes? LET mask = mask1 * mask2           ! this variable is 1 where 12 &lt; 
+temp &lt; 23<br>
+<br>
+yes? LET masked_concen = mask * concen<br>
+<br>
+! Then here is the average of concen at the times when 12 &lt; temp &lt; 23<br>
+yes? LIST masked_concen[L=@AVE]  
+<br>
+<br>
+Ansley<br>
+<br>
+<br>
+igaratza@palmod.uni-bremen.de wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+<br>
+I have a question about function PLOT/VS to plot the relation of two parameters.<br>
+I have a global dataset of temperature and concentration of some organismo and I<br>
+want to know the relation between. If I plot them I have a scatter plot. But I<br>
+want to know this relation not visually, but numerically. I want to know  which<br>
+is the &quot;mean&quot; concentration and the &quot;standar desviation&quot; for each temperature<br>
+(or for each range of temeparture). Does anyone know how can I do that?<br>
+Thanks a lot<br>
+<br>
+<br>
+<br>
+----------------------------------------------------------------<br>
+This message was sent using IMP, the Internet Messaging Program.<br>
+  
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00423" href="msg00423.html">[ferret_users] ferret question (plot/vs)</a></strong>
+<ul><li><em>From:</em> igaratza</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00423.html">[ferret_users] ferret question (plot/vs)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00425.html">[ferret_users] question about vector plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00423.html">Thread Prev</a>][<a href="msg00425.html">Thread Next</a>][<A HREF="threads.html#00426">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

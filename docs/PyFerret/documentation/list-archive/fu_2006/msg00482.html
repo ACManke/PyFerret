@@ -1,0 +1,231 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How to do @rsum and @iin in reverse? -->
+<!--X-From-R13: "jvyyvnz f. xrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 14 Jul 2006 11:40:32 &#45;0700 -->
+<!--X-Message-Id: 81FCF409&#45;D40C&#45;4A19&#45;8379&#45;2A09BFD8F893@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6.2.1.2.2.20060614032031.09608bd8@gmaomail.gsfc.nasa.gov -->
+<!--X-Reference: Pine.LNX.4.64.0606151002480.29739@tsunami.ocean.washington.edu -->
+<!--X-Reference: 44AF034F.5000702@noaa.gov -->
+<!--X-Reference: 44B2C1B2.3060802@noaa.gov -->
+<!--X-Reference: 9B74E89F&#45;EECF&#45;4815&#45;B159&#45;99866A2FB53F@noaa.gov -->
+<!--X-Reference: 44B7DCF3.9070607@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How to do @rsum and @iin in reverse?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00481.html">Thread Prev</a>][<a href="msg00484.html">Thread Next</a>][<A HREF="threads.html#00482">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to do @rsum and @iin in reverse?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to do @rsum and @iin in reverse?</strong></li>
+<li><strong>From</strong>: <strong>&quot;william s. kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 14 Jul 2006 11:40:30 -0700</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00481.html">44B7DCF3.9070607@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00400.html">6.2.1.2.2.20060614032031.09608bd8@gmaomail.gsfc.nasa.gov</a>&gt;&lt;<a href="msg00403.html">Pine.LNX.4.64.0606151002480.29739@tsunami.ocean.washington.edu</a>&gt;&lt;<a href="msg00467.html">44AF034F.5000702@noaa.gov</a>&gt; &lt;<a href="msg00472.html">44B2C1B2.3060802@noaa.gov</a>&gt;&lt;<a href="msg00478.html">9B74E89F-EECF-4815-B159-99866A2FB53F@noaa.gov</a>&gt; &lt;<a href="msg00481.html">44B7DCF3.9070607@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Actually, an ok solution is pretty easy. It's not quite Steve's  
+suggestion (which doesn't work), but is simpler:<br>
+<br>
+yes? let test = {1,2,3,4,5,6}<br>
+yes? list test, test[i=@rsum], test[i=@sum] - test[i=@rsum] +  
+test   ! add the variable itself to the reverse running sum<br>
+             X: 0.5 to 6.5<br>
+Column  1: TEST is {1,2,3,4,5,6}<br>
+Column  2: TEST[X=@RSU] is {1,2,3,4,5,6} (running sum on X)<br>
+Column  3: EX#3 is TEST[I=@SUM]-TEST[I=@RSUM]+TEST<br>
+          TEST   TEST   EX#3<br>
+1   / 1:  1.000   1.00  21.00<br>
+2   / 2:  2.000   3.00  20.00<br>
+3   / 3:  3.000   6.00  18.00<br>
+4   / 4:  4.000  10.00  15.00<br>
+5   / 5:  5.000  15.00  11.00<br>
+6   / 6:  6.000  21.00   6.00<br>
+<br>
+The third column is the desired reversed running sum.<br>
+<br>
+The same thing can be achieved with an irregular interval as follows:<br>
+<br>
+Suppose the variable yvar is on a y axis with variable intervals:<br>
+<br>
+! get the box size<br>
+! ybox is in axis units. Typically this would be in degrees latitude<br>
+! in that case multiply by meters/degree latitude<br>
+let mpd=111200                      ! meters/degree latitude<br>
+let yvarbox=ybox[gy=yvar]*mpd<br>
+let yvar_rev_iin = yvar[y=@din] - yvar[y=@iin] + yvar*yvarbox<br>
+<br>
+Billy<br>
+<br>
+On 14Jul 2006, at 11:05 AM, Steve Hankin wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Billy,<br>
+<br>
+I have just a few minutes, but maybe can shed a little light on  
+this.  I think this is the deal:<br>
+<br>
+The underlying math is simply that<br>
+    INTEGRAL[x to b] = INTEGRAL[a to b] - INTEGRAL[a to x]<br>
+<br>
+The thing is, that this statement is true where x is a continuous  
+variable.  Here we are on a discretized axis, where each value on  
+our axis actually represents a cell.  As you move from low to high  
+along the axis the running sum is really the integral across that  
+full cell.  But the coordinate point lies in the center of the  
+cell  (ignoring the complexities of irregular cell sizes for this  
+discussion).  I've attempted to draw an axis  to illustrate.  The  
+carets (&quot;^&quot;) show where the values is located on the axis in each  
+case.<br>
+direction of integration ==&gt;<br>
+               |     1    |   2   |   3   |   4   |   5   |   6   |<br>
+@RSUM                ^        ^       ^       ^       ^       ^<br>
+&quot;correct&quot;                 ^       ^       ^       ^       ^       ^<br>
+So there is a 1/2 cell shift -- @RSUM (or equivalently @IIN) would  
+be &quot;correctly&quot; placed1/2 of a cell to the right of its coordinate  
+value.  There is also a 1/2 grid cell shift in the definite  
+integral for the full span  --  TEST[i=1:6@SUM] is  actually the  
+integral value  up to the boundary between I=6 and I=7.  I think  
+when you apply the integral formula above in the face of these two  
+1/2 cell shifts, you are seeing a full cell shift in the result.   
+(I haven't had time to think of a way to really visualize if this  
+is right ....)<br>
+<br>
+Anyway there are three ways to adjust the calculation to make it  
+just right:<br>
+make it &quot;theoretically correct&quot; by correcting all of your values to  
+the center point of the cell.  This simply involves subtracting 1/2  
+of the cell value of the top cell in the integration.  But the  
+results are not going to feel &quot;natural&quot; for a simple sum<br>
+            LET test_rsum = test[i=@rsum]-0.5*test<br>
+<br>
+add the value of the low cell to the reverse integration<br>
+LET test_rsum_rev = test[i=@sum] - test[i=@rsum] + test[i=`lo`]<br>
+or<br>
+shift the result with the @SHF operator<br>
+I'm afraid I don't have time to actually test any of these out.   
+Hopefully they are not complete nonsense!<br>
+<br>
+    - steve<br>
+<br>
+============================<br>
+<br>
+William S. Kessler wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">This may be a really stupid question. How does one perform @rsum  
+or @iin in reverse (i.e. sum from the high-index end of the list)?<br>
+<br>
+The answer I would have given before I actually looked at it in  
+detail would have been: subtract the running sum or integral from  
+the definite sum over the whole range. And indeed I have done this  
+many times. But the result is not quite as expected, as the  
+following example shows:<br>
+<br>
+yes? let test = {1,2,3,4,5,6}<br>
+yes? list test, test[i=@rsum], test[i=@sum] - test[i=@rsum]<br>
+             X: 0.5 to 6.5<br>
+Column  1: TEST is {1,2,3,4,5,6}<br>
+Column  2: TEST[X=@RSU] is {1,2,3,4,5,6} (running sum on X)<br>
+Column  3: EX#3 is TEST[I=@SUM]-TEST[I=@RSUM]<br>
+          TEST   TEST   EX#3<br>
+1   / 1:  1.000   1.00  20.00<br>
+2   / 2:  2.000   3.00  18.00<br>
+3   / 3:  3.000   6.00  15.00<br>
+4   / 4:  4.000  10.00  11.00<br>
+5   / 5:  5.000  15.00   6.00<br>
+6   / 6:  6.000  21.00   0.00<br>
+<br>
+The second column does what we want in a running sum: the first  
+value is the value of the function over interval 1. The second  
+value is the sum of the function at intervals 1+2. The last value  
+is the sum over the whole range, as it should be. But I had hoped  
+and expected that the third column would be the reverse: The last  
+value (i=6) should be the last value of the function (6), the  
+second-to-last should be the sum of the two last values (6+5=11),  
+and the first value should be the same sum as if the operation  
+were done the other way (21). But it isn't. The whole thing is  
+shifted by 1 interval, the value in position 6 is 0, and the value  
+in position 1 is not the whole sum.<br>
+<br>
+Am I missing something obvious???? What is the proper way to take  
+a running sum or integral in reverse? It should be possible to get  
+the same qualities of the answer doing the operation in either  
+direction.<br>
+<br>
+Billy K<br>
+</blockquote>
+-- -- Steve Hankin, NOAA/PMEL -- Steven.C.Hankin@noaa.gov 7600 Sand  
+Point Way NE, Seattle, WA 98115-0070 ph. (206) 526-6080, FAX (206)  
+526-6744<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00400" href="msg00400.html">[ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> zhen.li</li></ul></li>
+<li><strong><a name="00403" href="msg00403.html">Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> Andy Chiodi</li></ul></li>
+<li><strong><a name="00467" href="msg00467.html">Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> muyin wang</li></ul></li>
+<li><strong><a name="00472" href="msg00472.html">Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00478" href="msg00478.html">[ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+<li><strong><a name="00481" href="msg00481.html">Re: [ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00481.html">Re: [ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00484.html">Re: [ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00481.html">Thread Prev</a>][<a href="msg00484.html">Thread Next</a>][<A HREF="threads.html#00482">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

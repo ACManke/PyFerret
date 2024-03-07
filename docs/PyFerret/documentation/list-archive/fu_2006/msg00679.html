@@ -1,0 +1,238 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Details on using @AVE function correctly -->
+<!--X-From-R13: thvzbaqNpbncf.sfh.rqh -->
+<!--X-Date: Mon, 16 Oct 2006 12:17:15 &#45;0700 -->
+<!--X-Message-Id: 20061016145540.7p7f1xo680o488co@webmail.fsu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20061011170129.wr3rdajuhc8wksoc@webmail.fsu.edu -->
+<!--X-Reference: Pine.LNX.4.58.0610120334390.12757@caos.iisc.ernet.in -->
+<!--X-Reference: 20061012111315.45mxl17exscs404s@webmail.fsu.edu -->
+<!--X-Reference: Pine.LNX.4.58.0610122154450.13389@caos.iisc.ernet.in -->
+<!--X-Reference: 20061016123427.xpt7knm1foo44kgg@webmail.fsu.edu -->
+<!--X-Reference: Pine.LNX.4.58.0610162333450.7927@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Details on using @AVE function correctly</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00672.html">Thread Prev</a>][<a href="msg00681.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Details on using @AVE function correctly</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Details on using @AVE function correctly</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></strong></li>
+<li>Date: Mon, 16 Oct 2006 14:55:40 -0400</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;Pine.LNX.4.58.0610162333450.7927@caos.iisc.ernet.in&gt;</li>
+<li>References: &lt;<a href="msg00667.html">20061011170129.wr3rdajuhc8wksoc@webmail.fsu.edu</a>&gt;&lt;<a href="msg00668.html">Pine.LNX.4.58.0610120334390.12757@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00670.html">20061012111315.45mxl17exscs404s@webmail.fsu.edu</a>&gt;&lt;<a href="msg00672.html">Pine.LNX.4.58.0610122154450.13389@caos.iisc.ernet.in</a>&gt;&lt;20061016123427.xpt7knm1foo44kgg@webmail.fsu.edu&gt;&lt;Pine.LNX.4.58.0610162333450.7927@caos.iisc.ernet.in&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Internet Messaging Program (IMP) H3 (4.0.4)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jaison,<br>
+ Thank you for your response.  This is a very nice review of the @AVE 
+functions and something I think should be added to the documentation.  
+It is not obvious how the grid box weights are computed from what is 
+given and one could easily trust the values when in fact they would be 
+wrong.  I will post this response to the group.   So, basically using 
+the calendar format (i.e. var[t=02-JAN-2001:05-JAN-2001@AVE]) of @AVE 
+will ALWAYS underestimate the mean because of the 0.50 weight on each 
+end.  I think another way to get at the correct method would be to:<br>
+<br>
+let new_var = var[t=02-JAN-2001:05-JAN-2001]<br>
+<br>
+let new_var_mean = new_var[t=@AVE]<br>
+<br>
+This computes the mean over all the grid cells in range by removing the 
+values from the rest of the data.<br>
+<br>
+<br>
+Any idea why @AVE was created like this?<br>
+<br>
+<br>
+Thanks again,<br>
+<br>
+Steve<br>
+<br>
+<br>
+Quoting Jaison Kurian &lt;jaison@caos.iisc.ernet.in&gt;:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi Steve,
+          I faced a simular confusion earlier...that time Ansley
+clarified my doubts.
+
+ Basically over &quot;co-ordinate axes&quot; ie. X/Y/Z/T, @AVE is weigthed
+by grid box lenth, based on the specified region. But over &quot;abstract
+axes or indices&quot; ie. I/J/K/L it is not. Let us see one example.
+
+   define axis/t=01-JAN-2001:06-JAN-2001:1/units=days/t0=31-DEC-2000 time
+   let var = SIN(t[gt=time])
+   set list/precision=10
+
+   ! first 3-methods to find ave
+
+   list var[l=2:5@AVE]
+   list var[t=02-JAN-2001:05-JAN-2001@SUM]/var[t=02-JAN-2001:05-JAN-2001@NGD]
+   list var[t=&quot;01-JAN-2001:12&quot;:&quot;05-JAN-2001:12&quot;@AVE]
+
+   ! fourth method to find ave
+
+   list var[t=02-JAN-2001:05-JAN-2001@AVE]
+
+The first 3 list commands will give the same answer, the sum of variable
+values from 2nd to 5th devided by number of points, ie. 4. But the last one
+will give a different anwer. Let me explain in detail.
+
+The first time point is &quot;01-JAN-2001:00:00&quot;
+  its bounds are  &quot;31-DEC-2000:12:00&quot; and &quot;01-JAN-2001:12:00&quot;
+The second time point is &quot;02-JAN-2001:00:00&quot;
+  its bounds are &quot;01-JAN-2001:12:00&quot; and &quot;02-JAN-2001:12:00&quot;
+
+Hence when you are specifying as the starting T for an average
+operation as &quot;02-JAN-2001&quot;,only half of the grid box comes after
+this time (ie. from &quot;02-JAN-2001:00:00&quot; to &quot;02-JAN-2001:12:00&quot;)
+hence this value gets only 0.5 weightage..similar is the case
+with the value on &quot;05-JAN-2001&quot;. So, the average
+
+   var[t=02-JAN-2001:05-JAN-2001@AVE]
+
+will be computed as
+
+   (var[t=02-JAN-2001]*0.5+var[t=03-JAN-2001]*1+var[t=04-JAN-2001]*1+
+        var[t=05-JAN-2001]*0.5)/3
+
+This problem is overcome by specifying exact grid boundaries in method
+3 above. In method 2 a combination of @SUM and @NGD has been used. Since
+@SUM is a non-weighted calculation, this will give the answer without
+any problems like method 4 above.
+
+Back to your question
+---------------------
+So what should a proper method for simple mean ? Any of first 3 methods
+from above example. Then you may ask, how to make it easier with the
+time specified on calendar format : here is the trick
+
+let l1 = L[gt=var,t=02-JAN-2001]
+let l2 = L[gt=var,t=05-JAN-2001]
+list var[l=`l1`:`l2`@AVE]
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+On Mon, 16 Oct 2006 guimond@coaps.fsu.edu wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi Jaison,
+  I decided to e-mail you separatley about this question and then I
+will post the responses to the group.  I have computed some means and I
+am questioning how ferret goes about them.  Specifically, I have
+computed the time mean of a var between two endpoints, call them t1 and
+t2:
+
+let mean1 = var[t=`t1`:`t2`@AVE]
+
+According to the FERRET users guide, this will be the mean over the
+&quot;exact&quot; region or from gridpoint to gridpoint, correct?  Now if I do
+something like this:
+
+let mean2 = var[l=10:15@AVE], using time steps instead of time values.
+
+I will get a different answer because this method averages from
+gridcell to gridcell and not gridpoint to gridpoint, correct?
+
+I am confused on what is the more accurate depiction of the mean here.
+I want to average from one single time point, t1, to another time
+point, t2.  This is why I used the formula for mean1.  Is this correct
+for simple means?
+
+Thanks for your help,
+Steve Guimond
+
+----------------------------------------------------------------
+
+
+</pre>
+</blockquote><pre>
+
+</pre>
+</blockquote><pre>
+
+
+----------------------------------------------------------------
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00682" href="msg00682.html">Re: [ferret_users] Details on using @AVE function correctly</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00681" href="msg00681.html">Re: [ferret_users] Details on using @AVE function correctly</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00667" href="msg00667.html">[ferret_users] remove zero from x-axis</a></strong>
+<ul><li><em>From:</em> guimond</li></ul></li>
+<li><strong><a name="00668" href="msg00668.html">Re: [ferret_users] remove zero from x-axis</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00670" href="msg00670.html">Re: [ferret_users] remove zero from x-axis</a></strong>
+<ul><li><em>From:</em> guimond</li></ul></li>
+<li><strong><a name="00672" href="msg00672.html">Re: [ferret_users] remove zero from x-axis</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00672.html">Re: [ferret_users] remove zero from x-axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00681.html">Re: [ferret_users] Details on using @AVE function correctly</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00672.html">Thread Prev</a>][<a href="msg00681.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Straight lines -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 25 Feb 2008 13:45:07 &#45;0800 -->
+<!--X-Message-Id: 47C336E3.2060405@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: f83b83e40802250414o211079b1na44faf6173ccd7c7@mail.gmail.com -->
+<!--X-Derived: gifJ99AIP0rJn.gif -->
+<!--X-Derived: gifocYlyKnJng.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Straight lines</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00082.html">Thread Prev</a>][<a href="msg00083.html">Thread Next</a>][<A HREF="threads.html#00088">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Straight lines</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ashley Watson &lt;<a href="mailto:ashleywats@DOMAIN.HIDDEN">ashleywats@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Straight lines</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 25 Feb 2008 13:45:07 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:f83b83e40802250414o211079b1na44faf6173ccd7c7@DOMAIN.HIDDEN">f83b83e40802250414o211079b1na44faf6173ccd7c7@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f83b83e40802250414o211079b1na44faf6173ccd7c7@DOMAIN.HIDDEN">f83b83e40802250414o211079b1na44faf6173ccd7c7@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ashley,<br>
+There are a family of scripts that does this, or almost.&nbsp; <br>
+<br>
+yes? go/help gridxy<br>
+<br>
+So, try this:<br>
+<blockquote>yes? use etopo120<br>
+yes? shade/x=30:60/y=0:20 rose<br>
+yes? go gridxy<br>
+</blockquote>
+However it makes lines at the grid points, not the edges. And if the X
+axis is a modulo axis, and the plot crosses the end of the axis as it's
+defined, then some of the plot is unmarked by the grid.<br>
+<blockquote>yes? use etopo120<br>
+yes? shade/x=0:20/y=0:20 rose<br>
+yes? go gridxy<br>
+</blockquote>
+Here's an example of&nbsp; a simple script that defines variables based on
+xboxlo and ybolxo to get the outlines of the grid boxes. With a little
+work it could be made more general to overlay a grid on any plot. See
+if it's enough to get you started. <br>
+<tt><br>
+use etopo120<br>
+shade/x=-10:30/y=-10:20 rose<br>
+<br>
+! Define variables with the box outlines. If x is a modulo axis, define
+its range explicitly. <br>
+<br>
+yes? let xx = xboxlo[gx=rose,x=-15:33]<br>
+yes? let yy = yboxlo[gy=rose]<br>
+<br>
+! Contour with levels set </tt><tt>a bit outside the range of the plot
+<br>
+! so we get all the edges.<br>
+! Set the levels to draw </tt><tt>every degree, unlabeled, <br>
+! and every 10 degrees, dark lines with labels.<br>
+!<br>
+!&nbsp;&nbsp; (-20,40,1,-3)&nbsp;&nbsp; every degree, -3 means no label<br>
+!&nbsp;&nbsp; LINE(-20,40,1)&nbsp; solid lines at all levels (default is dash for
+negative values)<br>
+!&nbsp;&nbsp; (-20,40,10,-1)&nbsp; every 10 degrees, -1 means integer labels<br>
+!&nbsp;&nbsp; DARK(-20,40,10) Make the 10-degree contours dark lines.<br>
+<br>
+! Vertical lines at each x edge<br>
+contour/over/nolab/color=black/lev=(-20,40,1,-3)(-20,40,10,-1)LINE(-20,40,1)DARK(-20,40,10)&nbsp;
+xx+(yy*0)<br>
+<br>
+! Horizontal lines at each y edge<br>
+contour/over/nolab/color=black/lev=(-30,40,1,-3)(-30,40,10,-1)LINE(-30,40,1)DARK(-30,40,10,-1)
+yy+(xx*0)<br>
+</tt><br>
+<br>
+<br>
+(Also see the script mask_outline.jnl for some related ideas)<br>
+<br>
+Ansley<br>
+<br>
+<br>
+<br>
+Ashley Watson wrote:
+<blockquote
+ cite=""
+ type="cite">Hi ferreters,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I want to draw straight lines at grid boundries to separate my
+gridboxes (see attached figure). I have done this by noting the values
+of <br>
+XBOXLO and YBOXLO corresponding to gridboxes and then drawing straight
+lines at these values using POLYGON command. Is there any way to <br>
+draw these lines using I, J indices rather than X,Y values??<br>
+  <br>
+&nbsp;Here are commands I used to draw the lines:<br>
+  <br>
+yes? show data<br>
+&nbsp;&nbsp;&nbsp;&nbsp; currently SET data sets:<br>
+&nbsp;&nbsp;&nbsp; 1&gt; HEAD_OUT.NC&nbsp; (default)<br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L<br>
+&nbsp;HT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Elevation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:150 &nbsp;&nbsp;&nbsp; 1:89 &nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:1<br>
+  <br>
+set reg/I=62:66/J=43:47<br>
+Let YT1 = {47.012,47.012,47.105,47.105,47.198,47.198,47.292,47.292}&nbsp;&nbsp;&nbsp;&nbsp;
+!horizontal lines (ypts)<br>
+Let XT1 =
+{11.87927,12.55549,12.55549,11.87927,11.87927,12.55549,12.55549,11.87927}
+!horizontal lines(xpts)<br>
+Let YT = {46.919,47.384,47.384,46.919,46.919,47.384,47.384,46.919}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+!vertical lines (ypts)<br>
+Let XT = {12.01452,12.01452,12.149,12.149,12.285,12.285,12.42,12.42}&nbsp;&nbsp;&nbsp;
+!vertical lines (xpts)<br>
+  <br>
+shade ht<br>
+POLYGON/nolab/over/color=1/thick=1.1 xt, yt, 0<br>
+POLYGON/nolab/over/color=1/thick=1.1 xt1, yt1, 0<br>
+  <br>
+Thanking in Anticipation<br>
+Ashley<br>
+  <br>
+  <br>
+  <hr size="4" width="90%"><br>
+  <center><img src="gifJ99AIP0rJn.gif"></center>
+</blockquote>
+
+
+</font></td></tr></table><p><a href="gifocYlyKnJng.gif" ><img src="gifocYlyKnJng.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00082" href="msg00082.html">[ferret_users] Straight lines</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00082.html">[ferret_users] Straight lines</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00083.html">[ferret_users] return=tstart,p=1</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00082.html">Thread Prev</a>][<a href="msg00083.html">Thread Next</a>][<A HREF="threads.html#00088">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

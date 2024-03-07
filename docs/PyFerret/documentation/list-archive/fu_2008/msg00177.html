@@ -1,0 +1,255 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] to combine daily file to monthly -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 14 Apr 2008 13:35:28 &#45;0700 -->
+<!--X-Message-Id: 4803C00F.2030807@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: b4114cae0804120424p76410faeob657a36e36605fce@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] to combine daily file to monthly</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00174.html">Thread Prev</a>][<a href="msg00175.html">Thread Next</a>][<A HREF="threads.html#00177">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] to combine daily file to monthly</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jaya kumar A &lt;<a href="mailto:jayamet@DOMAIN.HIDDEN">jayamet@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] to combine daily file to monthly</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 14 Apr 2008 13:35:27 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:b4114cae0804120424p76410faeob657a36e36605fce@DOMAIN.HIDDEN">b4114cae0804120424p76410faeob657a36e36605fce@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:b4114cae0804120424p76410faeob657a36e36605fce@DOMAIN.HIDDEN">b4114cae0804120424p76410faeob657a36e36605fce@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.12 (Windows/20080213)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Jaya,<br>
+First try removing the /CLOBBER qualifier from your SAVE commands.
+/CLOBBER will delete the file before writing, and /APPEND will keep the
+file, and add to it.<br>
+<br>
+The individual files have a time axis already.&nbsp; Are the times in each
+file correct?&nbsp; For instance, if you open one of the files and execute
+the command <br>
+<blockquote>yes? SHOW GRID sst<br>
+</blockquote>
+do you see the correct time for that day? If the times in the files are
+correct then you should be able to just append them without defining a
+time axis and using a time stamp. NetCDF files can be appended in time.<br>
+<br>
+! Get rid of the file you will be writing to, if it exists<br>
+<blockquote>yes? sp rm -f <a rel="nofollow" moz-do-not-send="true"
+ href="http://sst_0801.nc/CLOBBER/appendSST1">sst_0801.nc</a><br>
+  <br>
+yes? repeat/l=1:31 (define symbol fname =&nbsp; 200801`l`.nc ; set data
+($fname) ;&nbsp; save/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://sst_0801.nc/CLOBBER/appendSST1">sst_0801.nc/append
+SST</a>; cancel data ($fname)&nbsp; ; cancel memory )<br>
+  <br>
+yes? cancel cata/all<br>
+yes? use sst_0801.nc<br>
+yes? show data<br>
+</blockquote>
+<br>
+jaya kumar A wrote:
+<blockquote
+ cite=""
+ type="cite">dear users,<br>
+  <a rel="nofollow" moz-do-not-send="true" href="http://2008011.nc">2008011.nc</a>,<a rel="nofollow"
+ moz-do-not-send="true" href="http://2008012.nc">2008012.nc</a><br>
+i want to combine daily file like <br clear="all">
+  <a rel="nofollow" moz-do-not-send="true" href="http://2008011.nc">2008011.nc</a>,<a rel="nofollow"
+ moz-do-not-send="true" href="http://2008012.nc">2008012.nc</a>,<a rel="nofollow"
+ moz-do-not-send="true" href="http://2008011.nc">2008011.nc</a>,2008013.nc...............................<a rel="nofollow"
+ moz-do-not-send="true" href="http://20080131.nc">20080131.nc</a> files<br>
+  <br>
+i want to combine this file to make monthly file , i tried like this <br>
+  <br>
+set memory/size=300<br>
+define axis/T="1-jan-2008":"31-jan-2008":1/units=days TIME<br>
+LET tstamp = T[GT=TIME] * 0<br>
+repeat/l=1:31 (define symbol fname =&nbsp; 200801`l`.nc ; set data
+($fname) ; Let SST1=SST +tstamp ; save/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://sst_0801.nc/CLOBBER/appendSST1">sst_0801.nc/CLOBBER/append
+SST1</a>; cancel data ($fname)&nbsp; ; cancel memory )<br>
+cancel data/all<br>
+  <br>
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! but i am getting like this
+|||||||||||||||||||||||||||||<br>
+  <br>
+  <br>
+repeat/l=1:31 (define symbol fname =&nbsp; 200801`l`.nc ; set data
+($fname) ; Let SST1=SST +tstamp ; save/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://sst_0801.nc/CLOBBER/appendSST1">sst_0801.nc/CLOBBER/append
+SST1</a>; cancel data ($fname)&nbsp; ; cancel memory )<br>
+&nbsp;!-&gt; repeat/l=1:31 (define symbol fname =&nbsp; 200801`l`.nc ;
+set data ($fname) ; Let SST1=SST +tstamp ;
+save/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://sst_0801.nc/CLOBBER/append">sst_0801.nc/CLOBBER/append</a>
+SST1; cancel data ($fname)&nbsp; ;
+cancel memory )<br>
+!-&gt; REPEAT: L=1<br>
+&nbsp;!-&gt; define symbol fname =&nbsp; <a rel="nofollow" moz-do-not-send="true"
+ href="http://2008011.nc">2008011.nc</a><br>
+&nbsp;!-&gt; set data <a rel="nofollow" moz-do-not-send="true" href="http://2008011.nc">2008011.nc</a><br>
+&nbsp;*** NOTE: Ambiguous coordinates on T axis: SST +TSTAMP<br>
+&nbsp;LISTing to file <a rel="nofollow" moz-do-not-send="true" href="http://sst_0801.nc">sst_0801.nc</a><br>
+&nbsp;!-&gt; cancel data 2008011.nc*** NOTE: Ambiguous coordinates on T
+axis: SST +TSTAMP<br>
+&nbsp; LISTing to file <a rel="nofollow" moz-do-not-send="true" href="http://sst_0801.nc">sst_0801.nc</a><br>
+&nbsp;!-&gt; cancel data <a rel="nofollow" moz-do-not-send="true" href="http://2008011.nc">2008011.nc</a><br>
+&nbsp;TEMPORARY data cleared from memory<br>
+!-&gt; REPEAT: L=2<br>
+&nbsp;!-&gt; define symbol fname =&nbsp; <a rel="nofollow" moz-do-not-send="true"
+ href="http://2008012.nc">2008012.nc</a><br>
+&nbsp;!-&gt; set data <a rel="nofollow" moz-do-not-send="true" href="http://2008012.nc">2008012.nc</a><br>
+&nbsp;*** NOTE: Ambiguous coordinates on T axis: SST +TSTAMP<br>
+&nbsp;**ERROR: illegal limits: "SST1" is not in the range L=2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Axis extremes are L=1<br>
+LIST/FORMAT=CDF/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://sst_0801.nc/CLOBBER/append">sst_0801.nc/CLOBBER/append</a>
+SST1<br>
+Command file, command group, or REPEAT execution aborted<br>
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!<br>
+my netcdf description of one file are given<br>
+  <br>
+dimensions:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time = 1 ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zlev = 1 ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lat = 720 ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lon = 1440 ;<br>
+variables:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float time(time) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+time:long_name = "Center time of the day" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+time:units = "days since 1978-01-01 00:00:00" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float zlev(zlev) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+zlev:long_name = "Sea surface height" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zlev:units = "meters" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zlev:actual_range = "0, 0" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float lat(lat) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lat:long_name = "Latitude" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lat:units = "degrees_north" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+lat:grids = "Uniform grid from -89.875 to 89.875 by 0.25" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float lon(lon) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lon:long_name = "Longitude" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lon:units = "degrees_east" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+lon:grids = "Uniform grid from 0.125 to 359.875 by 0.25" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; short sst(time, zlev, lat, lon) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+sst:long_name = "Daily sea surface temperature" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sst:units = "degrees C" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sst:_FillValue = -999s ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sst:add_offset = 0.f ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sst:scale_factor = 0.01f ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sst:valid_min = -300s ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sst:valid_max = 4500s ;<br>
+  <br>
+// global attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:title = "Daily optimum interpolation(OI) SST: AVHRR only;" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :History = "Version 1.0" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:Description = "Reynolds, et al.(2006) Daily High-resolution Blended
+Analyses. Available at
+  <a rel="nofollow" moz-do-not-send="true"
+ href="ftp://eclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf">ftp://eclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf</a>&nbsp;
+Climatology is based on 1971-2000 OI.v2 SST, Satellite data: Navy
+NOAA17 NOAA18 AVHRR, Ice data: NCEP ice" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:Source = "NOAA/National Climatic Data Center" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:Contact = "Dick Reynolds, email: <a rel="nofollow" moz-do-not-send="true"
+ href="mailto:Richard.W.Reynolds@xxxxxxxx">Richard.W.Reynolds@xxxxxxxx</a>
+&amp;<br>
+Chunying Liu, email: <a rel="nofollow" moz-do-not-send="true"
+ href="mailto:Chunying.liu@xxxxxxxx">Chunying.liu@xxxxxxxx</a>" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :netcdf_Convention = "COARDS" ;<br>
+data:<br>
+  <br>
+&nbsp;time = 10958 ;<br>
+  <br>
+&nbsp;zlev = 0 ;<br>
+  <br>
+thankful for all helps<br>
+  <br>
+- <br>
+JAYAKUMAR A<br>
+Junior Research Fellow, <br>
+Theoretical Studies Division<br>
+IITM, Pune-8
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00174" href="msg00174.html">[ferret_users] to combine daily file to monthly</a></strong>
+<ul><li><em>From:</em> jaya kumar A</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00174.html">[ferret_users] to combine daily file to monthly</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00175.html">[ferret_users] Combined eof technique</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00174.html">Thread Prev</a>][<a href="msg00175.html">Thread Next</a>][<A HREF="threads.html#00177">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

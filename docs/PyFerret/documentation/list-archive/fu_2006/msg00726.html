@@ -1,0 +1,187 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Plotting curvilinear vectors -->
+<!--X-From-R13: "Egrcura D. Uhvzbaq" <thvzbaqNpbncf.sfh.rqh> -->
+<!--X-Date: Sat, 18 Nov 2006 19:24:23 &#45;0800 -->
+<!--X-Message-Id: 20061118222415.ofjt98285goss00g@webmail.fsu.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Derived: gif00035.gif -->
+<!--X-Derived: gif00036.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Plotting curvilinear vectors</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00725.html">Thread Prev</a>][<a href="msg00731.html">Thread Next</a>][<A HREF="threads.html#00726">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Plotting curvilinear vectors</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Plotting curvilinear vectors</strong></li>
+<li><strong>From</strong>: <strong>&quot;Stephen R. Guimond&quot; &lt;<a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 18 Nov 2006 22:24:15 -0500</li>
+<li>Cc: <a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Internet Messaging Program (IMP) H3 (4.0.4)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Group,<br>
+ I have a series of wind vectors in the lat,lon,u,v format and have 
+tried two methods to plot them (1) using the curvilinear version of 
+VECTOR and (2) using the plot_vectors.jnl script.  Method 1 gives me 
+incorrect vectors, the script I used is attached 
+(curvilinear_regrid.jnl).  These winds are from a hurricane and from 
+the plot, don't have the standard cyclonic flow.  Method 2 works good 
+for giving me the right picture (i.e. cyclonic flow), but I am having 
+trouble making a vector key.  I tried overlaying random vectors using a 
+specified vector length, but the arrowhead size, scaling, etc are 
+different (quikscat.jnl) and looks funny.   Ideally, I would like to 
+get the right plot with method 1 so I can use the many qualifiers (i.e. 
+key) associated with VECTOR, that the plot_vectors.jnl script doesn't 
+have.  Any idea why the winds are messed up in method 1?<br>
+<br>
+Thanks much,<br>
+Steve<br>
+<br>
+=======================================================<br>
+Stephen R. Guimond<br>
+Graduate Research Assistant<br>
+Center for Ocean-Atmospheric Prediction Studies (COAPS)<br>
+Tallahassee, FL 32304<br>
+=======================================================<br>
+<br>
+----------------------------------------------------------------<br>
+<br>
+<p><strong>Attachment:
+<a href="gif00035.gif" ><tt>bad_winds.gif</tt></a></strong><br>
+<em>Description:</em> GIF image</p>
+<p><strong>Attachment:
+<a href="gif00036.gif" ><tt>good_winds.gif</tt></a></strong><br>
+<em>Description:</em> GIF image</p>
+<pre> ! NOAA/PMEL TMAP
+ ! FERRET v5.60  
+ ! IRIX 6.5 - 04/07/04
+ ! 20-Feb-06 15:00     
+
+def axis/x=1:20:1 xax
+def axis/y=1:72:1/modulo yax
+def grid/x=xax/y=yax g1
+file/grid=g1/var=&quot;lat,lon,u,v&quot; fort.8
+
+set var/bad=-9999. u;set var/bad=-9999. v
+
+def axis/y=1:73:1 nyax
+def grid/like=g1/y=nyax g2
+let nlat = lat[g=g2]
+let nlon = lon[g=g2]
+let nu = u[g=g2]
+let nv = v[g=g2]
+
+!let speed = (nu^2 + nv^2)^0.5
+!fill speed,nlon,nlat
+
+vector nu,nv,nlon,nlat
+
+exit
+</pre>
+<pre> ! NOAA/PMEL TMAP
+ ! FERRET v5.60  
+ ! IRIX 6.5 - 04/07/04
+ ! 17-Nov-06 17:02     
+
+file/var=&quot;lat,lon,u,v&quot; fort.8
+
+set var/bad = -9999. u
+set var/bad = -9999. v
+
+let nu = u/8
+let nv = v/8
+
+go basemap x=280:300 y=25:35 5
+
+go plot_vectors nu nv lon lat 2
+
+
+
+exit
+
+
+
+
+
+
+let nrefu = 15/8
+let nrefv = 0
+
+!go plot_vectors nrefu nrefv 290 30
+
+let array_u = i[i=1:2]*j[j=1:2]*0 + 15
+
+let array_v = i[i=1:2]*j[j=1:2]*0 + 0
+
+let array_lon = i[i=1:2]*j[j=1:2]*0 + 360
+
+let array_lat = i[i=1:2]*j[j=1:2]*0 + 90
+
+
+vector/overlay/len=15.0 array_u,array_v,array_lon,array_lat
+
+
+exit
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00731" href="msg00731.html">Re: [ferret_users] Plotting curvilinear vectors</a></strong>
+<ul><li><em>From:</em> E. D. (Ned) Cokelet</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00725.html">[ferret_users] Fancy line/label colors</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00731.html">Re: [ferret_users] Plotting curvilinear vectors</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00725.html">Thread Prev</a>][<a href="msg00731.html">Thread Next</a>][<A HREF="threads.html#00726">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

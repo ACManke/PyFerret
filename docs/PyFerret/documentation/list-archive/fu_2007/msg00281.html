@@ -1,0 +1,176 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] cancel mode upcase -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 7 May 2007 14:08:45 &#45;0700 -->
+<!--X-Message-Id: 463F955B.5040205@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8be1369e0705071021h7d1561c1k799ff11e6c1c10a6@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] cancel mode upcase</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00280.html">Thread Prev</a>][<a href="msg00282.html">Thread Next</a>][<A HREF="threads.html#00281">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] cancel mode upcase</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>David Wang &lt;<a href="mailto:climater@DOMAIN.HIDDEN">climater@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] cancel mode upcase</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 07 May 2007 14:08:43 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:8be1369e0705071021h7d1561c1k799ff11e6c1c10a6@DOMAIN.HIDDEN">8be1369e0705071021h7d1561c1k799ff11e6c1c10a6@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8be1369e0705071021h7d1561c1k799ff11e6c1c10a6@DOMAIN.HIDDEN">8be1369e0705071021h7d1561c1k799ff11e6c1c10a6@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.10 (Windows/20070221)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi David,<br>
+This has been on our list of improvements to make for a while, and the
+MODE UPCASE is a step towards full control over the case of variables
+in output files. There are just two entirely pieces of the underlying
+code that are doing things here. For netCDF files, we have introduced a
+step in the initialization of the file where Ferret saves information
+about the file. We store global attributes, variable attributes, and
+the original upper-or lower-case spelling of the variables and
+attributes, and we use that stored information when deciding what
+attributes to write and what case names are in.<br>
+<br>
+For user commands defining variables, the name of the variable is
+upcased almost right away. By default&nbsp; Ferret is case-insensive (and
+for almost everything there's no choice about treatment of case).&nbsp; If
+we say<br>
+<br>
+yes? use <a rel="nofollow" href="http://basin.nc">basin.nc</a><br>
+yes? LET A1 = BASIN<br>
+yes? let a1 1= 2*basin<br>
+<br>
+then we've defined only one variable, A1. The second definition
+replaces the first, and we cannot define two variables a1, and A1 (as
+Ferret is currently written).&nbsp; So there's more to the issue than just
+what the case will be upon output. It would be a small step, however,
+to change the Ferret code to save the case of the variable from the LET
+command each time a definition is made, and if CANCEL MODE UPCASE is in
+effect, we would output the variable using that case to netCDF files.
+In the above example<br>
+<blockquote>yes? use basin.nc<br>
+yes? can mode upcase<br>
+  <br>
+yes? LET A1 = BASIN<br>
+yes? save/clobber/file=a1.nc a1 &nbsp; ! This would write A1<br>
+  <br>
+yes? let a1 = 2*basin <br>
+yes? save/clobber/file=a1.nc a1 &nbsp; ! This would write A1<br>
+</blockquote>
+Doesn't work this way yet, but I'll add this to our planning.<br>
+<br>
+<br>
+David Wang wrote:
+<blockquote
+ cite=""
+ type="cite">Hello Ferreters,<br>
+  <br>
+I found CANCEL MODE UPCASE failed to work for user-defined variables.
+For example:<br>
+  <br>
+  <blockquote
+ style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"
+ class="gmail_quote">yes? use <a rel="nofollow" href="http://basin.nc">basin.nc</a><br>
+yes? can mode upcase<br>
+yes? let basin2 = basin<br>
+yes? save/file=<a rel="nofollow" href="http://tmp1.nc">tmp1.nc</a> basin<br>
+&nbsp;LISTing to file <a rel="nofollow" href="http://tmp1.nc">tmp1.nc</a><br>
+&nbsp;*** NOTE: Converting data type of missing_value NC_SHORT to match
+output type of variable NC_FLOAT
+    <br>
+yes? save/file=<a rel="nofollow" href="http://tmp2.nc">tmp2.nc</a> basin2<br>
+&nbsp;LISTing to file <a rel="nofollow" href="http://tmp2.nc">tmp2.nc</a><br>
+  </blockquote>
+  <br>
+the variable `basin' and all coordinate variables are still in lower
+case in <a rel="nofollow" href="http://tmp1.nc">tmp1.nc</a>, but they are all
+capitalized in <a rel="nofollow" href="http://tmp2.nc">tmp2.nc</a><br>
+  <br>
+Is there a reason that it has to be like that?<br>
+  <br>
+Thanks,<br>
+David<br>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:ansley.b.manke@xxxxxxxx">ansley.b.manke@xxxxxxxx</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00280" href="msg00280.html">[ferret_users] cancel mode upcase</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00280.html">[ferret_users] cancel mode upcase</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00282.html">[ferret_users] ferret_users: How to capture long output of show?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00280.html">Thread Prev</a>][<a href="msg00282.html">Thread Next</a>][<A HREF="threads.html#00281">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

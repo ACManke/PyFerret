@@ -1,0 +1,173 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] shade + plot/vs and curvilinear grid -->
+<!--X-From-R13: Zhvm Oyrknaqer qr Oenhwb Uhreen <threenNcrab.pbccr.hsew.oe> -->
+<!--X-Date: Fri, 18 Jan 2008 06:01:15 &#45;0800 -->
+<!--X-Message-Id: 20080118135032.M43665@peno.coppe.ufrj.br -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20080117124652.M12769@peno.coppe.ufrj.br -->
+<!--X-Reference: 478F9E5C.6020001@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] shade + plot/vs and curvilinear grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00039.html">Thread Prev</a>][<a href="msg00037.html">Thread Next</a>][<A HREF="threads.html#00043">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shade + plot/vs and curvilinear grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shade + plot/vs and curvilinear grid</strong></li>
+<li><strong>From</strong>: <strong>Luiz Alexandre de Araujo Guerra &lt;<a href="mailto:guerra@DOMAIN.HIDDEN">guerra@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Jan 2008 10:51:57 -0300</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:478F9E5C.6020001@DOMAIN.HIDDEN">478F9E5C.6020001@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20080117124652.M12769@DOMAIN.HIDDEN">20080117124652.M12769@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:478F9E5C.6020001@DOMAIN.HIDDEN">478F9E5C.6020001@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ansley,
+
+Thank you very much! It worked fine.
+
+Best regards,
+
+Alex
+--
+Luiz Alexandre Guerra
+Aluno de Doutorado / Graduate Student
+
+Universidade Federal do Rio de Janeiro / Rio de Janeiro Federal University
+COPPE/PEnO / Ocean Engineering Program
+
+---------- Original Message -----------
+From: Ansley Manke &lt;ansley.b.manke@xxxxxxxx&gt;
+To: Luiz Alexandre de Araujo Guerra &lt;guerra@xxxxxxxxxxxxxxxxxx&gt;
+Cc: oar.pmel.ferret_users@xxxxxxxx
+Sent: Thu, 17 Jan 2008 10:28:44 -0800
+Subject: Re: [ferret_users] shade + plot/vs and curvilinear grid
+
+&gt; Hi Luiz,
+&gt; The values need to be numbers, without any W or S designation. I'm 
+&gt; guessing that this will work:
+&gt; 
+&gt;   shade var,lon,lat
+&gt;   plot/vs/ov {350,350},{-35,-25}
+&gt; 
+&gt; After you draw the plot with the curvilinear SHADE or FILL command,
+&gt;  look at the symbols that describe the longitude and latitude range 
+&gt; of the plot axes.
+&gt; 
+&gt; SHOW SYMBOL PPL$XMIN, PPL$XMAX
+&gt; SHOW SYMBOL PPL$YMIN, PPL$YMAX
+&gt; 
+&gt; Your list of points need to lie within these ranges for them to show 
+&gt; up on the plot. That is, PLOT/VS does not automatically add or 
+&gt; subtract 360 from the longitudes to match the modulo X axis of the 
+&gt; plot (this is true even if we're not in curvilinear coordinates).
+&gt; 
+&gt; If the points are in variables, say xpts and ypts, there's no reason 
+&gt; to check them by hand; you could do something like this:
+&gt; 
+&gt;   shade var,lon,lat
+&gt;   plot/vs/over xpts,ypts
+&gt;   let xmin = xpts[x=@min]
+&gt;   let xmax = xpts[x=@max]
+&gt;   IF `xmin lt ($ppl$xmin)` THEN plot/vs/over/nolab xpts+360,ypts
+&gt;   IF `xmax gt ($ppl$xmin)` THEN plot/vs/over/nolab xpts-360,ypts
+&gt; 
+&gt; Luiz Alexandre de Araujo Guerra wrote:
+&gt; &gt; Dear coleagues,
+&gt; &gt;
+&gt; &gt; I am trying to make a figure using shade and plot/vs to draw a line but I have
+&gt; &gt; a problem. My data file is a model output with curvilinear grid. So, I use
+&gt; &gt; shade with three parameters: &quot;shade var,lon,lat&quot;. I want to draw a meridional
+&gt; &gt; line. I have been tried: &quot;plot/vs/ov {10W,10W},{35S,25S}&quot; or &quot;plot/vs/ov
+&gt; &gt; {-10,-10},{-35,-25}&quot; and both result an error message. I have already tried:
+&gt; &gt; &quot;plot/vs/ov {3574,3574},{1037,1182}&quot; (grid model indexes) and nothing
+happened.
+&gt; &gt;
+&gt; &gt; I have read some group messages about the use of @itp transform to draw lines
+&gt; &gt; in time series figures. I had success with that method and I expected to adapt
+&gt; &gt; it to my problem... but it didn&#xB4;t work too.
+&gt; &gt;
+&gt; &gt; I was wondering if the Ferret group could help.
+&gt; &gt;
+&gt; &gt; Thanks for your attention.
+&gt; &gt;
+&gt; &gt; Best regards,
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Luiz Alexandre Guerra
+&gt; &gt; Aluno de Doutorado / Graduate Student
+&gt; &gt;
+&gt; &gt; Universidade Federal do Rio de Janeiro / Rio de Janeiro Federal University
+&gt; &gt; COPPE/PEnO / Ocean Engineering Program
+&gt; &gt;
+&gt; &gt;
+------- End of Original Message -------
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00036" href="msg00036.html">[ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+<ul><li><em>From:</em> Luiz Alexandre de Araujo Guerra</li></ul></li>
+<li><strong><a name="00039" href="msg00039.html">Re: [ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00039.html">Re: [ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00037.html">[ferret_users] Problem with PPL$YLEN height of plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00039.html">Thread Prev</a>][<a href="msg00037.html">Thread Next</a>][<A HREF="threads.html#00043">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

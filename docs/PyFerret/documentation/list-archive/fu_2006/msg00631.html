@@ -1,0 +1,185 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 29 Sep 2006 12:09:34 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0609300043400.5212@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: FED41689&#45;35F6&#45;426B&#45;883A&#45;3DFBA4062A31@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00628.html">Thread Prev</a>][<a href="msg00639.html">Thread Next</a>][<A HREF="threads.html#00631">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 30 Sep 2006 00:46:18 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00628.html">FED41689-35F6-426B-883A-3DFBA4062A31@astr.ucl.ac.be</a>&gt;</li>
+<li>References: &lt;<a href="msg00628.html">FED41689-35F6-426B-883A-3DFBA4062A31@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie,
+           Here are 3 methods to solve your problem. 
+
+Also have a look at 
+
+<a  href="http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_98/msg00242.html">http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_98/msg00242.html</a>
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00083.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00083.html</a>
+
+And see : ferret/examples/two_dee_plot_of_1d.jnl
+
+Plese have a trial with the example below,
+
+Hope this helps,
+
+Jaison
+
+!---------------------------------------------------------------------
+\ cancel mode verify
+!
+! 3 methods to overlay bottom topography on vertical section plots
+!
+!-------------------------------------------------------------------
+!
+!--1. THE BEST ONE : from ferret/examples/two_dee_plot_of_1d.jnl
+!         Please note that the topography is not in the data resolution
+
+   set data etopo20
+   set data levitus_climatology
+   set region/x=180:360/y=20n/z=0:5000
+   let bottom = (-1)*rose[d=etopo20]
+   let bottom_2d = bottom - z[g=temp]
+   fill temp[x=@fln:100]
+   fill/over/lev=(-10000)(0)/palette=black/nolab bottom_2d
+
+   pause
+
+!--2. Simple one, bit ugly, works good only with SHADE command.
+!        Here the topography is in the resolution of the data.
+!        Trick : define a variable which is valid where temperature
+!                 is missing, then overlay this variable.
+
+   let topo = IF temp THEN (`temp,r=bad`) ELSE 1
+   shade temp
+   shade/ov/nolab/nokey/pal=black topo
+
+   pause
+
+!--3. Better method than 2, both SHADE and FILL works fine.
+!        Here the topography is in the resolution of the data.
+!        Trick : Fill the plot area with a color (define a variable
+!                 with the same grid as temperature but with the 
+!                 value 1 EVERYWHERE, use this variable to fill). 
+!                 Then fill or shade temperature over this.
+!    This method will also work in one (default) view port, with 
+!      &quot;/overlay&quot; as in 2 above. But sometime it may lead to 
+!      problems with color key and &quot;/set&quot; &amp; &quot;ppl fill&quot;.
+
+   define view/xlim=0:1/ylim=0:1 v1
+   define view/xlim=0:1/ylim=0:1 v2
+   set reg/x=180:360/y=20n/z=0:5000
+   let topo = IF temp THEN 1 ELSE 1
+   set view v1
+     shade/pal=black/nolab/nokey/noaxes topo
+   set view v2
+     fill temp
+!---------------------------------------------------------------------
+
+On Fri, 29 Sep 2006, Emilie Vanvyve wrote:
+
+&gt; Dear Ferret users,
+&gt; 
+&gt; I looked at the online help, found some clues to help me, but I  
+&gt; haven't succeeded so far and thought of submitting my question to you.
+&gt; 
+&gt; I plot a cross section of the zonal wind with a simple &quot;shade/x=0/l=1/ 
+&gt; vlimit=1000:0:-100 uairdy,lat,pressure&quot;. The resulting graph is  
+&gt; joined to this email.
+&gt; How can I get the imitation of the surface topography (the white  
+&gt; area) shaded in grey or black or whatever colour?
+&gt; 
+&gt; In the sigma_coordinate_demo.jnl script, some similar graphs are made  
+&gt; and obviously succeeded where I fail. But the problem is taken  
+&gt; backwards: first the topography is defined (variable &quot;bathymetry&quot;),  
+&gt; then the variable is computed, then the variable is plotted, then the  
+&gt; bathymetry is overlayed.
+&gt; How can I compute the surface topography from my data? I can get the  
+&gt; value of the pressure at the surface, but I haven't succeeded to make  
+&gt; it 3D &quot;under the surface&quot; and even less to plot it nicely.
+&gt; 
+&gt; Would anybody know how to do?
+&gt; 
+&gt; Many thanks in advance,
+&gt; 
+&gt; Emilie
+&gt; 
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00639" href="msg00639.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00628" href="msg00628.html">[ferret_users] shade: a cross section with the surface topography filled at thebottom?</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00628.html">[ferret_users] shade: a cross section with the surface topography filled at thebottom?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00639.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00628.html">Thread Prev</a>][<a href="msg00639.html">Thread Next</a>][<A HREF="threads.html#00631">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

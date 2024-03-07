@@ -1,0 +1,262 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to loop through many files? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 10 Jul 2007 15:11:37 &#45;0700 -->
+<!--X-Message-Id: 46940413.7090004@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@tnc.org -->
+<!--X-Reference: Pine.LNX.4.58.0707102338170.30226@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to loop through many files?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00414.html">Thread Prev</a>][<a href="msg00416.html">Thread Next</a>][<A HREF="threads.html#00415">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to loop through many files?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to loop through many files?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 10 Jul 2007 15:11:31 -0700</li>
+<li>Cc: Zibiao Zhang &lt;<a href="mailto:zzhang@DOMAIN.HIDDEN">zzhang@xxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.58.0707102338170.30226@DOMAIN.HIDDEN">Pine.LNX.4.58.0707102338170.30226@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@DOMAIN.HIDDEN">MBEJJOLFCEFHKLOPNGAOIEADCAAA.zzhang@xxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0707102338170.30226@DOMAIN.HIDDEN">Pine.LNX.4.58.0707102338170.30226@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.12 (Windows/20070509)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+A third way, if these are files containing time steps for a variable or
+set of variables, is to make a multi-file, or descriptor data set. This
+lists the files and information about their time axes, and once you've
+got it, you can refer to all your data as one data set. You'll have all
+the time steps available without having to do any Ferret commands to
+add time steps when you open each file. Take a look at the
+documentation - see "descriptor file" in the Users Guide. In particular
+there are some tools people have contributed for creating a descriptor
+file; look up "descriptor file, tools for creating" in the Users Guide
+index.<br>
+<br>
+Ansley<br>
+<br>
+Jaison Kurian wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">Hi Zibiao,
+            Two methods to loop through input files are give below. Pick
+the one, which fits best for your purpose. Few points about the usage of
+REPEAT command is given to the last part.
+
+ 1. Reading input filenames from an ASCII file.
+    -------------------------------------------
+      This method is best suited, if your filenames doesn't follow a
+    common syntax or have patterns which is difficult to construct
+    logically. What all you have to do is, in Linux
+
+       [user@machine]$ ls 200*.nc &gt; filenames.txt
+
+       [user@machine]$ wc -l filenames.txt
+
+    Now, say you have 12 input files (the output from "wc -l"). In
+    Ferret, use the following steps:
+
+       define axis/x=1:12:1  xfile
+       define grid/x=xfile   gfile
+       FILE/grid=gfile/FORMAT=DELIMITED/var="filenames"   filenames.txt
+
+       REPEAT/RANGE=1:12:1/NAME=nf (         ;\
+            define symbol ff = `nf`          ;\
+            set data `filenames[i=($ff)]`    ;\
+            ...............................  ;\
+            cancel data `filenames[i=($ff)]` ;\
+       )
+
+   Between the FILE command and "cancel data", you can add all the lines
+   for doing the required stuff with the datasets. Always remember that
+   the loaded NetCDF dataset will be d=2 (d=1 being the filenames.txt). 
+
+2. Construct the input filenames in Ferret
+   ---------------------------------------
+     This method is best suited, if your filenames follow a systematic
+   naming syntax, which can be constructed logically. Say your input
+   filenames are like 20050115.nc, 20050215.nc,......20071215.nc : that
+   is --&gt; yyyymm15.nc format. Now, in Ferret :
+
+       let year_start = 2005
+       let year_end   = 2006
+       let mon_start  = 5
+       let mon_end    = 10
+       
+       REPEAT/RANGE=`year_start`:`year_end`:1/NAME=yr  (           ;\
+          define symbol yy = `yr`                                  ;\
+          let m1 = IF `($yy) EQ year_start` THEN mon_start ELSE 1  ;\
+          let m2 = IF `($yy) EQ year_end`   THEN mon_end   ELSE 12 ;\
+          REPEAT/RANGE=`m1`:`m2`:1/NAME=mo (                       ;\
+             define symbol mm = `mo`                                 ;\
+             let m0    = IF `($mm) LT 10` THEN "0($mm)" ELSE "($mm)" ;\
+             let fname = "($yy)" + m0 + "15.nc"                      ;\
+             set data `fname`                                        ;\
+             cancel data `fname`                                     ;\ 
+          ) ;\
+       )
+
+   after the "set data" and "cancel data", you can add the lines to do
+   required stuff.   
+
+   A similar trick can be found in the following mail :    
+   <a rel="nofollow" class="moz-txt-link-freetext" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2004/msg00393.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2004/msg00393.html</a>
+
+With both 1 and 2 above, you can use he "GO" file option effectively. Write
+a separate script for doing calculation/making plots with these individual
+datasets (let us all it as some_calculation.jnl), and call it from the repeat
+loop in 1 or 2 above, as follows :
+
+           set data .......;\
+               GO some_calculation arg1, arg2 .... ;\
+           cancel data  ....;\ 
+
+NOTE : Don't forget to have a "cancel data" command in the same loop, where 
+         you opened it.....otherwise you will run into problems....
+
+
+Important Points Regarding REPEAT LOOP
+--------------------------------------
+ -  REPEAT Loops can be on abstract axes I,J,K and L or on an independent 
+       option "RANGE" (available only with Ferret versions 5.6 or later). 
+       If you are not working on independent coordinate axis, "RANGE" option
+       is the best.
+
+ -  All the commands within the REPEAT loop is considered as a single line,
+       separated by ";" (and with a "\" if you intend to continue on next line).
+       There is a length limitation and hence you cannot go beyond a certain
+       length. Hence, if you want to do some detailed stuff, use the GO file
+       option mentioned above.
+
+ -  Blank/commented lines are NOT ALLOWED within the REPEAT loop. If you want
+       to have them, do it with a preceeding ";\", as follows :
+             
+             let something= 1*2  ;\ 
+             ;\
+             ;\  ! here goes my comment within a repeat loop
+             ;\
+             let others = 1/2  ;\ 
+  
+
+If you have any questions, please let me know.
+
+Regards,
+
+Jaison
+
+On Tue, 10 Jul 2007, Zibiao Zhang wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi Ferret users,
+
+I need to loop through many files, which all have the same data structure, I
+know there get to be a way to easily loop through the file names, but I
+could not find the answer through user's guild and archives. I want if
+anybody here can help. My file name is as following:
+
+20050115.nc
+20050215.nc
+20050305.nc
+.
+.
+.
+20071215.nc
+
+It should be very easy, anybody can help?
+
+Steven
+
+
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+  </pre>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:ansley.b.manke@xxxxxxxx">ansley.b.manke@xxxxxxxx</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00412" href="msg00412.html">[ferret_users] how to loop through many files?</a></strong>
+<ul><li><em>From:</em> Zibiao Zhang</li></ul></li>
+<li><strong><a name="00414" href="msg00414.html">Re: [ferret_users] how to loop through many files?</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00414.html">Re: [ferret_users] how to loop through many files?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00416.html">[ferret_users] repeat/range error</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00414.html">Thread Prev</a>][<a href="msg00416.html">Thread Next</a>][<A HREF="threads.html#00415">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

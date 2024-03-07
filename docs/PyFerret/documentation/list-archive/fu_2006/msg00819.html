@@ -1,0 +1,218 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] calculation of monthly means from 5&#45;day means -->
+<!--X-From-R13: Egrir Vnaxva <Egrira.Q.VnaxvaNabnn.tbi> -->
+<!--X-Date: Fri, 22 Dec 2006 11:56:00 &#45;0800 -->
+<!--X-Message-Id: 458C3881.30408@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 458BF7F8.20406@knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] calculation of monthly means from 5-day means</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00818.html">Thread Prev</a>][<a href="msg00820.html">Thread Next</a>][<A HREF="threads.html#00819">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] calculation of monthly means from 5-day means</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Wim-Paul Breugem &lt;<a href="mailto:breugem@DOMAIN.HIDDEN">breugem@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] calculation of monthly means from 5-day means</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 22 Dec 2006 11:56:49 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00814.html">458BF7F8.20406@knmi.nl</a>&gt;</li>
+<li>References: &lt;<a href="msg00814.html">458BF7F8.20406@knmi.nl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.9 (Windows/20061207)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Wim-Paul,<br>
+<br>
+Two steps:<br>
+<ol>
+  <li>define the time axis onto which you want the data averaged</li>
+  <li>request the average (a weighted average to allow for unmatched
+bounds of the time axis cells) <br>
+  </li>
+</ol>
+For step 1, you presumably want a Gregorian&nbsp; monthly axis -- unequal
+month lengths, including leap years, etc. (interesting biases we work
+with in science, aren't they?)&nbsp; See the index of the Ferret Users Guide
+(<a class="moz-txt-link-freetext" href="">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/current/fer_html.htm</a>).&nbsp;
+Look under AXIS/Define for a general discussion of calendar types and
+under AXIS/EDGES (oddly) in <i>Ref Sec4.3.&nbsp; DEFINE AXIS</i>&nbsp;&nbsp; for a
+description of how to create a monthly calendar axis.&nbsp; For step 2 the
+weighted averaging is done with the @AVE transform.&nbsp; See Transformation
+/ @AVE in the Users' Guide.<br>
+<br>
+Here's an example:<br>
+<blockquote><tt>! define a 20 year monthly axis starting in Jan 1950<br>
+let start_year = 1950<br>
+let nyears = 20<br>
+let indices = L[L=1:`nyears*12`]<br>
+let month = MOD(indices-1,12)+1<br>
+let year = start_year + INT((indices-1)/12)<br>
+define axis/units=days/t0=1-jan-1900/edges truemonth&nbsp; =
+DAYS1900(year,month,1)<br>
+! examine one year of it ... just to have a look<br>
+show axis/T=1-jan-1958:1-jan-1959 truemonth</tt><br>
+</blockquote>
+The weighted regridding is simply:<br>
+<blockquote><tt>LET my_var_ave = my_var[GT=truemonth@AVE]</tt><br>
+</blockquote>
+then<br>
+<blockquote><tt>PLOT/T=1-jan-1958:1-jan-1959 my_var_ave</tt><br>
+</blockquote>
+or whatever.<tt><br>
+<br>
+&nbsp;</tt>&nbsp;&nbsp; - Steve<tt><br>
+<br>
+=================================================<br>
+</tt><br>
+Wim-Paul Breugem wrote:
+<blockquote cite="" type="cite">Dear ferret
+users,
+  <br>
+  <br>
+I have a dataset of 5-day means. The corresponding dates on
+  <br>
+a standard calender are given for the third day of the 5-day interval.
+  <br>
+As an example I show you here a subset of the data:
+  <br>
+  <br>
+yes? list/i=1/j=1/k=1/l=1:20 temp
+  <br>
+  <br>
+03-JAN-1958 12 /&nbsp; 1:&nbsp; 19.04
+  <br>
+08-JAN-1958 12 /&nbsp; 2:&nbsp; 20.35
+  <br>
+13-JAN-1958 12 /&nbsp; 3:&nbsp; 21.18
+  <br>
+18-JAN-1958 12 /&nbsp; 4:&nbsp; 21.57
+  <br>
+23-JAN-1958 12 /&nbsp; 5:&nbsp; 21.53
+  <br>
+28-JAN-1958 12 /&nbsp; 6:&nbsp; 21.75
+  <br>
+02-FEB-1958 12 /&nbsp; 7:&nbsp; 21.94
+  <br>
+07-FEB-1958 12 /&nbsp; 8:&nbsp; 22.03
+  <br>
+12-FEB-1958 12 /&nbsp; 9:&nbsp; 22.39
+  <br>
+17-FEB-1958 12 / 10:&nbsp; 22.48
+  <br>
+22-FEB-1958 12 / 11:&nbsp; 22.43
+  <br>
+27-FEB-1958 12 / 12:&nbsp; 22.63
+  <br>
+04-MAR-1958 12 / 13:&nbsp; 22.92
+  <br>
+09-MAR-1958 12 / 14:&nbsp; 23.00
+  <br>
+14-MAR-1958 12 / 15:&nbsp; 22.98
+  <br>
+19-MAR-1958 12 / 16:&nbsp; 22.99
+  <br>
+24-MAR-1958 12 / 17:&nbsp; 23.01
+  <br>
+29-MAR-1958 12 / 18:&nbsp; 23.08
+  <br>
+03-APR-1958 12 / 19:&nbsp; 23.10
+  <br>
+08-APR-1958 12 / 20:&nbsp; 23.15
+  <br>
+  <br>
+Does anybody know how to calculate from this the corresponding monthly
+  <br>
+means? Thus, how do I obtain the monthly means for Jan 1958, Feb 1958,
+etc.?
+  <br>
+Note that the 5-day means are usually not aligned with the edges of the
+  <br>
+months, so the 5-day means should not all have the same weight in the
+  <br>
+monthly averaging.
+  <br>
+  <br>
+I'm looking forward to a solution for this problem!
+  <br>
+  <br>
+With best regards,
+  <br>
+  <br>
+Wim-Paul Breugem
+  <br>
+  <br>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="72">-- 
+--
+
+Steve Hankin, NOAA/PMEL -- <a class="moz-txt-link-abbreviated" href="">Steven.C.Hankin@noaa.gov</a>
+7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080, FAX (206) 526-6744</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00814" href="msg00814.html">[ferret_users] calculation of monthly means from 5-day means</a></strong>
+<ul><li><em>From:</em> Wim-Paul Breugem</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00818.html">Re: [ferret_users] calculation of monthly means from 5-day means</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00820.html">[ferret_users] Problems with longitude</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00818.html">Thread Prev</a>][<a href="msg00820.html">Thread Next</a>][<A HREF="threads.html#00819">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

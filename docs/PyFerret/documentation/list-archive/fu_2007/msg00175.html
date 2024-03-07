@@ -1,0 +1,203 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Title at the top of the plot -->
+<!--X-From-R13: "jvyyvnz f. xrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Thu, 22 Mar 2007 12:11:35 &#45;0700 -->
+<!--X-Message-Id: BBB6AE47&#45;1270&#45;446E&#45;B610&#45;BA22D3E110F8@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY133&#45;F10CD900D2C90EB1EDE03F7C16B0@phx.gbl -->
+<!--X-Reference: 1174567225.29470.7.camel@pike.atm.ch.cam.ac.uk -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Title at the top of the plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00172.html">Thread Prev</a>][<a href="msg00178.html">Thread Next</a>][<A HREF="threads.html#00175">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Title at the top of the plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Paul Young &lt;<a href="mailto:paul.young@DOMAIN.HIDDEN">paul.young@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Title at the top of the plot</strong></li>
+<li><strong>From</strong>: <strong>&quot;william s. kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 22 Mar 2007 12:11:09 -0700</li>
+<li>Cc: jean oliveira &lt;<a href="mailto:jeanbrazil@DOMAIN.HIDDEN">jeanbrazil@xxxxxxxxxxx</a>&gt;,        Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1174567225.29470.7.camel@DOMAIN.HIDDEN">1174567225.29470.7.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:BAY133-F10CD900D2C90EB1EDE03F7C16B0@DOMAIN.HIDDEN">BAY133-F10CD900D2C90EB1EDE03F7C16B0@xxxxxxx</a>&gt; &lt;<a href="mailto:1174567225.29470.7.camel@DOMAIN.HIDDEN">1174567225.29470.7.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>It seems much simpler to use LABELS to put whatever text you want  
+</tt><tt>wherever you want it.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Here's a little script to determine the center and appropriate  
+</tt><tt>distance above a plotbox for titles:
+</tt><pre style="margin: 0em;">
+
+-------
+\can mode verify
+! get the current value of the PPLUS axis lengths.
+let xxlen = ($ppl$xlen) ; let yylen = ($ppl$ylen)
+let ctr = xxlen/2; let toplab = yylen+.9; let toplab2 = yylen+.4
+say xxlen, yylen, xxlen/yylen = `xxlen`, `yylen`, `xxlen/yylen`
+set mode/last verify
+-------
+
+</pre><tt>Put this in your path; I call it &quot;getlens.go&quot;. It defines the center  
+</tt><tt>in the x-direction, and two useful heights above the plot box in the  
+</tt><tt>y-direction (in no-user units, independent of the particular values  
+</tt><tt>being plotted). Then:
+</tt><pre style="margin: 0em;">
+
+set vi ....
+plot/nolab .....    ! omit the title and labels
+</pre><tt>! plot/tit=&quot; &quot; ....    ! if the automatic labels are desired, but  
+</tt><tt>excluding the title
+</tt><pre style="margin: 0em;">
+go getlens.go
+label/nou `ctr` `toplab` 0 0 .25 Main title text
+label/nou `ctr` `toplab2` 0 0 .16 Secondary title text
+
+Or, if you want to put the automatic title in a different place:
+</pre><tt>First make a dummy plot (which will have the title at the bottom).  
+</tt><tt>This will define the symbol ($labtit) which contains the automatic  
+</tt><tt>title. Then:
+</tt><pre style="margin: 0em;">
+
+plot/nolab ....    ! real plot omitting the title
+</pre><tt>label/nou `ctr` `toplab` 0 0 .25 ($labtit)    ! place the title at  
+</tt><tt>the top
+</tt><pre style="margin: 0em;">
+
+
+Billy K
+
+On 22Mar 2007, at 5:40 AM, Paul Young wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Jean,
+
+You can get a title at the top of the plot by defining a new viewport,
+</pre><tt>filling it with an 'empty' plot (shaded white and no axes or  
+</tt><tt>labels) and
+</tt><tt>then use the label command. I have used something like this to  
+</tt><tt>create a
+</tt><pre style="margin: 0em;">
+page with 3 plots and a title at the bottom:
+
+---
+define view/xlimits=0,1/ylimits=0.925,1/text=0.5 title
+define view/xlimits=0,1/ylimits=0.645,0.925 t1
+define view/xlimits=0,1/ylimits=0.365,0.645 m1
+!Make bottom view larger to accomodate the color bar
+define view/xlimits=0,1/ylimits=0,0.365 b1
+
+!Need to fill the 'title' viewport with a blank plot, so the title can
+!be added as a label
+set view title
+go margins 0.1 0.1 0.1 0.1
+shade/noaxes/nolabels/i=1:2/j=1:2/nokey/pal=white (i+j)
+
+!Add title text (centered)
+label 1.5,1.5,0,0,0.3 My plot title
+
+!Do the plots
+set view t1
+
+..etc etc
+----
+
+Hope this helps,
+
+Paul
+
+
+
+
+On Thu, 2007-03-22 at 12:26, jean oliveira wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+
+I wnat to make a fill with a title  at the top of the plot (yes?
+fill/title=&quot;title at the top&quot; test.nc). Is it possible?
+
+Thanks
+
+Jean
+
+
+
+
+
+</pre><tt>_____________________________________________________________________ 
+</tt><tt>_
+</tt><tt>Agora o Windows Live Spaces tem rede de amigos! Clique aqui e  
+</tt><tt>descubra
+</tt><pre style="margin: 0em;">
+a novidade
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00171" href="msg00171.html">[ferret_users] Title at the top of the plot</a></strong>
+<ul><li><em>From:</em> jean oliveira</li></ul></li>
+<li><strong><a name="00172" href="msg00172.html">Re: [ferret_users] Title at the top of the plot</a></strong>
+<ul><li><em>From:</em> Paul Young</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00172.html">Re: [ferret_users] Title at the top of the plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00178.html">Re: [ferret_users] Title at the top of the plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00172.html">Thread Prev</a>][<a href="msg00178.html">Thread Next</a>][<A HREF="threads.html#00175">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

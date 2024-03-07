@@ -1,0 +1,258 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Plotting differences is not giving correct answer, time axis problem? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 10 Jul 2007 00:59:28 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0707101338450.13443@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: p05111b09c2b8718eb287@[10.0.1.6] -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Plotting differences is not giving correct answer, time axis problem?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00409.html">Thread Prev</a>][<a href="msg00411.html">Thread Next</a>][<A HREF="threads.html#00410">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Plotting differences is not giving correct answer, time axis problem?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Glenn Carver &lt;<a href="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Plotting differences is not giving correct answer, time axis problem?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 10 Jul 2007 13:42:59 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:p05111b09c2b8718eb287@DOMAIN.HIDDEN"><a href="msg00409.html">p05111b09c2b8718eb287@[10.0.1.6]</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:p05111b09c2b8718eb287@DOMAIN.HIDDEN"><a href="msg00409.html">p05111b09c2b8718eb287@[10.0.1.6]</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Glenn,
+           In one sentence : it will not be a problem with time axis, but
+may be with &quot;time region&quot; settings. There are 3 points to noticed, which are
+discussed below. The solution to your problem (i guess so...) will be 1, and
+2-3 will give you some general stuff regarding LIST and @AVE.
+
+ 1. According to the header part of the LIST output, the entries in each
+       Column are :
+
+      1st : NO2_MM[D=ptom_t042_199703mm,T=31-MAR-1997 00:00]
+      2nd : NO2[D=ptom_t042_1997030106,T=01-MAR-1997 03:00:31-MAR-1997 21:00@AV]
+      3rd : NO2_MM[D=ptom_t042_199703mm]-NO2[D=ptom_t042_1997030106,T=@AVE]
+
+    I guess that your monthly data have a time stamp for the end of the month
+    (31-MAR-1997 00:00). Now, in 2nd column, you have a variable which is precisely
+    averaged over &quot;01-MAR-1997 03:00:31-MAR-1997 21:00&quot;. But the third column is
+    NOT the direct difference between first 2. Here your first varible NO2_MM does 
+    not have any time mentioned, but assume that either you have only one time point
+    for this variable or you have fixed the time point somewhere in the script. Now
+    the problem is with the second variable NO2, IT DOES NOT HAVE any specified time
+    region, it averages over THE WHOLE time period as T=@AVE.
+
+    In summary, if your NO2 variable spill over March-1997, or if you have not set 
+    the time region to &quot;01-MAR-1997 03:00:31-MAR-1997 21:00&quot; explicitly, you will 
+    not get the 3rd column as the difference between 1st and 2nd.
+
+ 2. The real reason for your problem may be 1 above. However, when you check the 
+    accuracy of a calculations using list command, always use HIGH PRECISION for 
+    your list command, as follows :
+
+          yes? set list/precision=7
+          yes? list var1, var2, var3
+
+    Please note that, specifying precision along with the list command may not be
+    effective, if more than one variable is being listed (see this recent posting
+    <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/msg00374.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/msg00374.html</a>).
+
+ 3. The @AVE regridding is a grid-box weighted transformation, when you use it over
+    coordinate axes like X,Y,Z and T (but not with the abstract axes I,J,K and L).
+    Hence, if the region is not specified for exact grid boundaries, the resulting 
+    averaged values may be (slightly) different from what you expected. For more
+    information, please see,
+
+    User Manual : Ch3 Sec2.4.6.  @AVE-average
+    FAQ  
+         <a  rel="nofollow" href="http://www.ferret.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html">http://www.ferret.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html</a>
+
+    Mail archives (discussions starting with the following one)
+         <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00679.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2006/msg00679.html</a>
+   
+Please let me know, if you have any questions.
+
+Regards,
+
+Jaison
+
+
+On Tue, 10 Jul 2007, Glenn Carver wrote:
+
+&gt; Dear Ferret fans,
+&gt; 
+&gt; I've been scratching my head over some results Ferret is giving me. I 
+&gt; am trying to plot the difference between two fields of NO2.   The 
+&gt; data from the fields is shown below. In the first column I have a 
+&gt; monthly mean NO2 field (variable no2_mm in the netcdf file). In the 
+&gt; second column I have a time average computed from 6hrly output, ie. 
+&gt; no2[t=@ave] where the data in the file runs from 1st March to 31st 
+&gt; March.
+&gt; 
+&gt; If I try to take the difference as shown in the 3rd column I get 
+&gt; wrong answers.  When I do the difference I get a warning from Ferret 
+&gt; that the time axes are not compatible (*** NOTE: Ambiguous 
+&gt; coordinates on T axis: NO2_MM[D=1]-NO2[D=2,T=@AVE]) ; presumably 
+&gt; because my monthly mean field has a date of 31/3 whereas ferret uses 
+&gt; a date in the middle of the month?
+&gt; 
+&gt; But I  can't figure out what Ferret is doing. It's obviously not 
+&gt; subtracting the numbers in the way I want to. My guess is it's 
+&gt; shifted the time axis somehow?   The differences around 87W for 
+&gt; example are clearly not calculated right.
+&gt; 
+&gt; Apart from the fact this is rather scary, how do I fix it?  Thanks.
+&gt; 
+&gt;      Glenn
+&gt; 
+&gt; --
+&gt; 
+&gt;               LATITUDE: 40.5N
+&gt;               Z (sigma_level): 31
+&gt;   Column  1: NO2_MM[D=ptom_t042_199703mm,T=31-MAR-1997 00:00] is 
+&gt; Nitrogen Dioxide monthly mean (ppbv)
+&gt;   Column  2: NO2[D=ptom_t042_1997030106,T=01-MAR-1997 
+&gt; 03:00:31-MAR-1997 21:00@AV] is Nitrogen Dioxide (ppbv)
+&gt;   Column  3: EX#3 is 
+&gt; NO2_MM[D=ptom_t042_199703mm]-NO2[D=ptom_t042_1997030106,T=@AVE]
+&gt;               NO2_MM    NO2   EX#3
+&gt; 180E   /  65:   0.02   0.02 -0.003
+&gt; 177.2W /  66:   0.02   0.02 -0.002
+&gt; 174.4W /  67:   0.02   0.02  0.001
+&gt; 171.6W /  68:   0.02   0.02  0.003
+&gt; 168.8W /  69:   0.02   0.02  0.007
+&gt; 165.9W /  70:   0.02   0.02  0.006
+&gt; 163.1W /  71:   0.02   0.02  0.003
+&gt; 160.3W /  72:   0.02   0.02  0.000
+&gt; 157.5W /  73:   0.02   0.02 -0.005
+&gt; 154.7W /  74:   0.02   0.02 -0.008
+&gt; 151.9W /  75:   0.02   0.02 -0.007
+&gt; 149.1W /  76:   0.02   0.02 -0.005
+&gt; 146.2W /  77:   0.02   0.02 -0.005
+&gt; 143.4W /  78:   0.02   0.02 -0.006
+&gt; 140.6W /  79:   0.02   0.02 -0.009
+&gt; 137.8W /  80:   0.04   0.04  0.003
+&gt; 135W   /  81:   0.07   0.06  0.027
+&gt; 132.2W /  82:   0.07   0.07  0.038
+&gt; 129.4W /  83:   0.04   0.04  0.017
+&gt; 126.6W /  84:   0.04   0.04  0.019
+&gt; 123.8W /  85:   0.32   0.31  0.144
+&gt; 120.9W /  86:   0.67   0.67 -0.216
+&gt; 118.1W /  87:   0.40   0.40 -0.206
+&gt; 115.3W /  88:   0.26   0.25 -0.220
+&gt; 112.5W /  89:   1.88   1.87 -0.096
+&gt; 109.7W /  90:   1.55   1.50  0.221
+&gt; 106.9W /  91:   1.65   1.62  0.250
+&gt; 104.1W /  92:   1.96   1.94  0.094
+&gt; 101.2W /  93:   1.25   1.26  0.091
+&gt; 98.4W  /  94:   1.58   1.64  0.330
+&gt; 95.6W  /  95:   3.38   3.48  1.099
+&gt; 92.8W  /  96:   2.39   2.41  0.960
+&gt; 90W    /  97:   4.17   4.23  1.620
+&gt; 87.2W  /  98:   6.94   7.22  2.057
+&gt; 84.4W  /  99:   5.84   6.09  2.405
+&gt; 81.6W  / 100:   7.34   7.85  0.619
+&gt; 78.8W  / 101:   5.93   6.23  0.376
+&gt; 75.9W  / 102:  12.74  13.41 -1.871
+&gt; 73.1W  / 103:   6.06   6.32 -1.817
+&gt; 70.3W  / 104:   1.52   1.56 -0.706
+&gt; 67.5W  / 105:   0.80   0.81 -0.422
+&gt; 64.7W  / 106:   0.36   0.37  0.109
+&gt; 61.9W  / 107:   0.24   0.24  0.079
+&gt; 59.1W  / 108:   0.17   0.17  0.094
+&gt; 56.2W  / 109:   0.14   0.14  0.088
+&gt; 53.4W  / 110:   0.10   0.10  0.073
+&gt; 50.6W  / 111:   0.08   0.08  0.054
+&gt; 47.8W  / 112:   0.08   0.08  0.036
+&gt; 45W    / 113:   0.08   0.08  0.006
+&gt; 42.2W  / 114:   0.07   0.07 -0.010
+&gt; 39.4W  / 115:   0.07   0.07 -0.009
+&gt; 36.6W  / 116:   0.10   0.10  0.006
+&gt; 33.8W  / 117:   0.22   0.22  0.023
+&gt; 30.9W  / 118:   0.16   0.16 -0.039
+&gt; 28.1W  / 119:   0.06   0.05  0.012
+&gt; 25.3W  / 120:   0.09   0.09  0.009
+&gt; 22.5W  / 121:   0.22   0.21 -0.023
+&gt; 19.7W  / 122:   0.25   0.24 -0.038
+&gt; 16.9W  / 123:   0.26   0.26 -0.093
+&gt; 14.1W  / 124:   0.40   0.40  0.026
+&gt; 11.2W  / 125:   1.44   1.43 -0.135
+&gt; 8.4W   / 126:   0.98   0.99  0.077
+&gt; 5.6W   / 127:   1.46   1.54  0.214
+&gt; 2.8W   / 128:   1.57   1.63  0.168
+&gt; 0E     / 129:   0.93   0.93  0.103
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00409" href="msg00409.html">[ferret_users] Plotting differences is not giving correct answer, time axis problem?</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00409.html">[ferret_users] Plotting differences is not giving correct answer, time axis problem?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00411.html">[ferret_users] vectors on polar stereographic map projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00409.html">Thread Prev</a>][<a href="msg00411.html">Thread Next</a>][<A HREF="threads.html#00410">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

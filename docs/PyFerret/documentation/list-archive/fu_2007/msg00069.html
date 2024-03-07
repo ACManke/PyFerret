@@ -1,0 +1,106 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] different results when calculate climatology -->
+<!--X-From-R13: sreerg bprna <sreergbprnaNlnubb.pbz> -->
+<!--X-Date: Tue, 23 Jan 2007 15:11:19 &#45;0800 -->
+<!--X-Message-Id: 836439.18808.qm@web57108.mail.re3.yahoo.com -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 45B6707D.3040600@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] different results when calculate climatology</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00067.html">Thread Prev</a>][<a href="msg00073.html">Thread Next</a>][<A HREF="threads.html#00069">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] different results when calculate climatology</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] different results when calculate climatology</strong></li>
+<li><strong>From</strong>: <strong>ferret ocean &lt;<a href="mailto:ferretocean@DOMAIN.HIDDEN">ferretocean@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 23 Jan 2007 15:11:15 -0800 (PST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>Domainkey-signature: a=rsa-sha1; q=dns; c=nofws;  s=s1024; d=yahoo.com; h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID; b=1YsnNPV7ngIjjfdghAe+020MKV+UZyl01u8/wyboWOfMzATmOLV9zGBjqG3m91ZAy3Vsnbcj6WDaMQ3PxcuZiAeSma3K9gsE28mOYAXPeVMGtpV2lEg8DZ6aCPPGQhMrfl8u08yN3FALQPpgTuGUjrIDNOWKYzphVtSSqwSCeB0=;</li>
+<li>In-reply-to: &lt;<a href="mailto:45B6707D.3040600@DOMAIN.HIDDEN">45B6707D.3040600@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<div><BR>Hi, Steve,</div>  <div>&nbsp;</div>  <div>Thanks for your professional advices. I have to say that I&nbsp;need&nbsp;some time to understand what you said. After using let v_clm = v[gt=month_reg@MODNGD], fill v_clm[l=1], the value is from 0-10, is it helpful to solve this problem?</div>  <div>&nbsp;</div>  <div>Actually, I just want to get climatological Jan like tt, (simply the mean of every&nbsp;Jan). </div>  <div>&nbsp;</div>  <div>Dawn</div>  <div><BR><B><I>Steve Hankin &lt;Steven.C.Hankin@xxxxxxxx&gt;</I></B> wrote:</div>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">Hi Dawn,<BR><BR>After a few moment's reflection I realized that I may have given you a bum steer with the advice below.&nbsp; The fact that the @mod regridding uses an unweighted average makes it relatively insensitive to having your time axis cells represented with great precision -- though it may be sensitive if your axis uses the 1st of the
+ month (rather than mid-month) as the locations of the time axis points. (Some time axes do this.)<BR><BR>To diagnose the behavior that you are seeing have a look at the&nbsp; @MODNGD results<BR>&nbsp;&nbsp;&nbsp; let v_clm = v[gt=month_reg@MODNGD]<BR>which will tell you how many time points from your native axis are used in the modulo calculation onto the climatological axis.&nbsp; See anything peculiar?<BR><BR>&nbsp;&nbsp;&nbsp; - Steve<BR><BR>======================================<BR><BR>Hi Dawn,<BR><BR>You have chosen to regrid to axis month_reg instead of month_irreg.&nbsp; This means that the calendar you are using consists of 12 equally-sized months, instead of a true Gregorian climatological calendar.&nbsp; That's the heart of your problem, probably.<BR><BR>To ensure that the climatological regridding is completely accurate you have to make sure that the calendar axis of the original data exactly matches the target climatological axis.&nbsp; From the Ferret Users'
+ Guide:<BR><BASEFONT>  <BLOCKQUOTE><FONT face=Times color=#1f1a17 size=3>Unlike other transformations and regridding, modulo regridding is performed as an <I>unweighted</I> average: each non-missing source point contributes 100% of its weight to the destination grid box within which it falls. If the source and destination axes are not properly aligned this can lead to apparent shifts in the data. For example, if a monthly time series has data points at the first of each month and a climatological axis is defined at midmonths, then unweighted modulo averaging will lead to an apparent 1/2-month shift. To avoid situations of this type simply regrid to the climatological axis using linear interpolation prior to the modulo regridding.</FONT><BR></BLOCKQUOTE>(I believe that the above unweighted behavior was selected specifically to address the messy aspects of climatological regridding, where the existence of leap years compromises the "modulo" nature of the calendar
+ axis.)<BR><BR>You can check the time axis of "atl.nc" using the SHOW GRID (or SHOW AXIS) command:<BR>&nbsp;&nbsp;&nbsp; SHOW GRID/T v<BR>==&gt; Make sure that TBOXLO of each month is the 1st of the month at hour 00:00<BR><BR>If you try the SHOW AXIS command on the month_irreg axis you'll see how the leap-year length of February complicates climatological calendar.&nbsp; The length of Feb is not an integer number of days, so all months after February appear to have a 5 hour and 49 minute offset.&nbsp; But the TBOX values show that the length of each month is correct.<BR>  <BLOCKQUOTE><TT>yes? use climatological_axes</TT><BR><TT>&nbsp;*** NOTE: regarding /home/porter/tmap/ferret/linux/go/climatological_axes.cdf ...</TT><BR><TT>&nbsp;*** NOTE: Climatological axes SEASONAL_REG, MONTH_REG, and MONTH_IRREG defined</TT><BR><TT>yes? show axis/t MONTH_IRREG</TT><BR><TT>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end</TT><BR><TT>&nbsp;MONTH_IRREG TIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12mi&nbsp;&nbsp; 16-JAN 12:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 15-DEC 17:49</TT><BR><TT>T0 = 01-JAN-0000 00:00:00</TT><BR><TT>&nbsp;&nbsp; Axis span (to cell edges) = 365.2425 (modulo length = axis span)</TT><BR><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L&nbsp;&nbsp;&nbsp;&nbsp; T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TBOX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TBOXLO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TSTEP (DAYS)</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&gt;&nbsp; 16-JAN 12:00:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-JAN 00:00:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 15.5</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&gt;&nbsp; 15-FEB 02:54:36&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 28.2425&nbsp;&nbsp; 01-FEB 00:00:00&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 45.12125</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3&gt;&nbsp; 15-MAR 17:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 29-FEB 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 74.7425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4&gt;&nbsp; 15-APR 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31-MAR 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 105.2425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5&gt;&nbsp; 15-MAY 17:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30-APR
+ 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 135.7425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6&gt;&nbsp; 15-JUN 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31-MAY 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 166.2425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 7&gt;&nbsp; 15-JUL 17:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30-JUN 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 196.7425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8&gt;&nbsp; 15-AUG 17:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31-JUL 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 227.7425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9&gt;&nbsp; 15-SEP 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31-AUG 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ 258.2425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&gt;&nbsp; 15-OCT 17:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30-SEP 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 288.7425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11&gt;&nbsp; 15-NOV 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31-OCT 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 319.2425</TT><BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12&gt;&nbsp; 15-DEC 17:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30-NOV 05:49:12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 349.7425</TT><BR></BLOCKQUOTE><BR>&nbsp;&nbsp;&nbsp; - Steve<BR><BR>==============================<BR><BR>ferret ocean wrote:   <BLOCKQUOTE cite="" type="cite">  <DIV>Dear ferreters,</DIV>  <DIV>&nbsp;&nbsp;&nbsp;&nbsp; The following script provide two ways to
+ calculate climatology. But I am confused with different results.</DIV>  <DIV>&nbsp;</DIV>  <DIV>use atl.nc</DIV>  <DIV>set reg/y=43</DIV>  <DIV>show data</DIV>  <DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;V&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Meridional Component of Velocit &nbsp;&nbsp; 1:61&nbsp;&nbsp;&nbsp;&nbsp; 1:31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:23&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:156<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; U&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Zonal Component of Velocity&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; 1:61&nbsp;&nbsp;&nbsp;&nbsp; 1:30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:23&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:156<BR></DIV>  <DIV>&nbsp;climatological_axes</DIV>  <DIV>CANCEL DATA climatological_axes</DIV>  <DIV>&nbsp;let v_clm = v[gt=month_reg@MOD]</DIV>  <DIV>&nbsp;</DIV>  <DIV>! the first way to get Jan climatology</DIV>  <DIV>&nbsp;fill v_clm[l=1]</DIV>  <DIV>&nbsp;</DIV>  <DIV>! the second way to get Jan climatology (the most
+ stupid way)</DIV>  <DIV>&nbsp;let a=v[l=1]+v[l=13]+v[l=25]+v[l=37]+v[l=49];<BR>&nbsp;let b=v[l=61]+v[l=73]+v[l=85]+v[l=97]+v[l=109];<BR>&nbsp;let c=v[l=121]+v[l=133]+v[l=145]<BR>&nbsp;</DIV>  <DIV>let tt=(a+b+c)/13</DIV>  <DIV>&nbsp;</DIV>  <DIV>fill tt</DIV>  <DIV>&nbsp;</DIV>  <DIV>Of course, it has the similar results between the figure of "fill v_clm[l=1]"&nbsp; and that of "fill tt", but still different. </DIV>  <DIV>&nbsp;</DIV>  <DIV>Why? The calendar of the data is Gregorian, it might be the reason?</DIV>  <DIV>&nbsp;</DIV>  <DIV>Dawn</DIV>  <DIV>&nbsp;</DIV>  <DIV>&nbsp;</DIV>  <DIV>&nbsp;</DIV>  <DIV>&nbsp;</DIV><BR><BR>  <div></div>  <HR SIZE=1>  Expecting? Get great news right away with <A rel="nofollow" href="http://us.rd.yahoo.com/evt=49982/*http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html">email Auto-Check.</A><BR>Try the <A rel="nofollow" href="http://us.rd.yahoo.com/evt=49982/*http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html">Yahoo! Mail Beta.</A>
+ </BLOCKQUOTE><BR><PRE class=moz-signature cols="72">--   --    Steve Hankin, NOAA/PMEL -- <A rel="nofollow" class=moz-txt-link-abbreviated href="mailto:Steven.C.Hankin@xxxxxxxx">Steven.C.Hankin@xxxxxxxx</A>  7600 Sand Point Way NE, Seattle, WA 98115-0070  ph. (206) 526-6080, FAX (206) 526-6744</PRE></BLOCKQUOTE><BR></BASEFONT><p> 
+
+<hr size=1>Expecting? Get great news right away with <a rel="nofollow" href="http://us.rd.yahoo.com/evt=49982/*http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html">email Auto-Check.</a><br>Try the <a rel="nofollow" href="http://us.rd.yahoo.com/evt=49982/*http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html">Yahoo! Mail Beta.</a>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00073" href="msg00073.html">Re: [ferret_users] different results when calculate climatology</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00067" href="msg00067.html">Re: [ferret_users] different results when calculate climatology</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00067.html">Re: [ferret_users] different results when calculate climatology</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00073.html">Re: [ferret_users] different results when calculate climatology</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00067.html">Thread Prev</a>][<a href="msg00073.html">Thread Next</a>][<A HREF="threads.html#00069">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

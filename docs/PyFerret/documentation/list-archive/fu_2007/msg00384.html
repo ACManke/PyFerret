@@ -1,0 +1,177 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Generating a "ternary diagram" or "triangular plot" -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Thu, 21 Jun 2007 15:51:21 &#45;0700 -->
+<!--X-Message-Id: 467B00E9.3030209@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 4630A25A.3040001@awi&#45;bremerhaven.de -->
+<!--X-Reference: 4630BBF1.6050702@noaa.gov -->
+<!--X-Derived: jpgCqrZqdDwYG.jpg -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Generating a &quot;ternary diagram&quot; or &quot;triangular plot&quot;</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00261.html">Thread Prev</a>][<a href="msg00262.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Generating a &quot;ternary diagram&quot; or &quot;triangular plot&quot;</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Generating a &quot;ternary diagram&quot; or &quot;triangular plot&quot;</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 21 Jun 2007 15:51:21 -0700</li>
+<li>In-reply-to: &lt;<a href="mailto:4630BBF1.6050702@DOMAIN.HIDDEN">4630BBF1.6050702@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4630A25A.3040001@DOMAIN.HIDDEN">4630A25A.3040001@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4630BBF1.6050702@DOMAIN.HIDDEN">4630BBF1.6050702@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.12 (Macintosh/20070509)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hello All,
+
+</pre><tt>   Some time ago I saw a plot used in a geologic context to represent 
+</tt><tt>mixtures of three components. Then recently I came across a situation 
+</tt><tt>where it might be useful in my own work.  It turned out to be quite easy 
+</tt><tt>to generate such a plot in Ferret so I thought I'd share it.  Perhaps it 
+</tt><tt>has been done by others but I haven't noticed it in the user group email.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>   The attached graphic illustrates the result:  tsunami wave trains 
+</tt><tt>from three modeled sources can arrive at a coastal site.  If there is a 
+</tt><tt>certain amount of earthquake energy to be distributed between the three 
+</tt><tt>sources, what linear combination of the wave trains causes the greatest 
+</tt><tt>wave at the impact site?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>    So with three time series HA[l=1:1440], HB[l=1:1440],HC[l=1:1440] 
+</tt><tt>define fractions FA,FB,FC that sum to 1 (or some other appropriate 
+</tt><tt>constant).  FA is maximum at its vertex and decreases to zero at the 
+</tt><tt>opposite side of the triangle, and likewise for the other vertices. Define
+</tt><pre style="margin: 0em;">
+
+      let COMBO = FA*HA + FB*HB + FC*HC
+</pre><tt>      go TernaryDiagram             ! to generate FA,FB,FC in a 
+</tt><tt>triangular layout
+</tt><pre style="margin: 0em;">
+      shade/nolab combo[L=@max]
+!(and if the triangular grid lines and frame are desired)
+      cont/o/nolab/set fa ; ppl pen,1,1 ; contour/over
+      cont/o/nolab/set fa ; ppl pen,1,1 ; contour/over
+      cont/o/nolab/set fa ; ppl pen,1,1 ; contour/over
+      plot/o/nolab/vs/line=7 {0,2,1,0},{0,0,`root3`,0}
+</pre><tt>and the result shows that if all the energy is allocated to B19 can 
+</tt><tt>generate the biggest wave at the impact site; linear combinations of B19 
+</tt><tt>and B18 are quite effective but waves from B19 and B17 must arrive quite 
+</tt><tt>a bit out of phase so that the amplitude of their combination is 
+</tt><tt>substantially reduced.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>   The script TernaryDiagram.jnl is attached and may find use in other 
+</tt><tt>hands.
+</tt><pre style="margin: 0em;">
+
+Regards,
+   Mick
+</pre><tt>  
+</tt><p><a href="jpgCqrZqdDwYG.jpg" ><img src="jpgCqrZqdDwYG.jpg" alt="JPEG image"></a></p>
+<pre>! TernaryDiagram : plotting mixtures of 3 variables in a triangular/ternary diagram
+!
+! define horizontal and vertical axes on which to draw triangle (2 wide;root3 high)
+!
+!             A (1,root3)
+!           / | \             A point P lies at the intersection of three lines
+!          /  |/ \            that are parallel to the sides of the triangle ABC.
+!         /   /   \           The fractions Fa, Fb, Fc at P are the fractional
+!        /   /|    \          distances of each of these lines from its vertex,
+!       /   / |     \         with 100% at the vertex and 0% at the opposite side.
+!      / \ /  |      \        With vertices drawn as shown and P=(x,y):
+!     /---P---|-------\              Fa = y/root3
+!    /   / \  |        \             Fb = 1 - x'/root3, x'=xcos30-ysin30
+!   B___/___\_|_________C            Fc = 1-Fa-Fb
+! (0,0)               (2,0)   A triangular mask for the region is defined by:
+!                                      if(y &lt; root3*(1-abs(x-1))then 1
+
+! choose a suitable resolution to represent the region
+let root3=3^0.5 ; def axis/y=0:2/npoints=201 yax
+def axis/x=0:2/npoints=201 xax ; def grid/x=xax/y=yax grd
+
+let mask=if(y[g=grd] le root3*(1-abs(x[g=grd]-1)))then 1
+let Fa=mask*y[g=grd]/root3
+let Fb=1-0.5*mask*(x[g=grd]+y[g=grd]/root3)
+let Fc=1-Fa-Fb
+
+! demo plot - first fix aspect ratio and turn off axes
+ppl axlen,5,5 ; ppl axset,0,0,0,0
+! ... then shade Fa and add Fb, Fd as contours
+shade/nolab Fa ; cont/o/nolab/spacing=0.8 Fb ; cont/o/nolab/spacing=0.8 Fc
+! add frame and vertex labels
+plot/o/nolab/vs/line=7 {0,2,1,0},{0,0,`root3`,0}
+label  1.0 `root3+0.05` 0 0 0.2 A
+label -0.1    0        -1 0 0.2 B
+label  2.1    0         1 0 0.2 C
+
+quit
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00258" href="msg00258.html">[ferret_users] reverse the colorbar</a></strong>
+<ul><li><em>From:</em> S&#xF6;nke Heyen</li></ul></li>
+<li><strong><a name="00261" href="msg00261.html">Re: [ferret_users] reverse the colorbar</a></strong>
+<ul><li><em>From:</em> mick spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00261.html">Re: [ferret_users] reverse the colorbar</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00262.html">[ferret_users] How to make Ferret running?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00261.html">Thread Prev</a>][<a href="msg00262.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

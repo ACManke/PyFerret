@@ -1,0 +1,195 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] percentile for gridded data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 8 Jun 2006 14:59:20 &#45;0700 -->
+<!--X-Message-Id: 44889DB4.6090708@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 200606071629.AA14090684@gcisc.org.pk -->
+<!--X-Derived: gif00025.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] percentile for gridded data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00396.html">Thread Prev</a>][<a href="msg00398.html">Thread Next</a>][<A HREF="threads.html#00397">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] percentile for gridded data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:nadia.rehman@DOMAIN.HIDDEN">nadia.rehman@xxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] percentile for gridded data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 08 Jun 2006 14:59:16 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>, <a href="mailto:80.nadia@DOMAIN.HIDDEN">80.nadia@xxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00396.html">200606071629.AA14090684@gcisc.org.pk</a>&gt;</li>
+<li>References: &lt;<a href="msg00396.html">200606071629.AA14090684@gcisc.org.pk</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.4 (Windows/20060516)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Nadia,<br>
+Here is an example which does what I think you are talking about.  It 
+starts with the quantile script from the previous message from Andrew, 
+and then uses the variable a_q, the &quot;quantile&quot; function to define a new 
+variable which is 5 for function values between 0 and 10% quantile, 15 
+for values between 10 and 20%, 25 for values between 20 and 30% and so on.<br>
+<br>
+! quantiles.jnl<br>
+! Example script.<br>
+!<br>
+! To form quartiles, or percentiles, use the ZSEQUENCE function.<br>
+! Based on a contribution from Andrew Wittenberg Fri, 17 Sep 2004<br>
+<br>
+! Here's an example showing how to compute quartiles (and more generally,<br>
+! quantiles/percentiles) from some 2-dimensional data:<br>
+<br>
+use coads_climatology<br>
+let svar = sst[l=1]<br>
+<br>
+set mode interp<br>
+<br>
+! unwrap January  SSTs into a 1-dimensional array<br>
+let a = zsequence(svar)<br>
+<br>
+! define a quantile axis<br>
+let ngood = `a[k=@ngd]`<br>
+def ax/z=0:1/np=`ngood` z_q<br>
+<br>
+! sort the data (missing values will be last)<br>
+let a_z = samplek(a,sortk(a))<br>
+<br>
+! place the sorted valid data onto the quantile axis<br>
+let/title=&quot;quantiles of `sst,r=title`&quot;/unit=&quot;`sst,r=unit`&quot; a_q = 
+a_z[gz=z_q@asn]<br>
+<br>
+! plot the quantile function (inverse cumulative distribution function)<br>
+plot/trans a_q<br>
+<br>
+! list the min, 1st quartile, median, 3rd quartile, and max<br>
+list a_q[z=0],a_q[z=.25],a_q[z=.5],a_q[z=.75],a_q[z=1]<br>
+<br>
+<br>
+! Plot shaded percentiles. pct_levs contains the variable values separating<br>
+! each range of 10 percentile points<br>
+<br>
+let pct_levs = a_q[z=0:1:0.1]<br>
+list pct_levs<br>
+<br>
+! We will define a set of variables each containing a range of 10 
+percentile<br>
+! points, e.g.<br>
+!<br>
+!     let mask2 = if svar le hi then 1 else 0<br>
+!     let v2   = if svar gt lo then 15* mask2 else 0 
+!<br>
+! mask2=1 where svar LE 30th percentile<br>
+! then v2 contains the value 15 where svar is between the tenth and 20th<br>
+! percentile, and v2 is 0 everwhere else.<br>
+<br>
+! Inialize the first of a series of variables<br>
+let v1 = if svar le `pct_levs[k=1]` then 0 else 0<br>
+<br>
+! Define variables each representing a 10 percent range<br>
+<br>
+repeat/range=2:11:1/name=m (let vhi = pct_levs[k=`m`]; let vlo = 
+pct_levs[k=`m-1`]; \<br>
+ let mask`m` = if svar le `vhi` then 1 else 0; \<br>
+ let v`m` = if svar GT `vlo` then `10*(m-1)-5` * mask`m` else 0)<br>
+<br>
+! Add them to form a single varible which is 5 for 0-10%, 15 for 10-20% 
+and so on.<br>
+<br>
+let pct = v1 + v2 + v3 + v4 + v5 + v6 + v7 + v8 + v9 + v10 + v11<br>
+<br>
+! Finally, define a mask to restore the missing data from the original 
+variable,<br>
+! missing_mask=1 where the variable has valid data<br>
+<br>
+let missing_mask = if svar then 1<br>
+<br>
+shade/lev=(0,100,10)/palette=blue_orange/title=&quot;percentiles&quot; pct * 
+missing_mask<br>
+go fland<br>
+<br>
+<br>
+<br>
+nadia.rehman wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ansely,<br>
+<br>
+Thanks for the help and I have used the way which was mentioned in that e-mail but it generate the inverse cumulative distribution for any quantile. Me actually want the picture which is attached with this mail. It is the spatial picture of the difference of future and present 10th percentile calculated for gridded data.<br>
+<br>
+ 
+<br>
+Thanks 
+<br>
+ 
+<br>
+<br>
+<br>
+<br>
+--<br>
+Nadia Rehman Yousafzai<br>
+Research Fellow (Climate Section)<br>
+Global Change Impact Studies Centre<br>
+First Floor Saudi Pak tower 
+Blue Area Islamabad Pakistan<br>
+Ph :   92-51-9219785<br>
+Fax : 92-51-9219787 
+--<br>
+</blockquote><p><a href="gif00025.gif" ><img src="gif00025.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00396" href="msg00396.html">[ferret_users] percentile for gridded data</a></strong>
+<ul><li><em>From:</em> nadia.rehman</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00396.html">[ferret_users] percentile for gridded data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00398.html">[ferret_users] file limit</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00396.html">Thread Prev</a>][<a href="msg00398.html">Thread Next</a>][<A HREF="threads.html#00397">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

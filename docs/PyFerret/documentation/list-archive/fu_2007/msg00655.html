@@ -1,0 +1,166 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] ferret 5.51 does not have repeat/range -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 26 Nov 2007 10:39:39 &#45;0800 -->
+<!--X-Message-Id: 474B12EA.80500@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 000001c8303a$b297ac20$17c70460$@com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] ferret 5.51 does not have repeat/range</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00653.html">Thread Prev</a>][<a href="msg00654.html">Thread Next</a>][<A HREF="threads.html#00655">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ferret 5.51 does not have repeat/range</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ferret 5.51 does not have repeat/range</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 26 Nov 2007 10:39:38 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:000001c8303a%24b297ac20%2417c70460%24@DOMAIN.HIDDEN"><a href="msg00653.html">000001c8303a$b297ac20$17c70460$@com</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:000001c8303a%24b297ac20%2417c70460%24@DOMAIN.HIDDEN"><a href="msg00653.html">000001c8303a$b297ac20$17c70460$@com</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Peter,<br>
+You can do this without any loops, using the boxcar smoother @SBX
+instead of the `L`:`L+4`@sum. The boxcar smoother takes the sum of the
+data over the interval you give it, divided by the sum of the cell
+sizes. If the underlying L axis is evenly spaced, then we can use @SUM
+and multiply by 5 to get the sum over 5 days.<br>
+<br>
+&nbsp;&nbsp; LET precip_sum = 5*precip[L=@SBX:5]<br>
+&nbsp;&nbsp; LET max_precip_5day = precip_sum[L=@max]<br>
+<br>
+If the underlying axis is unevenly spaced, then you'd need to correct
+for that, something along these lines:<br>
+<br>
+&nbsp;&nbsp; LET tb = tbox[gt=precip]<br>
+&nbsp;&nbsp; LET box_sum = 5*tb[L=@SBX:5]<br>
+<br>
+&nbsp;&nbsp; LET precip_sum = box_sum*precip[L=@SBX:5]<br>
+&nbsp;&nbsp; LET max_precip_5day = precip_sum[L=@max]<br>
+<br>
+All of this works best for an odd interval, such as 5. The result of
+var[L=@SBX:5] at L=3 is the sum of the data at L=1 through L=5. If you
+wanted an even interval, say 4, then the result of SBX:4 includes data
+from partial grid cells from the ends of the boxes.<br>
+<br>
+Also, the above assumes that the axis is defined with units of days. If
+it has other units, like hours for instance, then the simple
+multiplication by 5 would need to be adjusted to fit those units.<br>
+<br>
+Ansley<br>
+<br>
+Peter Szabo wrote:
+<blockquote cite="" type="cite">
+  
+  
+  
+<!----><!---->
+  <div class="Section1">
+  <p class="MsoNormal">Dear Ferreters,<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">I am using ferret 5.51 which is the highest
+version for
+cygwin- XP. But this version does not have &#8220;repeat/range&#8221; command. <o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">I count five-days precipitation summary in the
+period of 90
+days in a region. With it I create 86 variables. I want to find the
+maximum of
+these variables. It works theoretically. And I also tried without a
+repeat with
+3 variables. It worked.<o:p></o:p></p>
+  <p class="MsoNormal">Here is the problem part of the script:<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">let precip30=precip2*0<o:p></o:p></p>
+  <p class="MsoNormal">repeat/l=1:86 (let
+precip3`l`=precip2[l=`l`:`l+4`@sum,d=2])<o:p></o:p></p>
+  <p class="MsoNormal">repeat/range=1:86/name=a (if precip3`a` LE
+precip3`a-1` then
+(cancel variable precip3`a` ;\<o:p></o:p></p>
+  <p class="MsoNormal">let precip3`a`=precip3`a-1` ) )<o:p></o:p></p>
+  <p class="MsoNormal">let maximum=max(precip385,precip386)<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">I don&#8217;t know if I should 1) change to an other
+OS or 2)
+I should do something with cygwin and XP or 3) I should find out a
+better
+script to find the maximum among many variables.<o:p></o:p></p>
+  <p class="MsoNormal">Any suggestion will be appreciated,<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">Peter Szabo, ELTE<o:p></o:p></p>
+  </div>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00653" href="msg00653.html">[ferret_users] ferret 5.51 does not have repeat/range</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00653.html">[ferret_users] ferret 5.51 does not have repeat/range</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00654.html">[ferret_users] calculate vertical velocity in ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00653.html">Thread Prev</a>][<a href="msg00654.html">Thread Next</a>][<A HREF="threads.html#00655">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

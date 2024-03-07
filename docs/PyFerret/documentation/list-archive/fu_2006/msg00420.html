@@ -1,0 +1,218 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Create an image to be georeferenced -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Wed, 21 Jun 2006 11:25:40 &#45;0700 -->
+<!--X-Message-Id: 44998F24.3050304@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1150902713.3029.6.camel@localhost.localdomain -->
+<!--X-Reference: Pine.LNX.4.61.0606212213520.17233@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Create an image to be georeferenced</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00417.html">Thread Prev</a>][<a href="msg00421.html">Thread Next</a>][<A HREF="threads.html#00420">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Create an image to be georeferenced</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Create an image to be georeferenced</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 21 Jun 2006 11:25:40 -0700</li>
+<li>Cc: Tony Jolibois &lt;<a href="mailto:tjolibois@DOMAIN.HIDDEN">tjolibois@xxxxxx</a>&gt;,       ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00417.html">Pine.LNX.4.61.0606212213520.17233@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00416.html">1150902713.3029.6.camel@localhost.localdomain</a>&gt;&lt;<a href="msg00417.html">Pine.LNX.4.61.0606212213520.17233@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.4 (Macintosh/20060530)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hello All,<br>
+   A method I've used in making images to overlay on Google Earth is to 
+create borders that extend a known distance in lat/lon units beyond the 
+axes. The script &quot;chartborder.jnl&quot; given below does this. The variable 
+&quot;maxlen&quot; is something I use in a related situation.  Often I want to get 
+the aspect ratio of the axes right but don't know in advance whether the 
+x or y-axis should be longer.  So I would use &quot;go chartaxes 12 ...&quot; to 
+set up a plot with the longer axis 12 inches long and the other whatever 
+it neeads to be to get the aspect ratio right.<br>
+<br>
+Hope these may be of use to someone else.<br>
+Mick<br>
+PS Another useful feature of the &quot;chartborder&quot; approach (I think) is 
+that a colorbar outside the axes can appear next to the georeferenced 
+image in Google Earth.<br>
+<br>
+<br>
+------------------------<br>
+! chartborder : assigns chart axes lengths given a desired longer<br>
+!             axis length and the lowerleft and upperright coords<br>
+! *** adapted from chartaxes.jnl, this version attempts to create ***<br>
+! *** a border of known width around the image to facilitate use  ***<br>
+! ***              with Google Earth                              ***<br>
+<br>
+! usage: chartborder maxlen lon1 lat1 lon2 lat2 xborder yborder<br>
+!        where (lon1,lat1), (lon2,lat2) are the lower left and<br>
+!                                       upper right corners<br>
+!              maxlen is the major axis length, and<br>
+!              xborder,yborder are the desired border widths<br>
+<br>
+let d2r=atan(1.)/45<br>
+let maxlen=$1<br>
+let xdegrees=($4-$2)*cos(d2r*($5+$3)/2)<br>
+let ydegrees=$5-$3<br>
+let axratio=ydegrees/xdegrees<br>
+let xaxlen=if(axratio le 1)then $1 else $1/axratio<br>
+let yaxlen=if(axratio le 1)then $1*axratio else $1<br>
+ppl axlen,`xaxlen`,`yaxlen`<br>
+<br>
+let xborderwid=$6*xaxlen/xdegrees ; let yborderwid=$7*yaxlen/ydegrees<br>
+; ppl size,`xaxlen+2*xborderwid`,`yaxlen+2*yborderwid`<br>
+ppl origin,`xborderwid`,`yborderwid`<br>
+<br>
+----------------------------------<br>
+! chartborder : assigns chart axes lengths given a desired longer<br>
+!             axis length and the lowerleft and upperright coords<br>
+! *** adapted from chartaxes.jnl, this version attempts to create ***<br>
+! *** a border of known width around the image to facilitate use  ***<br>
+! ***              with Google Earth                              ***<br>
+<br>
+! usage: chartborder maxlen lon1 lat1 lon2 lat2 xborder yborder<br>
+!        where (lon1,lat1), (lon2,lat2) are the lower left and<br>
+!                                       upper right corners<br>
+!              maxlen is the major axis length, and<br>
+!              xborder,yborder are the desired border widths<br>
+<br>
+let d2r=atan(1.)/45<br>
+let maxlen=$1<br>
+let xdegrees=($4-$2)*cos(d2r*($5+$3)/2)<br>
+let ydegrees=$5-$3<br>
+let axratio=ydegrees/xdegrees<br>
+let xaxlen=if(axratio le 1)then $1 else $1/axratio<br>
+let yaxlen=if(axratio le 1)then $1*axratio else $1<br>
+ppl axlen,`xaxlen`,`yaxlen`<br>
+<br>
+let xborderwid=$6*xaxlen/xdegrees ; let yborderwid=$7*yaxlen/ydegrees<br>
+; ppl size,`xaxlen+2*xborderwid`,`yaxlen+2*yborderwid`<br>
+ppl origin,`xborderwid`,`yborderwid`<br>
+facts&gt; more chartaxes.jnl<br>
+! chartaxes : assigns chart axes lengths given a desired longer<br>
+!             axis length and the lowerleft and upperright coords<br>
+<br>
+let d2r=atan(1.)/45<br>
+let maxlen=$1<br>
+let xdegrees=($4-$2)*cos(d2r*($5+$3)/2)<br>
+let ydegrees=$5-$3<br>
+let axratio=ydegrees/xdegrees<br>
+let xaxlen=if(axratio le 1)then $1 else $1/axratio<br>
+let yaxlen=if(axratio le 1)then $1*axratio else $1<br>
+ppl axlen,`xaxlen`,`yaxlen` ; ppl size,`xaxlen+1.5`,`yaxlen+1.5`<br>
+ppl origin,0.75,0.75<br>
+<br>
+<br>
+Jaison Kurian wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Tony,<br>
+           I think it is possible...two/three ways ...<br>
+<br>
+ 1. before making plot, set all margins to zero<br>
+<br>
+         yes? go margins 0,0,0,0<br>
+<br>
+ 2. use &quot;/AXES&quot; qualifier to define a viewport without margins<br>
+<br>
+         yes? define view/AXES/xlim=0:1/ylim=0:1 v1 ; set view v1<br>
+<br>
+<br>
+ 3. The problem with methods 1 and 2 is that, a very small white band<br>
+        will appear on the top side. I don't know how to get rid of<br>
+        this. Anyway you can try the following options (and is valid<br>
+        for a plot made in normal way with /nolab/nokey/noaxes 
+qualifiers)<br>
+<br>
+        3.1 Use some tools like gimp/xv to chop off the white band.<br>
+<br>
+        3.2 Lengthy solution.....make a ps file, corrent the bounding<br>
+             box (open the ps file in text editing tool and adjust the<br>
+             arguments for &quot;%%BoundingBox&quot; in the 5th line)...convert<br>
+             it to gif using linux command &quot;convert&quot;.<br>
+<br>
+Regards,<br>
+<br>
+Jaison<br>
+<br>
+On Wed, 21 Jun 2006, Tony Jolibois wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>       Hi all,
+
+Is it possible with ferret to create an image without any label, key or
+axis, just the field, in order to be able to georeference it (see images
+attached, first with labels, second can be georeferenced).
+When I try the fill command with /nolabs/nokey/noaxis, there is a white
+band around the image, so it can not be georeferenced, must cut the band
+before.
+
+Thanks in advance,
+Tony
+
+
+</pre>
+</blockquote></blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00416" href="msg00416.html">[ferret_users] Create an image to be georeferenced</a></strong>
+<ul><li><em>From:</em> Tony Jolibois</li></ul></li>
+<li><strong><a name="00417" href="msg00417.html">Re: [ferret_users] Create an image to be georeferenced</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00417.html">Re: [ferret_users] Create an image to be georeferenced</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00421.html">Re: [ferret_users] Create an image to be georeferenced</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00417.html">Thread Prev</a>][<a href="msg00421.html">Thread Next</a>][<A HREF="threads.html#00420">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

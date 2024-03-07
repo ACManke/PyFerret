@@ -1,0 +1,167 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] dealing with monty&#45;mean time series -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 19 Sep 2006 09:22:35 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0609192114500.25796@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 450FFB33.3050007@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] dealing with monty-mean time series</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00594.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00595">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] dealing with monty-mean time series</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Sang-ki Lee &lt;<a href="mailto:Sang-ki.Lee@DOMAIN.HIDDEN">Sang-ki.Lee@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] dealing with monty-mean time series</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 19 Sep 2006 21:33:50 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00594.html">450FFB33.3050007@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00594.html">450FFB33.3050007@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Sang-ki,
+            I have few suggestions ...
+
+1. Suppose your 'original' dataset is in grib format. In this case
+     you have to define and assign a time axis while reading that
+     data on to a Ferret session. In this case you can just open
+     the NetCDF dataset and use its time axis.
+
+2. Suppose your 'original' dataset is in NetCDF format. To regrid
+     this data to the time axis of the second dataset, you can use
+     @ASN regridding, which should take minimum time since it does
+     not involve any interpolation :
+
+       let err = sst_cdc - sst_org[gt=sst_cdc@ASN] 
+
+     You can even save this new regridded variable to a NetCDF file
+       for future use (and you can delete the original file only if 
+       the new time axis is suitable for all your applications)
+
+3. If the 'original' dataset is in NetCDF format, you can even use
+     a descriptor file consisting of the time details &amp; path of 
+     the netcdf file/files so that it have time variables 
+     (like T0, S_START, S_END, S_DELTA) corresponds
+     to the second dataset. In this case Ferret will not bother 
+     about the time axis/details present in the NetCDF file and
+     hence will be the faster method. 
+
+     You can get details about descriptor file and tools for 
+     generating it from the Ferret Mail Archive.
+
+     This will be an ideal solution because the time being spend
+     for creating a descriptor file will be worth....you can 
+     access the same dataset on different time axis without 
+     costing any extra disk space.
+
+Hope this helps...
+
+Jaison
+
+
+On Tue, 19 Sep 2006, Sang-ki Lee wrote:
+
+&gt; Hi,
+&gt; 
+&gt; I have a general question about dealing with monthly-averaged
+&gt; time series data from different sources.
+&gt; 
+&gt; NCEP1 reanalysis data is a good example. The original (grib format)
+&gt; data from NCEP have the time index at the beginning of each month,
+&gt; like 01/JAN/1949, 01/FEB/1949, and etc. One has to be very careful,
+&gt; because this time index means &quot;initial_time&quot; of the monthly average.
+&gt; For instance, t=01/JAN/1949 means time average from 01/JAN/1949 to
+&gt; 31/JAN/1949. If one download the CDC-derived NCEP1 reanalysis data
+&gt; (netcdf format), sometimes the time index is relocated to the
+&gt; middle of each month.
+&gt; 
+&gt; If I want to mix the original NCEP1 data with the cdc-derived
+&gt; data, one thing that I should not do is to regrid the original
+&gt; NCEP1 data to the time index of CDC-derived data in the following
+&gt; way:
+&gt; 
+&gt; ex) err = sst_cdc - sst_org[gt=sst_cdc]
+&gt; 
+&gt; This is like mixing orange and apple. In my case, I do the
+&gt; following:
+&gt; 
+&gt; let err = sst_cdc - sst_org[gt=month_reg@asn]
+&gt; or
+&gt; let err = sst_cdc[l=1:660] - sst_org[l=1:660]
+&gt; 
+&gt; However, I find such regriding processes time-consuming and
+&gt; unnecessary. And, it is also very easy to make mistake. I always
+&gt; get ambiguous time axis warning when I do this way, but I guess
+&gt; that is ok.
+&gt; 
+&gt; It will be very convenient if there is a way to tell Ferret
+&gt; to ignore the day, hour and second. So whenever Ferret see JAN/1949,
+&gt; for instance, it automatically understand that the date is in the
+&gt; middle of JAN/1949.
+&gt; 
+&gt; I would welcome any other tips for dealing with monthly-mean time
+&gt; series data.
+&gt; 
+&gt; Sang-ki
+&gt; 
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00594" href="msg00594.html">[ferret_users] dealing with monty-mean time series</a></strong>
+<ul><li><em>From:</em> Sang-ki Lee</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00594.html">[ferret_users] dealing with monty-mean time series</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00594.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00595">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users]RGB values for interlevels -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 19 May 2008 10:03:24 &#45;0700 -->
+<!--X-Message-Id: 4831B2D3.4000207@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8cc42c030805160317i611e01a6jb923537f395238cd@mail.gmail.com -->
+<!--X-Reference: 20080516.124723.215553448.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users]RGB values for interlevels</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00243.html">Thread Prev</a>][<a href="msg00251.html">Thread Next</a>][<A HREF="threads.html#00249">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users]RGB values for interlevels</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users]RGB values for interlevels</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 May 2008 10:03:15 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:20080516.124723.215553448.furue@DOMAIN.HIDDEN">20080516.124723.215553448.furue@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8cc42c030805160317i611e01a6jb923537f395238cd@DOMAIN.HIDDEN">8cc42c030805160317i611e01a6jb923537f395238cd@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:20080516.124723.215553448.furue@DOMAIN.HIDDEN">20080516.124723.215553448.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Windows/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi -<br>
+Yes, what Ryo says is exactly correct.&nbsp; Ferret determines the set of
+levels that will be used, and then linearly interpolates between the
+colors given in the palette.&nbsp; After Ferret has made a color plot, you
+can see some of the information about those levels by checking the
+value of a set of symbols. For instance,<br>
+<blockquote>yes? USE etopo60<br>
+yes? SHADE/LEV=12/PAL=inverse_bluescale rose<br>
+  <br>
+yes? SHOW SYM lev*<br>
+LEV_TEXT = "12"<br>
+LEV_MIN = "-8000"<br>
+LEV_MAX = "6000"<br>
+LEV_NUM = "15"<br>
+LEV_DEL = "1000"<br>
+  <br>
+</blockquote>
+Note that even if you specify a number of levels, Ferret uses that as a
+starting point for the algorithm that chooses "nice" levels, which
+break at round numbers.&nbsp; Often you'll want to use what Ferret has done
+and then use the /LEVELS qualifier to specify your own set of levels.<br>
+<br>
+Another resource for information about color palettes and LEVELS is in
+this FAQ, including information about the different kinds of palettes, <br>
+<a rel="nofollow"
+ href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/graphics/colorpalettes.html">How
+can I choose a good color palette for my plot?</a><br>
+<br>
+Ansley<br>
+<br>
+Ryo Furue wrote:
+<blockquote cite=""
+ type="cite">
+  <pre wrap="">Hi Peter,
+
+| I would like to know the algorythm of palette making or something
+| else that helps to be able to use the same palette and scale in
+| other applications?  If I use "N" levels during plotting and i want
+| to use for example inverse_bluescale, how will i know the RGB values
+| (in percent or in values from 0...255) for the interlevels (2.,
+| 3. ,..., N-1.) ?
+| 
+| inverse_bluescale:
+| 0 95 95 95 !1. level
+| 100 0 0 95 !N. level
+
+I recommend that you start from Chapter 6, Section 5.2, of the Ferret
+User's Guide:
+
+  <a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/customizing-plots/COLOR/">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/customizing-plots/COLOR/</a>
+
+I think that Ferret linearly interpolates the RGB values: you can
+regard a set of RGB values as a 3D vector (r,g,b) and the
+interpolation is to find a point on the line segment connecting
+the two end points, (r1,g1,b1) and (r2,g2,b2).
+So, for example, a 20% value should correspond to
+
+      (95, 95, 95) + (0-95, 0-95, 95-95) * 0.2
+    = (76, 76, 95)
+
+By the way, if you want specify a correspondence between a level and a
+color, you might want to use the "RGB_Mapping By_level" option.  (See
+the manual.)
+
+Hope this helps,
+Ryo
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00251" href="msg00251.html">Re: [ferret_users]RGB values for interlevels</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00242" href="msg00242.html">[ferret_users]RGB values for interlevels</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+<li><strong><a name="00243" href="msg00243.html">Re: [ferret_users]RGB values for interlevels</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00243.html">Re: [ferret_users]RGB values for interlevels</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00251.html">Re: [ferret_users]RGB values for interlevels</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00243.html">Thread Prev</a>][<a href="msg00251.html">Thread Next</a>][<A HREF="threads.html#00249">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

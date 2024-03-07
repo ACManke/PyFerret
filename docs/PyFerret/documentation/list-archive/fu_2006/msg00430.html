@@ -1,0 +1,167 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Viewport : Relation between size and boundaries -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 26 Jun 2006 13:04:54 &#45;0700 -->
+<!--X-Message-Id: 44A03DE1.2050906@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.61.0606262233250.23908@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Viewport : Relation between size and boundaries</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00431.html">Thread Next</a>][<A HREF="threads.html#00430">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Viewport : Relation between size and boundaries</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Viewport : Relation between size and boundaries</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 26 Jun 2006 13:04:49 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00429.html">Pine.LNX.4.61.0606262233250.23908@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00429.html">Pine.LNX.4.61.0606262233250.23908@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.4 (Windows/20060516)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jaison,<br>
+This is because of how Ferret automatically sets up the margins. Do you 
+want the axes to line up, with the axes of the smaller viewport matching 
+the lower right corner of the larger one? This will be much easier if 
+you use DEFINE VIEWPORT/AXES.  You'll need to decide what space if any 
+to reserve for the axes, but then you're home free. For instance,<br>
+<br>
+ ! Remove tics and Labels<br>
+      ppl tics 0 0 0 0 0 0<br>
+      ppl axlsze 0, 0<br>
+<br>
+ ! A big viewport<br>
+    
+      let xlo = 0.1; let xhi = 0.9<br>
+      let ylo = 0.1; let yhi = 0.9<br>
+      define view/AXES/xlim=`xlo`:`xhi`/ylim=`ylo`:`yhi` vbig ; set 
+view vbig<br>
+      fill/nolab/nokey/pal=white I[I=1:10]*J[J=1:10]<br>
+<br>
+ ! A small one on lower right corner<br>
+      let fgn_xlo = `xhi-0.25`<br>
+      let fgn_xhi = `xhi`<br>
+      let fgn_ylo = `ylo`<br>
+      let fgn_yhi = `ylo+0.25`<br>
+      define view/AXES/xlim=`fgn_xlo`:`fgn_xhi`/\<br>
+                      ylim=`fgn_ylo`:`fgn_yhi` vsmall<br>
+      set view vsmall<br>
+      fill/nolab/nokey/pal=white I[I=1:10]*J[J=1:10]<br>
+<br>
+<br>
+<br>
+Jaison Kurian wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+    I want to make two viewports, a big one and a smaller one such<br>
+that the smaller one should just fit inside at the lower-right<br>
+corner of the bigger one. A direct attempt goes like this ...<br>
+<br>
+  ! Remove tics and Labels<br>
+       ppl tics 0 0 0 0 0 0<br>
+       ppl axlsze 0, 0<br>
+<br>
+  ! A big viewport<br>
+       define view/xlim=0.0:1.0/ylim=0.0:1.0 vbig ; set view vbig<br>
+       fill/nolab/nokey/pal=white I[I=1:10]*J[J=1:10]<br>
+<br>
+  ! A small one on lower right corner<br>
+       let fgn_xlo = `($VP_XHI)-0.25`<br>
+       let fgn_xhi = `($VP_XHI)`<br>
+       let fgn_ylo = `($VP_YLO)`<br>
+       let fgn_yhi = `($VP_YLO)+0.25`<br>
+       define view/xlim=`fgn_xlo`:`fgn_xhi`/\<br>
+                       ylim=`fgn_ylo`:`fgn_yhi` vsmall<br>
+       set view vsmall<br>
+       fill/nolab/nokey/pal=white I[I=1:10]*J[J=1:10]<br>
+<br>
+Now the smaller one is gone outside the boundaris of bigger one !!!<br>
+<br>
+   1. Why should the rightern boundaries be different for the bigger<br>
+        one and smaller one  (i mean ..what is the advantage over<br>
+        size independant boundary) ??. What is the relation between<br>
+        viewport size and its boundaries ??<br>
+<br>
+   2. How to fit the smaller one to the lower-right corner of bigger 
+one ?<br>
+        I want the script to calculate the values needed to define the<br>
+        smaller viewport, **STRICTLY** based on the information available<br>
+        in ppl symbols about the first drawn bigger view port.<br>
+<br>
+   3. If there is an /AXES qualifier to &quot;define viewport&quot;, then the<br>
+        values returned by pplus symbols like $VP_XHI, $VP_XLO will be<br>
+        different than the values supplied to the define command.<br>
+        What is the relation between these given value and value 
+available<br>
+        in pplus symbols ?<br>
+<br>
+Regards,<br>
+<br>
+Jaison<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00431" href="msg00431.html">Re: [ferret_users] Viewport : Relation between size and boundaries</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00429" href="msg00429.html">[ferret_users] Viewport : Relation between size and boundaries</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00429.html">[ferret_users] Viewport : Relation between size and boundaries</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00431.html">Re: [ferret_users] Viewport : Relation between size and boundaries</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00431.html">Thread Next</a>][<A HREF="threads.html#00430">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

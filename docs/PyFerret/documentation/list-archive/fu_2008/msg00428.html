@@ -1,0 +1,196 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] scat2gridgauss not functioning properly -->
+<!--X-From-R13: Egrcura Uhvzbaq <fthvzbaqNsfh.rqh> -->
+<!--X-Date: Wed, 20 Aug 2008 21:06:30 &#45;0700 -->
+<!--X-Message-Id: f9feb9ac5d16.48acb17e@fsu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f33c82242fc5.48ac8569@fsu.edu -->
+<!--X-Reference: 55238.169.232.145.149.1219283430.squirrel@mail.atmos.ucla.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] scat2gridgauss not functioning properly</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00427.html">Thread Prev</a>][<a href="msg00436.html">Thread Next</a>][<A HREF="threads.html#00428">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] scat2gridgauss not functioning properly</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] scat2gridgauss not functioning properly</strong></li>
+<li><strong>From</strong>: <strong>Stephen Guimond &lt;<a href="mailto:sguimond@DOMAIN.HIDDEN">sguimond@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 21 Aug 2008 00:06:22 -0400</li>
+<li>Cc: <a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:55238.169.232.145.149.1219283430.squirrel@DOMAIN.HIDDEN">55238.169.232.145.149.1219283430.squirrel@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f33c82242fc5.48ac8569@DOMAIN.HIDDEN">f33c82242fc5.48ac8569@xxxxxxx</a>&gt; &lt;<a href="mailto:55238.169.232.145.149.1219283430.squirrel@DOMAIN.HIDDEN">55238.169.232.145.149.1219283430.squirrel@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jaison,
+
+Thank you for your response, using a 1-D axis for x and y input values worked.  I suppose the &quot;objective_analysis_demo&quot; script should be fixed because it shows 2-D axes for x and y input.
+
+Another thing I found was that using &quot;scat2gridlaplace&quot; causes a crash of FERRET.  I used similar input as I did with &quot;scat2gridgauss&quot;, but with cay and nrng both equal to 5.  I am using FERRET v6.1  for 32-bit Linux.  Have you found anything similar?
+
+Thanks,
+Steve
+
+
+----- Original Message -----
+From: jaison@xxxxxxxxxxxxxx
+Date: Wednesday, August 20, 2008 9:51 pm
+Subject: Re: [ferret_users] scat2gridgauss not functioning properly
+To: guimond@xxxxxxxxxxxxx
+Cc: ferret_users@xxxxxxxx
+
+&gt; Hi Steve,
+&gt;           According to documentation (and from experience), the 
+&gt; first two
+&gt; input arguments to SCAT2GRIDGAUSS function should be defined on 
+&gt; either X
+&gt; (and ZT) or Y (and ZT) axis, but NOT on both X and Y at the same time.
+&gt; (see  Ch3 Sec2.3.37.  SCAT2GRIDGAUSS_XY). In your script add the 
+&gt; followinglines
+&gt; 
+&gt;   let xx1D = XSEQUENCE(xx)
+&gt;   let yy1D = XSEQUENCE(yy)
+&gt; 
+&gt; then use these variables in SCAT2GRIDGAUSS function as
+&gt; 
+&gt;   let sgrid = scat2gridgauss_xy(xx1D, yy1D, .........)
+&gt; 
+&gt; Ok. The last argument (9th one) is not used in newer versions of 
+&gt; Ferret.The 3 arguments before that, XSCALE, YSCALE and CUTOFF need 
+&gt; to be chosen
+&gt; to match your destination grid. Read the documentation carefully for
+&gt; CUTOFF. You can try few different values to choose between high-
+&gt; data loss
+&gt; (smaller SCALE and CUTOFF) and high-smoothing (higher SCALE and 
+&gt; CUTOFF),with respect to the destination grid. For example, if 
+&gt; CUTOFF is 2, then
+&gt; XSCALE can be dx (of destination grid) and YSCALE can be dy.
+&gt; 
+&gt; Also note that, it is always a good habit to add proper units while
+&gt; defining axis, and use proper names (xlon, ylat or xkm, ykm etc).
+&gt; 
+&gt; Please let me  know if you have any questions.
+&gt; 
+&gt; Thanks and Regards,
+&gt; 
+&gt; Jaison
+&gt; 
+&gt; &gt; Hello Ferreters,
+&gt; &gt;
+&gt; &gt; I am trying to put scattered data onto a regular grid and tried 
+&gt; with the scat2gridgauss
+&gt; &gt; function.
+&gt; &gt;
+&gt; &gt; Here is my code:
+&gt; &gt;
+&gt; &gt; ! the scattered data axes...
+&gt; &gt; def axis/x=1:960:1 x;def axis/y=1:367:1 y;def grid/x=x/y=y g
+&gt; &gt; file/format=stream/grid=g/var=&quot;xx,yy,zz,dbz&quot; output.dat
+&gt; &gt; ! the regular grid axes...
+&gt; &gt; def axis/x=-240:240:0.5 nx;def axis/y=-240:240:0.5 ny
+&gt; &gt; let sgrid = scat2gridgauss_xy(xx, yy, dbz, x[gx=nx], y[gy=ny], 
+&gt; 2.,2.,2.,0)&gt;
+&gt; &gt; The result does not work (toying with the last few parameters 
+&gt; makes no difference),
+&gt; &gt; although it does have the grid I expect.  I'm assuming the same 
+&gt; will be true for the
+&gt; &gt; scat2gridlaplace functions as well.
+&gt; &gt;
+&gt; &gt; Any ideas?
+&gt; &gt;
+&gt; &gt; Thanks,
+&gt; &gt; Steve
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; =======================================================
+&gt; &gt; Stephen R. Guimond
+&gt; &gt; Graduate Research Assistant
+&gt; &gt; Florida State University
+&gt; &gt; Center for Ocean-Atmospheric Prediction Studies (COAPS)
+&gt; &gt; =======================================================
+&gt; &gt;
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+=======================================================
+Stephen R. Guimond
+Graduate Research Assistant
+Florida State University
+Center for Ocean-Atmospheric Prediction Studies (COAPS)
+=======================================================
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00436" href="msg00436.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00426" href="msg00426.html">[ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Stephen Guimond</li></ul></li>
+<li><strong><a name="00427" href="msg00427.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> jaison</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00427.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00436.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00427.html">Thread Prev</a>][<a href="msg00436.html">Thread Next</a>][<A HREF="threads.html#00428">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

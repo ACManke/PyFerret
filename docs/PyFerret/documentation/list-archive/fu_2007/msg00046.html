@@ -1,0 +1,276 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] problem in reading and regriding ASCII data file -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 17 Jan 2007 15:04:53 &#45;0800 -->
+<!--X-Message-Id: 45AEAB93.6000603@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 71cc5ca20701162154t70a727afi818fede367e12ba3@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] problem in reading and regriding ASCII data file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00043.html">Thread Prev</a>][<a href="msg00047.html">Thread Next</a>][<A HREF="threads.html#00046">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] problem in reading and regriding ASCII data file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Yogesh Tiwari &lt;<a href="mailto:yogesh.mpi@DOMAIN.HIDDEN">yogesh.mpi@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] problem in reading and regriding ASCII data file</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 17 Jan 2007 15:04:51 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:71cc5ca20701162154t70a727afi818fede367e12ba3@DOMAIN.HIDDEN">71cc5ca20701162154t70a727afi818fede367e12ba3@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:71cc5ca20701162154t70a727afi818fede367e12ba3@DOMAIN.HIDDEN">71cc5ca20701162154t70a727afi818fede367e12ba3@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.9 (Windows/20061207)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Yogesh,<br>
+First the easier part of your question.&nbsp; Once you have two datasets
+initialized in Ferret, you can regrid a variable from one dataset to
+the grid of another with a definition of a variable, including the
+regridding operation in the definition.&nbsp; If dataset 1 contains a data
+variable called AOD on a 1x1 grid and datasets 2 contains O3 data on a
+5x5 grid, then you can define <br>
+<br>
+&nbsp;&nbsp; LET AOD5 = AOD[d=1,gxy=O3[d=2]]<br>
+<br>
+This says, define the new variable AOD5 which is AOD from dataset 1,
+regridded to the x and y grid of O3 from dataset 2.<br>
+<br>
+As to reading the data, Ferret does not have any syntax to read ASCII
+data that's organized like yours in blocks of data, skipping the
+sub-headers&nbsp; for each latitude. One way to proceed is to use other
+software to reformat the files into a form that could be read using the
+ideas and examples in the Users Guide Chapter 2 Section 5.1, "Reading
+ASCII files" <br>
+<br>
+Another method might be to use Ferret to read in the data and convert
+it to a netCDF file. This would be similar to what's in the Users
+Guide, if you look in the index under "append, slab to NetCDF file".&nbsp;
+The example in that section describes adding multiple Z levels to a
+netcdf file, but here we would be adding longitudes to the file.&nbsp; <br>
+<br>
+Here is an outline of what you would need to do, with some example
+commands below.<br>
+<br>
+First you would define the longitude and latitude grid corresponding to
+the data in the file, then read the data for one latitude at a time,
+using /SKIP to get to the correct record at each step. I am guessing
+about the axis definitions; use the correct ones for the data.<br>
+<br>
+On the FILE commands, you read in the ASCII data. You will need to work
+out how to read all of the longitudes for a degree of latitude, so you
+will need to determine the values to use in /SKIP= and /COLUMNS= and
+perhaps a /FORMAT= .&nbsp;&nbsp; Use a LIST command to check that you're reading
+the data correctly. <br>
+<br>
+I have not tested whether it works to start with 89.5 north and append
+data for 88.5,&nbsp; then 87.5 and so on, as I start to do below.&nbsp; You might
+need to start by skipping to the end of the file and reading the data
+for the southernmost latitude first, -89.5 or whatever it is, and then
+skip to -88.5, -87.5, always skipping fewer lines, filling in the
+netcdf file from south to north as you go.<br>
+<font color="#1f1a17" face="Courier New" size="2"><b><br>
+yes? ! Define the grid of the entire data set<br>
+yes? DEF AXIS/x=0.5:359.5:1/units=degrees xaxis<br>
+yes? DEF AXIS/y=-89.5:89.5/units=degrees yaxis<br>
+<br>
+yes? ! Define the grid for one latitude<br>
+yes? DEF GRID/X=xaxis/Y=yaxis xy_grid<br>
+yes? DEF AXIS/Y=89.5:89.5:1 yaxis1<br>
+yes? DEF GRID/LIKE=xy_grid_grid/y=yaxis1&nbsp; xy_grid1<br>
+<br>
+yes? ! read in the first longitude <br>
+yes? FILE/GRID=xy_grid1/VAR="a"/skip=/format=/columns&nbsp; aod_file.dat<br>
+</b></font><font color="#1f1a17" face="Courier New" size="2"><b><br>
+yes? ! Put it onto the whole grid and write to the file.<br>
+yes? ! Here is where you can set the missing data flag for the variable
+<br>
+yes? LET/TITLE="AOD"/BAD=-999 AOD = a[G=xy_grid]</b></font><font
+ color="#1f1a17" face="Courier New" size="2"><b><br>
+yes? SAVE/FILE=aod.cdf/</b><b>JLIMITS=1:180/J=180</b><b> aod</b><b><br>
+<br>
+yes? CANCEL DATA aod_file.dat<br>
+yes? DEF AXIS/y=88.5:88.5:1 yaxis1<br>
+yes? FILE/GRID=xy_grid1/VAR="aod"</b></font><font color="#1f1a17"
+ face="Courier New" size="2"><b>/skip=/format=/columns</b></font><font
+ color="#1f1a17" face="Courier New" size="2"><b> aod_file.dat<br>
+</b></font><font color="#1f1a17" face="Courier New" size="2"><b>yes?
+SAVE/FILE=aod.cdf/</b><b>APPEND/J=179</b><b> aod<br>
+</b></font><font color="#1f1a17" face="Courier New" size="2"><b><br>
+yes? CANCEL DATA aod_file.dat<br>
+yes? DEF AXIS/y=87.5:87.5:1 yaxis1</b></font><br>
+<font color="#1f1a17" face="Courier New" size="2"><b>. . . <br>
+<br>
+! The above sequence could be put into a REPEAT loop, once you have <br>
+! worked out how to read each latitude.<br>
+</b></font><font color="#1f1a17" face="Courier New" size="2"><b><br>
+! Cancel definitions before using new file&nbsp;</b></font>
+<p align="left"><font color="#1f1a17" face="Courier New" size="2">
+<b>yes? CANCEL DATA/ALL&nbsp; <br>
+yes? CANCEL VAR/ALL&nbsp;</b>
+</font></p>
+<p align="left"><font color="#1f1a17" face="Courier New" size="2">
+<b>yes? USE aod.cdf</b>
+</font></p>
+<br>
+<br>
+<br>
+<br>
+<font color="#1f1a17"><font size="4"><font face="Palatino"><b><br>
+</b></font></font></font>Yogesh Tiwari wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <div>Hello Ferret Users,</div>
+  <div>&nbsp;</div>
+  <div>I have two data sets i) TOMS aerosol optical depth and ii) TOMS
+ozone. </div>
+  <div>&nbsp;</div>
+  <div>AOD data is on 1x1 grid and O3 data is on 5x5 grid. </div>
+  <div>&nbsp;</div>
+  <div>First I want to read AOD and O3 and then I want to regrid AOD on
+5x5 grid.</div>
+  <div>&nbsp;</div>
+  <div>Reading is first problem.</div>
+  <div>&nbsp;</div>
+  <div>AOD data&nbsp;is in following format:</div>
+  <div>&nbsp;</div>
+  <div>#########</div>
+  <div>Latitute: 89.5</div>
+  <div>167&nbsp;0 0 0 0 0&nbsp;182 0 0 0 0 0 0 0 0 0 0 0 0&nbsp;200 0 0 0 0 0 0 </div>
+  <div>0 0 0 0 0 0 0 0 0 0 0 0 0 0&nbsp;155 0 0 0 0 0&nbsp;156 &nbsp;0 0 0 0 0 0<br
+ clear="all">
+............</div>
+  <div>...........</div>
+  <div>&nbsp;</div>
+  <div>Latitude: 88.5</div>
+  <div>.........</div>
+  <div>........</div>
+  <div>&nbsp;</div>
+  <div>Lat.........</div>
+  <div>.........</div>
+  <div>.......</div>
+  <div>......</div>
+  <div>Latitude: -88.5</div>
+  <div>
+  <div>180&nbsp;0 0 0 0 0&nbsp;182 0 0 0 0 0 0 0 0 0 0 0 0&nbsp;500 0 0 0 0 0 0 </div>
+  <div>0 0 0 0 0 0 0 0 0 0 0 0 0 0&nbsp;655 0 0 0 0 0&nbsp;156 &nbsp;0 0 0 0 0 0</div>
+  <div>......</div>
+  <div>.....<br clear="all">
+######</div>
+  <div>&nbsp;</div>
+  <div>After each latitude header there is 360 AOD values (1x1 grid).
+This is monthly mean data. I have many years of data file.</div>
+  <div>&nbsp;</div>
+  <div>So the first problem is how to read the data by omiting latitude
+header ?</div>
+  <div>And second, how to regrid the above AOD data on 5x5 grid.
+Currently it is on 1x1 grid&nbsp;?</div>
+  <div>&nbsp;</div>
+  <div>Ozone data as well has the similar header (Month index: 0 ,
+Month index: 1........).</div>
+  <div>&nbsp;</div>
+  <div>Many thanks for yours help.</div>
+  <div>&nbsp;</div>
+  <div>Regards,</div>
+  <div>Yogesh</div>
+  </div>
+  <div>&nbsp;</div>
+-- <br>
+Dr. Yogesh K. Tiwari,<br>
+Scientist 'B',<br>
+Indian Institute of Tropical Meteorology, <br>
+Homi Bhabha Road,<br>
+Pashan,<br>
+Pune-411008<br>
+INDIA<br>
+  <br>
+Phone: 0091-99 2273 9513 (Cell) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0091-20-258 93 600 (O) (
+Ext.250)<br>
+Fax&nbsp;&nbsp;&nbsp;&nbsp;: 0091-20-258 93 825 </blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:ansley.b.manke@xxxxxxxx">ansley.b.manke@xxxxxxxx</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00047" href="msg00047.html">Re: [ferret_users] problem in reading and regriding ASCII data file</a></strong>
+<ul><li><em>From:</em> william s. kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00043" href="msg00043.html">[ferret_users] problem in reading and regriding ASCII data file</a></strong>
+<ul><li><em>From:</em> Yogesh Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00043.html">[ferret_users] problem in reading and regriding ASCII data file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00047.html">Re: [ferret_users] problem in reading and regriding ASCII data file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00043.html">Thread Prev</a>][<a href="msg00047.html">Thread Next</a>][<A HREF="threads.html#00046">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

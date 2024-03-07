@@ -1,0 +1,282 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Sample a field along a set of line segments? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 5 Oct 2006 13:12:01 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0610060135440.17583@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: A15AA892&#45;6A58&#45;45FA&#45;BA9B&#45;758FFC13BC64@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Sample a field along a set of line segments?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00645.html">Thread Prev</a>][<a href="msg00644.html">Thread Next</a>][<A HREF="threads.html#00656">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Sample a field along a set of line segments?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Sample a field along a set of line segments?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 06 Oct 2006 01:48:21 +0530 (IST)</li>
+<li>Cc: ferret_users Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;,       Bharath Raj G N &lt;<a href="mailto:ozone@DOMAIN.HIDDEN">ozone@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00643.html">A15AA892-6A58-45FA-BA9B-758FFC13BC64@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00643.html">A15AA892-6A58-45FA-BA9B-758FFC13BC64@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Billy,
+          Initially i got a method to solve it using Fortran. But
+it was a lengthy one. My friend Bharath suggested a method based
+on GCD (almost same as the solution i got but a neat one). Here 
+is the Ferret implimentation of the solution as a &quot;GO&quot; file 
+(please see attached jnl file grid_pts_along_line_segments.jnl).
+Comments/suggestions are most welcome. If you face any problems 
+with this GO file, I will be happy to look into it. 
+
+If anybody is interested to have a look at the Fortran stuff,
+please send me a mail.
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+On Tue, 3 Oct 2006, William S. Kessler wrote:
+
+&gt; I want to sample a field along a line defined by a set of (x,y)  
+&gt; points. Clearly I could use SAMPLEXY to extract the values at the  
+&gt; given points, but I want to, in effect, draw straight lines between  
+&gt; those points and sample all along those lines.
+&gt; 
+&gt; It is necessary to say how densely I want to sample, that is, how  
+&gt; many intermediate points to add in between the given ones. Suppose I  
+&gt; want to add an intermediate point at each value of the x-grid of the  
+&gt; field to be sampled. As an example, suppose I have two points (155,7)  
+&gt; and (158,13), and my background grid is 1 by 1, on integers. The  
+&gt; points I want to add would be (156,9) and (157,11). How can I find  
+&gt; those points and augment my original set to include them? Then I can  
+&gt; use SAMPLEXY to sample the field.
+&gt; 
+&gt; Billy K
+&gt; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+&gt; William S. Kessler
+&gt; NOAA / Pacific Marine Environmental Laboratory
+&gt; 7600 Sand Point Way NE
+&gt; Seattle WA 98115 USA
+&gt; 
+&gt; william.s.kessler@noaa.gov
+&gt; Tel: 206-526-6221
+&gt; Fax: 206-526-6744
+&gt; Home page: <a  href="http://www.pmel.noaa.gov/people/kessler/">http://www.pmel.noaa.gov/people/kessler/</a>
+&gt; 
+&gt; 
+</pre>
+<pre>\ cancel mode verify
+!
+! Go file to find the grid points along specified line segments. In other
+!  words to find the grid points on which a cruise track will pass through.
+!
+! Assumptions : 1. Each Cruise track station (x,y) points exists in the gridded 
+!                    dataset.
+!               2. Gridded data have &quot;uniform&quot; dx and dy
+!
+! Usage : GO grid_pts_along_line_segments stn_x, stn_y, dx, dy, points
+!
+! Arguments
+!       
+!  $1 : mandatory :  X(longitude) points of cruise stations, on X-grid : INPUT
+!  $2 :     &quot;     :  Y(latitude)  points of cruise stations, on X-grid :   &quot;
+!  $3 :     &quot;     : dX, spacing along X(Lon) for gridded data          :   &quot;
+!  $4 :     &quot;     : dY, spacing along Y(Lat) for gridded data          :   &quot;
+!  $5 : optional  :  total number of grid points, including new ones   : OUPUT
+!
+! This GO file will write all the (X,Y) pairs of new as well as old grid
+!     points to a text file grid_pts.txt, which can be loaded into Ferret
+!     in order to sample the gridded data along the cruise track (without
+!     any interpolation error) using SAMPLEXY external function.
+!
+! NOTE : All the internal variables of this script have a prefix &quot;gpl&quot; 
+!            except &quot;npts&quot;.
+!
+! Example :
+!     use levitus_climatology  ! d=1
+!     define axis/x=0:360:1/units=longitudes xlon ! for the sake of
+!     define axis/y=-90:90:1/units=latitudes ylat ! example 
+!     let sst = temp[d=1,k=1,gx=xlon,gy=ylat] ! d=1 is important as we
+!     let dx  = x[gx=sst,i=2]-x[gx=sst,i=1]   !     will load a new
+!     let dy  = y[gy=sst,j=2]-y[gy=sst,j=1]   !     file soon
+!     !--Cruise track : station lat-lon points : defined on X-Axis (A MUST)
+!     let stn_x = XSEQUENCE({155,158,158,160,157,160,162,165,168,165})
+!     let stn_y = XSEQUENCE({  7, 10, 14, 16, 19, 22, 24, 24, 21, 18})
+!
+!     GO grid_pts_along_line_segments stn_x, stn_y, dx, dy, points
+!
+!     define axis/x=1:`points`:1 xfile
+!     define grid/x=xfile      gfile
+!     FILE/grid=gfile/var=&quot;xpts, ypts&quot; grid_pts.txt ! d=2   
+!     fill/x=120:200/y=0:30/pal=inverse_greyscale/lev=(14,30,0.5) sst
+!     plot/vs/ov/nolab/size=0.12/symb=1/color=8  xpts[d=2], ypts[d=2]   ! new grid points in RED
+!     plot/vs/ov/nolab/size=0.12/symb=1/color=11 stn_x, stn_y 
+!     go land
+!     pause 
+!     let sst_cruise = SAMPLEXY(sst,xpts[d=2],ypts[d=2])
+!     plot sst_cruise
+!
+!---------------------------------------------------------------------------------------
+!
+! Created By    : Jaison Kurian     (jaison@caos.iisc.ernet.in) &amp;
+!                 Bharath Raj G. N. (ozone@caos.iisc.ernet.in)
+!
+! Created on    : 06/Oct/2006
+!
+! Modifications : None
+!----------------------------------------------------------------------------------------
+
+
+    query/ignore $1%&lt;Use: GO grid_pts_along_line_segments xpts, ypts, dx, dy, npts%
+    query/ignore $2%&lt;Use: GO grid_pts_along_line_segments xpts, ypts, dx, dy, npts%
+    query/ignore $3%&lt;Use: GO grid_pts_along_line_segments xpts, ypts, dx, dy, npts%
+    query/ignore $4%&lt;Use: GO grid_pts_along_line_segments xpts, ypts, dx, dy, npts%
+    query/ignore $1%&lt;Use: GO grid_pts_along_line_segments xpts, ypts, dx, dy, npts%
+
+    let gpl_stn_x = $1
+    let gpl_stn_y = $2
+    let gpl_dx    = $3
+    let gpl_dy    = $4
+
+
+!--do some consistency checks
+
+    def sym x_shape = `gpl_stn_x,r=shape`
+    def sym y_shape = `gpl_stn_y,r=shape`
+    IF `&quot;($x_shape)&quot; NE &quot;X&quot;` THEN
+       SAY &quot; ERROR : 1st argument (xpts) to grid_pts_along_line_segments should be &quot;
+       SAY &quot;         defined on X-axis (XSEQUENCE will make it easy)          &quot;
+       EXIT
+    ENDIF 
+    IF `&quot;($y_shape)&quot; NE &quot;X&quot;` THEN
+       SAY &quot; ERROR :  2nd argument (ypts) to grid_pts_along_line_segments should be &quot;
+       SAY &quot;          defined on X-axis (XSEQUENCE will make it easy)          &quot;
+       EXIT
+    ENDIF 
+
+    let gpl_stns  = `gpl_stn_x,r=iend`
+    let gpl_stns1 = `gpl_stn_y,r=iend`
+
+    IF `gpl_stns NE gpl_stns1` THEN
+       SAY &quot; ERROR : From grid_pts_along_line_segments&quot;
+       SAY &quot;         Number of xpts and ypts (1st &amp; 2nd Arguments) are not same&quot;
+       EXIT
+    ENDIF
+ 
+    IF `gpl_stns LT 2` THEN 
+       SAY &quot; ERROR : From grid_pts_along_line_segments&quot;
+       SAY &quot;         Number of xpts and ypts (1st &amp; 2nd Arguments) should be &gt; 1.&quot;
+       EXIT
+    ENDIF
+
+    IF `gpl_dx LE 0 OR gpl_dy LE 0` THEN
+       SAY &quot; ERROR : From grid_pts_along_line_segments&quot;
+       SAY &quot;         dx and dy (3rd &amp; 4th Arguments) should be &gt; 0.&quot;
+       EXIT
+    ENDIF
+
+!--if everything is ok, then do it
+
+    sp rm -f grid_pts.txt
+    define symbol gpl_qual = quiet/nohead/file=grid_pts.txt/format=(2x,2(f9.4,3x))/APPEND
+
+    let gpl_points = 1
+    list/($gpl_qual) gpl_stn_x[i=1], gpl_stn_y[i=1]
+
+    REPEAT/RANGE=1:`gpl_stns-1`:1/NAME=gpl_st (;\
+        let gpl_xs = gpl_stn_x[i=`gpl_st`] ; let gpl_xe = gpl_stn_x[i=`gpl_st+1`] ;\
+        let gpl_ys = gpl_stn_y[i=`gpl_st`] ; let gpl_ye = gpl_stn_y[i=`gpl_st+1`] ;\
+        let gpl_xn = ((gpl_xe - gpl_xs)^2)^0.5 / gpl_dx   ;\
+        let gpl_yn = ((gpl_ye - gpl_ys)^2)^0.5 / gpl_dy   ;\
+        let gpl_xo = (gpl_xe - gpl_xs) * gpl_dx/MAX(gpl_xn,1) ;\
+        let gpl_yo = (gpl_ye - gpl_ys) * gpl_dy/MAX(gpl_yn,1) ;\
+        IF `gpl_xn EQ 0 OR gpl_yn EQ 0` THEN    ;\
+            let gpl_gcd = MAX(gpl_xn,gpl_yn)          ;\
+        ELSE                              ;\
+            define axis/x=1:`MIN(gpl_xn,gpl_yn)`:1 gpl_xax  ;\
+            let gpl_d          = x[gx=gpl_xax]          ;\
+            let gpl_devisors_x = IF gpl_xn/gpl_d EQ INT(gpl_xn/gpl_d) THEN gpl_d ;\
+            let gpl_devisors_y = IF gpl_yn/gpl_d EQ INT(gpl_yn/gpl_d) THEN gpl_d ;\
+            let gpl_devisors   = gpl_devisors_x + gpl_devisors_y*0               ;\
+            let gpl_gcd        = gpl_devisors[i=@MAX]                        ;\
+        ENDIF                                 ;\
+        let gpl_xinc = gpl_xn/gpl_gcd ; let gpl_yinc = gpl_yn/gpl_gcd ;\
+        REPEAT/RANGE=1:`gpl_gcd`:1/NAME=gpl_in (      ;\
+            let gpl_x2 = gpl_xs + gpl_xinc * gpl_in * gpl_dx * gpl_xo ;\
+            let gpl_y2 = gpl_ys + gpl_yinc * gpl_in * gpl_dy * gpl_yo ;\
+            list/($gpl_qual) gpl_x2, gpl_y2          ;\
+            let gpl_points = `gpl_points` + 1             ;\
+        );\
+    )
+
+    define symbol gpl_npts = `gpl_points`
+    let $5&quot;npts&quot; = `($gpl_npts)`
+    cancel var gpl_*
+    SAY
+    SAY Output is avialable in the text file &quot;grid_pts.txt&quot;.
+    SAY
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00643" href="msg00643.html">[ferret_users] Sample a field along a set of line segments?</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00645.html">[ferret_users] SeaWiFS data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00644.html">[ferret_users] How to combine files ???</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00645.html">Thread Prev</a>][<a href="msg00644.html">Thread Next</a>][<A HREF="threads.html#00656">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

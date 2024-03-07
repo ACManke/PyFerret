@@ -1,0 +1,175 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Cancel Data SET  problem -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 22 Dec 2006 08:45:50 &#45;0800 -->
+<!--X-Message-Id: 752D1642&#45;ECCB&#45;4600&#45;9A41&#45;DA0CD5C95ED9@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 458BE3BB.60809@knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Cancel Data SET  problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00813.html">Thread Prev</a>][<a href="msg00814.html">Thread Next</a>][<A HREF="threads.html#00816">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Cancel Data SET  problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jorge Urrego Blanco &lt;<a href="mailto:urrego@DOMAIN.HIDDEN">urrego@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Cancel Data SET  problem</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 22 Dec 2006 08:45:22 -0800</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00813.html">458BE3BB.60809@knmi.nl</a>&gt;</li>
+<li>References: &lt;<a href="msg00813.html">458BE3BB.60809@knmi.nl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jorge -<br>
+<br>
+Once you have CANCELed the dataset, Ferret has nothing to work with.<br>
+<br>
+I think the confusion may be that Ferret is philosophically different  
+than, say, fortran, where an assignment statement (a=b) does a  
+calculation. In Ferret, assignments (let a=b) do nothing but specify  
+the algorithm to define a variable. Until you do a calculation (plot  
+or list, etc) with that definition, no calculation has been done.  
+Thus when you define &quot;let intermediate_variable=original_variable&quot;,  
+and then cancel the dataset that informs Ferret about what  
+original_variable is, Ferret, cannot evaluate intermediate_variable.<br>
+<br>
+If you are having memory problems with a big dataset, two  
+possibilities come to mind:<br>
+<br>
+1. increase the allocated memory (see SET MEMORY in the documentation)<br>
+2. work with a smaller subset of the data (SET REGION, or specify a  
+limited region in the definition of intermediate_variable)<br>
+<br>
+If you need the whole region and your machine does not have enough  
+memory, then the calculation may have to be done in several parts.<br>
+<br>
+One implication of Ferret's philosophy of not doing a calculation  
+until asked by plot or list, is to limit repeated redoing of a  
+calculation in the case of very large datasets. (If you are plotting  
+intermediate_variable repeatedly, it may be a good idea to SAVE it  
+and read it back in, thereby doing the calculation only once):<br>
+<br>
+SAVE/file=intermediate_variable.cdf intermediate_variable<br>
+CAN VAR intermediate_variable    ! very important, so Ferret will not  
+use this algorithm again!<br>
+USE intermediate_variable.cdf    ! now you can plot  
+intermediate_variable without doing any calculation<br>
+<br>
+Although Ferret will try to avoid this problem by retaining  
+calculated quantities in memory, with large datasets that might not  
+be possible, in which case the writing of an intermediate file as  
+above might be the simplest solution.<br>
+<br>
+Billy K<br>
+<br>
+On Dec 22, 2006, at 5:55 AM, Jorge Urrego Blanco wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear all,<br>
+<br>
+In the next script I am trying to cancel the original dataset and  
+use only and intermediate variable dependant on such original  
+dataset. However once the dataset is cancelled, further  
+calculations with the intermediate variable are not longer possible  
+since Ferret tries to use the original dataset again.<br>
+<br>
+***********************<br>
+use original_dataset         (contains original_variable)<br>
+<br>
+let intermediate_variable=original_variable<br>
+<br>
+list original_variable<br>
+list intermediate_variable<br>
+<br>
+cancel data_set original_dataset<br>
+<br>
+list intermediate_variable<br>
+************************<br>
+<br>
+Ferret does the firt two listings but after cancel original dataset  
+it says:<br>
+<br>
+**ERROR: variable unknown or not in data set ORIGINAL_VARIABLE<br>
+<br>
+Can somebody tell me what is wrong with that? I am trying to free  
+memory in calculations with very big files.<br>
+<br>
+Thanks<br>
+---------------------------------------------------------------------- 
+-------------------------------------------------------------<br>
+Zie ook/see also: <a  href="http://www.knmi.nl/maildisclaimer.html">http://www.knmi.nl/maildisclaimer.html</a><br>
+<br>
+</blockquote><pre>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/people/kessler/">http://www.pmel.noaa.gov/people/kessler/</a>
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00813" href="msg00813.html">[ferret_users] Cancel Data SET  problem</a></strong>
+<ul><li><em>From:</em> Jorge Urrego Blanco</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00813.html">[ferret_users] Cancel Data SET  problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00814.html">[ferret_users] calculation of monthly means from 5-day means</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00813.html">Thread Prev</a>][<a href="msg00814.html">Thread Next</a>][<A HREF="threads.html#00816">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

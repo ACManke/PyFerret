@@ -1,0 +1,332 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Masking Argo data with qualify flag -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 21 May 2008 09:36:11 &#45;0700 -->
+<!--X-Message-Id: 48344F7E.7020709@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 48310C17.8050909@kordi.re.kr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Masking Argo data with qualify flag</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00252.html">Thread Prev</a>][<a href="msg00253.html">Thread Next</a>][<A HREF="threads.html#00264">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Masking Argo data with qualify flag</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Chan Joo Jang &lt;<a href="mailto:cjjang@DOMAIN.HIDDEN">cjjang@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Masking Argo data with qualify flag</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 21 May 2008 09:36:14 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:48310C17.8050909@DOMAIN.HIDDEN">48310C17.8050909@xxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:48310C17.8050909@DOMAIN.HIDDEN">48310C17.8050909@xxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Windows/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+<font face="Times New Roman, Times, serif">Hi Chan,<br>
+You can do this with string functions, directly from the netcdf file,
+without writing the intermediate file that others suggested. <br>
+<br>
+The first difficulty is that the file doesn't define the coordinate
+axes with any direction x,y,z, or t, and so Ferret just assigns them to
+a direction in the order that the coordinates are listed for each
+variable.&nbsp; Note how the dimension N_PROF appears differently for these
+two variables:<br>
+<br>
+</font><tt>yes? use argo_2900623_prof.nc<br>
+yes? show grid temp<br>
+&nbsp;&nbsp;&nbsp; GRID GTN4<br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end<br>
+&nbsp;N_LEVELS&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 48 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 48<br>
+&nbsp;N_PROF&nbsp;&nbsp;&nbsp; Y&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 56 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 56<br>
+&nbsp;normal&nbsp;&nbsp;&nbsp; Z<br>
+&nbsp;normal&nbsp;&nbsp;&nbsp; T<br>
+<br>
+yes? show grid temp_qc<br>
+&nbsp;&nbsp;&nbsp; GRID GTN2<br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end<br>
+&nbsp;N_PROF&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 56 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 56<br>
+&nbsp;normal&nbsp;&nbsp;&nbsp; Y<br>
+&nbsp;normal&nbsp;&nbsp;&nbsp; Z<br>
+&nbsp;normal&nbsp;&nbsp;&nbsp; T<br>
+<br>
+</tt><font face="Times New Roman, Times, serif">In fact, it looks like
+temp_c consists of 56 strings, each of length 48. We want to put
+temp_qc onto a Y axis so that it can be applied to the data along the y
+axis of temp.<br>
+<br>
+</font><tt>yes? LET temp_qc_y = RESHAPE(temp_qc,temp[i=1])</tt><font
+ face="Times New Roman, Times, serif"><br>
+<br>
+Now to pick individual characters out&nbsp; of temp_qc_y, use the SUBSTRING
+function. For each i along the length of the string,<br>
+<br>
+</font><tt>yes? LET ix = i[gx=temp]<br>
+yes? LIST SUBSTRING(temp_qc_y, ix, 1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : SUBSTRING(TEMP_QC_Y, IX, 1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : argo_2900623_prof.nc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 48 by 56 points (X-Y)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ... listing every&nbsp;&nbsp; 2th point<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp; 3&nbsp; 5&nbsp; 7&nbsp; 9&nbsp; 11 13 15 17 19 21 23 25 27 29 31 33 35 37
+39 41 43 45 47 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp; 3&nbsp; 5&nbsp; 7&nbsp; 9 11 13 15 17 19 21 23 25 27 29 31 33 35 37 39
+41 43 45 47<br>
+&nbsp;1&nbsp;&nbsp;&nbsp; /&nbsp;
+1:"1""1""1""1""1""1""1""1""1""1""1""1""1""4""1""1""1""1""1""1""1""1""1""1"<br>
+&nbsp;2&nbsp;&nbsp;&nbsp; /&nbsp;
+2:"1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1"<br>
+&nbsp;3&nbsp;&nbsp;&nbsp; /&nbsp;
+3:"1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1""1"<br>
+...</tt><font face="Times New Roman, Times, serif"><br>
+<br>
+Then we can define a mask function so that the mask is 1 if temp_qc_y
+is 1, 2, or 5. Use STRCMP to compare the substrings with the string
+"1", "2", "5".<br>
+</font><tt><br>
+</tt><tt>yes? LET mask1 = IF STRCMP( SUBSTRING(temp_qc_y, ix, 1) , "1")
+EQ 0 THEN 1 ELSE 0<br>
+yes? LET mask2 = IF STRCMP( SUBSTRING(temp_qc_y, ix, 1) , "2") EQ 0
+THEN 1 ELSE 0<br>
+yes? LET mask5 = IF STRCMP( SUBSTRING(temp_qc_y, ix, 1) , "5") EQ 0
+THEN 1 ELSE 0<br>
+</tt><tt><br>
+yes? LET mask_sum = mask1 + mask2 + mask5<br>
+yes? LET mask = if mask_sum GE 0 THEN&nbsp; 1&nbsp; ! (else it will be missing)</tt><font
+ face="Times New Roman, Times, serif"><br>
+</font><font face="Times New Roman, Times, serif"><br>
+Now finally we can apply this mask to the variable temp:<br>
+<br>
+</font><tt>yes? LET masked_temp = temp * mask<br>
+yes? SHADE masked_temp<br>
+</tt><font face="Times New Roman, Times, serif"><br>
+<br>
+<br>
+<br>
+</font><br>
+<br>
+Chan Joo Jang wrote:
+<blockquote cite="" type="cite">
+  <pre wrap="">Hi Ferret users,
+
+I would like to mask a variable (say, temp) of the Argo float data using
+a quality flag that is stored in a character variable "temp_qc".
+In other words, I want to assign temp to a missing value if temp_qc is not one of 1, 2, or 5.
+The problem is that I do not know how to handle the character variable
+(temp_qc) to mask the temp variable.
+
+I fetched the ARGO float data files from <a rel="nofollow" class="moz-txt-link-freetext" href="http://www.usgodae.org/cgi-bin/argo_select.pl">http://www.usgodae.org/cgi-bin/argo_select.pl</a> .
+One of those nc files (2900622_profile.nc) is attached for your reference, and detailed info is given in PS.
+
+Any idea or comment would be appreciated.
+
+Thanks in advance.
+Chan Joo
+PS) Followings are some info of the Argo file that I am working on.
+yes? use/order=zt 2900622_prof.nc
+
+yes? list temp_qc
+             VARIABLE : quality flag
+             FILENAME : 2900622_prof.nc
+             SUBSET   : 11 points (Z)
+ 1    /  1:"11111111111111111111111111111111111111111111111 "
+ 2    /  2:"111111111111111111111111111111111111111111111111"
+ 3    /  3:"111111111111111111111111111111111111111111111111"
+ 4    /  4:"111111111111111111111111111111111111111111111111"
+ 5    /  5:"111111111111111111111111111111111111111111      "
+ 6    /  6:"1111111144111111111111111111111                 "
+ 7    /  7:"1111111111111111111111111411111111111111111111  "
+ 8    /  8:"1111111111111111111111111111111                 "
+ 9    /  9:"111111111                                       "
+ 10   / 10:"11111                                           "
+ 11   / 11:"11    
+
+yes? sh da
+     currently SET data sets:
+    1&gt; ./2900622_prof.nc  (default)
+ name     title                             I         J         K         L
+ DATA_TYPE
+                                           ...       ...       ...       ...
+ FORMAT_VERSION
+                                           ...       ...       ...       ...
+ HANDBOOK_VERSION
+                                           ...       ...       ...       ...
+ REFERENCE_DATE_TIME
+                                           ...       ...       ...       ...
+ PLATFORM_NUMBER
+          Float unique identifier          ...       ...       1:11      ...
+ PROJECT_NAME
+                                           ...       ...       1:11      ...
+ PI_NAME                                   ...       ...       1:11      ...
+ STATION_PARAMETERS
+          List of available parameters fo  ...       ...       1:3       1:11
+ CYCLE_NUMBER
+          Float cycle number               ...       ...       1:11      ...
+ DIRECTION
+          Direction of the station profil  ...       ...       ...       ...
+ DATA_CENTRE
+          Data centre in charge of float   ...       ...       1:11      ...
+ DATE_CREATION
+                                           ...       ...       ...       ...
+ DATE_UPDATE
+          Date of update of this file      ...       ...       ...       ...
+ DC_REFERENCE
+          Station unique identifier in da  ...       ...       1:11      ...
+ DATA_STATE_INDICATOR
+          Degree of processing the data h  ...       ...       1:11      ...
+ DATA_MODE
+          Delayed mode or real time data   ...       ...       ...       ...
+ INST_REFERENCE
+          Instrument type                  ...       ...       1:11      ...
+ WMO_INST_TYPE
+          Coded instrument type            ...       ...       1:11      ...
+ JULD     Julian day (UTC) of the station  ...       ...       1:11      ...
+ JULD_QC  Quality on Date and Time         ...       ...       ...       ...
+ JULD_LOCATION
+          Julian day (UTC) of the locatio  ...       ...       1:11      ...
+ LATITUDE Latitude of the station, best e  ...       ...       1:11      ...
+ LONGITUDE
+          Longitude of the station, best   ...       ...       1:11      ...
+ POSITION_QC
+          Quality on position (latitude a  ...       ...       ...       ...
+ POSITIONING_SYSTEM
+          Positioning system               ...       ...       1:11      ...
+ PROFILE_PRES_QC
+          Global quality flag of PRES pro  ...       ...       ...       ...
+ PROFILE_TEMP_QC
+          Global quality flag of TEMP pro  ...       ...       ...       ...
+ PROFILE_PSAL_QC
+          Global quality flag of PSAL pro  ...       ...       ...       ...
+ PRES     SEA PRESSURE                     ...       ...       1:48      1:11
+ PRES_QC  quality flag                     ...       ...       1:11      ...
+ PRES_ADJUSTED
+          SEA PRESSURE                     ...       ...       1:48      1:11
+ PRES_ADJUSTED_QC
+          quality flag                     ...       ...       1:11      ...
+ PRES_ADJUSTED_ERROR
+          SEA PRESSURE                     ...       ...       1:48      1:11
+ TEMP     SEA TEMPERATURE IN SITU ITS-90   ...       ...       1:48      1:11
+ TEMP_QC  quality flag                     ...       ...       1:11      ...
+ TEMP_ADJUSTED
+          SEA TEMPERATURE IN SITU ITS-90   ...       ...       1:48      1:11
+ TEMP_ADJUSTED_QC
+          quality flag                     ...       ...       1:11      ...
+ TEMP_ADJUSTED_ERROR
+          SEA TEMPERATURE IN SITU ITS-90   ...       ...       1:48      1:11
+ PSAL     PRACTICAL SALINITY               ...       ...       1:48      1:11
+ PSAL_QC  quality flag                     ...       ...       1:11      ...
+ PSAL_ADJUSTED
+          PRACTICAL SALINITY               ...       ...       1:48      1:11
+ PSAL_ADJUSTED_QC
+          quality flag                     ...       ...       1:11      ...
+ PSAL_ADJUSTED_ERROR
+          PRACTICAL SALINITY               ...       ...       1:48      1:11
+ PARAMETER
+          List of parameters with calibra  1:1       ...       1:11      1:3
+ SCIENTIFIC_CALIB_EQUATION
+          Calibration equation for this p  1:1       ...       1:11      1:3
+ SCIENTIFIC_CALIB_COEFFICIENT
+          Calibration coefficients for th  1:1       ...       1:11      1:3
+ SCIENTIFIC_CALIB_COMMENT
+          Comment applying to this parame  1:1       ...       1:11      1:3
+ CALIBRATION_DATE
+                                           1:1       ...       1:11      1:3
+ HISTORY_INSTITUTION
+          Institution which performed act  ...       ...       1:11      1:0
+ HISTORY_STEP
+          Step in data processing          ...       ...       1:11      1:0
+ HISTORY_SOFTWARE
+          Name of software which performe  ...       ...       1:11      1:0
+ HISTORY_SOFTWARE_RELEASE
+          Version/release of software whi  ...       ...       1:11      1:0
+ HISTORY_REFERENCE
+          Reference of database            ...       ...       1:11      1:0
+ HISTORY_DATE
+          Date the history record was cre  ...       ...       1:11      1:0
+ HISTORY_ACTION
+          Action performed on data         ...       ...       1:11      1:0
+ HISTORY_PARAMETER
+          Station parameter action is per  ...       ...       1:11      1:0
+ HISTORY_START_PRES
+          Start pressure action applied o  ...       ...       1:11      1:0
+ HISTORY_STOP_PRES
+          Stop pressure action applied on  ...       ...       1:11      1:0
+ HISTORY_PREVIOUS_VALUE
+          Parameter/Flag previous value b  ...       ...       1:11      1:0
+ HISTORY_QCTEST
+          Documentation of tests performe  ...       ...       1:11      1:0 
+
+
+Chan Joo
+
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00250" href="msg00250.html">[ferret_users] Masking Argo data with qualify flag</a></strong>
+<ul><li><em>From:</em> Chan Joo Jang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00252.html">Re: [ferret_users] Masking Argo data with qualify flag</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00253.html">[ferret_users] time axis definition and precision</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00252.html">Thread Prev</a>][<a href="msg00253.html">Thread Next</a>][<A HREF="threads.html#00264">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Overplot track data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 6 Feb 2007 10:34:24 &#45;0800 -->
+<!--X-Message-Id: 45C8CA2C.3060505@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 6.1.1.1.2.20070206175514.01d3c540@pop.cls.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Overplot track data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00097.html">Thread Prev</a>][<a href="msg00098.html">Thread Next</a>][<A HREF="threads.html#00099">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Overplot track data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Charlotte Girard &lt;<a href="mailto:Charlotte.Girard@DOMAIN.HIDDEN">Charlotte.Girard@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Overplot track data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 06 Feb 2007 10:34:20 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:6.1.1.1.2.20070206175514.01d3c540@DOMAIN.HIDDEN">6.1.1.1.2.20070206175514.01d3c540@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:6.1.1.1.2.20070206175514.01d3c540@DOMAIN.HIDDEN">6.1.1.1.2.20070206175514.01d3c540@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.9 (Windows/20061207)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Charlotte,<br>
+A couple of things.&nbsp; <br>
+<br>
+You're calling mp_mercator, but then not using the map projection
+coordinates that the mercator projection script creates when you draw
+the plot.&nbsp; You'll want to use the 4-argument form of the vector command:<br>
+<br>
+&nbsp; ...<br>
+&nbsp;&nbsp; !Plot the velocity field&nbsp;
+<br>
+&nbsp;&nbsp; vector/length=1/XSKIP=3/YSKIP+3/overlay U,V, <b>x_page, y_page</b><br>
+<br>
+The SET REGION/X=-90:-80&nbsp; is getting in the way of reading the lon,lat
+data onto the "abstract" axis, which is just an axis of indices,
+1,2,3,...&nbsp; Try a CANCEL REGION command before accessing that data. To
+plot this data on top of your map projection plot, you might look at
+the script mp_polymark, which overlays locations as polygons on top of
+another plot<br>
+<br>
+yes? go/help mp_polymark<br>
+<br>
+<br>
+<br>
+Charlotte Girard wrote:
+<blockquote cite=""
+ type="cite">Hello,
+  <br>
+I would like to overplot a track on a current velocity field. I managed
+to plot the current velocity field alone, and also the track alone but
+I can't find a way to plot both of them!
+  <br>
+  <br>
+My track data (longitude, latitude) are stored in an ascii file
+"track.res", with 2 columns. For instance:
+  <br>
+  <br>
+-83.0&nbsp;&nbsp;&nbsp; 25.0
+  <br>
+-84.0&nbsp;&nbsp;&nbsp; 28.0
+  <br>
+-85.0&nbsp;&nbsp;&nbsp; 26.0
+  <br>
+  <br>
+My programme looks like:
+  <br>
+  <br>
+----beginning-------
+  <br>
+  <br>
+use "my_file.nc"&nbsp;&nbsp;&nbsp; !file containing zonal (U) and meridional (V) speed
+  <br>
+  <br>
+set region/x=-90:-80/y=20:35/z=0/t=10-Aug-2006
+  <br>
+go mp_mercator
+  <br>
+set grid U
+  <br>
+  <br>
+!Plot the velocity field
+  <br>
+vector/lenght=1/XSKIP=3/YSKIP+3/overlay U,V
+  <br>
+  <br>
+!Plot the track
+  <br>
+file/format=delim/var="lon,lat" track.res
+  <br>
+list lon,lat
+  <br>
+plot/line/over/color=red lon,lat
+  <br>
+  <br>
+go fland 1
+  <br>
+frame/file=toto.gif
+  <br>
+  <br>
+-----end------------
+  <br>
+  <br>
+Ferret is not happy with the instruction "list lon,lat" and returns :
+  <br>
+  <br>
+**ERROR: illegal limits: "LON" is not in the range X=-90:-80
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;Axis extremes are X=0.5:20480.5
+  <br>
+list lon,lat
+  <br>
+Command file, commande group, or REPEAT execution aborted
+  <br>
+  <br>
+Any suggestion?
+  <br>
+Thanks for you help !
+  <br>
+  <br>
+charlotte
+  <br>
+  <br>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:ansley.b.manke@xxxxxxxx">ansley.b.manke@xxxxxxxx</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00096" href="msg00096.html">[ferret_users] Overplot track data</a></strong>
+<ul><li><em>From:</em> Charlotte Girard</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00097.html">Re: [ferret_users] Overplot track data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00098.html">Re: [ferret_users] Overplot track data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00097.html">Thread Prev</a>][<a href="msg00098.html">Thread Next</a>][<A HREF="threads.html#00099">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

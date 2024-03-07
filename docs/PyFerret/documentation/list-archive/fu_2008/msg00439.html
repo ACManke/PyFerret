@@ -1,0 +1,366 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] scat2gridgauss not functioning properly -->
+<!--X-From-R13: wnvfbaNngzbf.hpyn.rqh -->
+<!--X-Date: Tue, 26 Aug 2008 12:30:33 &#45;0700 -->
+<!--X-Message-Id: 48932.169.232.145.149.1219779025.squirrel@mail.atmos.ucla.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f33c82242fc5.48ac8569@fsu.edu -->
+<!--X-Reference: 55238.169.232.145.149.1219283430.squirrel@mail.atmos.ucla.edu -->
+<!--X-Reference: f9feb9ac5d16.48acb17e@fsu.edu -->
+<!--X-Reference: 48B4456E.9020406@noaa.gov -->
+<!--X-Reference: f623b4896ff6.48b3f48d@fsu.edu -->
+<!--X-Reference: 48B44EC2.10907@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] scat2gridgauss not functioning properly</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00438.html">Thread Prev</a>][<a href="msg00429.html">Thread Next</a>][<A HREF="threads.html#00439">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] scat2gridgauss not functioning properly</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] scat2gridgauss not functioning properly</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxx</a></strong></li>
+<li>Date: Tue, 26 Aug 2008 12:30:25 -0700 (PDT)</li>
+<li>Cc: <a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="mailto:48B44EC2.10907@DOMAIN.HIDDEN">48B44EC2.10907@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f33c82242fc5.48ac8569@DOMAIN.HIDDEN">f33c82242fc5.48ac8569@xxxxxxx</a>&gt; &lt;<a href="mailto:55238.169.232.145.149.1219283430.squirrel@DOMAIN.HIDDEN">55238.169.232.145.149.1219283430.squirrel@xxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:f9feb9ac5d16.48acb17e@DOMAIN.HIDDEN">f9feb9ac5d16.48acb17e@xxxxxxx</a>&gt; &lt;<a href="mailto:48B4456E.9020406@DOMAIN.HIDDEN">48B4456E.9020406@xxxxxxxx</a>&gt; &lt;<a href="mailto:f623b4896ff6.48b3f48d@DOMAIN.HIDDEN">f623b4896ff6.48b3f48d@xxxxxxx</a>&gt; &lt;<a href="mailto:48B44EC2.10907@DOMAIN.HIDDEN">48B44EC2.10907@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: SquirrelMail/1.4.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+     I too vote for CURV_TO_RECT functions. Especially if your source
+grid (curvilinear) and destination grid (regular) is fixed, these
+functions will be much handier than the SCAT2GRID family functions.
+However, it should be noted that, according the grid-size the
+CURV_TO_RECT_MAP function may take long time to complete the
+calculation...be patient.
+
+An example is given below.
+
+Thanks and Regards,
+
+Jaison
+
+!---------Example for CURV_TO_RECT functions------------
+ \ cancel mode verify
+!
+! Description : Example for CURV_TO_RECT_MAP function
+!
+!-------------------------------------------------------
+
+     set data &quot;/path/to/curvilinear_grid.nc&quot;
+
+     ! define input XY-coordinates
+
+     let lonin = lon_rho[d=1]
+     let latin = lat_rho[d=1]
+
+     ! define destination rectilinear XY-grid
+
+     define axis/x=79:314.5:`1/2`/units=longitudes xlon_rect
+     define axis/Y=-52:62.5:`1/2`/unit=latitudes   ylat_rect
+
+     let destgrid = x[gx=xlon_rect]*0 + y[gy=ylat_rect]*0
+
+     let radius = 1/2
+
+     ! calculate the mapping function
+
+     let map = CURV_TO_RECT_MAP (lonin, latin, dstgrid, radius)
+     set var/title=&quot;Map Function for test grid&quot; map
+
+     sp rm -f map_testgrid.nc
+     save/file=map_testgrid.nc/APPEND map
+
+     ! use this map function as follows: let temp be the curvilinear variable
+     !     use curvilinear_data.nc
+     !     use map_testgrid.nc
+     !     temp_rect = CURV_TO_RECT(temp[d=1], map[d=2])
+
+!--------end of Example------------------
+
+&gt; Hi - Yes, this isn't hard to do.  I'll get this into the next release.
+&gt;
+&gt; But looking at what you're doing, I think what you really want is the
+&gt; curvilinear-to-rectilinear gridding functions.  The process is a
+&gt; two-step one: first give Ferret the curvilinear x and y coordinates and
+&gt; an output rectilinear xy grid, and the function CURV_TO_RECT_MAP
+&gt; computes a mapping between the two grids. Save the mapping, and then in
+&gt; a much faster operation CURV_TO_RECT applies the map to convert the data
+&gt; field to the new grid.
+&gt;
+&gt; yes? show function curv_to_rect*
+&gt; CURV_TO_RECT_MAP(lon_in,lat_in,grid_out,radius)
+&gt;     Compute mapping for regridding: curvilinear to rectangular grid.
+&gt;     lon_in: Source grid longitudes (2-D) (degrees)
+&gt;     lat_in: Source grid latitudes (2-D) (degrees)
+&gt;     grid_out: Any variable on destination Longitude-Latitude grid, Lon
+&gt; and Lat (degrees)
+&gt;     radius: Source points falling within radius are included in mapping
+&gt; to destination point (degrees)
+&gt; CURV_TO_RECT(V,mapping)
+&gt;     Apply mapping to regrid from curvilinear to rectangular grid
+&gt;     V: Variable to regrid, on curvilinear grid V(x,y,z,t)
+&gt;     mapping: mapping computed by curv_to_rect_MAP
+&gt;
+&gt;
+&gt; Stephen Guimond wrote:
+&gt;&gt; Ansley,
+&gt;&gt;
+&gt;&gt; Thank you for your help.  A 50,000 point limit seems rather low.  I routinely work
+&gt;&gt; with datasets well over this limit so dynamically allocated memory seems like the way
+&gt;&gt; to go.  Will you make this updated scat2gridlaplace available in the next FERRET
+&gt;&gt; release?
+&gt;&gt;
+&gt;&gt; Steve
+&gt;&gt;
+&gt;&gt; ----- Original Message -----
+&gt;&gt; From: Ansley Manke &lt;Ansley.B.Manke@xxxxxxxx&gt;
+&gt;&gt; Date: Tuesday, August 26, 2008 12:04 pm
+&gt;&gt; Subject: Re: [ferret_users] scat2gridgauss not functioning properly
+&gt;&gt; To: guimond@xxxxxxxxxxxxx
+&gt;&gt; Cc: jaison@xxxxxxxxxxxxxx, oar.pmel.ferret_users@xxxxxxxx
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;&gt; Hi Stephen,
+&gt;&gt;&gt; The underlying code that scat2gridlaplace calls to do the gridding
+&gt;&gt;&gt; operation has some work space that's hardwired in size to 50,000
+&gt;&gt;&gt; points.
+&gt;&gt;&gt; Your data is 960*367 = 352367 points so the code eventually
+&gt;&gt;&gt; overwrites
+&gt;&gt;&gt; memory and causes the crash. We should at least put in a test for
+&gt;&gt;&gt; that
+&gt;&gt;&gt; limit being exceeded so you'd get a useful error message - but I
+&gt;&gt;&gt; should
+&gt;&gt;&gt; be able to set up the work space with dynamically-allocated memory
+&gt;&gt;&gt; so
+&gt;&gt;&gt; it'd work correctly.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Ansley
+&gt;&gt;&gt;
+&gt;&gt;&gt; Stephen Guimond wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Hi Jaison,
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thank you for your response, using a 1-D axis for x and y input
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt; values worked.  I suppose the &quot;objective_analysis_demo&quot; script
+&gt;&gt;&gt; should be fixed because it shows 2-D axes for x and y input.
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Another thing I found was that using &quot;scat2gridlaplace&quot; causes a
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt; crash of FERRET.  I used similar input as I did with
+&gt;&gt;&gt; &quot;scat2gridgauss&quot;, but with cay and nrng both equal to 5.  I am
+&gt;&gt;&gt; using FERRET v6.1  for 32-bit Linux.  Have you found anything similar?
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt;&gt; Steve
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; ----- Original Message -----
+&gt;&gt;&gt;&gt; From: jaison@xxxxxxxxxxxxxx
+&gt;&gt;&gt;&gt; Date: Wednesday, August 20, 2008 9:51 pm
+&gt;&gt;&gt;&gt; Subject: Re: [ferret_users] scat2gridgauss not functioning properly
+&gt;&gt;&gt;&gt; To: guimond@xxxxxxxxxxxxx
+&gt;&gt;&gt;&gt; Cc: ferret_users@xxxxxxxx
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Hi Steve,
+&gt;&gt;&gt;&gt;&gt;           According to documentation (and from experience), the
+&gt;&gt;&gt;&gt;&gt; first two
+&gt;&gt;&gt;&gt;&gt; input arguments to SCAT2GRIDGAUSS function should be defined on
+&gt;&gt;&gt;&gt;&gt; either X
+&gt;&gt;&gt;&gt;&gt; (and ZT) or Y (and ZT) axis, but NOT on both X and Y at the same
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt; time.&gt;&gt; (see  Ch3 Sec2.3.37.  SCAT2GRIDGAUSS_XY). In your script
+&gt;&gt;&gt; add the
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; followinglines
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;   let xx1D = XSEQUENCE(xx)
+&gt;&gt;&gt;&gt;&gt;   let yy1D = XSEQUENCE(yy)
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; then use these variables in SCAT2GRIDGAUSS function as
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;   let sgrid = scat2gridgauss_xy(xx1D, yy1D, .........)
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Ok. The last argument (9th one) is not used in newer versions of
+&gt;&gt;&gt;&gt;&gt; Ferret.The 3 arguments before that, XSCALE, YSCALE and CUTOFF
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt; need
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; to be chosen
+&gt;&gt;&gt;&gt;&gt; to match your destination grid. Read the documentation carefully
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt; for&gt;&gt; CUTOFF. You can try few different values to choose between
+&gt;&gt;&gt; high-
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; data loss
+&gt;&gt;&gt;&gt;&gt; (smaller SCALE and CUTOFF) and high-smoothing (higher SCALE and
+&gt;&gt;&gt;&gt;&gt; CUTOFF),with respect to the destination grid. For example, if
+&gt;&gt;&gt;&gt;&gt; CUTOFF is 2, then
+&gt;&gt;&gt;&gt;&gt; XSCALE can be dx (of destination grid) and YSCALE can be dy.
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Also note that, it is always a good habit to add proper units while
+&gt;&gt;&gt;&gt;&gt; defining axis, and use proper names (xlon, ylat or xkm, ykm etc).
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Please let me  know if you have any questions.
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Thanks and Regards,
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Jaison
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Hello Ferreters,
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; I am trying to put scattered data onto a regular grid and tried
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; with the scat2gridgauss
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; function.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Here is my code:
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; ! the scattered data axes...
+&gt;&gt;&gt;&gt;&gt;&gt; def axis/x=1:960:1 x;def axis/y=1:367:1 y;def grid/x=x/y=y g
+&gt;&gt;&gt;&gt;&gt;&gt; file/format=stream/grid=g/var=&quot;xx,yy,zz,dbz&quot; output.dat
+&gt;&gt;&gt;&gt;&gt;&gt; ! the regular grid axes...
+&gt;&gt;&gt;&gt;&gt;&gt; def axis/x=-240:240:0.5 nx;def axis/y=-240:240:0.5 ny
+&gt;&gt;&gt;&gt;&gt;&gt; let sgrid = scat2gridgauss_xy(xx, yy, dbz, x[gx=nx], y[gy=ny],
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; 2.,2.,2.,0)&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; The result does not work (toying with the last few parameters
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; makes no difference),
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; although it does have the grid I expect.  I'm assuming the same
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; will be true for the
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; scat2gridlaplace functions as well.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Any ideas?
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt;&gt;&gt;&gt; Steve
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; =======================================================
+&gt;&gt;&gt;&gt;&gt;&gt; Stephen R. Guimond
+&gt;&gt;&gt;&gt;&gt;&gt; Graduate Research Assistant
+&gt;&gt;&gt;&gt;&gt;&gt; Florida State University
+&gt;&gt;&gt;&gt;&gt;&gt; Center for Ocean-Atmospheric Prediction Studies (COAPS)
+&gt;&gt;&gt;&gt;&gt;&gt; =======================================================
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; =======================================================
+&gt;&gt;&gt;&gt; Stephen R. Guimond
+&gt;&gt;&gt;&gt; Graduate Research Assistant
+&gt;&gt;&gt;&gt; Florida State University
+&gt;&gt;&gt;&gt; Center for Ocean-Atmospheric Prediction Studies (COAPS)
+&gt;&gt;&gt;&gt; =======================================================
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; =======================================================
+&gt;&gt; Stephen R. Guimond
+&gt;&gt; Graduate Research Assistant
+&gt;&gt; Florida State University
+&gt;&gt; Center for Ocean-Atmospheric Prediction Studies (COAPS)
+&gt;&gt; =======================================================
+&gt;&gt;
+&gt;
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00426" href="msg00426.html">[ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Stephen Guimond</li></ul></li>
+<li><strong><a name="00427" href="msg00427.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> jaison</li></ul></li>
+<li><strong><a name="00428" href="msg00428.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Stephen Guimond</li></ul></li>
+<li><strong><a name="00436" href="msg00436.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00437" href="msg00437.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Stephen Guimond</li></ul></li>
+<li><strong><a name="00438" href="msg00438.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00438.html">Re: [ferret_users] scat2gridgauss not functioning properly</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00429.html">[ferret_users] create go files on the fly</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00438.html">Thread Prev</a>][<a href="msg00429.html">Thread Next</a>][<A HREF="threads.html#00439">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

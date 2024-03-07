@@ -1,0 +1,170 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] problem with EF rect_to_curv -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 11 Jun 2008 09:20:45 &#45;0700 -->
+<!--X-Message-Id: 484FFB5D.4050904@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: C9554DAC&#45;659A&#45;41A5&#45;855C&#45;D6CEA5A83954@mac.com -->
+<!--X-Reference: D57E5F4F&#45;C01E&#45;4A10&#45;8179&#45;E3B46AEBB449@uclouvain.be -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] problem with EF rect_to_curv</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00286.html">Thread Prev</a>][<a href="msg00287.html">Thread Next</a>][<A HREF="threads.html#00290">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] problem with EF rect_to_curv</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Andrew Ferrone &lt;<a href="mailto:andrew.ferrone@DOMAIN.HIDDEN">andrew.ferrone@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] problem with EF rect_to_curv</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 11 Jun 2008 09:20:45 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:D57E5F4F-C01E-4A10-8179-E3B46AEBB449@DOMAIN.HIDDEN">D57E5F4F-C01E-4A10-8179-E3B46AEBB449@xxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:C9554DAC-659A-41A5-855C-D6CEA5A83954@DOMAIN.HIDDEN">C9554DAC-659A-41A5-855C-D6CEA5A83954@xxxxxxx</a>&gt; &lt;<a href="mailto:D57E5F4F-C01E-4A10-8179-E3B46AEBB449@DOMAIN.HIDDEN">D57E5F4F-C01E-4A10-8179-E3B46AEBB449@xxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Windows/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+After a few more experiments, Andrew and I found that because his
+rectilinear data is on a global grid and the curvilinear data only a
+subset of the grid, the rect_to_curv function does something odd with
+the modulo wrapping. That needs some more investigation, but the
+solution to get a good regridding is to restrict the variable on the
+rectangular grid to a region matching what's in the curvilinear
+coordinates. Something along these lines:<br>
+<blockquote>! Get limits for the curvilinear longitudes and latitudes<br>
+yes? stat lon<br>
+yes? stat lat&nbsp;&nbsp; <br>
+  <br>
+yes? let var_curv = rect_to_curv(rvar[x=-36:44,y=33:73], lon, lat, 2)<br>
+yes? shade var_curv, lon, lat<br>
+</blockquote>
+<br>
+Andrew Ferrone wrote:
+<blockquote cite=""
+ type="cite">Dear ferreters
+  <br>
+  <br>
+I'm working with a regional climate model, which is defined in
+curvilinear coordinates. For the moment I need to interpolate some
+globale data on a 1&deg;x1&deg; regular grid onto my curvilinear grid
+(0.2&deg;x0.2&deg;). For this purpose I tried the external function
+rect_to_curv in ferret (the lon and lat were used from the output of
+the regional model). The output I produced was not the one I attended.
+  <br>
+  <br>
+I've attached the original data (on the region I am interested in) in
+CLM_inerpol2.tiff and the result in CLM_inerpol2.tiff. There is clearly
+a problem when the interoplation crosses the 0&deg; meridian. Has anyone
+experienced some similar problems with this function and knows hoa to
+resolve it?
+  <br>
+  <br>
+Any help and suggestion is welcome!
+  <br>
+  <br>
+Thanks a lot
+  <br>
+  <br>
+Andrew
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+______________________________________________________________
+  <br>
+Andrew FERRONE
+  <br>
+Physicist, PhD student
+  <br>
+Regional climate modelling, Climate Impacts of Aviation
+  <br>
+  <br>
+Universit&eacute; catholique de Louvain (UCL)
+  <br>
+Institut d'astronomie et de g&eacute;ophysique G. Lema&icirc;tre (ASTR)
+  <br>
+Chemin du Cyclotron, 2, B-1348 Louvain-la-Neuve (Belgium)
+  <br>
+Phone: +32 (0)10 473365&nbsp;&nbsp; Fax: +32 (0)10 474722
+  <br>
+E-mail: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:andrew.ferrone@xxxxxxxxxxxx">andrew.ferrone@xxxxxxxxxxxx</a>
+  <br>
+  <br>
+  <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00285" href="msg00285.html">[ferret_users] problem with EF rect_to_curv</a></strong>
+<ul><li><em>From:</em> Andrew Ferrone</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00286.html">Re: [ferret_users] problem with EF rect_to_curv</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00287.html">[ferret_users] grave accent and string problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00286.html">Thread Prev</a>][<a href="msg00287.html">Thread Next</a>][<A HREF="threads.html#00290">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

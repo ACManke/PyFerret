@@ -1,0 +1,204 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] masking area -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 22 Aug 2006 14:32:34 &#45;0700 -->
+<!--X-Message-Id: 44EB77E6.70405@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 44EB4408.6090401@msem.univ&#45;montp2.fr -->
+<!--X-Reference: Pine.LNX.4.58.0608222353020.21941@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] masking area</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00537.html">Thread Prev</a>][<a href="msg00539.html">Thread Next</a>][<A HREF="threads.html#00538">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] masking area</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] masking area</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 22 Aug 2006 14:32:22 -0700</li>
+<li>Cc: DELCLAUX Francois &lt;<a href="mailto:francois.delclaux@DOMAIN.HIDDEN">francois.delclaux@xxxxxxxxxxxxxxxxxxx</a>&gt;,       <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00537.html">Pine.LNX.4.58.0608222353020.21941@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00535.html">44EB4408.6090401@msem.univ-montp2.fr</a>&gt;&lt;<a href="msg00537.html">Pine.LNX.4.58.0608222353020.21941@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.5 (Windows/20060719)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jaison and Francois,<br>
+I don't think there need be any messages about Ambiguous coordinates on 
+the T axis. Here is an example, creating a MASK variable from one of the 
+ETOPO datasets making sure it's on the same grid as the data variable, 
+which is just a data set having a time axis accessed by an OPeNDAP 
+address.  The first part of this is just creating an example mask.<br>
+<br>
+! Look at the data variable and grid<br>
+<br>
+yes? USE 
+&quot;<a  href="http://ferret.pmel.noaa.gov/NVODS-FDS/LAS/COADS_2-degree_Standard/air1672&quot">http://ferret.pmel.noaa.gov/NVODS-FDS/LAS/COADS_2-degree_Standard/air1672&quot</a>;<br>
+yes? SHOW DATA<br>
+    currently SET data sets:<br>
+   1&gt; 
+<a  href="http://ferret.pmel.noaa.gov/NVODS-FDS/LAS/COADS_2-degree_Standard/air1672">http://ferret.pmel.noaa.gov/NVODS-FDS/LAS/COADS_2-degree_Standard/air1672</a>  
+(default)<br>
+name     title                             I         J         K         L<br>
+AIR      Air Temperature Monthly 1st Sext 1:180     1:90      ...       
+1:2472<br>
+<br>
+! Create a mask on the same XY grid<br>
+<br>
+yes? USE etopo60<br>
+yes? LET mask = IF  rose[GXY=air[d=1]] GT (-3000) THEN 1<br>
+yes? SAVE/CLOBBER/FILE=mask.nc mask<br>
+LISTing to file mask.nc<br>
+<br>
+yes? CANCEL DATA/ALL<br>
+yes? CANCEL VAR/ALL<br>
+<br>
+! Now use the same data and the mask we just made<br>
+<br>
+yes? USE 
+&quot;<a  href="http://ferret.pmel.noaa.gov/NVODS-FDS/LAS/COADS_2-degree_Standard/air1672&quot">http://ferret.pmel.noaa.gov/NVODS-FDS/LAS/COADS_2-degree_Standard/air1672&quot</a>;<br>
+yes? USE mask.nc<br>
+<br>
+yes? LET masked_air = mask[D=2] * air[D=1]<br>
+yes? SET VIEW ul<br>
+<br>
+yes? SHADE/T=1-jan-1990 masked_air; GO land<br>
+<br>
+<br>
+! show the original data and the mask...<br>
+<br>
+yes? SET VIEW ll<br>
+yes? SHADE/T=1-jan-1990 air[D=1]; GO land<br>
+yes? SET VIEW lr<br>
+yes? SHADE mask[D=2]; GO land<br>
+<br>
+<br>
+<br>
+Jaison Kurian wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+    If the mask variable &quot;bv&quot; is not having &quot;any&quot; time points, there<br>
+should not be any problem while multiplying &quot;bv&quot; with &quot;rain&quot;. In this<br>
+case the show data command for &quot;bv&quot; should show empty Z and T axes as<br>
+follows:<br>
+<br>
+ name   title                     I         J     K       L<br>
+ BV     Basin Mask              1:180     1:90   ...     ...<br>
+<br>
+Suppose you have one time point for the variable bv, for L=1, there<br>
+will be a warning message as follows :<br>
+<br>
+  &quot;*** NOTE: Ambiguous coordinates on T axis: RAIN[D=1]*BV[D=2]&quot;<br>
+<br>
+This can be ignored. But from the second time point onwards the 
+&quot;rain*bw&quot; will start complining as :<br>
+<br>
+ **ERROR: illegal limits: BV is not in the range L=2<br>
+          Axis extremes are L=1<br>
+<br>
+In this case you have to specify L=1 while multipling with rain<br>
+..like<br>
+<br>
+   let rain_basin = rain[d=1] * bv[d=2,l=1]<br>
+  
+This will fix the problem.<br>
+<br>
+If these tips doesnot help you, please send me the output of 
+&quot;show data&quot; command for those two datasets along with the error<br>
+messages (&amp; multiplication line from the Ferret script).<br>
+<br>
+Regards,<br>
+<br>
+Jaison 
+<br>
+<br>
+On Tue, 22 Aug 2006, DELCLAUX Francois wrote:<br>
+<br>
+  
+<br><blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ferret users,<br>
+I would like to compute  spatial and temporal average rainfall on a 
+watershed.<br>
+The watershed is  a  (x,y) netcdf file (variable bv) (0 outside the 
+basin, 1 inside the basin)<br>
+Rainfall field is a (x,y,t) netcdf file, (variable rain) with same 
+spatial resolution as watershed.<br>
+So I have supposed that mutiplying rain by bv, I would get a rainfall 
+field inside the wathershed.<br>
+But Ferret does not accept to multiply a (x,y) variable by a (x,y,t) 
+variable.<br>
+<br>
+In ferret documentation, masking  areas are defined from 3d fields, so 
+multiplication<br>
+are possible. But not in my case.<br>
+<br>
+How can I do this quite simple operation ?<br>
+<br>
+Thanks in advance.<br>
+<br>
+    
+</blockquote></blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00539" href="msg00539.html">Re: [ferret_users] masking area</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00535" href="msg00535.html">[ferret_users] masking area</a></strong>
+<ul><li><em>From:</em> DELCLAUX Francois</li></ul></li>
+<li><strong><a name="00537" href="msg00537.html">Re: [ferret_users] masking area</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00537.html">Re: [ferret_users] masking area</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00539.html">Re: [ferret_users] masking area</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00537.html">Thread Prev</a>][<a href="msg00539.html">Thread Next</a>][<A HREF="threads.html#00538">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

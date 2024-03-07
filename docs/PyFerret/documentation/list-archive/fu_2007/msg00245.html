@@ -1,0 +1,174 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Sigma to Pressure coordinates -->
+<!--X-From-R13: Bnhy Kbhat <cnhy.lbhatNngz.pu.pnz.np.hx> -->
+<!--X-Date: Wed, 25 Apr 2007 04:27:17 &#45;0700 -->
+<!--X-Message-Id: 1177500433.3938.25.camel@pike.atm.ch.cam.ac.uk -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4.3.2.20070425153724.025ed2d8@195.0.2.166 -->
+<!--X-Reference: Pine.LNX.4.58.0704251557220.22956@caos.iisc.ernet.in -->
+<!--X-Reference: 462F32F1.1050906@egs.uct.ac.za -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Sigma to Pressure coordinates</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00244.html">Thread Prev</a>][<a href="msg00358.html">Thread Next</a>][<A HREF="threads.html#00245">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Sigma to Pressure coordinates</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Marshall L. Mdoka&quot; &lt;<a href="mailto:mmdoka@DOMAIN.HIDDEN">mmdoka@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Sigma to Pressure coordinates</strong></li>
+<li><strong>From</strong>: <strong>Paul Young &lt;<a href="mailto:paul.young@DOMAIN.HIDDEN">paul.young@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 25 Apr 2007 12:27:14 +0100</li>
+<li>Cc: Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:462F32F1.1050906@DOMAIN.HIDDEN">462F32F1.1050906@xxxxxxxxxxxxx</a>&gt;</li>
+<li>Organization: </li>
+<li>References: &lt;<a href="mailto:4.3.2.20070425153724.025ed2d8@DOMAIN.HIDDEN">4.3.2.20070425153724.025ed2d8@xxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0704251557220.22956@DOMAIN.HIDDEN">Pine.LNX.4.58.0704251557220.22956@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:462F32F1.1050906@DOMAIN.HIDDEN">462F32F1.1050906@xxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+You'll need to use the ZAXREPLACE function. I do something similar to
+what you're after in the script below. Note, to use this script you'll
+need an array of the actual or sigma pressure on the model grid (in
+pascals). If you use the 'actual' pressure, you'll get the true height
+of the model level, but this may make zonal mean plots look a little
+funny as they'll be places where the zonally average height is
+significantly higher than 0km (e.g. South Pole). Therefore, I tend to
+use a 4D array of sigma pressure levels (i.e. the same pressure column
+for each location) to make the zonal mean plots. I'm sure there might be
+a simpler method for this though....
+
+PROBLEM (for someone else?): 
+---------------------------
+I can't get the BOUNDS/ qualifier to work when I define the z-axis, so
+the first level is plotted slightly above the surface. This is because
+my 4D pressure field gives the pressure of the middle of the model
+level. I've tried this:
+
+define axis/z=0:20/units=km/bounds kmz = \ 
+{0,0.04, 0.04,0.31, 0.31,0.70, 0.70,1.26, 1.26,2.01, 2.01,3.02, \
+3.02,4.20, 4.20,5.46, 5.46,6.71, 6.71,7.91, 7.91,9.09, 9.09,10.50, \
+10.50,12.27, 12.27,14.63, 14.63,18.22, 18.22,22.62, 22.62,27.47, \
+27.47,32.33, 32.33,53.30}
+
+..but with no joy!
+
+----------------
+! height.jnl
+!
+!   Args:   1 = variable to regrid
+!	    2 = pressure field
+!           3 = zmin (e.g. 0km)
+!           4 = zmax (e.g. 20km)
+!           5 = name of new regridded variable
+!
+! (credit to Glenn Carver, CAS, U. Cambridge)
+!
+\cancel mode verify
+
+let/quiet zmin = $3
+let/quiet zmax = $4
+
+! set increment. 
+let/quiet zinc = 0.1
+
+define axis/z=`zmin`:`zmax`:`zinc`/units=km kmz
+
+!Formula to convert pressure (in Pascals) to height (in km)
+let conv2ht = (44330.77*(1.-($2/101325.0)^0.19026))/1000.0
+
+let $5 = zaxreplace($1,conv2ht,z[gz=kmz])
+
+message/continue Interpolated variable is now in x_km
+message/continue Regular height (km) axis is in variable kmz
+
+! end of script
+
+set mode verify
+
+
+
+
+
+
+On Wed, 2007-04-25 at 11:52, Marshall L. Mdoka wrote:
+&gt; Hi All,
+&gt; 
+&gt; I am new to Ferret and was advised that I can try to use it to solve a 
+&gt; problem I have. I am intending to analyse some modelling results I have. 
+&gt; There are CTL files which are in sigma coordinates and I would like to 
+&gt; convert them pressure coordinates for all the atmospheric levels. May 
+&gt; you please help me come up with a script.
+&gt; 
+&gt; Thanking you in advance.
+&gt; 
+&gt; Marshall
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00242" href="msg00242.html">[ferret_users]</a></strong>
+<ul><li><em>From:</em> M.V.Ramana Murthy</li></ul></li>
+<li><strong><a name="00243" href="msg00243.html">Re: [ferret_users]</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00244" href="msg00244.html">Re: [ferret_users] Sigma to Pressure coordinates</a></strong>
+<ul><li><em>From:</em> Marshall L. Mdoka</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00244.html">Re: [ferret_users] Sigma to Pressure coordinates</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00358.html">[ferret_users]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00244.html">Thread Prev</a>][<a href="msg00358.html">Thread Next</a>][<A HREF="threads.html#00245">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

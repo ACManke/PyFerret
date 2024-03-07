@@ -1,0 +1,182 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Custom colorbar/ Multiple Palettes -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 29 May 2007 05:06:52 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0705291748550.11473@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f83b83e40705290329u72bf279bjc775267a8aada2ef@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Custom colorbar/ Multiple Palettes</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00329.html">Thread Prev</a>][<a href="msg00332.html">Thread Next</a>][<A HREF="threads.html#00330">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Custom colorbar/ Multiple Palettes</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ashley Watson &lt;<a href="mailto:ashleywats@DOMAIN.HIDDEN">ashleywats@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Custom colorbar/ Multiple Palettes</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 29 May 2007 17:52:08 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:f83b83e40705290329u72bf279bjc775267a8aada2ef@DOMAIN.HIDDEN">f83b83e40705290329u72bf279bjc775267a8aada2ef@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f83b83e40705290329u72bf279bjc775267a8aada2ef@DOMAIN.HIDDEN">f83b83e40705290329u72bf279bjc775267a8aada2ef@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ashley,
+           For CONTOUR colors, such a color scheme can be achieved
+directly with the /LEVLES qualifier (see User Manual Ch6 Sec8.1.1).
+For fill/shade command, I think there isn't any such easy methods.
+Instead User Manual provided some methods to create/edit palette
+files (Ref Sec20.  PALETTE) to achieve the desired color scheme.
+(Also see Ch6 Sec5.2.  Shade and fill colors.)
+
+  Here is a method to create a palette file manually. Your requirement 
+is :
+         red   color from -120 to -20
+         white color from -20  to  20
+         blue  color from  20  to 120
+
+Now, the important step here is to get proper percentage values (first
+column in a palette *.spk file). Though there are mainly 3-color ranges,
+we need to add two more, one about -20 and one about 20 to have abrupt
+color change about these values (otherwise the color will vary gradually). 
+Let us fix -20.05 as the value where red color should end and -20.00 as 
+the value where white color should start (similarly for the +ve side too).
+Then do the following in Ferret :
+
+  let col_bnds   = XSEQUENCE({-120.00,-20.05,-20.00,20.00,20.05,120.00})
+  let val_length =  240  ! max-min --&gt; 120-(-120) = 240
+  let val_zero   = -120  ! min --&gt; value corresponding to 0%
+  let percentage = 100*(col_bnds-val_zero)/val_length 
+
+  set list/precision=7
+  list percentage
+
+Save the output of above list command to a text file with .spk extension
+(eg. red_white_blue.spk) and type in the rgb values for each percentage
+entries. For the desired red-white-blue color scheme, the entries in the
+spk file will be as follows :
+
+      0.0000  100    0    0
+     41.6458  100    0    0
+     41.6667  100  100  100
+     58.3333  100  100  100 
+     58.3542    0    0  100
+    100.0000    0    0  100
+
+You can use this new spk file, but with a levels qualifier (whatever may
+the the delta value for levels qualifier, this palette will always behave 
+in the same manner) as :
+
+ case 1:  FILL/pal=red_white_blue/LEVELS=(-120,120,20)  variable
+
+or (if you want single label per color, then)
+
+ case 2:  FILL/pal=red_white_blue/LEVELS=&quot;(-120,-20,100),(-20,20,40),(20,120,100)&quot;    
+
+If you intend to use a multiple levels as in case 2, then you can easily
+define a palette file with the following entries
+
+      0.0000  100    0    0
+     33.3333  100  100  100 
+     66.6666  100  100  100 
+    100.0000    0    0  100
+
+But, with this palette file, the color scheme will depend on the &quot;delta&quot; 
+value specified to the /LEVELS qualifier. Try to see it.
+
+Once you finalize the spk file, you can place it in your ferret/ppl 
+directory so that you can access it from any location on your machine.
+
+Please let me know if you have any questions.
+
+Regards,
+
+Jaison
+
+
+On Tue, 29 May 2007, Ashley Watson wrote:
+
+&gt; Hi ferreters,
+&gt; 
+&gt;     I want to specify multiple palettes for my shade plot. My data values
+&gt; are in the range -120 to 120.
+&gt;  All I want to do is to define different colors for my plot. For example, I
+&gt; want to specify white color (or no color)
+&gt; for values -20 to 20,  and Blue palette for positive values (20 to 120) and
+&gt; Red palette for negative values.(-20 to -120).
+&gt;  How can I make such plot?
+&gt; 
+&gt; Ashley
+&gt; 
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00332" href="msg00332.html">Re: [ferret_users] Custom colorbar/ Multiple Palettes</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00329" href="msg00329.html">[ferret_users] Custom colorbar/ Multiple Palettes</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00329.html">[ferret_users] Custom colorbar/ Multiple Palettes</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00332.html">Re: [ferret_users] Custom colorbar/ Multiple Palettes</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00329.html">Thread Prev</a>][<a href="msg00332.html">Thread Next</a>][<A HREF="threads.html#00330">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] contours, hlimits=, x=, ? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 19 May 2006 09:03:36 &#45;0700 -->
+<!--X-Message-Id: 446DEC57.4030202@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20060517.160948.59664137.furue@hawaii.edu -->
+<!--X-Reference: 446CD9F1.3040407@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] contours, hlimits=, x=, ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00341.html">Thread Prev</a>][<a href="msg00343.html">Thread Next</a>][<A HREF="threads.html#00342">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] contours, hlimits=, x=, ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] contours, hlimits=, x=, ?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 19 May 2006 09:03:35 -0700</li>
+<li>Cc: Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00340.html">446CD9F1.3040407@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00338.html">20060517.160948.59664137.furue@hawaii.edu</a>&gt;&lt;<a href="msg00340.html">446CD9F1.3040407@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Ryo,<br>
+So, what you did at the end of your script SHOULD have worked, 
+specifying a larger region than desired with the /X= and /Y= qualifiers 
+to fill to the edges of the /HLIMITS/VLIMITS region.  But the fill 
+doesn't extend to the edges in Y.<br>
+<br>
+   yes? fill/hlimits=10:30/vlimits=80s:60s/x=9:31/y=81s:59s rose<br>
+<br>
+We'll look into why this happens.  But notice that the following command 
+does give you th plot, completely filled in to the edges:<br>
+<br>
+   yes? fill/x=10:30/y=80s:60s rose<br>
+<br>
+Ansley<br>
+<br>
+Steve Hankin wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ryo,<br>
+<br>
+X= specifies the data range<br>
+HLIMITS= specifies the clipping region of the plot axes<br>
+<br>
+The etopo20 dataset is defined on a longitude axis that runs from 20 
+to 380, so that its &quot;branch point&quot; does not disect a major ocean 
+basin.  (Try &quot;SHOW GRID rose&quot;)  Your graphical axis limits 
+&quot;hlimits=10:30&quot; span this branch cut.  Since your FILL command does 
+not specify the coordinate range explicitly (no &quot;/X=&quot; is specified) 
+the Ferret IO layer supplies to the graphics layer the full native 
+coordinate range, which is X=21:379.  Thus your specified axis range 
+of 10:30 overlaps the data for only half of its range, 21:30.  So half 
+of your plot is blank.<br>
+<br>
+   - steve<br>
+<br>
+Ryo Furue wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ferret users and developers,<br>
+<br>
+I reported a similar problem a while ago, but now things<br>
+are looking &quot;curiouser and curiouser&quot;.  Basically, I'm wondering<br>
+what happens and what should happen when hlimits= (vlimits=) is<br>
+specified for a contour plot.<br>
+<br>
+Here's little experiment I've done:<br>
+<br>
+ <a  href="http://iprc.soest.hawaii.edu/~furue/ferret-contours/index.html">http://iprc.soest.hawaii.edu/~furue/ferret-contours/index.html</a><br>
+<br>
+First, when I don't specify x= or y=,<br>
+<br>
+ yes? set data etopo120<br>
+ yes? fill/lev=(-6000,4000,1000,-1)/hlimits=10:30/vlimits=80s:60s \<br>
+      rose<br>
+<br>
+I get a huge white region, as seen in the plot in my webpage cited<br>
+above.  Is this just me? or does this happen to other users?<br>
+<br>
+Next, when I specify both hlimits (vlimits) and x= (y=),<br>
+<br>
+ yes? fill/. . ./hlimits=10:30/vlimits=80s:60s \<br>
+          /x=10:30/y=80s:60s   rose<br>
+<br>
+I get a clean plot.<br>
+<br>
+The plot isn't quite satisfactory, though, because there is a white<br>
+region along the edges (and I think I know why).<br>
+Since we have datapoints outside our plotting region,<br>
+why not use them?<br>
+<br>
+ yes? fill/. . ./hlimits=10:30/vlimits=80s:60s \<br>
+          /x=9:31/y=81s:59s rose<br>
+<br>
+But, this plan partially fails.  When we extend only in the y-direction<br>
+(y=81s:59s), the contouring region is extended to the northern and 
+southern edges.  Good.  But, when we extend in the<br>
+x-direction (x=9:31), we get a weired plot, as shown in my webpage.<br>
+<br>
+Maybe am I doing something which shouldn't work?<br>
+<br>
+Regards,<br>
+Ryo<br>
+ 
+<br>
+</blockquote><pre>
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00338" href="msg00338.html">[ferret_users] contours, hlimits=, x=, ?</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00340" href="msg00340.html">Re: [ferret_users] contours, hlimits=, x=, ?</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00341.html">Re: [ferret_users] contours, hlimits=, x=, ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00343.html">[ferret_users] difference in on-screen and saved postscript output</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00341.html">Thread Prev</a>][<a href="msg00343.html">Thread Next</a>][<A HREF="threads.html#00342">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Missing value flag. -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 6 Aug 2007 02:34:49 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0708061458020.23458@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20070806105010.1d6cs25bqcs0g0os@fire.palmod.uni&#45;bremen.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Missing value flag.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00465.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Missing value flag.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:nikesh@DOMAIN.HIDDEN">nikesh@xxxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Missing value flag.</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 06 Aug 2007 15:21:25 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:20070806105010.1d6cs25bqcs0g0os@DOMAIN.HIDDEN">20070806105010.1d6cs25bqcs0g0os@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20070806105010.1d6cs25bqcs0g0os@DOMAIN.HIDDEN">20070806105010.1d6cs25bqcs0g0os@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Nikesh,
+            The trick is to define a &quot;new&quot; variable and assign the missing_value
+as NaN. For those variables loaded from NetCDF file, the &quot;set var/bad=NaN&quot; command
+will change the missing_value only in a temporal manner (see Ferret User Manual
+Ref Sec31.11.1.  SET VARIABLE/BAD=). The following example worked fine for me 
+(with Ferret versions 5.53 to 6.00):
+
+    use coads_climatology
+    let sfc_temp = sst[d=1]
+    set var/bad=NaN/title=&quot;My Temp&quot;/units=&quot;^oC&quot; sfc_temp
+    sp rm -f junk.nc
+    save/file=junk.nc/append sfc_temp
+
+Now, do a ncdump on junk.nc, it will show the missing_value (and _FillValue)
+attribute as 
+
+        float SFC_TEMP(TIME, COADSY, COADSX) ;
+                SFC_TEMP:missing_value = nanf ;
+                SFC_TEMP:_FillValue = nanf ;
+
+and the data values for sfc_temp will be like :
+
+ SFC_TEMP =
+  nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
+    nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
+    ......................................................................
+   -1.56, -1.448571, -1.147778, -1.242857, -1.131111, -1.11, -1.1125,
+    -0.8677778, -0.675, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
+
+You can also set the missing_values to NaN in Matlab itself. Typically, 
+misssing_values will be large -ve values. In Matlabe use an IF construct
+to convert all missing values to NaN like :
+
+    if (var &lt; -1000)
+         var = NAN
+    end
+
+Relevant Topics on Ferret User Manual 
+
+   Ch3 Sec1.6.1.  Missing values in input files 
+   Ref Sec31.11.1.  SET VARIABLE/BAD=  
+
+Hope this helps,
+
+Jaison
+
+
+On Mon, 6 Aug 2007 nikesh@xxxxxxxxxxxxxxxxxxxx wrote:
+
+&gt; Hi ferreters,
+&gt; 
+&gt;  I want to change the missing value flag in a netcdf file from the default value
+&gt; to NaN, which is compatable with matlab.
+&gt; 
+&gt; I have tried the
+&gt; 
+&gt;  set var/bad=NaN but it only changes the missing value for the current ferret
+&gt; session, if I am writing a new netcdf file even after the set var/bad=NaN
+&gt; command, in new netcdf file also the default value is given. Should I do
+&gt; something else for attaining that.
+&gt; 
+&gt; Thanks in advance.
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00463" href="msg00463.html">[ferret_users] Missing value flag.</a></strong>
+<ul><li><em>From:</em> nikesh</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00463.html">[ferret_users] Missing value flag.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00465.html">[ferret_users] how to convert decimal date to date and time</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00465.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How to do @rsum and @iin in reverse? -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Fri, 14 Jul 2006 14:50:41 &#45;0700 -->
+<!--X-Message-Id: 20060714.115033.112844044.furue@hawaii.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 44B2C1B2.3060802@noaa.gov -->
+<!--X-Reference: 9B74E89F&#45;EECF&#45;4815&#45;B159&#45;99866A2FB53F@noaa.gov -->
+<!--X-Reference: 44B7DCF3.9070607@noaa.gov -->
+<!--X-Derived: ps00001.ps -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How to do @rsum and @iin in reverse?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00482.html">Thread Prev</a>][<a href="msg00402.html">Thread Next</a>][<A HREF="threads.html#00484">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to do @rsum and @iin in reverse?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to do @rsum and @iin in reverse?</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 14 Jul 2006 11:50:33 -1000 (HST)</li>
+<li>In-reply-to: &lt;<a href="msg00481.html">44B7DCF3.9070607@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00472.html">44B2C1B2.3060802@noaa.gov</a>&gt;&lt;<a href="msg00478.html">9B74E89F-EECF-4815-B159-99866A2FB53F@noaa.gov</a>&gt; &lt;<a href="msg00481.html">44B7DCF3.9070607@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Billy &amp; Steve,
+
+| I have just a few minutes, but maybe can shed a little light on
+| this.  I think this is the deal:
+| 
+| The underlying math is simply that
+|     INTEGRAL[x to b] = INTEGRAL[a to b] - INTEGRAL[a to x]
+| 
+| The thing is, that this statement is true where x is a continuous variable. 
+| Here we are on a discretized axis, where each value on our axis actually
+| represents a cell.  As you move from low to high along the axis the running
+| sum is really the integral across that full cell.  But the coordinate point
+| lies in the center of the cell  (ignoring the complexities of irregular cell
+| sizes for this discussion).  I've attempted to draw an axis  to illustrate. 
+| The carets (&quot;^&quot;) show where the values is located on the axis in each case.
+| 
+|     direction of integration ==&gt;
+|                    |     1    |   2   |   3   |   4   |   5   |   6   |
+|     @RSUM                ^        ^       ^       ^       ^       ^
+|     &quot;correct&quot;                 ^       ^       ^       ^       ^       ^
+[. . .]
+
+I was about to send the following message, which (I think) says
+exactly the same thing as yours.  But, I got stuck at the end.
+--------------------------------
+I think the result Ferret gives is consistent &quot;in a sense&quot;.
+Look at the attached plot.
+Let's assume that your function f(x) is defined as
+
+  f(0.5) = 1
+  f(1.5) = 2
+  f(2.5) = 3
+  f(3.5) = 4
+  f(4.5) = 5
+  f(5.5) = 6
+
+Then its integral F(x) from x = 0 to x = x is
+(or can be defined as)
+
+  F(0) = 0
+  F(1) = 1
+  F(2) = 3
+  F(3) = 6
+  F(4) = 10
+  F(5) = 15
+  F(6) = 21
+
+(F(i) = sum_{1 &lt;= j &lt;= i} f(j-0.5) delta-x .)
+
+Then, the most natural reverse integral G(x) = F(6) - F(x) is
+
+  G(0) = 21
+  G(1) = 20
+  G(2) = 18
+  G(3) = 15
+  G(4) = 11
+  G(5) =  6
+  G(6) =  0
+
+This is what you got, except that you don't have a gridpoint at x = 0.
+
+But . . . this makes me wonder:  Shouldn't Ferret define @IIN at the
+right edges of the original gridpoints?  In fact, @IIN is defined
+on the same gridpoints as the integrand.
+---------------------
+Here's where I got stuck.  So, my tentative conclusion is
+that in this sense, @RSUM and @IIN aren't quite equivalent.
+
+Ryo
+</pre>
+<p><strong>Attachment:
+<a href="ps00001.ps" ><tt>reverse-integral.eps</tt></a></strong><br>
+<em>Description:</em> PostScript document</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00472" href="msg00472.html">Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00478" href="msg00478.html">[ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+<li><strong><a name="00481" href="msg00481.html">Re: [ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00482.html">Re: [ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00402.html">[ferret_users] plotting grid point density</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00482.html">Thread Prev</a>][<a href="msg00402.html">Thread Next</a>][<A HREF="threads.html#00484">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

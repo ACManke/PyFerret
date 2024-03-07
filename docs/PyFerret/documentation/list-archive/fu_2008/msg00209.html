@@ -1,0 +1,179 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] plotting along&#45;track sea level anomaly -->
+<!--X-From-R13: Benfnq Fubccvy <gubccvyNaeyffp.anil.zvy> -->
+<!--X-Date: Fri, 25 Apr 2008 14:56:57 &#45;0700 -->
+<!--X-Message-Id: 481253A6.6030003@nrlssc.navy.mil -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4811EAF9.6090105@nrlssc.navy.mil -->
+<!--X-Reference: 48120AB7.2010208@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] plotting along-track sea level anomaly</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00204.html">Thread Prev</a>][<a href="msg00174.html">Thread Next</a>][<A HREF="threads.html#00209">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] plotting along-track sea level anomaly</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] plotting along-track sea level anomaly</strong></li>
+<li><strong>From</strong>: <strong>Prasad Thoppil &lt;<a href="mailto:thoppil@DOMAIN.HIDDEN">thoppil@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 25 Apr 2008 16:56:54 -0500</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:48120AB7.2010208@DOMAIN.HIDDEN">48120AB7.2010208@xxxxxxxx</a>&gt;</li>
+<li>Organization: Naval Research Laboratory</li>
+<li>References: &lt;<a href="mailto:4811EAF9.6090105@DOMAIN.HIDDEN">4811EAF9.6090105@xxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:48120AB7.2010208@DOMAIN.HIDDEN">48120AB7.2010208@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (X11/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+
+I have received this solution from Mick. Here it is...
+
+</pre><tt>The longitude and latitude values are 1:185877 along the X-axis but the 
+</tt><tt>SLA data are along the Y-axis. This does not seem to be the usual 
+</tt><tt>situation where one would expect triplet (lon,lat,value) to be along the 
+</tt><tt>same axis. This is the source of the problem.
+</tt><pre style="margin: 0em;">
+
+An easy fix is to regrid the SLA along the same axis using RESHAPE.
+
+let RES_SLA_sla = reshape(SLA, latitudes)
+
+Then plot RES_SLA
+
+</pre><tt>go polymark polygon/hlim=50:70/vlim=0:10N longitudes latitudes RES_SLA 
+</tt><tt>square
+</tt><pre style="margin: 0em;">
+
+Hope this helps
+
+
+Prasad.
+
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi
+
+I have downloaded along-track sea level anomalies from
+<a  rel="nofollow" href="ftp://ftp.cls.fr/pub/oceano/AVISO/SSH/duacs/global/nrt/sla/en/">ftp://ftp.cls.fr/pub/oceano/AVISO/SSH/duacs/global/nrt/sla/en/</a>
+
+The data file looks something like this:
+
+currently SET data sets:
+res_oer_en_20346_20364.nc  (default)
+</pre><tt>name     title                             I         J         
+</tt><tt>K         L
+</tt><tt>DELTAT   Time gap between two measuremen  ...       ...       
+</tt><tt>...       ...
+</tt><pre style="margin: 0em;">
+NBPOINTS Number of measurements for each  ...       ...       ...
+1:472
+CYCLES   Cycle numbers for each pass      1:1       ...       ...
+1:472
+LONGITUDES
+</pre><tt>         Longitude of each measurement    1:185877  ...       
+</tt><tt>...       ...
+</tt><pre style="margin: 0em;">
+LATITUDES
+</pre><tt>         Latitude of each measurement     1:185877  ...       
+</tt><tt>...       ...
+</tt><pre style="margin: 0em;">
+BEGINDATES
+         Date of first measurement for e  1:1       ...       ...
+ 1:472
+DATAINDEXES
+</pre><tt>         Data index in theoretical pass   1:185877  ...       
+</tt><tt>...       ...
+</tt><tt>SLA      Sea Level Anomaly                1:1       1:185877  
+</tt><tt>...       ...
+</tt><pre style="margin: 0em;">
+
+
+I want to plot SLA over a small region say 50E-70E, 0-10N using go
+polymark script. Here is what I used
+
+plot/vs/hlim=50:70/vlim=0:10 LONGITUDES,latitudes
+</pre><tt>go polymark polygon/hlim=50:70/vlim=0-10N/ov longitudes latitudes sla 
+</tt><tt>square
+</tt><pre style="margin: 0em;">
+
+then it gives me &quot;  Too much polygon data to plot at once&quot;
+
+No plot is generated. I use v5.8 Linux(g77) ferret version.
+
+Any help would be appreciated.
+
+Thanks,
+
+Prasad
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00203" href="msg00203.html">[ferret_users] plotting along-track sea level anomaly</a></strong>
+<ul><li><em>From:</em> Prasad Thoppil</li></ul></li>
+<li><strong><a name="00204" href="msg00204.html">Re: [ferret_users] plotting along-track sea level anomaly</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00204.html">Re: [ferret_users] plotting along-track sea level anomaly</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00174.html">[ferret_users] to combine daily file to monthly</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00204.html">Thread Prev</a>][<a href="msg00174.html">Thread Next</a>][<A HREF="threads.html#00209">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

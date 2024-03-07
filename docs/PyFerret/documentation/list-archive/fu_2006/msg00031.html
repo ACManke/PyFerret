@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] samplexy_curv function -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 24 Jan 2006 08:08:28 &#45;0800 -->
+<!--X-Message-Id: 43D650D7.5070006@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 43D1E971.3090300@ims.metu.edu.tr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] samplexy_curv function</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00028.html">Thread Prev</a>][<a href="msg00034.html">Thread Next</a>][<A HREF="threads.html#00031">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] samplexy_curv function</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Murat Gunduz &lt;<a href="mailto:gunduz@DOMAIN.HIDDEN">gunduz@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] samplexy_curv function</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 24 Jan 2006 08:07:51 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00028.html">43D1E971.3090300@ims.metu.edu.tr</a>&gt;</li>
+<li>References: &lt;<a href="msg00028.html">43D1E971.3090300@ims.metu.edu.tr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Munrat,<br>
+I don't see anything wrong with what you've done, but a simpler way to 
+put your x and y points on a one-dimensional grid is to use XSEQUENCE 
+function.  This unravels a variable onto an abstract x axis.  Try it 
+this way:<br>
+<br>
+....<br>
+file/var=&quot;lon,lat,depth&quot;/grid=outgrid/col=3 &quot;grid_x162_y267.dat&quot;<br>
+<br>
+let myxpts=xsequence(lonrct)  !one dimensional list<br>
+let myypts=xsequence(latrct)<br>
+<br>
+let temprect=SAMPLEXY_CURV(temp,lon[d=1],lat[d=1],myxpts,myypts)<br>
+<br>
+fill temprect[k=10,l=1]<br>
+<br>
+<br>
+Murat Gunduz wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><br>
+Dear Ferret users,<br>
+<br>
+I have a POM model output file in curvilinear grid. I wan to convert 
+it in<br>
+rectilinear coordinate and plot the variables. I am using 
+SAMPLEXY_CURV function<br>
+for this purpose.<br>
+<br>
+My variable`s dimensions in curvilinear coordinate are<br>
+<br>
+yes? show grid temp<br>
+GRID GRX5<br>
+name       axis              # pts   start                end<br>
+X            X                  162 r   1                    162<br>
+Y            Y                  267 r   1                    267<br>
+Z             Z                  16 r     1                    16<br>
+TIME     TIME            5 r      02-JAN-2000 00:00    06-JAN-2000 00:00<br>
+<br>
+I am geting Curvilinear latitude and longitude of this variable from 
+an ascii file as below.<br>
+define axis/x=1:162:1 xax<br>
+define axis/y=1:267:1 yax<br>
+let outgrid=x[gx=xax]+y[gy=yax]<br>
+file/var=&quot;lon,lat,depth&quot;/grid=outgrid/col=3 &quot;grid_x162_y267.dat&quot;<br>
+<br>
+<br>
+I generate new rectilinear coordinate by<br>
+define axis/x=46:55:0.0555 xaxrct  !163<br>
+define axis/y=36:48:0.0450 yaxrct  !268<br>
+let lonrct=x[gx=xaxrct]<br>
+let latrct=y[gy=yaxrct]<br>
+define axis/x=1:`163*268`:1 xyrct<br>
+let outgridxy=x[gx=xyrct]<br>
+let myxpts=reshape(lonrct,outgridxy)  !one dimensional list<br>
+let myypts=reshape(latrct,outgridxy)<br>
+<br>
+and using samplexy_curv function<br>
+let temprect=SAMPLEXY_CURV(temp,lon[d=1],lat[d=1],myxpts,myypts)<br>
+<br>
+when I fill the temprect<br>
+fill temprect[k=10,l=1]<br>
+<br>
+it gives the below error:<br>
+<br>
+Bailing out of external function &quot;samplexy_curv&quot;:<br>
+       Arguments 4 and 5 must be 1-dimensional lists of equal length<br>
+**ERROR: : error in external function<br>
+<br>
+<br>
+Do you know, what can be the reason?, Thank you very much in advance.<br>
+Regards,<br>
+Murat<br>
+<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00034" href="msg00034.html">Re: [ferret_users] samplexy_curv function</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00028" href="msg00028.html">[ferret_users] samplexy_curv function</a></strong>
+<ul><li><em>From:</em> Murat Gunduz</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00028.html">[ferret_users] samplexy_curv function</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00034.html">Re: [ferret_users] samplexy_curv function</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00028.html">Thread Prev</a>][<a href="msg00034.html">Thread Next</a>][<A HREF="threads.html#00031">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

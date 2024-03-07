@@ -1,0 +1,252 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] list problem -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 7 Sep 2007 10:19:00 &#45;0700 -->
+<!--X-Message-Id: 46E187F9.4010005@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 1189103233.28799.11.camel@tevere.mit.edu -->
+<!--X-Reference: Pine.LNX.4.58.0709070356210.10165@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] list problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00554.html">Thread Prev</a>][<a href="msg00558.html">Thread Next</a>][<A HREF="threads.html#00557">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] list problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] list problem</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 07 Sep 2007 10:18:49 -0700</li>
+<li>Cc: Jonathan Winter &lt;<a href="mailto:jwinter@DOMAIN.HIDDEN">jwinter@xxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.58.0709070356210.10165@DOMAIN.HIDDEN">Pine.LNX.4.58.0709070356210.10165@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1189103233.28799.11.camel@DOMAIN.HIDDEN">1189103233.28799.11.camel@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0709070356210.10165@DOMAIN.HIDDEN">Pine.LNX.4.58.0709070356210.10165@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.6 (Windows/20070728)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Jonathon, Jaison,<br>
+Thanks Jaison for answering again.&nbsp; The limit for the length of a
+command line is 2048 characters, as read directly from the command
+line, before any grave-accent expressions are evaluated or anything,
+and the same limit is on the command line after the grave-accent
+expressions have been evaluated. I don't think Jonathon's command is
+running into that limit, though. It looks to me in the Ferret code as
+if there's just an upper limit on the number of substitution passes the
+parsing code will make.<br>
+<br>
+Another way to set this up would be to define intermediate variables
+with the averaging and dataset information, and LIST those.<br>
+<br>
+<tt>LET air_a = air[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=14]<br>
+LET shum_a = [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=5]<br>
+...<br>
+SET LIST/FORMAT=(1X,18F14.6)<br>
+LIST/FILE=ncep.dat/WIDTH=50 air_a, shum_a, ...</tt><br>
+<br>
+<br>
+Jaison Kurian wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">Hi Jonathan,
+              Ferret too have limitations (Please have a look at Ferret user 
+manual, Ch4 Sec4.  FERRET PROGRAM LIMITS)! The command line cannot grow beyond
+a certain length, the limits being different in different situations. Just 
+change the listing procedure slightly, you will get it done! Few methods are 
+given below.
+
+     use ncep_1996_lh.nc 
+     ......
+     ncep_1996_v10m.nc
+
+     cancel list/head
+     set list/format=(1X,18F14.6)
+
+     set reg/x=-85.5:-90.5/y=37.5:42.5
+
+     sp rm -f ncep.dat
+     list/file=ncep.dat air[x=@AVE,y=@AVE,d=14],dswrf[x=@AVE,y=@AVE,d=5],...
+               ........................
+
+If you want to reduce the command line length further, use a symbol to 
+specify the averaging operation like;
+
+     define symbol av = x=@AVE,y=@AVE
+
+     sp rm -f ncep.dat
+     list/file=ncep.dat air[($av),d=14],dswrf[($av),d=5],...
+
+The above symbol can also take the form (if there is no explicit "set reg"
+command, and with variables lon_s, lon_f, lat_s &amp; lat_f defined)
+
+     define symbol av = x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave
+
+  
+Insights......
+--------------
+
+ If you don't have any immediate mode evaluation (grave accents ``) along with
+variable names, the list command can grow up to 2048 character length. With,
+immediate mode evaluation, the variables in this category cannot occupy more
+than ~690 character length. This numbers again depends on the list format and
+other similar things (i guess so...).
+
+Please let me know if you have any questions.
+
+Jaison
+
+
+
+On Thu, 6 Sep 2007, Jonathan Winter wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">I'm trying to write out a file of values.  I pasted the output of my
+commands below.  If I don't include the variable "pres", which means I'm
+only outputting 12 variables (columns), it works fine.  Any idea why
+this is or what I can do to write all 18 variables to the same file?
+Thanks in advance for the help.
+
+jonathan
+
+yes? go ncep_aggr.jnl
+!cancel mode/verify
+cancel list/head
+let lon_s = -85.5
+let lon_f = -90.5
+let lat_s = 37.5
+let lat_f = 42.5
+
+use ncep_1996_lh.nc    !#1
+use ncep_1996_lwd.nc   !#2
+use ncep_1996_lwu.nc   !#3
+use ncep_1996_psrf.nc  !#4
+use ncep_1996_qa.nc    !#5
+use ncep_1996_ro.nc    !#6
+use ncep_1996_rsw.nc   !#7
+use ncep_1996_rt.nc    !#8
+use ncep_1996_sh.nc    !#9
+use ncep_1996_solin.nc !#10
+use ncep_1996_ssw.nc   !#11
+use ncep_1996_swi.nc   !#12
+use ncep_1996_swu.nc   !#13
+use ncep_1996_ta.nc    !#14
+use ncep_1996_tauu.nc  !#15
+use ncep_1996_tauv.nc  !#16
+use ncep_1996_u10m.nc  !#17
+use ncep_1996_v10m.nc  !#18
+
+set list/format=(1X,18F14.6)
+list/file=ncep.dat/width=50 air
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=14], shum
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=5], dswrf
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=12], uswrf
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=13], lhtfl
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=1], shtfl
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=9], ulwrf
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=3], dlwrf
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=2], prate
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=8], runof
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=6], uwnd
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=17], vwnd
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=18], pres
+[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=4]
+ **ERROR: command syntax: Recursive aliases or GO argument definitions
+list/file=ncep.dat/width=50 air[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=14">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=14</a>],
+shum[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=5">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=5</a>], dswrf
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=12">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=12</a>], uswrf
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=13">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=13</a>], lhtfl
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=1">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=1</a>], shtfl
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=9">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=9</a>], ulwrf
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=3">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=3</a>], dlwrf
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=2">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=2</a>], prate
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=8">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=8</a>], runof
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=6">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=6</a>], uwnd
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=17">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=17</a>], vwnd
+[<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=18">x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=18</a>], pres
+[x=-85.5:-90.5@ave,y=`lat_s`:`lat_f`@ave,d=4]
+
+
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00558" href="msg00558.html">Re: [ferret_users] list problem</a></strong>
+<ul><li><em>From:</em> Jonathan Winter</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00553" href="msg00553.html">[ferret_users] list problem</a></strong>
+<ul><li><em>From:</em> Jonathan Winter</li></ul></li>
+<li><strong><a name="00554" href="msg00554.html">Re: [ferret_users] list problem</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00554.html">Re: [ferret_users] list problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00558.html">Re: [ferret_users] list problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00554.html">Thread Prev</a>][<a href="msg00558.html">Thread Next</a>][<A HREF="threads.html#00557">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

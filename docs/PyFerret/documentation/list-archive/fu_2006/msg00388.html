@@ -1,0 +1,248 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] regridding etopo5 -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Fri, 2 Jun 2006 14:11:36 &#45;0700 -->
+<!--X-Message-Id: 4480A987.2060007@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 447C79BD.8050405@gmail.com -->
+<!--X-Reference: 447CBCC3.1000500@noaa.gov -->
+<!--X-Reference: 8be1369e0605310714m6d85ead7ieff5e37ef25bc7eb@mail.gmail.com -->
+<!--X-Reference: 447DBEB0.9080101@noaa.gov -->
+<!--X-Reference: 448084DB.1060206@gmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] regridding etopo5</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00387.html">Thread Prev</a>][<a href="msg00380.html">Thread Next</a>][<A HREF="threads.html#00388">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] regridding etopo5</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>David Wang &lt;<a href="mailto:climater@DOMAIN.HIDDEN">climater@xxxxxxxxx</a>&gt;,       Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;,       Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] regridding etopo5</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 02 Jun 2006 14:11:35 -0700</li>
+<li>In-reply-to: &lt;<a href="msg00387.html">448084DB.1060206@gmail.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00374.html">447C79BD.8050405@gmail.com</a>&gt; &lt;<a href="msg00376.html">447CBCC3.1000500@noaa.gov</a>&gt;&lt;<a href="msg00377.html">8be1369e0605310714m6d85ead7ieff5e37ef25bc7eb@mail.gmail.com</a>&gt;&lt;<a href="msg00379.html">447DBEB0.9080101@noaa.gov</a>&gt; &lt;<a href="msg00387.html">448084DB.1060206@gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.2 (Macintosh/20060308)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hello All,<br>
+<br>
+   Here is an idea that might work for extracting the median of water 
+depths (ie excluding land) for a series of grid boxes without the need 
+for an external function. It is based on SORTI and SAMPLEI.  I'll 
+illustrate the idea for one grid box 170W-166W, 53-56N.<br>
+<br>
+! Define the data file and how to select &quot;water&quot; points<br>
+use etopo05 ; set mem/size=500<br>
+let sea=if(rose[d=1] lt 0)then rose[d=1]<br>
+! count the number of etopo05 water points that fall in the new grid box<br>
+let nsea=sea[x=@ngd,y=@ngd]<br>
+<br>
+! ... and define a file to accept the median values<br>
+sp touch median.file<br>
+<br>
+!Step 0. define the corners of the grid box desired ... for example<br>
+let my_xlo=190 ; let my_xhi=194 ; let my_ylo=53 ; let my_yhi=56<br>
+<br>
+!--------------------------------------------------<br>
+!Step 1.  For a particular grid box write out the water depths with a 
+flag 999 for land<br>
+region/x=`my_xlo`:`my_xhi`/y=`my_ylo`:`my_yhi`<br>
+list/nohead/clob/file=temp.file/form=(f10.2) missing(sea,999)<br>
+let ngood=`nsea` ; let midpoint=int(ngood/2)+1<br>
+can region/all<br>
+<br>
+!Step 2. Read back the water depths and sort in increasing order<br>
+file/form=free/var=depth temp.file ; set var/bad=999 depth<br>
+let index=sorti(depth) ; let sorted=samplei(depth,index)<br>
+<br>
+!Step 3. Pick off the mid point<br>
+let median=sorted[i=`midpoint`]<br>
+<br>
+!Step 4. List the result (to a file) then go back to Step 0 for the next 
+grid cell<br>
+list/app/nohead/form=(f10.2)/file=median.file median<br>
+can data 2 ! eliminate the temporary file<br>
+!----------------------------------------------------<br>
+<br>
+The results check out: there are 1769 &quot;water&quot; points among the 1813 
+etopo05 cells within the box.<br>
+The mid point is #885 and the 885th of the sorted depths (i.e the 
+median) is -951m.<br>
+<br>
+To create a whole grid of boxes a pair of nested loops can define the 
+my_xlo,my_xhi, my_ylo and<br>
+my_yhi values in turn.  In the inner loop a .jnl file containing steps 
+1-4 above is called to incrementally write the median values.  After 
+this is done the ASCII file of medians is read into the new grid and the 
+result output to a netCDF file.<br>
+<br>
+Hope this helps,<br>
+Mick<br>
+------------------------<br>
+David Wang wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ansley,<br>
+<br>
+Thanks. That is supposed to work also. But I think that taking medians 
+is ideal for those adjacent to coastlines when a coarser grid box 
+needs to be determined as a wet box or a dry box.<br>
+<br>
+David<br>
+<br>
+Ansley Manke wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi David,<br>
+You could also do another regridding operation from etopo5, using 
+linear or averaging to regrid to your coarser grid.<br>
+<br>
+Ansley<br>
+<br>
+<br>
+David Wang wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hey Ansley,<br>
+<br>
+Thanks very much for your response. I don't think I have time 
+working on an external function right now. maybe some time in the 
+future, then I will contact you.<br>
+This was to generate the bathymetry file for an ocean model. But 
+since currently I actually don't need a very accurate representation 
+of the sea floor and the coastlines, I may still use my present 
+crude one derived from Levitus.<br>
+<br>
+Cheers,<br>
+-d.<br>
+<br>
+On 5/30/06, *Ansley Manke* &lt;Ansley.B.Manke@noaa.gov 
+&lt;<a  href="mailto:Ansley.B.Manke@noaa.gov">mailto:Ansley.B.Manke@noaa.gov</a>&gt;&gt; wrote:<br>
+<br>
+    Hi David,<br>
+    I think this would require an external function. You'd pass in<br>
+    the data<br>
+    on the finer grid as one argument, and a second argument would be<br>
+    some<br>
+    dummy variable on the desired output grid.  Then the function<br>
+    would need<br>
+    to determine which grid points from the fine grid lie within the 
+grid<br>
+    boxes of the output data, and compute the median value, assigning<br>
+    it to<br>
+    the &quot;result&quot; of the function, on the coarser grid.<br>
+<br>
+    There would be some things to decide. Would you weight input data<br>
+    according to what portion of the input grid cell lies within the<br>
+    output<br>
+    grid cell?  That is, if you had the fine grid and the output grid<br>
+    lining<br>
+    up like this, with data at the o's and grid cell edges at the |'s,<br>
+<br>
+    |---o---|---o---|---o---|---o---|---o---|<br>
+        
+|----------O----------|----------O----------|----------O----------|<br>
+<br>
+    then, would data at the first o in the fine data, which lies 
+right on<br>
+    the edge of an output grid cell, be weighted the same as the next<br>
+    two<br>
+    data points which lie entirely within the output grid cell? or<br>
+    would its<br>
+    contribution to the value of the median be smaller?  (and similar<br>
+    considerations due to working in 2 dimensions.)<br>
+<br>
+    Another consideration would be whether to apply the cosine latitude<br>
+    correction when working on a latitude-longitude grid.<br>
+<br>
+    If you (or anyone!) would like to work on this, I can give you more<br>
+    ideas and help you get started.<br>
+<br>
+    Ansley<br>
+<br>
+    David Wang wrote:<br>
+<br>
+    &gt; Hello Ferreters,<br>
+    &gt;<br>
+    &gt; I'm thinking of regridding etopo5 bathymetry data onto a much<br>
+    coarser<br>
+    &gt; grid (say 0.5x0.5) in such a way that the regridded value at<br>
+    each new<br>
+    &gt; grid point is chosen to be the median of all etopo5 grid points<br>
+    within<br>
+    &gt; each new grid box. Are there any tricks for doing this in FERRET?<br>
+    &gt;<br>
+    &gt; Thanks,<br>
+    &gt; - d.<br>
+<br>
+<br>
+</blockquote></blockquote><pre>
+
+</pre>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00374" href="msg00374.html">[ferret_users] regridding etopo5</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+<li><strong><a name="00376" href="msg00376.html">Re: [ferret_users] regridding etopo5</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00377" href="msg00377.html">Re: [ferret_users] regridding etopo5</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+<li><strong><a name="00379" href="msg00379.html">Re: [ferret_users] regridding etopo5</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00387" href="msg00387.html">Re: [ferret_users] regridding etopo5</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00387.html">Re: [ferret_users] regridding etopo5</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00380.html">[ferret_users] [Ferret_Users] SAMPLEIJ of an array of size [680,380]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00387.html">Thread Prev</a>][<a href="msg00380.html">Thread Next</a>][<A HREF="threads.html#00388">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

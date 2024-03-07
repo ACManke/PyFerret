@@ -1,0 +1,176 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] [ferret users] having variable in return=dsetnum command -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 23 Mar 2007 00:05:10 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0703231231190.10624@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 26DA7D06371FC141B27428A2A21FC1BDC9753F@exvicn1&#45;mel.nexus.csiro.au -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] [ferret users] having variable in return=dsetnum command</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00176.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00177">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] [ferret users] having variable in return=dsetnum command</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Mark.Collier@DOMAIN.HIDDEN">Mark.Collier@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] [ferret users] having variable in return=dsetnum command</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 23 Mar 2007 12:47:02 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:26DA7D06371FC141B27428A2A21FC1BDC9753F@DOMAIN.HIDDEN">26DA7D06371FC141B27428A2A21FC1BDC9753F@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:26DA7D06371FC141B27428A2A21FC1BDC9753F@DOMAIN.HIDDEN">26DA7D06371FC141B27428A2A21FC1BDC9753F@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Mark,
+          If you use double quotes while defining a variable with LET
+commad, the result will be &quot;character string&quot;. That is why the 
+      
+      let ivar = &quot;temp&quot;
+
+expression didn't work.
+
+ Obviously, one solution is to define the new variable without double
+quotes, as
+
+      let ivar = temp
+
+But if you have multiple datasets loaded in the Ferret session, then 
+you have to specify either the dataset number or the dataset name 
+(without the path) in this step itself, like 
+
+      let ivar = temp[d=2]
+or 
+      let ivar = temp[d=levitus_climatology]
+
+One good practice is to define internal variables, as soon as you load
+the dataset, so that the variable name reflects the parameter and dataset.
+(But this may not be ideal if you have multiple datasets with large size.)
+Here &quot;internal&quot; does mean that these variables are available only in the
+current Ferret session, and a variable with this name is not there in the
+loaded datsets. Here is an example :
+
+    ! load datasets and define internal variables
+
+         use levitus_climatology.nc  ! d=1
+         use coads_climatology.nc    ! d=2
+         use reynolds_sst_clim.nc    ! d=3
+         use tmi_sst_clim.nc         ! d=4
+
+         let sst_lev  = temp[d=1,k=1]
+         let sst_coad = sst[d=2]
+         let sst_rey  = sst_clim[d=3]
+         let sst_tmi  = sst_clim[d=4]
+
+Now you can use sst_* variables without worrying about the dataset
+number or name associated with orinal datasets. 
+
+If you can explain what exactly you are trying to do, I can offer a 
+better help.
+
+Regards,
+
+Jaison
+
+On Fri, 23 Mar 2007 Mark.Collier@xxxxxxxx wrote:
+
+&gt; use levitus_climatology
+&gt; 
+&gt; let id=&quot;`temp,return=dsetnum`&quot;
+&gt; 
+&gt;  
+&gt; 
+&gt; gives the data set number.
+&gt; 
+&gt;  
+&gt; 
+&gt; Is it possible to put a variable in the expression, something like (but
+&gt; this doesn't work)?
+&gt; 
+&gt;  
+&gt; 
+&gt; let ivar=&quot;temp&quot;
+&gt; 
+&gt; let id=&quot;`ivar,return=dsetnum`&quot;
+&gt; 
+&gt;  
+&gt; 
+&gt; Thanks,
+&gt; 
+&gt; Mark.
+&gt; 
+&gt;  
+&gt; 
+&gt;  
+&gt; 
+&gt;  
+&gt; 
+&gt;  
+&gt; 
+&gt; 
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00176" href="msg00176.html">[ferret_users] [ferret users] having variable in return=dsetnum command</a></strong>
+<ul><li><em>From:</em> Mark . Collier</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00176.html">[ferret_users] [ferret users] having variable in return=dsetnum command</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00179.html">[ferret_users] OPeNDAP/netCDF Error code 27</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00176.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00177">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

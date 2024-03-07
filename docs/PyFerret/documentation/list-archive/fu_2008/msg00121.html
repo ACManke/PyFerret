@@ -1,0 +1,186 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] CRU ascii file to netcdf -->
+<!--X-From-R13: Egrir Vnaxva <Egrira.Q.VnaxvaNabnn.tbi> -->
+<!--X-Date: Thu, 13 Mar 2008 11:17:18 &#45;0700 -->
+<!--X-Message-Id: 47D97E0B.1090200@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8cc42c030803130126n72c2a785g708a8e1f7f6e4612@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] CRU ascii file to netcdf</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00120.html">Thread Prev</a>][<a href="msg00122.html">Thread Next</a>][<A HREF="threads.html#00121">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] CRU ascii file to netcdf</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] CRU ascii file to netcdf</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 13 Mar 2008 11:18:35 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:8cc42c030803130126n72c2a785g708a8e1f7f6e4612@DOMAIN.HIDDEN">8cc42c030803130126n72c2a785g708a8e1f7f6e4612@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8cc42c030803130126n72c2a785g708a8e1f7f6e4612@DOMAIN.HIDDEN">8cc42c030803130126n72c2a785g708a8e1f7f6e4612@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.12 (Windows/20080213)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Peter,<br>
+<br>
+(Disclaimer -- this response is hurried -- based just on a quick scan
+of your problem ... just an idea in case it is useful.)<br>
+<br>
+The /FORMAT= qualifier on the FILE command supports the full syntax of
+FORTRAN formats.&nbsp; With that you can describe multiple lines of input as
+a single "record".&nbsp; It looks to me at a glance like a format statement
+that uses the "/" (slash) multi-line syntax might do the trick.&nbsp; You
+should be able to read the entire input into a single variable with
+something like<br>
+<br>
+&nbsp;&nbsp;&nbsp; /FORMAT=(11(12F5.0/))<br>
+<br>
+Read this into a variable that is defined on a grid (/GRID=) that is
+12x11 in size.&nbsp; The indices j=2:11 on the axis that is of length 11
+will be your years.&nbsp; The i=1:12 on the other axis will be your months.&nbsp;
+Use the LET command and the RESHAPE function.&nbsp; Then you may want to
+tell Ferret to SAVE the data to a netCDF file so it is nicer to work
+with thereafter.<br>
+<br>
+&nbsp;&nbsp;&nbsp; 2 cents - Steve<br>
+<br>
+-------------------<br>
+<br>
+Peter Szabo wrote:
+<blockquote
+ cite=""
+ type="cite">
+  
+Dear Ferret Users,<br>
+  <br>
+Its me, again...<br>
+I have data set of CRU 10" in ASCII format like this:<br>
+&nbsp;&nbsp; 4&nbsp;&nbsp; 1<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;&nbsp; 4&nbsp;&nbsp; 2<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+&nbsp;-999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999<br>
+The 1st, 12th, 23th... lines are the coordinate numbers of the data
+(the longitude goes from 4:258, the latitude goes from 1:228)<br>
+The "real" first row means a year 1961... The last one 1970. The
+columns mean months of the year. So 10*12 matrix i have after the grid
+defining numbers.<br>
+I would like to make a netcdf of it. Here is how i was trying to solve
+this problem.<br>
+  <br>
+--------------------------<br>
+define axis/t=1:120:1/np=120 time<br>
+define grid/t=time grid<br>
+repeat/range=1:58140:1/name=m
+(file/ez/var="lon,lat"/skip=`2+11*(m-1)`:`11+11*(m-1)` "myfile" ;\<br>
+file/var=pre/skip=`1+11*(m-1)`/columns=12/grid=grid "myfile" ;\<br>
+save/file="<a rel="nofollow" moz-do-not-send="true" href="http://output.nc">output.nc</a>"/append/clobber/ilimits=1:258/jlimits=1:228/i=`lon`/j=`lat`
+pre)<br>
+----------------------------<br>
+  <br>
+Has anyone faced this problem?<br>
+Thank You,<br>
+Peter Szabo, HMS<br>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="72">-- 
+Steve Hankin, NOAA/PMEL -- <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:Steven.C.Hankin@xxxxxxxx">Steven.C.Hankin@xxxxxxxx</a>
+7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080, FAX (206) 526-6744
+
+"The only thing necessary for the triumph of evil is for good men
+to do nothing." -- Edmund Burke</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00122" href="msg00122.html">Re: [ferret_users] CRU ascii file to netcdf</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00119" href="msg00119.html">[ferret_users] CRU ascii file to netcdf</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00120.html">Re: [ferret_users] CRU ascii file to netcdf</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00122.html">Re: [ferret_users] CRU ascii file to netcdf</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00120.html">Thread Prev</a>][<a href="msg00122.html">Thread Next</a>][<A HREF="threads.html#00121">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] synchronizing an i/j/k grid with another lon/lat/z grid -->
+<!--X-From-R13: Ur Brat <tcratNfqfvb&#45;znvy.wcy.anfn.tbi> -->
+<!--X-Date: Fri, 26 Sep 2008 09:14:29 &#45;0700 -->
+<!--X-Message-Id: 6fc3eb41d65538c24acd144281b758c8.squirrel@sdsio&#45;mailhost.jpl.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 8be1369e0809231852r43eadf1fl63f3fa67a591f7cf@mail.gmail.com -->
+<!--X-Reference: b082e518cb36e68702e71c3e03637b5a.squirrel@sdsio&#45;mailhost.jpl.nasa.gov -->
+<!--X-Reference: 8cc42c030809250108w7a859affx90e066f418713bcc@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] synchronizing an i/j/k grid with another lon/lat/z grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00495.html">Thread Prev</a>][<a href="msg00496.html">Thread Next</a>][<A HREF="threads.html#00498">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] synchronizing an i/j/k grid with another lon/lat/z grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] synchronizing an i/j/k grid with another lon/lat/z grid</strong></li>
+<li><strong>From</strong>: <strong>Ge Peng &lt;<a href="mailto:gpeng@DOMAIN.HIDDEN">gpeng@xxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 26 Sep 2008 09:14:27 -0700 (PDT)</li>
+<li>Cc: Ge Peng &lt;<a href="mailto:gpeng@DOMAIN.HIDDEN">gpeng@xxxxxxxxxxxxxxxxxxxxxxx</a>&gt;,        ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="mailto:8cc42c030809250108w7a859affx90e066f418713bcc@DOMAIN.HIDDEN">8cc42c030809250108w7a859affx90e066f418713bcc@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8be1369e0809231852r43eadf1fl63f3fa67a591f7cf@DOMAIN.HIDDEN">8be1369e0809231852r43eadf1fl63f3fa67a591f7cf@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:b082e518cb36e68702e71c3e03637b5a.squirrel@DOMAIN.HIDDEN">b082e518cb36e68702e71c3e03637b5a.squirrel@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:8cc42c030809250108w7a859affx90e066f418713bcc@DOMAIN.HIDDEN">8cc42c030809250108w7a859affx90e066f418713bcc@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: SquirrelMail/1.4.15-1.3.10</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>&gt; Hey Peng,
+&gt; try to see more into the grids with command
+&gt; &quot;show grid vmode[d=1]&quot;
+&gt; &quot;show grid u[d=2]&quot;
+&gt; It helps a lot. It should say something like this:
+&gt;  GRID GKK1
+&gt;  name       axis              # pts   start                end
+&gt;  XAX       X                   87 r   -10.75               32.25
+&gt;  YAX       Y                   77 r   34.25                72.25
+&gt;
+&gt; (1) You can change the grid of one of the two variables to be the same:
+&gt;
+&gt; &quot;let u_new=u[d=2,g=GKK1]&quot;
+&gt; then &quot;let dmode=vmode[d=1]-u_new&quot;
+&gt;
+
+Hi Peter,
+
+This one works well for me. Thanks a lot!
+
+--- Peng
+
+&gt; (2) You can cut the variable on the bigger region:
+&gt;
+&gt; let vmode_small=vmode[d=1,j=97:200]
+&gt;
+&gt; (3) Or you can define new axis and change the grid of the two variables
+&gt; with
+&gt; something like this:
+&gt;
+&gt; def axis/x=-90:90:0.5 newx
+&gt; def axis/y=-90:90:0.5 newy
+&gt; def axis/z=1:50:1 newz
+&gt; def grid/x=newx/y=newy/z=newz grd
+&gt; let u_new=u[d=2,g=grd]
+&gt; let vmode_new=vmode[d=1,g=grd]
+&gt;
+&gt; Hope this helps,
+&gt; Cheers, Peter
+&gt;
+&gt;
+&gt;
+&gt; On Thu, Sep 25, 2008 at 12:25 AM, Ge Peng
+&gt; &lt;gpeng@xxxxxxxxxxxxxxxxxxxxxxx&gt;wrote:
+&gt;
+&gt;&gt; Hi Ferreters,
+&gt;&gt;
+&gt;&gt; I have two datasets:
+&gt;&gt;
+&gt;&gt; Grid in dataset 1:
+&gt;&gt; X=1:360:1; Y=1:200:1; Z=1:50:1
+&gt;&gt;
+&gt;&gt; Grid in dataset 2:
+&gt;&gt; X=geolon(i=1):geolon(i=360):1, which is from -279.5 to 80.5 every 1 deg
+&gt;&gt; Y=geolat(j=1):geolat(j=200):dlat(j), which is from -83 to 89 with
+&gt;&gt; varying
+&gt;&gt; dlat.
+&gt;&gt; Z=z(k=1):z(k=50):dz(k), dz varies.
+&gt;&gt;
+&gt;&gt; I need to perform adding or subtracting functions between variables from
+&gt;&gt; those two data sets.
+&gt;&gt;
+&gt;&gt; yes? let dmode=vmode[d=1]-u[d=2]
+&gt;&gt; yes? sha dmode[k=1,l=1]
+&gt;&gt;
+&gt;&gt;  *** NOTE: Ambiguous coordinates on X axis: VMODE[D=1]-U[D=2]
+&gt;&gt;  **ERROR: inconsistent sizes of data regions: Y axis
+&gt;&gt;          U[D=2] has 104 points (J=097:200)
+&gt;&gt;          expression has 200 points (J=001:200)
+&gt;&gt;
+&gt;&gt;  How do I synchronize these two grids?
+&gt;&gt;
+&gt;&gt;  Thanks,
+&gt;&gt;
+&gt;&gt; --- Peng
+&gt;&gt;
+&gt;&gt; -------------------------------
+&gt;&gt; The version of ferret and dataset info:
+&gt;&gt;
+&gt;&gt; &gt; ferret
+&gt;&gt;        NOAA/PMEL TMAP
+&gt;&gt;        FERRET v6
+&gt;&gt;        Linux(g77) 2.4.21-32 - 08/23/06
+&gt;&gt;        24-Sep-08 14:54
+&gt;&gt;
+&gt;&gt; yes? sho data
+&gt;&gt;     currently SET data sets:
+&gt;&gt;    1&gt; ./dynmode_cm21_ocn_stress.nc
+&gt;&gt;  name     title                             I         J         K
+&gt;&gt;  L
+&gt;&gt;  NI_DIM   model i-dimension                ...       ...       ...
+&gt;&gt; ...
+&gt;&gt;  NJ_DIM   model j-dimension                ...       ...       ...
+&gt;&gt; ...
+&gt;&gt;  NK_DIM   number k-dimension               ...       ...       ...
+&gt;&gt; ...
+&gt;&gt;  NMODE_DIM
+&gt;&gt;          number of modes in file          ...       ...       ...
+&gt;&gt; ...
+&gt;&gt;  RC       displacement mode eigenvalues    1:360     1:200     1:5
+&gt;&gt; ...
+&gt;&gt;  VC       velocity mode eigenvalues        1:360     1:200     1:5
+&gt;&gt; ...
+&gt;&gt;  RMODE    displacement modes               1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;  VMODE    velocity modes                   1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;  RN2      buoyancy frequency square at la  1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;  VN2      buoyancy frequency square at la  1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;
+&gt;&gt;    2&gt;
+&gt;&gt; /host/crab/data02/gpeng/cm2.1p0_oda/dta/ocn_stress_sim/
+&gt;&gt; 19930101-20.ocean_5days.uvts.nc
+&gt;&gt;  (default)
+&gt;&gt;  name     title                             I         J         K
+&gt;&gt;  L
+&gt;&gt;  TEMP     Potential temperature            1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;  SALT     Salinity                         1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;  U        zonal current                    1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;  V        meridional current               1:360     1:200     1:50
+&gt;&gt;  1:5
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; yes? list vmode[i=116,j=163,k=1,l=1,d=1]
+&gt;&gt;             VARIABLE : velocity modes (non-dimensional (unit norm over
+&gt;&gt; depth))
+&gt;&gt;             FILENAME : dynmode_cm21_ocn_stress.nc
+&gt;&gt;             X        : 116
+&gt;&gt;             Y        : 163
+&gt;&gt;             Z        : 1
+&gt;&gt;             T        : 1
+&gt;&gt;          0.04642
+&gt;&gt; yes? list u[i=116,j=163,k=1,l=1,d=2]
+&gt;&gt;             VARIABLE : zonal current (m/sec)
+&gt;&gt;             FILENAME : 19930101-20.ocean_5days.uvts.nc
+&gt;&gt;             FILEPATH :
+&gt;&gt; /host/crab/data02/gpeng/cm2.1p0_oda/dta/ocn_stress_sim/
+&gt;&gt;             LONGITUDE: 164W(-164)
+&gt;&gt;             LATITUDE : 53N
+&gt;&gt;             DEPTH (m): 5
+&gt;&gt;             TIME     : 03-JAN-1993 12:00 JULIAN
+&gt;&gt;          0.03713
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00489" href="msg00489.html">[ferret_users] customize white_centered palette</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+<li><strong><a name="00493" href="msg00493.html">[ferret_users] synchronizing an i/j/k grid with another lon/lat/z grid</a></strong>
+<ul><li><em>From:</em> Ge Peng</li></ul></li>
+<li><strong><a name="00495" href="msg00495.html">Re: [ferret_users] synchronizing an i/j/k grid with another lon/lat/z grid</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00495.html">Re: [ferret_users] synchronizing an i/j/k grid with another lon/lat/z grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00496.html">[ferret_users] regridding in a repeat loop</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00495.html">Thread Prev</a>][<a href="msg00496.html">Thread Next</a>][<A HREF="threads.html#00498">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

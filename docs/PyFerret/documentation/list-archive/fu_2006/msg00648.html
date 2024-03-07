@@ -1,0 +1,197 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Setting global data set attributes in Version 6 -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 4 Oct 2006 14:59:12 &#45;0700 -->
+<!--X-Message-Id: 45242EB0.8070108@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: F82344282A084F4C98F7235E896FEA5A503380@chill.shore.mbari.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Setting global data set attributes in Version 6</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00647.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00648">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Setting global data set attributes in Version 6</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;McCann, Mike&quot; &lt;<a href="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Setting global data set attributes in Version 6</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 04 Oct 2006 14:59:12 -0700</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00647.html">F82344282A084F4C98F7235E896FEA5A503380@chill.shore.mbari.org</a>&gt;</li>
+<li>References: &lt;<a href="msg00647.html">F82344282A084F4C98F7235E896FEA5A503380@chill.shore.mbari.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.7 (Windows/20060909)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Mike,<br>
+This just isn't implemented yet. We debated for quite a while what the
+syntax should be for global attributes, and we haven't resolved all the
+details on this yet. Global attributes come into Ferret only for netCDF
+datasets, and we can access them with the ..attributename syntax.&nbsp; It's
+understandable to want to define new ones write them to output netCDF
+files, but we haven't created syntax to tie them to variables, which is
+what's specified by any write command.&nbsp; <br>
+<br>
+Say you defined a new attribute <br>
+<blockquote><tt><span class="156024620-04102006">yes? DEFINE ATTRIBUTE
+..foo = "bar"</span></tt><br>
+  <span class="156024620-04102006"></span></blockquote>
+<span class="156024620-04102006">Would this attribute be written to ALL
+subsequent files, until the attribute was canceled?&nbsp; If we have several
+files open, what would one expect to be done with with the various
+global attributes associated with each of those files, when variables
+from those files, or new variables calculated from those variables, are
+written to output files?&nbsp; For the moment, we have punted on this, and
+when writing a new netCDF file, we write only the old default HISTORY
+attribute,<br>
+<tt><br>
+// global attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :history = "FERRET V6&nbsp;&nbsp;&nbsp; 4-Oct-06" ;</tt><br>
+<br>
+<font face="Courier New"></font></span><span class="156024620-04102006">One
+workaround is to use nco operators to fix up a file after writing; if
+you have these on your system, you can execute a spawn command from
+Ferret, or call the external functions NCO or NCO_ATTR to edit a netcdf
+file right from your Ferret script.<br>
+</span>
+<blockquote><tt><span class="156024620-04102006">yes? show function nc*<br>
+  <br>
+  </span><span class="156024620-04102006">NCO(operator,arguments)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; Call an NCO utility</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; operator: name of operator
+(STRING)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; arguments: one string with all
+arguments (STRING)<br>
+  <br>
+  </span><span class="156024620-04102006">NCO_ATTR(FileName,VariableName,AttributeName,AttType,Mode,AttributeValue)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; Call ncatted to edit attributes
+in a netCDF file</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; FileName: netCDF file name
+(STRING)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; VariableName: Variable name (or
+global) (STRING)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; AttributeName: Attribute to
+change (STRING)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; AttType: Attribute type (STRING)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; Mode: o=edit, a=append, d=delete
+(STRING)</span><br>
+  <span class="156024620-04102006">&nbsp;&nbsp;&nbsp; AttributeValue: new value of
+attribute (STRING)</span></tt><br>
+  <span class="156024620-04102006"></span></blockquote>
+<span class="156024620-04102006">Suggestions and discussion on this
+topic would be welcome!<br>
+<br>
+Ansley </span><br>
+<br>
+<br>
+<br>
+McCann, Mike wrote:
+<blockquote
+ cite=""
+ type="cite">
+  
+  
+  <div><span class="156024620-04102006"><font face="Arial">Hello,</font></span></div>
+  <div><span class="156024620-04102006"></span>&nbsp;</div>
+  <div><span class="156024620-04102006"><font face="Arial">I'm enjoying
+version 6's new ability to easily manipulate variable attributes using
+DEFINE ATTRIBUTE commands.</font></span></div>
+  <div><span class="156024620-04102006"></span>&nbsp;</div>
+  <div><span class="156024620-04102006"><font face="Arial">However, I'm
+having trouble defining new global attributes, e.g.:</font></span></div>
+  <blockquote dir="ltr" >
+    <div><span class="156024620-04102006"><br>
+    <font face="Courier New">yes? DEFINE ATTRIBUTE ..foo = "bar"<br>
+&nbsp;**ERROR: command syntax: illegal name:</font></span></div>
+  </blockquote>
+  <div>&nbsp;</div>
+  <div><span class="156024620-04102006"></span><font face="Arial">I<span
+ class="156024620-04102006">s there something I'm missing?</span></font></div>
+  <div><font face="Arial"><span class="156024620-04102006"></span></font>&nbsp;</div>
+  <div><font face="Arial"><span class="156024620-04102006">Thanks in
+advance,</span></font></div>
+  <div><font face="Arial"><span class="156024620-04102006">Mike</span></font></div>
+  <p><font size="2">--<br>
+Mike McCann<br>
+Software Engineer<br>
+Monterey Bay Aquarium Research Institute<br>
+7700 Sandholdt Road<br>
+Moss Landing, CA 95039-9644<br>
+Voice: 831.775.1769&nbsp; Fax: 831.775.1736 <a href=""
+ target="_blank">http://www.mbari.org</a><br>
+  <br>
+  </font></p>
+  <div>&nbsp;</div>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a class="moz-txt-link-abbreviated" href="">ansley.b.manke@noaa.gov</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00647" href="msg00647.html">[ferret_users] Setting global data set attributes in Version 6</a></strong>
+<ul><li><em>From:</em> McCann, Mike</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00647.html">[ferret_users] Setting global data set attributes in Version 6</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00647.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00648">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

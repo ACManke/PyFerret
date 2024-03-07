@@ -1,0 +1,251 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] list problem -->
+<!--X-From-R13: Xbanguna Ivagre <wjvagreN[WF.SRG> -->
+<!--X-Date: Fri, 7 Sep 2007 10:50:48 &#45;0700 -->
+<!--X-Message-Id: 1189187369.31619.26.camel@tevere.mit.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1189103233.28799.11.camel@tevere.mit.edu -->
+<!--X-Reference: Pine.LNX.4.58.0709070356210.10165@caos.iisc.ernet.in -->
+<!--X-Reference: 46E187F9.4010005@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] list problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00557.html">Thread Prev</a>][<a href="msg00555.html">Thread Next</a>][<A HREF="threads.html#00558">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] list problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] list problem</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Winter &lt;<a href="mailto:jwinter@DOMAIN.HIDDEN">jwinter@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 07 Sep 2007 13:49:29 -0400</li>
+<li>Cc: Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:46E187F9.4010005@DOMAIN.HIDDEN">46E187F9.4010005@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1189103233.28799.11.camel@DOMAIN.HIDDEN">1189103233.28799.11.camel@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0709070356210.10165@DOMAIN.HIDDEN">Pine.LNX.4.58.0709070356210.10165@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:46E187F9.4010005@DOMAIN.HIDDEN">46E187F9.4010005@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Ansley, Jaison, 
+
+I implemented Jaison's first suggestion (set
+reg/x=-85.5:-90.5/y=37.5:42.5) and am able to write all of my variables
+to file.  From the FERRET output, it does look like it just stops
+substituting for lat_s and lat_f.  But regardless, all three suggestions
+get rid of those references, so I would think that all would work.
+Thanks for the help.
+
+jonathan
+
+On Fri, 2007-09-07 at 10:18 -0700, Ansley Manke wrote:
+&gt; Hi Jonathon, Jaison,
+&gt; Thanks Jaison for answering again.  The limit for the length of a
+&gt; command line is 2048 characters, as read directly from the command
+&gt; line, before any grave-accent expressions are evaluated or anything,
+&gt; and the same limit is on the command line after the grave-accent
+&gt; expressions have been evaluated. I don't think Jonathon's command is
+&gt; running into that limit, though. It looks to me in the Ferret code as
+&gt; if there's just an upper limit on the number of substitution passes
+&gt; the parsing code will make.
+&gt; 
+&gt; Another way to set this up would be to define intermediate variables
+&gt; with the averaging and dataset information, and LIST those.
+&gt; 
+&gt; LET air_a = air[x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=14]
+&gt; LET shum_a = [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=5]
+&gt; ...
+&gt; SET LIST/FORMAT=(1X,18F14.6)
+&gt; LIST/FILE=ncep.dat/WIDTH=50 air_a, shum_a, ...
+&gt; 
+&gt; 
+&gt; Jaison Kurian wrote: 
+&gt; &gt; Hi Jonathan,
+&gt; &gt;               Ferret too have limitations (Please have a look at Ferret user 
+&gt; &gt; manual, Ch4 Sec4.  FERRET PROGRAM LIMITS)! The command line cannot grow beyond
+&gt; &gt; a certain length, the limits being different in different situations. Just 
+&gt; &gt; change the listing procedure slightly, you will get it done! Few methods are 
+&gt; &gt; given below.
+&gt; &gt; 
+&gt; &gt;      use ncep_1996_lh.nc 
+&gt; &gt;      ......
+&gt; &gt;      ncep_1996_v10m.nc
+&gt; &gt; 
+&gt; &gt;      cancel list/head
+&gt; &gt;      set list/format=(1X,18F14.6)
+&gt; &gt; 
+&gt; &gt;      set reg/x=-85.5:-90.5/y=37.5:42.5
+&gt; &gt; 
+&gt; &gt;      sp rm -f ncep.dat
+&gt; &gt;      list/file=ncep.dat air[x=@AVE,y=@AVE,d=14],dswrf[x=@AVE,y=@AVE,d=5],...
+&gt; &gt;                ........................
+&gt; &gt; 
+&gt; &gt; If you want to reduce the command line length further, use a symbol to 
+&gt; &gt; specify the averaging operation like;
+&gt; &gt; 
+&gt; &gt;      define symbol av = x=@AVE,y=@AVE
+&gt; &gt; 
+&gt; &gt;      sp rm -f ncep.dat
+&gt; &gt;      list/file=ncep.dat air[($av),d=14],dswrf[($av),d=5],...
+&gt; &gt; 
+&gt; &gt; The above symbol can also take the form (if there is no explicit &quot;set reg&quot;
+&gt; &gt; command, and with variables lon_s, lon_f, lat_s &amp; lat_f defined)
+&gt; &gt; 
+&gt; &gt;      define symbol av = x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave
+&gt; &gt; 
+&gt; &gt;   
+&gt; &gt; Insights......
+&gt; &gt; --------------
+&gt; &gt; 
+&gt; &gt;  If you don't have any immediate mode evaluation (grave accents ``) along with
+&gt; &gt; variable names, the list command can grow up to 2048 character length. With,
+&gt; &gt; immediate mode evaluation, the variables in this category cannot occupy more
+&gt; &gt; than ~690 character length. This numbers again depends on the list format and
+&gt; &gt; other similar things (i guess so...).
+&gt; &gt; 
+&gt; &gt; Please let me know if you have any questions.
+&gt; &gt; 
+&gt; &gt; Jaison
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; On Thu, 6 Sep 2007, Jonathan Winter wrote:
+&gt; &gt; 
+&gt; &gt;   
+&gt; &gt; &gt; I'm trying to write out a file of values.  I pasted the output of my
+&gt; &gt; &gt; commands below.  If I don't include the variable &quot;pres&quot;, which means I'm
+&gt; &gt; &gt; only outputting 12 variables (columns), it works fine.  Any idea why
+&gt; &gt; &gt; this is or what I can do to write all 18 variables to the same file?
+&gt; &gt; &gt; Thanks in advance for the help.
+&gt; &gt; &gt; 
+&gt; &gt; &gt; jonathan
+&gt; &gt; &gt; 
+&gt; &gt; &gt; yes? go ncep_aggr.jnl
+&gt; &gt; &gt; !cancel mode/verify
+&gt; &gt; &gt; cancel list/head
+&gt; &gt; &gt; let lon_s = -85.5
+&gt; &gt; &gt; let lon_f = -90.5
+&gt; &gt; &gt; let lat_s = 37.5
+&gt; &gt; &gt; let lat_f = 42.5
+&gt; &gt; &gt; 
+&gt; &gt; &gt; use ncep_1996_lh.nc    !#1
+&gt; &gt; &gt; use ncep_1996_lwd.nc   !#2
+&gt; &gt; &gt; use ncep_1996_lwu.nc   !#3
+&gt; &gt; &gt; use ncep_1996_psrf.nc  !#4
+&gt; &gt; &gt; use ncep_1996_qa.nc    !#5
+&gt; &gt; &gt; use ncep_1996_ro.nc    !#6
+&gt; &gt; &gt; use ncep_1996_rsw.nc   !#7
+&gt; &gt; &gt; use ncep_1996_rt.nc    !#8
+&gt; &gt; &gt; use ncep_1996_sh.nc    !#9
+&gt; &gt; &gt; use ncep_1996_solin.nc !#10
+&gt; &gt; &gt; use ncep_1996_ssw.nc   !#11
+&gt; &gt; &gt; use ncep_1996_swi.nc   !#12
+&gt; &gt; &gt; use ncep_1996_swu.nc   !#13
+&gt; &gt; &gt; use ncep_1996_ta.nc    !#14
+&gt; &gt; &gt; use ncep_1996_tauu.nc  !#15
+&gt; &gt; &gt; use ncep_1996_tauv.nc  !#16
+&gt; &gt; &gt; use ncep_1996_u10m.nc  !#17
+&gt; &gt; &gt; use ncep_1996_v10m.nc  !#18
+&gt; &gt; &gt; 
+&gt; &gt; &gt; set list/format=(1X,18F14.6)
+&gt; &gt; &gt; list/file=ncep.dat/width=50 air
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=14], shum
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=5], dswrf
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=12], uswrf
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=13], lhtfl
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=1], shtfl
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=9], ulwrf
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=3], dlwrf
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=2], prate
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=8], runof
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=6], uwnd
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=17], vwnd
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=18], pres
+&gt; &gt; &gt; [x=`lon_s`:`lon_f`@ave,y=`lat_s`:`lat_f`@ave,d=4]
+&gt; &gt; &gt;  **ERROR: command syntax: Recursive aliases or GO argument definitions
+&gt; &gt; &gt; list/file=ncep.dat/width=50 air[x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=14],
+&gt; &gt; &gt; shum[x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=5], dswrf
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=12], uswrf
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=13], lhtfl
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=1], shtfl
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=9], ulwrf
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=3], dlwrf
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=2], prate
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=8], runof
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=6], uwnd
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=17], vwnd
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=37.5:42.5@ave,d=18], pres
+&gt; &gt; &gt; [x=-85.5:-90.5@ave,y=`lat_s`:`lat_f`@ave,d=4]
+&gt; &gt; &gt; 
+&gt; &gt; &gt; 
+&gt; &gt; &gt; 
+&gt; &gt; &gt;     
+&gt; &gt; 
+&gt; &gt;   
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00553" href="msg00553.html">[ferret_users] list problem</a></strong>
+<ul><li><em>From:</em> Jonathan Winter</li></ul></li>
+<li><strong><a name="00554" href="msg00554.html">Re: [ferret_users] list problem</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00557" href="msg00557.html">Re: [ferret_users] list problem</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00557.html">Re: [ferret_users] list problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00555.html">[ferret_users] Polar ice</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00557.html">Thread Prev</a>][<a href="msg00555.html">Thread Next</a>][<A HREF="threads.html#00558">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to calculate the streamfunction and velocity potential -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 8 Aug 2007 21:13:59 &#45;0700 -->
+<!--X-Message-Id: 25E4186F&#45;052F&#45;47CB&#45;8EE8&#45;8A33EF6A343D@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.58.0708090246390.6707@caos.iisc.ernet.in -->
+<!--X-Reference: 46100.169.226.43.169.1186610221.squirrel@webmail.lmd.ens.fr -->
+<!--X-Reference: 72CABF42&#45;4A5A&#45;4EAD&#45;BAC9&#45;CF8FDAEB8C22@noaa.gov -->
+<!--X-Reference: 20070808.154623.46607072.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to calculate the streamfunction and velocity potential</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00477.html">Thread Prev</a>][<a href="msg00480.html">Thread Next</a>][<A HREF="threads.html#00479">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to calculate the streamfunction and velocity potential</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;, <a href="mailto:nguyen@DOMAIN.HIDDEN">nguyen@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to calculate the streamfunction and velocity potential</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Aug 2007 21:13:56 -0700</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:20070808.154623.46607072.furue@DOMAIN.HIDDEN">20070808.154623.46607072.furue@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:Pine.LNX.4.58.0708090246390.6707@DOMAIN.HIDDEN">Pine.LNX.4.58.0708090246390.6707@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:46100.169.226.43.169.1186610221.squirrel@DOMAIN.HIDDEN">46100.169.226.43.169.1186610221.squirrel@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:72CABF42-4A5A-4EAD-BAC9-CF8FDAEB8C22@DOMAIN.HIDDEN">72CABF42-4A5A-4EAD-BAC9-CF8FDAEB8C22@xxxxxxxx</a>&gt; &lt;<a href="mailto:20070808.154623.46607072.furue@DOMAIN.HIDDEN">20070808.154623.46607072.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>Yes, thank you Ryo. I should have said that. The streamfunction  
+</tt><tt>exists only when the flow is nondivergent, typically when u and v are  
+</tt><tt>integrated from the ocean bottom to the surface.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Another use is a vertical streamfunction, valid for a zonal, coast-to- 
+</tt><tt>coast integral. That is easier to calculate, because w is identically  
+</tt><tt>zero at the surface:
+</tt><pre style="margin: 0em;">
+
+let streamfn=v[x=@din,z=@iin]   ! where v is in a single, bounded basin
+
+</pre><tt>And a velocity potential is valid only when the flow is irrotational  
+</tt><tt>(curl(v)=0), which is unlikely to be the case in the ocean. In the  
+</tt><tt>atmosphere, it can be used to describe the upper-level circulation  
+</tt><tt>which is predominantly zonal.
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+On Aug 8, 2007, at 6:46 PM, Ryo Furue wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Billy and Hanh,
+
+| ! compute the horizontal streamfunction from vertically integrated u
+| ! and v fields
+| ! note that u and v must occur on the same spatial points (B-grid)
+| ! arg1=variable name for u
+| ! arg2=variable name for v
+| ! arg1=x0 (must be on a gridpoint or set mode interp)
+| ! arg2=y0 (likewise)
+| ! psi=int(y0,y)u(x,y)dy - int(x0,x)v(x,y0)dx
+| ! u=d(psi)/dy, v=-d(psi)/dx
+
+I guess this gives you a correct streamfunction only
+when du/dx + dv/dy = 0, right?  (There's no function satisfying
+both u=d(psi)/dy and v=-d(psi)/dx when du/dx + dv/dy is nonzero.)
+
+Hanh mentioned velocity potential, which suggests that a Helmholz
+decomposition is required:
+
+  (u,v) = grad(phi) + k x grad(psi)
+
+</pre><tt>To obtain phi(x,y) and psi(x,y), you need to solve these Poisson  
+</tt><tt>equations
+</tt><pre style="margin: 0em;">
+
+  div grad (phi) = div(u,v)
+  div grad (psi) = curl(u,v)
+
+with some (probably arbitrary) boundary conditions.
+
+I myself haven't done this, but a colleague of mine uses the method
+described by:
+
+  Watterson, I., 2001. Decomposition of global ocean currents using a
+  simple iterative method. J. Atmos. Oceanic Tech., 18, 691&#x2013;703.
+
+Hope this helps,
+Ryo
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00480" href="msg00480.html">Re: [ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+<ul><li><em>From:</em> nguyen</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00474" href="msg00474.html">Re: [ferret_users] how to convert decimal date to date and time</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00475" href="msg00475.html">[ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+<ul><li><em>From:</em> nguyen</li></ul></li>
+<li><strong><a name="00476" href="msg00476.html">Re: [ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+<ul><li><em>From:</em> william s. kessler</li></ul></li>
+<li><strong><a name="00477" href="msg00477.html">Re: [ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00477.html">Re: [ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00480.html">Re: [ferret_users] how to calculate the streamfunction and velocity potential</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00477.html">Thread Prev</a>][<a href="msg00480.html">Thread Next</a>][<A HREF="threads.html#00479">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

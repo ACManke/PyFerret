@@ -1,0 +1,266 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Reading fortran stream file -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 6 Jul 2006 09:09:38 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0607062128130.2235@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: d7fac9de0607060729w3cc7e594kd9272818d464a704@mail.gmail.com -->
+<!--X-Reference: 5955c3bf0607060844n12209909n7bead8263853e17c@mail.gmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Reading fortran stream file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00460.html">Thread Next</a>][<A HREF="threads.html#00450">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Reading fortran stream file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Yu, Hao-Cheng&quot; &lt;<a href="mailto:danish.url@DOMAIN.HIDDEN">danish.url@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Reading fortran stream file</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 06 Jul 2006 21:41:30 +0530 (IST)</li>
+<li>Cc: IMRAN NADEEM &lt;<a href="mailto:qphoton@DOMAIN.HIDDEN">qphoton@xxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00449.html">5955c3bf0607060844n12209909n7bead8263853e17c@mail.gmail.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00448.html">d7fac9de0607060729w3cc7e594kd9272818d464a704@mail.gmail.com</a>&gt;&lt;<a href="msg00449.html">5955c3bf0607060844n12209909n7bead8263853e17c@mail.gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Imran &amp; Dan,<br>
+                 We can write both the variable to a single<br>
+binary file and read it properly using the same jnl file<br>
+provided the two variables are written as two 'records'.<br>
+<br>
+ About &quot;recl&quot; (ie record length) : For a gridded data it<br>
+should be &quot;xpoints*ypoints*4&quot;. Each variable,level &amp; time<br>
+will increment the &quot;rec&quot; (ie, record) by 1. So in Imrans's 
+example recl should not be 16 but 8*5*4 as noted by Dan.<br>
+<br>
+ I didn't explore the binary file writing for multiple<br>
+variables with multiple time/levels. But it seems Ferret<br>
+needs the binary file without mixing variables...but<br>
+in appended form (all the values for one variable, then<br>
+the next variable ..like that). You can try it out.<br>
+<br>
+ In order to write myvar1 and myvar2 to a single binary<br>
+file, please proceed as follows (you can use the same jnl<br>
+file for reading it in Ferret)<br>
+<br>
+------------------------------------------------------------------<br>
+      REAL myvar1(8,5),myvar2(8,5)<br>
+<br>
+      open (unit=20, file=&quot;test.dat&quot;, access=&quot;direct&quot;, recl=8*5*4)<br>
+<br>
+      do i = 1, 8<br>
+         do j=1, 5<br>
+            myvar1(i,j)= Real(i) + Real(j) * 10.0<br>
+            myvar2(i,j)=-(Real(i) + Real(j) * 10.0)<br>
+         enddo<br>
+      enddo<br>
+<br>
+      write (20,rec=1) ((myvar1(i,j), i=1,8),j=1,5)<br>
+      write (20,rec=2) ((myvar2(i,j), i=1,8),j=1,5)<br>
+<br>
+      end<br>
+------------------------------------------------------------------<br>
+Regards,<br>
+<br>
+Jaison<br>
+<br>
+On Thu, 6 Jul 2006, Yu, Hao-Cheng wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi Imran,
+
+Usually I output stream file like this (following your code)
+
+real myvar1(8,5),myvar2(8,5)
+open(20,file='test1.dat', access='direct',recl=8*5*4)
+open(21,file='test2.dat', access='direct',recl=8*5*4)
+........
+write(20,rec=1) myvar1
+write(21,rec=1) myvar2
+
+In ferret script
+
+file/var=myvar1/form=stream/type=r4/grid=g8x5 test1.dat
+file/var=myvar2/form=stream/type=r4/grid=g8x5 test2.dat
+save/file=test.cdf  myvar1[d=1],myvar2[d=2]
+
+If you use -byteswapio option (PGI fortran) to compile  fortran file,  you
+have to add &quot;swap&quot; qualifer.
+Like
+
+file/var=myvar1/form=stream/type=r4/swap/grid=g8x5 test1.dat
+
+Hope this help you
+
+Regards, dan
+
+2006/7/6, IMRAN NADEEM &lt;qphoton@gmail.com&gt;:
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><br>
+Hi ferret users,<br>
+<br>
+I wrote a stream file of two variable with these fortran commands:<br>
+<br>
+      Real*4 myvar1(8,5); Real*4 myvar2(8,5)<br>
+<br>
+<br>
+      open (unit=20, file=&quot;test.dat&quot;, access=&quot;direct&quot;, recl=16)<br>
+         ...    ...    ...    ....<br>
+<br>
+<br>
+               myvar1(i,j)= Real(i) + Real(j) * 10.0<br>
+               myvar2(i,j)=-(Real(i) + Real(j) * 10.0)<br>
+<br>
+        ...    ...    ...    ....<br>
+      do 120 j=1, 5<br>
+<br>
+<br>
+         write (20,rec=j), (myvar1(i,j),myvar2(i,j), i=1,8)<br>
+ 120  continue<br>
+<br>
+      end<br>
+<br>
+<br>
+myvar1(i,j) and  myvar2(i,j) have same values but with opposite signs.I 
+read the<br>
+output file with the ferret commands:<br>
+<br>
+define axis/x=1:8:1 x8<br>
+<br>
+define axis/y=1:5:1 y5<br>
+<br>
+define grid/x=x8/y=y5 g8x5<br>
+file/var=myvar1,myvar2/grid=g8x5/format=stream  test.dat<br>
+show data<br>
+list myvar1<br>
+list myvar2<br>
+<br>
+I expect to see all positive values in myvar1 and all negative in myvar2. 
+But what I get is<br>
+<br>
+<br>
+<br>
+yes? list myvar1<br>
+             VARIABLE : MYVAR1<br>
+             FILENAME : test.dat<br>
+             SUBSET   : 8 by 5 points (X-Y)<br>
+             1      2      3      4      5      6      7      8<br>
+             1      2      3      4      5      6      7      8<br>
+<br>
+<br>
+ 1   / 1:  11.00 -11.00  12.00 -12.00  13.00 -13.00  14.00 -14.00<br>
+ 2   / 2:  15.00 -15.00  16.00 -16.00  17.00 -17.00  18.00 -18.00<br>
+ 3   / 3:  21.00 -21.00  22.00 -22.00  23.00 -23.00  24.00 -24.00<br>
+ 4   / 4:<br>
+<br>
+25.00 -25.00  26.00 -26.00  27.00 -27.00  28.00 -28.00<br>
+ 5   / 5:  31.00 -31.00  32.00 -32.00  33.00 -33.00  34.00 -34.00<br>
+yes? list myvar2<br>
+             VARIABLE : MYVAR2<br>
+             FILENAME : test.dat<br>
+<br>
+             SUBSET   : 8 by 5 points (X-Y)<br>
+<br>
+             1      2      3      4      5      6      7      8<br>
+             1      2      3      4      5      6      7      8<br>
+ 1   / 1:  35.00 -35.00  36.00 -36.00<br>
+  37.00 -37.00  38.00 -38.00<br>
+ 2   / 2:  41.00<br>
+ -41.00  42.00 -42.00  43.00 -43.00  44.00 -44.00<br>
+ 3   / 3:  45.00 -45.00  46.00 -46.00  47.00 -47.00  48.00 -48.00<br>
+ 4   / 4:  51.00 -51.00  52.00 -52.00  53.00 -53.00<br>
+  54.00 -54.00<br>
+ 5   / 5:  55.00 -55.00  56.00<br>
+ -56.00  57.00 -57.00  58.00 -58.00<br>
+<br>
+<br>
+What is wrong? (test.dat is attached)<br>
+<br>
+Nadeem<br>
+*********************************************************************************<br>
+<br>
+<br>
+--<br>
+Imran Nadeem<br>
+PhD Student<br>
+Institute of Meteorology<br>
+Department of Water, Atmosphere and Environment<br>
+Uni. of Natural Resources and Applied Life Sciences (BOKU)<br>
+<br>
+Peter-Jordan Strasse 82<br>
+1190 Vienna, Austria<br>
+<br>
+Mobile: +43 699 1194 3044<br>
+Tel.: +43 1 47654 5614<br>
+Fax: +43 1 47654 5610<br>
+<br>
+<br>
+</blockquote><pre>
+
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00460" href="msg00460.html">[ferret_users] Re: Reading fortran stream file</a></strong>
+<ul><li><em>From:</em> IMRAN NADEEM</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00448" href="msg00448.html">[ferret_users] Reading fortran stream file</a></strong>
+<ul><li><em>From:</em> IMRAN NADEEM</li></ul></li>
+<li><strong><a name="00449" href="msg00449.html">Re: [ferret_users] Reading fortran stream file</a></strong>
+<ul><li><em>From:</em> Yu, Hao-Cheng</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00449.html">Re: [ferret_users] Reading fortran stream file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00460.html">[ferret_users] Re: Reading fortran stream file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00460.html">Thread Next</a>][<A HREF="threads.html#00450">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

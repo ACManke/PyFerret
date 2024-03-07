@@ -1,0 +1,185 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] question about @din or @iin -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 22 Jun 2006 09:19:50 &#45;0700 -->
+<!--X-Message-Id: 449AC326.2040306@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20060622113643.6686.qmail@web55709.mail.re3.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] question about @din or @iin</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00422.html">Thread Prev</a>][<a href="msg00423.html">Thread Next</a>][<A HREF="threads.html#00424">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] question about @din or @iin</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret ocean &lt;<a href="mailto:ferretocean@DOMAIN.HIDDEN">ferretocean@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] question about @din or @iin</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 22 Jun 2006 09:19:50 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00422.html">20060622113643.6686.qmail@web55709.mail.re3.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00422.html">20060622113643.6686.qmail@web55709.mail.re3.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.4 (Windows/20060516)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Dawn,<br>
+Ferret does not shift half a grid cell for this calculation.&nbsp; It
+computes the definite integral as the discrete sum, F(x)* dx where dx
+is computed from half a grid cell below to half a grid cell above the
+coordinate point.&nbsp; This particular example is<br>
+<br>
+1*1(1.5 - 0.5) + 2*2(2.5 - 1.5) + 3*3(3.5-2.5) = 14.0<br>
+<br>
+When Ferret writes that x is from 0.5 to 3.5 this indicates that the
+sum includes the grid cells from the start of box 1 at 0.5 to the end
+of box 3 at 3.5 was used in the sum.<br>
+<br>
+Take another example, where the boxes are not of size 1.<br>
+<tt><br>
+</tt>
+<blockquote><tt>yes? define axis/x=1:5:2 xax</tt><br>
+  <tt>yes? let xx = x[gx=xax]</tt><br>
+  <tt>yes? let ff = xx* xx</tt><br>
+  <br>
+  <tt>yes? list ff[x=@iin] </tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : XX*XX</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; indef. integ. on X</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 3 points (X)</tt><br>
+  <tt>&nbsp;1&nbsp;&nbsp; / 1:&nbsp;&nbsp; 2.00</tt><br>
+  <tt>&nbsp;3&nbsp;&nbsp; / 2:&nbsp; 20.00</tt><br>
+  <tt>&nbsp;5&nbsp;&nbsp; / 3:&nbsp; 70.00</tt><br>
+  <br>
+  <tt>yes? list ff[x=@din]</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : XX*XX</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0 to 6 (integrated)</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 70.00</tt><br>
+</blockquote>
+<br>
+&nbsp;Here are the box edges and coordinates<br>
+<blockquote><tt>yes? list xboxlo[gx=xax], x[gx=xax], xboxhi[gx=xax]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X: 0 to 6<br>
+&nbsp;Column&nbsp; 1: XBOXLO is XBOXLO (axis XAX)<br>
+&nbsp;Column&nbsp; 2: X is X (axis XAX)<br>
+&nbsp;Column&nbsp; 3: XBOXHI is XBOXHI (axis XAX)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; XBOXLO&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp; XBOXHI<br>
+1&nbsp;&nbsp; / 1:&nbsp; 0.000&nbsp; 1.000&nbsp; 2.000<br>
+3&nbsp;&nbsp; / 2:&nbsp; 2.000&nbsp; 3.000&nbsp; 4.000<br>
+5&nbsp;&nbsp; / 3:&nbsp; 4.000&nbsp; 5.000&nbsp; 6.000</tt><br>
+</blockquote>
+<br>
+So, ff[x=@din]&nbsp; =&nbsp; 1*1*(2 - 0) + 3*3*(4 - 2) + 5*5*(6 - 4) = 70<br>
+<br>
+Or, if we had said, list ff[x=1:5@din], then Ferret would use half a
+grid box on the first and last coordinates, or<br>
+<br>
+ff[x=1:5@din]&nbsp; =&nbsp; 1*1*(2 - 1) + 3*3*(4 - 2) + 5*5*(5 - 4) = 44<br>
+<blockquote><tt>yes? list ff[x=@din]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : XX*XX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 1 to 5 (integrated)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 44.00<br>
+  </tt></blockquote>
+<br>
+<br>
+<br>
+ferret ocean wrote:
+<blockquote
+ cite=""
+ type="cite"><br>
+hi, all<br>
+&nbsp;&nbsp; I'm not sure if anybody had ask this question, and I didn't find it
+from Email archive in PMEL website. My question is about @din, which
+give us an unaccurate value?<br>
+  <br>
+let one=x*x<br>
+list/i=1:3 one[i=@din]<br>
+then Ferret give us:<br>
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : X*X<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0.5 to 3.5 (integrated)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 14.00<br>
+  <br>
+Actually, we know integrate x*x from 0.5 to 3.5 (shift 1/2 grid cell in
+Ferret), is x^3/3 from 0.5 to 3.5, which means (3.5^3-0.5^3)/3=14.25
+instead of 14.00.<br>
+  <br>
+  <br>
+why? the same for @iin, the results of each step is integer, no digit.
+why?<br>
+  <br>
+Any help will be appreciated!<br>
+  <br>
+  <br>
+Dawn<br>
+  <br>
+  <br>
+  <p> __________________________________________________<br>
+Do You Yahoo!?<br>
+Tired of spam? Yahoo! Mail has the best spam protection around <br>
+<a class="moz-txt-link-freetext" href="">http://mail.yahoo.com</a> </p>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00422" href="msg00422.html">[ferret_users] question about @din or @iin</a></strong>
+<ul><li><em>From:</em> ferret ocean</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00422.html">[ferret_users] question about @din or @iin</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00423.html">[ferret_users] ferret question (plot/vs)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00422.html">Thread Prev</a>][<a href="msg00423.html">Thread Next</a>][<A HREF="threads.html#00424">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

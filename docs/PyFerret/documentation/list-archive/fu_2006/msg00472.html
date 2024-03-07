@@ -1,0 +1,307 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 10 Jul 2006 14:08:07 &#45;0700 -->
+<!--X-Message-Id: 44B2C1B2.3060802@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6.2.1.2.2.20060614032031.09608bd8@gmaomail.gsfc.nasa.gov -->
+<!--X-Reference: Pine.LNX.4.64.0606151002480.29739@tsunami.ocean.washington.edu -->
+<!--X-Reference: 44AF034F.5000702@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00467.html">Thread Prev</a>][<a href="msg00478.html">Thread Next</a>][<A HREF="threads.html#00472">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>muyin wang &lt;<a href="mailto:Muyin.Wang@DOMAIN.HIDDEN">Muyin.Wang@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 10 Jul 2006 14:08:02 -0700</li>
+<li>Cc: Andy Chiodi &lt;<a href="mailto:chiodi@DOMAIN.HIDDEN">chiodi@xxxxxxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00467.html">44AF034F.5000702@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00400.html">6.2.1.2.2.20060614032031.09608bd8@gmaomail.gsfc.nasa.gov</a>&gt;&lt;<a href="msg00403.html">Pine.LNX.4.64.0606151002480.29739@tsunami.ocean.washington.edu</a>&gt;&lt;<a href="msg00467.html">44AF034F.5000702@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.4 (Windows/20060516)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Muyin,<br>
+Well, this is interesting. The missing values are what make the sums 
+different in each direction.  Create a test variable with some missing 
+values<br>
+<br>
+yes? def axis/x=1:8:1 xax<br>
+yes? def axis/y=1:5:1 yax<br>
+yes? let a = x[gx=xax] + 1.1*y[gy=yax]<br>
+yes? let b = if a gt 6  then a<br>
+yes? let bxavg = b[x=@ave]<br>
+yes? let byavg = b[y=@ave]<br>
+<br>
+yes? list b<br>
+            VARIABLE : IF A GT 6  THEN A<br>
+            SUBSET   : 8 by 5 points (X-Y)<br>
+            1      2      3      4      5      6      7      8   
+            1      2      3      4      5      6      7      8<br>
+1   / 1:   ....   ....   ....   ....   6.10   7.10   8.10   9.10<br>
+2   / 2:   ....   ....   ....   6.20   7.20   8.20   9.20  10.20<br>
+3   / 3:   ....   ....   6.30   7.30   8.30   9.30  10.30  11.30<br>
+4   / 4:   ....   6.40   7.40   8.40   9.40  10.40  11.40  12.40<br>
+5   / 5:   6.50   7.50   8.50   9.50  10.50  11.50  12.50  13.50<br>
+<br>
+yes? list bxavg<br>
+            VARIABLE : B[X=@AVE]<br>
+            SUBSET   : 5 points (Y)<br>
+            X        : 0.5 to 8.5<br>
+1   / 1:   7.60<br>
+2   / 2:   8.20<br>
+3   / 3:   8.80<br>
+4   / 4:   9.40<br>
+5   / 5:  10.00<br>
+<br>
+yes? list byavg<br>
+            VARIABLE : B[Y=@AVE]<br>
+            SUBSET   : 8 points (X)<br>
+            Y        : 0.5 to 5.5<br>
+1   / 1:   6.50<br>
+2   / 2:   6.95<br>
+3   / 3:   7.40<br>
+4   / 4:   7.85<br>
+5   / 5:   8.30<br>
+6   / 6:   9.30<br>
+7   / 7:  10.30<br>
+8   / 8:  11.30<br>
+<br>
+yes? list bxavg[y=@ave], byavg[x=@ave]<br>
+            X: 0.5 to 8.5<br>
+            Y: 0.5 to 5.5<br>
+Column  1: BXAVG[Y=@AVE] is B[X=@AVE]<br>
+Column  2: BYAVG[X=@AVE] is B[Y=@AVE]<br>
+         BXAVG   BYAVG<br>
+I / *:     8.800  8.488<br>
+<br>
+<br>
+Now, when the data is averaged in X first, there are 4 function values 
+that go into the first value, 5 that are used to make the second, and 8 
+that go into the last average. When the data is averaged in Y first, 
+there is only one that's used to form the first average, 2 for the 
+second, and so on.  So the original function values are in effect 
+weighted differently when you compute the averages in each of the two 
+different orders. Trace through what happens to the 6.5 in the first 
+column of the listing of b.  In the case where we first form the X sum, 
+it is one of 8 numbers averaged with all the other values in its row 
+before that result is used to make the XY sum.  In the case where we 
+first form the Y sum, it becomes the j=1 result, and is weighted equally 
+with the other y-averages which were computed with more data. We wind up 
+over-weighting data in columns with a lot of missing data when forming 
+the Y sum first, and over-weighting data in rows with a lot of missing 
+data when forming the X sum first.<br>
+<br>
+The correct answer is found either with a 2-dimensional average, or by 
+averaging the data after unravelling it into a 1-dimensional list.<br>
+<br>
+yes? list b[x=@ave,y=@ave]<br>
+            VARIABLE : IF A GT 5 THEN A<br>
+            X        : 0.5 to 8.5 (XY ave)<br>
+            Y        : 0.5 to 5.5 (XY ave)<br>
+         8.667<br>
+yes? let c = xsequence(b)<br>
+yes? list c[x=@ave]<br>
+            VARIABLE : XSEQUENCE(B)<br>
+            X        : 0.5 to 40.5 (averaged)<br>
+         8.667<br>
+<br>
+If the data have no missing values, any of these ways of forming the sum 
+will be the same.<br>
+<br>
+yes? use etopo120<br>
+yes? let rxavg = rose[x=@ave]<br>
+yes? let ryavg = rose[y=@ave]<br>
+yes?  list rxavg[y=@ave], ryavg[x=@ave]<br>
+            DATA SET: 
+/home/porter/tmap/ferret/linux/fer_dsets/data/etopo120.cdf<br>
+            LONGITUDE: 20E to 20E(380)<br>
+            LATITUDE: 90S to 90N<br>
+Column  1: RXAVG[Y=@AVE] is ROSE[X=@AVE]<br>
+Column  2: RYAVG[X=@AVE] is ROSE[Y=@AVE]<br>
+         RXAVG   RYAVG<br>
+I / *:    -1896. -1896.<br>
+<br>
+<br>
+<br>
+muyin wang wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi, Andy:<br>
+Thank you for your regressxy script. One thing I don't understand is 
+why does the order of averaging matter? See the example blow. The 
+results are so different! What was wrong here?<br>
+Thanks,<br>
+Muyin<br>
+<br>
+<br>
+<br>
+let p=eofs[d=1,l=1]<br>
+let q=eofs[d=2,l=1]<br>
+<br>
+let pq=p*q<br>
+let pqmsk=pq-pq<br>
+<br>
+let pmsk=p+pqmsk<br>
+let qmsk=q+pqmsk<br>
+<br>
+let pxavg=pmsk[x=@ave]<br>
+let pyavg=pmsk[y=@ave]<br>
+<br>
+let pxya=pxavg[y=@ave]<br>
+let pyxa=pyavg[x=@ave]<br>
+<br>
+list pxya,pyxa<br>
+<br>
+ Column  1: PXYA is PXAVG[Y=@AVE]<br>
+ Column  2: PYXA is PYAVG[X=@AVE]<br>
+             PXYA     PYXA<br>
+I / *:    -0.01525  0.01854<br>
+<br>
+<br>
+Andy Chiodi wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><br>
+Hi Zhen,<br>
+<br>
+    The spatial correlation of two varaibles can be found with the 
+following ferret script.  This is simply the regresst script 
+re-written to consider space rather than time.<br>
+<br>
+To use this, copy the regressxy script below to a .jnl file and then 
+type<br>
+<br>
+yes?  go regressxy<br>
+yes?  let P = myvar1<br>
+yes?  let Q = myvar2<br>
+<br>
+in ferret.  The variable &quot;corr&quot; is then the spatial correlation 
+between myvar1 and myvar2.<br>
+<br>
+I hope this helps,<br>
+<br>
+Andy<br>
+<br>
+<br>
+regressxy.jnl script:<br>
+<br>
+\CANCEL MODE VERIFY<br>
+! Description:  define FERRET variables for regression along the X 
+and Y axis<br>
+<br>
+say ... Linear Regression In the XY Plane<br>
+say ... Instructions:<br>
+say Use the LET command to define new variables<br>
+say Define the variable P as your independent (X) variable<br>
+say Define the variable Q as your   dependent (Y) variable<br>
+say Results will be variables &quot;SLOPE&quot;, &quot;INTERCEP&quot; and &quot;RSQUARE&quot;<br>
+say QHAT will be the regression estimate<br>
+say Note: If &quot;Y&quot; is your independent variable then<br>
+say ...   &quot;SET GRID Q&quot; after defining Q.<br>
+say ...<br>
+<br>
+let pq = p*q<br>
+let pqmask = pq-pq  ! 0 or &quot;missing&quot; so all variables share the same 
+missing<br>
+let pmasked = p + pqmask<br>
+let qmasked = q + pqmask<br>
+let pp = pmasked*pmasked<br>
+let qq = qmasked*qmasked<br>
+<br>
+let pxave = pmasked[x=@ave]<br>
+let qxave = qmasked[x=@ave]<br>
+let pave = pxave[y=@ave]<br>
+let qave = qxave[y=@ave]<br>
+let pqxave = pq[x=@ave]<br>
+let ppxave = pp[x=@ave]<br>
+let qqxave = qq[x=@ave]<br>
+let pqave = pqxave[y=@ave]<br>
+let ppave = ppxave[y=@ave]<br>
+let qqave = qqxave[y=@ave]<br>
+let pvar  = ppave - pave*pave<br>
+let qvar  = qqave - qave*qave<br>
+let pqvar = pqave - pave*qave<br>
+<br>
+let slope = pqvar / pvar<br>
+let intercep = qave - slope*pave<br>
+let qhat = slope*p + intercep<br>
+let rsquare = (pqvar*pqvar) / (pvar*qvar)<br>
+let corr = pqvar/(pvar*qvar)^0.5<br>
+<br>
+SET MODE/LAST VERIFY<br>
+<br>
+</blockquote><pre>
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>
+</pre>
+</blockquote><pre>
+</pre>
+</blockquote></blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00478" href="msg00478.html">[ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00400" href="msg00400.html">[ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> zhen.li</li></ul></li>
+<li><strong><a name="00403" href="msg00403.html">Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> Andy Chiodi</li></ul></li>
+<li><strong><a name="00467" href="msg00467.html">Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+<ul><li><em>From:</em> muyin wang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00467.html">Re: [ferret_users] [FERRET]calculate spatial correlation of 2 variables</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00478.html">[ferret_users] How to do @rsum and @iin in reverse?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00467.html">Thread Prev</a>][<a href="msg00478.html">Thread Next</a>][<A HREF="threads.html#00472">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

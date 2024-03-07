@@ -1,0 +1,217 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] lambert GRIB to netcdf? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 7 Apr 2008 10:41:55 &#45;0700 -->
+<!--X-Message-Id: 47FA5CE0.6070604@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8cc42c030804070338o6136c964y6ebd101f5a7de85d@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] lambert GRIB to netcdf?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00168.html">Thread Next</a>][<A HREF="threads.html#00166">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] lambert GRIB to netcdf?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] lambert GRIB to netcdf?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 07 Apr 2008 10:41:52 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:8cc42c030804070338o6136c964y6ebd101f5a7de85d@DOMAIN.HIDDEN">8cc42c030804070338o6136c964y6ebd101f5a7de85d@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8cc42c030804070338o6136c964y6ebd101f5a7de85d@DOMAIN.HIDDEN">8cc42c030804070338o6136c964y6ebd101f5a7de85d@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.12 (Windows/20080213)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Peter,<br>
+You're right that you could do this kind of thing with a scat2grid
+function. The projection
+doesn't change in time, so write the longitudes and latitudes, say as
+lists of&nbsp; xpts, ypts.&nbsp; Then list the data variable as a 2D variable,
+location vs time. These might be in 2 files, one for the
+longitude,latitude data and a second for the data field.&nbsp; Read these in
+using Ferret ascii commands and then do the scat2grid function to
+combine them into a gridded variable<br>
+<br>
+<font color="#000000"><tt>DEFINE AXIS/x=12.44:25.22/np=97 long<br>
+DEFINE AXIS/y=44.64:50.01/np=61 lati<br>
+DEFINE AXIS/t=1:124:1 time</tt></font><font color="#000000"><tt><br>
+DEFINE GRIDx=long/y=lati gridxy</tt></font><font color="#000000"><tt><br>
+DEFINE GRID/t=time/x=long/y=lati gridxyt</tt></font><font
+ color="#000000"><tt><br>
+SET DATA/EZ/VARIABLES="lon,lat"/GRID=gridxy "myfile_lon_lat.txt"</tt></font><br>
+<font color="#000000"><tt><br>
+SET DATA/EZ/VARIABLES="tmp"/GRID=gridxyt "myfiletmp.txt"</tt></font><br>
+<br>
+LET gridded_var = scat2gridlaplac_xy(lon[d=1],lat[d=1],tmp[d=2],...<br>
+<br>
+<br>
+But maybe you can leave things in the lambert projection. <br>
+<br>
+Is your main goal to do graphics in Ferret?&nbsp; If so, then what you want
+to have in your file is 2-D fields for the LONGITUDE and LATITUDE
+variables, and then the data field a function of i,j, and time.&nbsp; This
+is then Curvilinear data in netCDF and Ferret terminology, and Ferret
+can do graphics directly with it.<br>
+<br>
+The netCDF file you'd be aiming for would look something like this<br>
+<br>
+<tt>&nbsp; name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L<br>
+&nbsp;VAR &nbsp;&nbsp;&nbsp;&nbsp; DATA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:97 &nbsp;&nbsp;&nbsp; 1:61 &nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:124<br>
+&nbsp;LON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:97 &nbsp;&nbsp;&nbsp; 1:61 &nbsp;&nbsp;&nbsp;&nbsp; ...</tt><tt>
+&nbsp;&nbsp;&nbsp; &nbsp; ... </tt><br>
+<tt>&nbsp;</tt><tt>LAT &nbsp;&nbsp;&nbsp;&nbsp; LATITUDE</tt><tt>&nbsp;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:97 &nbsp;&nbsp;&nbsp;
+1:61 &nbsp;&nbsp;&nbsp;&nbsp; </tt><tt>...</tt><tt> &nbsp;&nbsp;&nbsp; &nbsp; ... </tt><br>
+<br>
+Where I've just made up the numbers i=1:200 and J=1:00.&nbsp; The underlying
+xy grid is just indices, and the longitude and latitude variables
+describe locations on the Lambert projection. If you can think of a way
+to output the data in this arrangement, then you're set.&nbsp; It might be
+that you'd put the data out in 3 files, one for longitudes, one for
+latitudes, and a third for the data field, including its time steps,
+and then read them in as ascii or whatever kind of files they need to
+be, then read them in using Ferret and write a single netCDF file.<br>
+<br>
+<br>
+<br>
+Ansley<br>
+<br>
+Peter Szabo wrote:
+<blockquote
+ cite=""
+ type="cite">Dear Ferret_Users,<br>
+  <br>
+i have monthly-stored (one value for every 6 hours in a month),
+GRIB-formatted, Lambert conformal-projected database. i want this to be
+in netcdf format (an average or summed value per month is enough).<br>
+  <br>
+I know, ferret cannot read GRIB files, so i tried to use CDO. These
+operators read GRIB files, but cannot operate with Lambert projection.
+(though it is said on their homepage: <a rel="nofollow" moz-do-not-send="true"
+ href="http://www.mpimet.mpg.de/fileadmin/software/cdo/">http://www.mpimet.mpg.de/fileadmin/software/cdo/</a>
+)<br>
+  <br>
+Then i tried to walk this way: i made the CDO to write out the values
+in ASCII format (1. file for 124 timesteps), then i got the coordinates
+in an other ASCII file (2. file) then i 'cat'-ed the coordinate file to
+be there in 2. file (now 124 timesteps), after that i pasted the 1. and
+2. file (i got lon lat value for 124 timesteps).<br>
+i got results like this:<br>
+  <br>
+&nbsp;&nbsp; 12.4353&nbsp;&nbsp; 44.6348&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 280.8<br>
+&nbsp;&nbsp; 12.5611&nbsp;&nbsp; 44.6417&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 12.6870&nbsp;&nbsp; 44.6485&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 12.8129&nbsp;&nbsp; 44.6551&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 12.9389&nbsp;&nbsp; 44.6616&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 13.0648&nbsp;&nbsp; 44.6680&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.2<br>
+&nbsp;&nbsp; 13.1908&nbsp;&nbsp; 44.6742&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.2<br>
+&nbsp;&nbsp; 13.3169&nbsp;&nbsp; 44.6803&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.2<br>
+&nbsp;&nbsp; 13.4429&nbsp;&nbsp; 44.6862&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 13.5690&nbsp;&nbsp; 44.6919&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 13.6951&nbsp;&nbsp; 44.6976&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.3<br>
+&nbsp;&nbsp; 13.8212&nbsp;&nbsp; 44.7030&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 13.9474&nbsp;&nbsp; 44.7084&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 280.9<br>
+&nbsp;&nbsp; 14.0736&nbsp;&nbsp; 44.7136&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.3<br>
+&nbsp;&nbsp; 14.1998&nbsp;&nbsp; 44.7186&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 281.1<br>
+&nbsp;&nbsp; 14.3260&nbsp;&nbsp; 44.7235&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 279.7<br>
+&nbsp;&nbsp; 14.4523&nbsp;&nbsp; 44.7282&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 278.4<br>
+&nbsp;&nbsp; 14.5785&nbsp;&nbsp; 44.7328&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 279.8<br>
+&nbsp;&nbsp; 14.7048&nbsp;&nbsp; 44.7373&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 280<br>
+  <br>
+Then i made script like this:<br>
+  <br>
+  <font color="#000000"><tt>DEFINE AXIS/x=12.44:25.22/np=97 long<br>
+DEFINE AXIS/y=44.64:50.01/np=61 lati<br>
+DEFINE AXIS/t=1:124:1 time<br>
+DEFINE GRID/t=time/x=long/y=lati grids<br>
+SET DATA/EZ/VARIABLES="lon,lat,tmp"/GRID=grids "myfile.txt"<br>
+  <br>
+If I save out the variable tmp will it be on a normal lat/lon grid
+(will it be correct when using 'go land_detail'?) and can i compare it
+with lat/lon data sets?<br>
+  <br>
+i know, for only one timestep it would be such an easy case, i could
+use 'scat2gridlaplace' and '</tt></font><font color="#000000"><tt>SET
+DATA/EZ/VARIABLES="lon,lat,tmp" "myfile.txt"' without setting the grid
+but with defining the x-y axis!<br>
+  <br>
+Should i start thinking of an other solution in order to be able use
+Lambert (and) GRIB file? Can someone help me? Thanks in advance,<br>
+  <br>
+Peter Szabo, HMS<br>
+  </tt></font></blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00168" href="msg00168.html">Re: [ferret_users] lambert GRIB to netcdf?</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00165" href="msg00165.html">[ferret_users] lambert GRIB to netcdf?</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00165.html">[ferret_users] lambert GRIB to netcdf?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00168.html">Re: [ferret_users] lambert GRIB to netcdf?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00168.html">Thread Next</a>][<A HREF="threads.html#00166">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] time axis for perpertual year run -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 8 Sep 2008 11:02:08 &#45;0700 -->
+<!--X-Message-Id: 48C56888.5030902@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 49A58663&#45;04FE&#45;4991&#45;936A&#45;26170C208B3B@atm.ch.cam.ac.uk -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] time axis for perpertual year run</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00456.html">Thread Next</a>][<A HREF="threads.html#00465">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] time axis for perpertual year run</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Glenn Carver &lt;<a href="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] time axis for perpertual year run</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 08 Sep 2008 11:01:44 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:49A58663-04FE-4991-936A-26170C208B3B@DOMAIN.HIDDEN">49A58663-04FE-4991-936A-26170C208B3B@xxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:49A58663-04FE-4991-936A-26170C208B3B@DOMAIN.HIDDEN">49A58663-04FE-4991-936A-26170C208B3B@xxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.16 (Windows/20080708)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Glenn<br>
+What's happening here is that each FILL command has no way to
+extrapolate to the outer edges of the grid boxes.&nbsp; z1[L=12] doesn't
+know about z2[L=13], and vice versa, so has no way to fill the gap
+between the last coordinate point of the first variable and the first
+coordinate point of the second.&nbsp; If you did a SHADE command, I think
+you'd see the whole region filled in, but you want a filled contour.<br>
+<br>
+What you need is a single variable covering the whole 5 years, or
+whatever it is. I haven't tested this, but what about something along
+these lines<br>
+<blockquote><tt>let z1 =&nbsp; z[d=1,gt=y5@asn]
+  <br>
+  </tt><tt>let z2 =&nbsp; z[d=2,gt=y5@asn]
+  <br>
+  </tt><tt>let z3 =&nbsp; z[d=3,gt=y5@asn]
+  <br>
+  </tt><tt>...<br>
+  <br>
+  </tt><tt>let s1 = if L le 12 then z1 else 0<br>
+  </tt><tt>let s2 = if L ge 13 and L lt 24 then z2 else 0<br>
+  </tt><tt>let s3 = if L ge 25 and L lt 36 then z3 else 0<br>
+...<br>
+  <br>
+  </tt><tt>let var = s1 + s2 + s3 ...<br>
+  </tt><tt>fill var</tt><br>
+</blockquote>
+<br>
+Glenn Carver wrote:
+<blockquote
+ cite=""
+ type="cite">I have a monthly mean netcdf files from a run of a model
+which has run 2001 repeatedly. Each year is in one netcdf file. I want
+to view the files as a time sequence rather than treat them as a
+climatology but am not sure how best to create the new time axis. As
+each file is for '2001' I need to create a new time axis in order to
+see the sequence of years.&nbsp; I've done this by:
+  <br>
+  <br>
+def axis/t=1:60:1 y5
+  <br>
+  <br>
+I need use the @asn operator for each netcdf file and overlay the
+years, like this:
+  <br>
+  <br>
+def axis/t=13:24:1 y2
+  <br>
+def axis/t=25:36:1 y3
+  <br>
+  <br>
+let/d=1&nbsp; z1=z[gt=y5@asn]
+  <br>
+let/d=2&nbsp; z2=z[gt=y2@asn]
+  <br>
+let/d=3&nbsp; z3=z[gt=y3@asn]
+  <br>
+  <br>
+and plot by:
+  <br>
+  <br>
+fill z1
+  <br>
+fill/over z2
+  <br>
+fill/over z3
+  <br>
+  <br>
+The first plot 'fill z1' gives a time axis for the full 5yrs but only
+the first 1-12 months filled as the first netcdf file has only 12
+months. The next commands then fill months 13-24 and 25-36
+respectively.
+  <br>
+  <br>
+This works just fine but the problem is that I get a gap between the
+months 12-13 and 24-25 (see plot).&nbsp; I'd like the figure to be
+continuous.
+  <br>
+  <br>
+Anyone know a way round this?
+  <br>
+  <br>
+Thanks,&nbsp;&nbsp; Glenn
+  <br>
+  <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00449" href="msg00449.html">[ferret_users] time axis for perpertual year run</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00449.html">[ferret_users] time axis for perpertual year run</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00456.html">[ferret_users] Plotting with multiple axis scales</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00456.html">Thread Next</a>][<A HREF="threads.html#00465">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

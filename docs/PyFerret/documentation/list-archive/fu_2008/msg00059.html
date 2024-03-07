@@ -1,0 +1,217 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] the role of comment/uncomment the command 'List' -->
+<!--X-From-R13: wnvfbaNngzbf.hpyn.rqh -->
+<!--X-Date: Thu, 31 Jan 2008 15:40:57 &#45;0800 -->
+<!--X-Message-Id: 36926.169.232.145.149.1201822845.squirrel@mail.atmos.ucla.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 203814.30314.qm@web57108.mail.re3.yahoo.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] the role of comment/uncomment the command 'List'</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00058.html">Thread Prev</a>][<a href="msg00060.html">Thread Next</a>][<A HREF="threads.html#00059">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] the role of comment/uncomment the command 'List'</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret ocean &lt;<a href="mailto:ferretocean@DOMAIN.HIDDEN">ferretocean@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] the role of comment/uncomment the command 'List'</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxx</a></strong></li>
+<li>Date: Thu, 31 Jan 2008 15:40:45 -0800 (PST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="mailto:203814.30314.qm@DOMAIN.HIDDEN">203814.30314.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:203814.30314.qm@DOMAIN.HIDDEN">203814.30314.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: SquirrelMail/1.4.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+ solution to your problem :
+
+     use model.cdf
+     set reg/y=-40.5:-30.5/l=1
+     let lev1   = 36.21
+     let rho    = rho_un(salt,temp,2000)-1000
+     let mask   = if rho le lev1 then 1
+     let masku  = mask[gx=u]
+     let u_upper= u*masku
+     let tr     = u_upper[y=@din,k=@din]*1e-6
+     list tr[x=-24]
+
+     Two IMPORTANT points :
+
+   1. LIST is an &quot;action&quot; command (see Ch3 Sec2.  EXPRESSIONS for details).
+         Ferret does some calculation or plotting only with the action command.
+         Till you issue an action command, a variable may not be evaluated and
+         the array indices may not be set ......and so and so...
+
+   2. There are 3-options to restrict the data axis/coordinate range.
+
+          1) &quot;set reg&quot; command (eg.  set reg/x=-62.5:-22.5 )
+
+               this command have a global nature, which WILL affect all subsequent
+               calculation/plotting (all action commands) that follows.
+
+          2) as a qualifier to action commands (eg.  list/x=-62.5:-22.5  var_name)
+
+               this method specifies the region only for a specific action command
+               and will NOT affect any calculation/plotting in any other parts
+               of the script.
+
+          3) as a part of variable name (eg.  list var_name[x=-62.5:-22.5])
+
+               This method works just fine with action commands like list/plot.
+               However, there are some concerns when you use this method to define
+               a variale like
+
+                     let  var_new = var_old[x=-63:-22]
+
+               Here, you DO NOT have access to individual elements in var_new
+               along X-axis, before &quot;loading&quot; the var_new on to Ferret, using any
+               of the action commands. Once you list it without specifying X value,
+               the data is &quot;loaded&quot; into Ferret session and there after you can
+               use [x=-25]....that is why you observed a change in behaviour with
+               and without an initial &quot;list command&quot;
+
+                Let us see an example.
+
+                   use levitus_climatology
+                   set reg/y=-40.5:-30.5/k=1
+                   let tr  = temp[x=-62.5:-22.5,y=@DIN]
+                   list tr[x=-25]
+              **ERROR: illegal limits: X axis limits don't match variable def'n: TR
+                  Are you giving explicit limits when SET REGION would suffice ?
+                      list tr[x=-25]
+                  Command file, command group, or REPEAT execution aborted
+
+               Because of above rule, you cannot directly access &quot;tr&quot;'s array
+               elements using &quot;[ ]&quot;. But try
+
+                      list/x=-25 tr
+
+               and it will work !!!
+
+
+ Confused? May be the developers can explain how exactly Ferret deals the 3
+set region commands above, in more detail ...
+
+Thanks and Regards,
+
+Jaison
+
+&gt; hi, Ferreters,
+&gt;
+&gt;   It's a strange problem I got several times. Does the command 'List' impact on the
+&gt; later command?
+&gt;
+&gt;   I use model results in which Arawaka C-grid is used. Sometimes I have to regrid my
+&gt; results from density point to U or V point.  In the following script,  I get a
+&gt; variable 'tr', which is the volumn transport integrated from surface to density
+&gt; surface (36.21).  It's so tricky when I comment/uncomment 'list tr' ( the command
+&gt; before the last line).
+&gt;
+&gt;   IF don't execute 'list tr', then get the following error messages:
+&gt;
+&gt;    **ERROR: illegal limits: X axis limits don't match variable def'n: TR
+&gt;           Are you giving explicit limits when SET REGION would suffice ?
+&gt;           list tr[x=-24]
+&gt;           Command file, command group, or REPEAT execution aborted
+&gt;
+&gt;   IF execute 'list tr' before list tr[x=-24], then get
+&gt;
+&gt;                LONGITUDE: 24W(-24)
+&gt;              LATITUDE : 40.5S to 30.5S
+&gt;              DEPTH (m): 0 to 5200
+&gt;              TIME     : 16-JAN-1982 11:00
+&gt;                 17.396
+&gt;
+&gt;   I don't think the command 'List' can impact on the later results, but I can't explain
+&gt; this problem.
+&gt;
+&gt;   Dawn
+&gt;
+&gt;
+&gt;    use model.cdf
+&gt;  set reg/x=-62.5:-22.5/y=-40.5:-30.5
+&gt;    let lev1 = 36.21
+&gt;  let rho=rho_un(salt,temp,2000)-1000
+&gt;  let mask= if rho le lev1 then 1
+&gt;  let masku=mask[gx=u,x=-63:-22];
+&gt;  let u_upper=u[x=-63:-22]*masku
+&gt;  let masku=mask[gx=u,x=-63:-22];
+&gt;  let tr=u_upper[y=@din,k=@din,l=1]*1e-6;
+&gt; !----------Attention--------
+&gt;    list tr
+&gt;   !-----------------------------
+&gt;  list tr[x=-24]     ! only this number is what I really want.
+&gt;
+&gt;
+&gt; ---------------------------------
+&gt; Looking for last minute shopping deals?  Find them fast with Yahoo! Search.
+&gt;
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00058" href="msg00058.html">[ferret_users] the role of comment/uncomment the command 'List'</a></strong>
+<ul><li><em>From:</em> ferret ocean</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00058.html">[ferret_users] the role of comment/uncomment the command 'List'</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00060.html">[ferret_users] median filter script</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00058.html">Thread Prev</a>][<a href="msg00060.html">Thread Next</a>][<A HREF="threads.html#00059">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

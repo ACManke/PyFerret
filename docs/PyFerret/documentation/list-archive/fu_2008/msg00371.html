@@ -1,0 +1,157 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Re: 3 Arguement (Curvilinear) Fill Problem -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 8 Jul 2008 10:12:40 &#45;0700 -->
+<!--X-Message-Id: 4873A008.4080808@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: f66f988b65e3.48733e13@fsu.edu -->
+<!--X-Derived: gifqOz5TO2HhF.gif -->
+<!--X-Derived: gifScerk46Anp.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Re: 3 Arguement (Curvilinear) Fill Problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00370.html">Thread Prev</a>][<a href="msg00375.html">Thread Next</a>][<A HREF="threads.html#00371">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: 3 Arguement (Curvilinear) Fill Problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Stephen Guimond &lt;<a href="mailto:sguimond@DOMAIN.HIDDEN">sguimond@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: 3 Arguement (Curvilinear) Fill Problem</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 08 Jul 2008 10:12:40 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:f66f988b65e3.48733e13@DOMAIN.HIDDEN">f66f988b65e3.48733e13@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f66f988b65e3.48733e13@DOMAIN.HIDDEN">f66f988b65e3.48733e13@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Windows/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Steve,<br>
+When you have a polar region, the curvilinear plotting commands can
+break down a bit. What do the longitudes look like?<br>
+<blockquote>yes? shade nndx<br>
+</blockquote>
+Here's one possibility for what's happening:&nbsp; If the branch cuts across
+the region at an angle (see an example below with some data I happen to
+have), then the 3-argument plot commands can have some trouble, drawing
+across the plot because 0 is next to 360 at, say, i=60, but in the next
+row, 0 is next to 360 at i=59.<br>
+<br>
+One way to deal with this is to break up the region into two or more so
+that the longitudes are monotonic in each one -- something along these
+lines.<br>
+<blockquote>yes? use example_wind.nc <br>
+yes? set view ul; shade longitude; go land<br>
+</blockquote>
+! Here, the longitudes are monotonic in j=1:60 and in j=61:122, if we
+add a constant value for longitude&lt;0:<br>
+yes? let longfix = if longitude lt 0 then longitude + 360 else longitude<br>
+<blockquote>yes? set view ll; shade longitude[j=1:60]; go land<br>
+yes? set view lr; shade longfix[j=61:122]; go land<br>
+yes? frame/file=split_up_longitudes.gif<br>
+</blockquote>
+If this kind of thing is going on, then we can do a fill/vlim/hlim with
+part of the data, and fill/over with the rest of the data and a fix on
+the longitudes.&nbsp; Let us know if this seems to be along the lines of
+what you need.<br>
+<br>
+Ansley<br>
+<br>
+Stephen Guimond wrote:
+<blockquote cite="" type="cite">
+  <pre wrap="">Hi Ansley,
+
+My normal e-mail address (the one connected to the ferret users group) is having problems but I wanted to get this question out to the group.  If it doesn't go through can you forward on?
+
+I am getting some wacky features when plotting data using the 3 argument fill command.  My data is on a cylindrical grid and thus a 2-D slice makes a circle.  Here is how I read in my data (array is (72,200)):
+
+def axis/x=1:72:1/modulo xax;def axis/y=2:400:2/units=km yax
+def grid/x=xax/y=yax g2
+file/grid=g2/format=stream/var="ndx,ndy,uu" look
+
+!necessary to regrid to fill the gap in the circle
+def axis/x=1:73:1 nx
+def grid/like=g2/x=nx g3
+
+let nndx = ndx[g=g3]
+let nndy = ndy[g=g3]
+let nuu = uu[g=g3]
+
+fill nuu,nndx,nndy
+
+The attached plot is the output.  Looks okay for j=1:120 but after that things go wild.  I overlaid my grid points with polymark to show that they are not the problem.
+
+Thanks for the help,
+Steve
+
+
+  </pre>
+  <br>
+  <hr size="4" width="90%"><br>
+  <center><img src="gifqOz5TO2HhF.gif"></center>
+</blockquote>
+
+
+</font></td></tr></table><p><a href="gifScerk46Anp.gif" ><img src="gifScerk46Anp.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00370.html">[ferret_users] mp_polymark without grid data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00375.html">[ferret_users] Re: 3 Arguement (Curvilinear) Fill Problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00370.html">Thread Prev</a>][<a href="msg00375.html">Thread Next</a>][<A HREF="threads.html#00371">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

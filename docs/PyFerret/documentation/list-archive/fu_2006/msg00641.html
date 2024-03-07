@@ -1,0 +1,169 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 2 Oct 2006 08:39:35 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0610022113240.7692@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: FED41689&#45;35F6&#45;426B&#45;883A&#45;3DFBA4062A31@astr.ucl.ac.be -->
+<!--X-Reference: Pine.LNX.4.58.0609300043400.5212@caos.iisc.ernet.in -->
+<!--X-Reference: D0FBAB0C&#45;049E&#45;49D0&#45;8CD0&#45;C505B96C8951@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00639.html">Thread Prev</a>][<a href="msg00629.html">Thread Next</a>][<A HREF="threads.html#00641">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 02 Oct 2006 21:14:07 +0530 (IST)</li>
+<li>Cc: <a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00639.html">D0FBAB0C-049E-49D0-8CD0-C505B96C8951@astr.ucl.ac.be</a>&gt;</li>
+<li>References: &lt;<a href="msg00628.html">FED41689-35F6-426B-883A-3DFBA4062A31@astr.ucl.ac.be</a>&gt;&lt;<a href="msg00631.html">Pine.LNX.4.58.0609300043400.5212@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00639.html">D0FBAB0C-049E-49D0-8CD0-C505B96C8951@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie &amp; Mick,
+            Stick to the example i have given earlier. 
+
+1. Define the mask as 
+
+      yes? LET vv = IF varS THEN 1 ELSE 1
+
+2. Use two viewports with same area, one to fill the color and another
+       to make the shaded plot. 
+
+
+Please note that you have used &quot;vp&quot; for the color fill (3rd argument)
+and &quot;pp&quot; for the shade plot, both are different. If you define the mask
+as shown above, ideally you can use the same arguments for both the
+&quot;shade&quot; commands (like shade/............. vv[i=40:96@ave],ll,pp and
+shade/........... varS[i=40:96@ave],ll,pp)
+
+If this does not solve your problem, try to adjust /HLIMITS so that the
+&quot;extra column&quot; can be removed.
+
+Hope This Helps
+
+Jaison
+
+On Mon, 2 Oct 2006, Emilie Vanvyve wrote:
+
+&gt; Hi Mick and Jaison,
+&gt; 
+&gt; I tried all methods but couldn't implement the most rigourous ones  
+&gt; since the grid of my variables doesn't match properly any of the  
+&gt; solutions you suggested. The grid is x y z t with x and y = km and z  
+&gt; = a sigma coordinate. Since I want to plot a cross section of the  
+&gt; wind versus latitude and pressure, everything gets more complex. I  
+&gt; can not regrid everything on new axis or I loose my &quot;topography&quot;.
+&gt; 
+&gt; Therefore I use this solution: fill the graph with a uniform colour  
+&gt; before plotting my variable. It works fine, is dead easy to do, but  
+&gt; leads to a tiny problem that I don't understand: at the northest  
+&gt; latitude, I get a &quot;column&quot; of grey.  I attach the graph so that you  
+&gt; can see.
+&gt; 
+&gt; Here is how I plot this graph. It's extracted from a bigger script  
+&gt; dealing with the time dimension or other thing, some steps here after  
+&gt; might look a bit weird for that reason.
+&gt; 
+&gt; x or i = distance along a parallel, expressed in km
+&gt; y or j = dimension perpendicular to x, expressed in km
+&gt; z or k = vertical dimension, sigma coordinate (k=40 is the surface)
+&gt; 
+&gt; varS[x,y,z] = zonal wind
+&gt; pp[y,z] = pressure averaged over 10W-10E (i=40:96@ave)
+&gt; ll[y] = latitude averaged over 10W-10E (i=40:96@ave)
+&gt; 
+&gt; 1. Get the background in grey:
+&gt; 
+&gt; let vv = if varS ne 0 then varS/varS else varS+1  ! vv = 1 everywhere
+&gt; let vp = if k eq 40 then pp/pp*1000 else pp       ! vertical  
+&gt; dimension for the background variable, I need to extend it until 1000  
+&gt; hPa to get my &quot;topography&quot;
+&gt; 
+&gt; shade/nolabel/nokey/palette=grey/vlimit=1000:0:-100/k=7:40 vv 
+&gt; [i=40:96@ave],ll,vp
+&gt; 
+&gt; 2. Plot over this the zonal wind:
+&gt; 
+&gt; shade/key/pal=.../level=.../nolabel/vlimit=1000:0:-100/k=7:40/over/ 
+&gt; set varS[i=40:96@ave],ll,pp
+&gt;    go layout ; ppl ylab &quot;PRESSURE (hPa)&quot; ; ppl fill/over
+&gt; 
+&gt; 
+&gt; 
+&gt; I don't understand why the variable 'vv' extends much further  
+&gt; northwards than the variable 'varS'. I don't do anything to this  
+&gt; dimension, so both should be the same. What's going on here then?
+&gt; 
+&gt; 
+&gt; Emilie
+&gt; 
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00628" href="msg00628.html">[ferret_users] shade: a cross section with the surface topography filled at thebottom?</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+<li><strong><a name="00631" href="msg00631.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00639" href="msg00639.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00639.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00629.html">[ferret_users] bug with Ferret v6 ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00639.html">Thread Prev</a>][<a href="msg00629.html">Thread Next</a>][<A HREF="threads.html#00641">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

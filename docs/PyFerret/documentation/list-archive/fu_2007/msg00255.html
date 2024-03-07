@@ -1,0 +1,222 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Irregular Grid data Plot on ferret? -->
+<!--X-From-R13: Uyraa Qneire <Uyraa.QneireNngz.pu.pnz.np.hx> -->
+<!--X-Date: Wed, 25 Apr 2007 13:27:50 &#45;0700 -->
+<!--X-Message-Id: p05111b16c25560e0b196@[10.0.1.4] -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 5955c3bf0704251032o3454e2b1x87878c4020656775@mail.gmail.com -->
+<!--X-Reference: Pine.SGI.4.51.0704251508310.379127@www.coaps.fsu.edu -->
+<!--X-Reference: 5955c3bf0704251227y74b7622bp20af88013f28fbf6@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Irregular Grid data Plot on ferret?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00253.html">Thread Prev</a>][<a href="msg00256.html">Thread Next</a>][<A HREF="threads.html#00255">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Irregular Grid data Plot on ferret?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Yu, Hao-Cheng&quot; &lt;<a href="mailto:danish.url@DOMAIN.HIDDEN">danish.url@xxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Irregular Grid data Plot on ferret?</strong></li>
+<li><strong>From</strong>: <strong>Glenn Carver &lt;<a href="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 25 Apr 2007 21:27:35 +0100</li>
+<li>In-reply-to: &lt;<a href="mailto:5955c3bf0704251227y74b7622bp20af88013f28fbf6@DOMAIN.HIDDEN">5955c3bf0704251227y74b7622bp20af88013f28fbf6@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:5955c3bf0704251032o3454e2b1x87878c4020656775@DOMAIN.HIDDEN">5955c3bf0704251032o3454e2b1x87878c4020656775@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.SGI.4.51.0704251508310.379127@DOMAIN.HIDDEN">Pine.SGI.4.51.0704251508310.379127@xxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:5955c3bf0704251227y74b7622bp20af88013f28fbf6@DOMAIN.HIDDEN">5955c3bf0704251227y74b7622bp20af88013f28fbf6@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Dan,
+
+</pre><tt>This may not be exactly what you are after but here is a short go 
+</tt><tt>script that I sometimes use to plot a variable from my model which 
+</tt><tt>has an icosahedral grid. For this grid the coords are specified using 
+</tt><tt>two 1D arrays, lon and lat, like you. The script uses the polygon 
+</tt><tt>command to draw circles at the locations. The downside is you end up 
+</tt><tt>with gaps between the cells. It's a 'quick look' approach if you 
+</tt><tt>like. Ideally what you need is a ferret command to follow the polygon 
+</tt><tt>shape defined by the lat/long coordinates but I don't think that's 
+</tt><tt>possible without some effort. I usually interpolate to a high 
+</tt><tt>resolution regular lat/long grid to do my analysis.
+</tt><pre style="margin: 0em;">
+
+  Glenn
+
+
+--
+!  start
+set mode verify
+!
+!       viewbbxy - plots lat/lon map of bucky variable on bucky grid
+!
+! Args: $1 - x range for go basemap e.g. x=180:360
+!       $2 - y range for go basemap e.g. y=0:-40
+!       $3 - polygon command arguments e.g. /lev=(-2,20,2)/title=&quot;pv&quot;
+!            note that /over/key is not needed as this script adds it.
+!           $4 - variable to be plotted. e.g. sigma[k=1] (see note below)
+!       $5 - (optional) scale factor. If absent, set to 0.8
+\cancel mode verify
+!
+!  Note
+!  The polygon script works by using the 'k' axis to produce the polygons.
+!  Therefore if you have a region set for the k axis it will interfere
+!  and polymark won't work. Likewise if you have a region set for the x axis
+!  it will interfere with selecting all the gridpoints from the variable.
+!  It's best not to set a region, but if you do, then only set one for the
+!  time axis.
+!
+
+! save current region
+define region/default save
+
+let/quiet scale = $5%0.8%
+
+go basemap $1 $2
+go polymark polygon/over/key$3 lon lat $4 circle scale
+
+
+! restore settings
+set region save
+! end
+
+
+
+At 3:27 am +0800 26/4/07, Yu, Hao-Cheng wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Steve
+
+Thanks for your reply.
+But my problem is not Lack of basemap.
+My question is:
+</pre><tt>Is Ferret can do plot(shade, or vector) with an irregular gridded 
+</tt><tt>data(from finite element model) without Object Analysis.
+</tt><tt>Such dataset won't have 2-D definition for variables, usually only 
+</tt><tt>1-D definition.
+</tt><pre style="margin: 0em;">
+Like
+
+           I        J       K     L
+Lat     1:10     :        :      :
+Lon    1:10     :        :      :
+Var    1:10     :        :      :
+
+Variables location are defined as an irregular grid (Lat, Lon).
+However, Ferret only do &quot;shade&quot; or &quot;vector&quot; plot for 2-D variables.
+
+Any comments or suggestions?
+
+Sincerely, dan
+
+</pre><tt>2007/4/26, Steve Guimond 
+</tt><tt>&lt;&lt;<a  rel="nofollow" href="mailto:guimond@xxxxxxxxxxxxxxxxx">mailto:guimond@xxxxxxxxxxxxxxxxx</a>&gt;guimond@xxxxxxxxxxxxxxxxx&gt;:
+</tt><pre style="margin: 0em;">
+
+Hi,
+  Try laying down a basemap first, then using the shade command.
+
+go basemap x=...
+
+=======================================================
+Stephen R. Guimond
+Graduate Research Assistant
+Center for Ocean-Atmospheric Prediction Studies (COAPS)
+=======================================================
+
+On Thu, 26 Apr 2007, Yu, Hao-Cheng wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+ Dear ferreters,
+
+ I know Ferret can deal with grided data (for finite difference method) and
+ it always works perfectly.
+ However, after searching on the mail archives and UserGuide.
+ Irregular dataset(like finite element method) seems only can be plotted by
+ Regriding process(like objective analysis).
+ I try with &quot;3-arguments shade (even vector)&quot;, and Ferret tells if the
+ dataset is not define as 2D, this won't work.
+
+ file/var=lon,lat,tmp test.dat
+ shade tmp,lon,lat
+
+ test.dat contains 3 columns data which define each element node location and
+ the property to plot (shade).
+ Is it possible to &quot;shade&quot; or &quot;vector&quot; on irregular grid?
+
+ Sincerely, Dan
+
+
+
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00256" href="msg00256.html">Re: [ferret_users] Irregular Grid data Plot on ferret?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00249" href="msg00249.html">[ferret_users] Irregular Grid data Plot on ferret?</a></strong>
+<ul><li><em>From:</em> Yu, Hao-Cheng</li></ul></li>
+<li><strong><a name="00250" href="msg00250.html">Re: [ferret_users] Irregular Grid data Plot on ferret?</a></strong>
+<ul><li><em>From:</em> Steve Guimond</li></ul></li>
+<li><strong><a name="00251" href="msg00251.html">Re: [ferret_users] Irregular Grid data Plot on ferret?</a></strong>
+<ul><li><em>From:</em> Yu, Hao-Cheng</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00253.html">Re: [ferret_users] Irregular Grid data Plot on ferret?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00256.html">Re: [ferret_users] Irregular Grid data Plot on ferret?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00253.html">Thread Prev</a>][<a href="msg00256.html">Thread Next</a>][<A HREF="threads.html#00255">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

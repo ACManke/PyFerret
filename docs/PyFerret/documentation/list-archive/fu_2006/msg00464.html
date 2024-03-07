@@ -1,0 +1,136 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] reading FORTRAN sequential access data &#45; simplequestion -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 7 Jul 2006 06:22:03 &#45;0700 -->
+<!--X-Message-Id: 85847FF0&#45;F7DE&#45;494E&#45;9929&#45;37BF3FC68EF4@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 44ADA0D8.5020006@noaa.gov -->
+<!--X-Reference: 20060706.161528.71096526.furue@hawaii.edu -->
+<!--X-Reference: Pine.LNX.4.61.0607071419380.29652@caos.iisc.ernet.in -->
+<!--X-Reference: 20060706.232528.74744213.furue@hawaii.edu -->
+<!--X-Reference: Pine.LNX.4.61.0607071554010.30765@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00466.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 07 Jul 2006 06:22:00 -0700</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00463.html">Pine.LNX.4.61.0607071554010.30765@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00455.html">44ADA0D8.5020006@noaa.gov</a>&gt;&lt;<a href="msg00457.html">20060706.161528.71096526.furue@hawaii.edu</a>&gt;&lt;<a href="msg00459.html">Pine.LNX.4.61.0607071419380.29652@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00461.html">20060706.232528.74744213.furue@hawaii.edu</a>&gt;&lt;<a href="msg00463.html">Pine.LNX.4.61.0607071554010.30765@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Just to establish the more elementary piece that may be useful to  
+other users: Ferret easily and straightforwardly reads fortran binary  
+writes if the file is NOT 'sequential access'.<br>
+<br>
+In the fortran code:<br>
+<br>
+	parameter (nx=154, ny=35)		! 141E-66W, 34S-0 by 1 deg<br>
+<br>
+	real uav(nx,ny),vav(nx,ny)		! input data<br>
+	real curl(nx,ny),psi(nx,ny)		! output<br>
+.....<br>
+	open(30,file='ir4.dat',status='new',form='unformatted')<br>
+.....<br>
+	write(30) ((psi(i,j),curl(i,j),uav(i,j),vav 
+(i,j),i=1,nx),j=1,ny)    ! write 4 grids on one record<br>
+<br>
+In Ferret:<br>
+<br>
+define axis/x=141e:66w:1/unit=lon xpsi<br>
+define axis/y=34s:0:1/unit=lat ypsi<br>
+define grid/x=xpsi/y=ypsi gpsi<br>
+file/format=unf/var=&quot;psi,curl,uav,vav&quot;/g=gpsi/col=`4*154*35`  
+ir4.dat   ! read 4x(154,35) grids on one record<br>
+save/file=ir4.cdf psi,curl,uav,vav    ! Ferret converts the fortran  
+binary to netcdf<br>
+<br>
+The main reason to do this is that Ferret is such a good netcdf  
+converter. I could write a subroutine to write the output of my  
+fortran code in netcdf directly. But it is much easier to write the  
+above 5 lines of extremely transparent Ferret code to accomplish the  
+same thing. Then I would delete the fortran output ir4.dat.<br>
+<br>
+Thus, without the complication of sequential access, there is no  
+issue of counting record information or anything else. It is very  
+easy. This is also very well tested as I have done this sequence  
+(fortran=&gt;binary output=&gt;Ferret conversion to netcdf) many, many  
+times over a decade.<br>
+<br>
+Billy K<br>
+<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00455" href="msg00455.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+<li><strong><a name="00457" href="msg00457.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00459" href="msg00459.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00461" href="msg00461.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00463" href="msg00463.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00463.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00466.html">Re: [ferret_users] reading FORTRAN sequential access data - simplequestion</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00466.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

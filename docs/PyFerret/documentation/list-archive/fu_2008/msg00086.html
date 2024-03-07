@@ -1,0 +1,159 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] return=tstart,p=1 -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 25 Feb 2008 13:12:13 &#45;0800 -->
+<!--X-Message-Id: 47C32F2C.3060501@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8be1369e0802251018u27550e50gd9960d7f64621a4@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] return=tstart,p=1</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00091.html">Thread Prev</a>][<a href="msg00093.html">Thread Next</a>][<A HREF="threads.html#00086">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] return=tstart,p=1</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>David Wang &lt;<a href="mailto:climater@DOMAIN.HIDDEN">climater@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] return=tstart,p=1</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 25 Feb 2008 13:12:12 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:8be1369e0802251018u27550e50gd9960d7f64621a4@DOMAIN.HIDDEN">8be1369e0802251018u27550e50gd9960d7f64621a4@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8be1369e0802251018u27550e50gd9960d7f64621a4@DOMAIN.HIDDEN">8be1369e0802251018u27550e50gd9960d7f64621a4@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi David,<br>
+One way to deal with this is with the one of the Time axis functions
+(SHOW FUNCTION TAX*)<br>
+<br>
+<tt>yes? show func tax_year<br>
+TAX_YEAR(A,B)<br>
+&nbsp;&nbsp;&nbsp; Returns years of time axis coordinate values<br>
+&nbsp;&nbsp;&nbsp; A: time steps to convert<br>
+&nbsp;&nbsp;&nbsp; B: variable with reference time axis</tt><br>
+<br>
+Here, use the coordinate value&nbsp; from the time axis at L=1 for the time
+step, and a list of the coordinates as the second argument. The
+monthly_navy_winds dataset included with Ferret has a non-zero first
+year, but coads_climatology, being a climatological axis, returns a
+null for the start <br>
+<br>
+<tt>yes? use monthly_navy_winds<br>
+yes? list tax_year (`t[gt=uwnd,L=1]`, t[gt=uwnd])<br>
+&nbsp;!-&gt; list tax_year (17598, t[gt=uwnd])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : TAX_YEAR (17598, T[GT=UWND])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : monthly_navy_winds.cdf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILEPATH : /home/porter/tmap/ferret/linux/fer_dsets/data/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1982<br>
+<br>
+yes? use coads_climatology<br>
+yes? list tax_year (`t[gt=sst,L=1]`, t[gt=sst])<br>
+&nbsp;!-&gt; list tax_year (366, t[gt=sst])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : TAX_YEAR (366, T[GT=SST])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : coads_climatology.cdf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILEPATH : /home/porter/tmap/ferret/linux/fer_dsets/data/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.0000</tt><br>
+<br>
+<br>
+<br>
+<br>
+David Wang wrote:
+<blockquote
+ cite=""
+ type="cite">Hello Ferreters,<br>
+  <br>
+I'm using `var,return=tstart,p=1` to return the starting year and
+likewise the ending year. However when the starting year is 0, the
+command returns nothing (a null string) which causes troubles when I'd
+like to assign the value to other variables/symbols. My intention is to
+calculate multi-year means and variances from monthly data by the
+approach described here at <a rel="nofollow" moz-do-not-send="true"
+ href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/analysis/annual_from_monthly.html">http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/analysis/annual_from_monthly.html</a><br>
+I need the starting and the ending years of the original time axis to
+define a new time axis. Any clues? <br>
+  <br>
+  <blockquote
+ style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"
+ class="gmail_quote">yes? say `temp,return=tstart`<br>
+&nbsp;!-&gt; MESSAGE/CONTINUE 16-JAN 12:00<br>
+16-JAN 12:00<br>
+    <br>
+yes? say `temp,return=tstart,p=1`<br>
+&nbsp;!-&gt; MESSAGE/CONTINUE</blockquote>
+  <div>&nbsp;</div>
+  <br>
+Thanks very much,<br>
+David<br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00083" href="msg00083.html">[ferret_users] return=tstart,p=1</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00091.html">Re: [ferret_users] Re: return=tstart,p=1</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00093.html">[ferret_users] usage of filters</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00091.html">Thread Prev</a>][<a href="msg00093.html">Thread Next</a>][<A HREF="threads.html#00086">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

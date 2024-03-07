@@ -1,0 +1,190 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] time axis definition and precision -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Tue, 20 May 2008 08:53:36 &#45;0700 -->
+<!--X-Message-Id: 4832F3D9.3080401@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200805201351.04884.hoor@mpch&#45;mainz.mpg.de -->
+<!--X-Reference: 4832C8F8.9050308@io&#45;warnemuende.de -->
+<!--X-Reference: 200805201645.19005.hoor@mpch&#45;mainz.mpg.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] time axis definition and precision</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00257.html">Thread Prev</a>][<a href="msg00260.html">Thread Next</a>][<A HREF="threads.html#00259">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] time axis definition and precision</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:hoor@DOMAIN.HIDDEN">hoor@xxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] time axis definition and precision</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 20 May 2008 17:52:57 +0200</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:200805201645.19005.hoor@DOMAIN.HIDDEN">200805201645.19005.hoor@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:200805201351.04884.hoor@DOMAIN.HIDDEN">200805201351.04884.hoor@xxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4832C8F8.9050308@DOMAIN.HIDDEN">4832C8F8.9050308@xxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:200805201645.19005.hoor@DOMAIN.HIDDEN">200805201645.19005.hoor@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.7.13.1) Gecko/20070301</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Peter,
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>that works fine for daily files. But how to deal with the data, when they 
+</tt><tt>cover -lets day a whole year or more?
+</tt><tt>The problem is, that you need the full information in seconds for a year, but 
+</tt><tt>the variable to create the time axis is modified (see below).
+</tt><pre style="margin: 0em;">
+
+Any idea?
+
+</pre><tt> 
+</tt><tt>
+</tt></blockquote><tt>You need to keep the span of times within the 4-byte limit. If this is 
+</tt><tt>not possible - I think no chance.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>However, possibly data with a period of seconds are not needed for a 
+</tt><tt>year or so. You will have to condense this huge amount of information 
+</tt><tt>somehow anyway. I suggest, to do this as soon as possible to get time 
+</tt><tt>units, which are more handsome.
+</tt><pre style="margin: 0em;">
+
+Greetings,
+Martin
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+let xmpl=DAYS1900(1900,12,31)
+let secs={1,2,3,4,5,6,7,8,9}
+list/format=&quot;(f14.2)&quot; xmpl*86400+secs
+list/format=&quot;(f14.2)&quot; xmpl*86400+secs
+            VARIABLE : XMPL*86400+SECS
+            BAD FLAG : -9.9999998E+33
+            SUBSET   : 9 points (X)
+            X        : 0.5 to 9.5
+  31449600.00
+  31449602.00
+  31449604.00
+  31449604.00
+  31449604.00
+  31449606.00
+  31449608.00
+  31449608.00
+  31449608.00
+
+
+
+Am Dienstag, 20. Mai 2008 14:50 schrieb Martin Schmidt:
+</pre><tt> 
+</tt><tt>
+</tt><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Peter,
+I had the same problem several times.
+
+To read daily data with a period of 1 s from a file, where times have
+the form
+
+2008-02-19 00:00:00
+2008-02-19 00:00:01
+...
+
+I do the following:
+let offset = DAYS1900 ( 2008, 1, 1)
+define axis/x/x=1:86400:1 xax
+define grid/x=xax xg
+COLUMNS/deli=&quot; &quot;/grid=xg $1
+let v1o=v1-offset
+define axis/t/from_data/t0=1-jan-2008/unit=days time=v1o+v2/24 + 1e-5
+define grid/t=time tgrid
+
+From now on things work well.
+
+Two things are needed, the offset to keep the time values limited and
+the 1.e-5. Otherwise I get the same error message as you have got.
+
+There are several show-ups of single precision limitations:
+- long time axes with small time periods
+- strong zooming of other axes, which gives occasionally good looking
+but wrong plots
+- seawater thermodynamics, i.e. relations between salinity, temperature
+pressure and conductivity and so on ...
+
+Greetings,
+Martin
+</pre><tt>   
+</tt><tt>
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre><tt> 
+</tt><tt>
+</tt></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00253" href="msg00253.html">[ferret_users] time axis definition and precision</a></strong>
+<ul><li><em>From:</em> peter hoor</li></ul></li>
+<li><strong><a name="00254" href="msg00254.html">Re: [ferret_users] time axis definition and precision</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+<li><strong><a name="00257" href="msg00257.html">Re: [ferret_users] time axis definition and precision</a></strong>
+<ul><li><em>From:</em> peter hoor</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00257.html">Re: [ferret_users] time axis definition and precision</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00260.html">Re: [ferret_users] time axis definition and precision</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00257.html">Thread Prev</a>][<a href="msg00260.html">Thread Next</a>][<A HREF="threads.html#00259">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

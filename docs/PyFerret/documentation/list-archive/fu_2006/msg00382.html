@@ -1,0 +1,150 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Re: [Ferret_Users] SAMPLEIJ of an array of size [680,380] -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 31 May 2006 10:25:12 &#45;0700 -->
+<!--X-Message-Id: 447DD176.5040804@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6.2.1.2.2.20060530234914.07f78440@gmaomail.gsfc.nasa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Re: [Ferret_Users] SAMPLEIJ of an array of size [680,380]</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00384.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00382">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: [Ferret_Users] SAMPLEIJ of an array of size [680,380]</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:zhen.li@DOMAIN.HIDDEN">zhen.li@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: [Ferret_Users] SAMPLEIJ of an array of size [680,380]</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 31 May 2006 10:25:10 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00380.html">6.2.1.2.2.20060530234914.07f78440@gmaomail.gsfc.nasa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00380.html">6.2.1.2.2.20060530234914.07f78440@gmaomail.gsfc.nasa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Zhen,<br>
+The function SAMPLEIJ samples the function at a set of coordinate pairs 
+(xpts,ypts) where the x coordinates of the sample points are listed in 
+argument 2 and the y coordinates are listed in argument 3.  So yes, the 
+number of points in argument 2 and in argument 3 must be the same and if 
+they are not, Ferret will use the first n pairs of (xpts,ypts) where n 
+is the size of the smaller list, 380 in your case.<br>
+<br>
+Here is a simple example:<br>
+<br>
+     yes?     ! define a simple grid and variable<br>
+  yes? def axis/x=1:51:10 xax<br>
+  yes? def axis/y=1:3:1 yax<br>
+  yes? let var = i[gx=xax]+10*j[gy=yax]<br>
+<br>
+  yes? list var<br>
+               VARIABLE : I[GX=XAX]+10*J[GY=YAX]<br>
+               SUBSET   : 6 by 3 points (X-Y)<br>
+               1     11     21     31     41     51   
+               1      2      3      4      5      6<br>
+   1   / 1:  11.00  12.00  13.00  14.00  15.00  16.00<br>
+   2   / 2:  21.00  22.00  23.00  24.00  25.00  26.00<br>
+   3   / 3:  31.00  32.00  33.00  34.00  35.00  36.00<br>
+<br>
+  yes? let xpts = {1,41,11}<br>
+  yes? let ypts = {3,1,2}<br>
+  yes? list sampleij(var,xpts,ypts)<br>
+               VARIABLE : SAMPLEIJ(VAR,XPTS,YPTS)<br>
+               SUBSET   : 3 points (X)<br>
+   1   / 1:  31.00<br>
+   2   / 2:  15.00<br>
+   3   / 3:  22.00<br>
+<br>
+<br>
+The function returns the value of the variable at the locations of the 
+coordinate pairs  (xpts,ypts) = (1,3) , (41,1), and  (11,2).<br>
+<br>
+What did you want from the function?  I'm sure we can help you define 
+things so that you can return the result you want.<br>
+<br>
+Ansley<br>
+<br>
+zhen.li@gsfc.nasa.gov wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ferret_Users:<br>
+<br>
+It seems to me that SAMPLEIJ only subsamples the array that has the 
+same number of<br>
+points in &quot;i&quot; and &quot;j&quot; direction. For example, my effort to use the 
+following<br>
+script to subsample the array of size [680,380] failed, because it 
+only subsampled<br>
+the point in the &quot;I&quot; direction. The new array &quot;var_ij&quot; has a size of 
+[390,1]. I wonder<br>
+if anyone can help me with this case.<br>
+<br>
+!FILE/VAR=&quot;ipts&quot; ipts.dat (ipts=2,4,6,....,680)<br>
+!FILE/VAR=&quot;jpts&quot; jpts.dat (jpts=2,4,6,....,380)<br>
+!use ocean_density.res.nc<br>
+!let var_ij=sampleij(RHO_TAUM1,ipts[d=1],jpts[d=2])<br>
+<br>
+Thanks!<br>
+<br>
+Zhen<br>
+<br>
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00380" href="msg00380.html">[ferret_users] [Ferret_Users] SAMPLEIJ of an array of size [680,380]</a></strong>
+<ul><li><em>From:</em> zhen.li</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00384.html">Re: [ferret_users] [Ferret_Users] SAMPLEIJ of an array of size[680,380]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00383.html">[ferret_users] =?gb2312?B?SG93IHRvIHJlY29uc3RydWN0IGEgdGltZSBzZXJpZXM/IQ==?=</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00384.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00382">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

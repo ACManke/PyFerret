@@ -1,0 +1,169 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] different time axis -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 17 Feb 2006 08:30:58 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.61.0602172148250.14061@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 000301c632a0$41d397e0$b563ba80@abrupt -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] different time axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00112.html">Thread Prev</a>][<a href="msg00114.html">Thread Next</a>][<A HREF="threads.html#00113">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] different time axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Seon Tae &lt;<a href="mailto:stkim@DOMAIN.HIDDEN">stkim@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] different time axis</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 17 Feb 2006 22:02:40 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00112.html">000301c632a0$41d397e0$b563ba80@abrupt</a>&gt;</li>
+<li>References: &lt;<a href="msg00112.html">000301c632a0$41d397e0$b563ba80@abrupt</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Seon Tae,
+              From Ferret documentation, &quot;@ASN Associates by subscript
+(blindly) the points from the source grid onto destination coordinates.&quot;
+Hence u[d=2,gt=ssta@asn] will give you only 12 valid points in the
+resulting time axis. The proper way to extend a climatology onto
+another time axis (i mean observation/model with non-climatological
+time axis) the proper way is to
+
+   1. Check the time axis of the climatology variable is &quot;MODULO&quot;.
+        If it is not, then set it to MODULO.
+
+   2. Now just assign the destination time axis to this climatology
+        variable as follows
+
+         u[d=2,gt=ssta]
+
+Be carefull with &quot;set reg&quot; command for time in the jnl file. You may
+need a &quot;cancel reg/all&quot; command at the beginning/end of the jnl file.
+
+You may proceed as explained below. If you face any problem, mail
+back with the output of &quot;ncdump -h&quot; for both the files.
+
+Regards
+
+Jaison
+
+!-----------------------------------------------------------------
+! Assuming both datasets are on calendar (monthly) time axis.
+
+     use dataset1.nc ! file containing ssta
+     use dataset2.nc ! file containing u
+
+! now check wether the time axis is modulo. For example if you
+!   use coads climatology, &quot;yes? show grid sst&quot; will give you
+!
+!         name   axis    # pts   start            end
+!
+!         TIME   TIME    12mr    16-JAN  06:00    16-DEC  01:20
+!
+!   this &quot;m&quot; with 12mr in the third column shows the the time axis
+!   io &quot;MODULO&quot;
+
+     show grid u[d=2] ! check wether time axis is modulo
+
+! if time axis is not modulo then
+
+     set axis/modulo time_axis_name
+
+! now extend the climatology to the time axis of anomaly during
+!   the calculation as follows
+
+     let dtdx      = ssta[d=1,x=@ddc]     !  100year-anomalous sst
+     let area_dtdx = dtdx[x=160w:95w@ave,y=-2:2@ave]
+     let ubar      = u[d=2,x=160w:95w@ave,y=-2:2@ave,gt=ssta]
+     plot ubar*area_dtdx
+
+!-----------------------------------------------------------------
+
+On Wed, 15 Feb 2006, Seon Tae wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi all...<br>
+I have monthly mean climatology data and 100 year-anomaly data which have 
+different time axis each.<br>
+I trid to plot time series of the product of climatology and anomaly.<br>
+<br>
+When I do like the following<br>
+<br>
+let dtdx = ssta[d=1,x=@ddc] !100year-anomalous sst<br>
+let area_dtdx = dtdx[x=160w:95w@ave,y=-2:2@ave]<br>
+let ubar = u[d=2,x=160w:95w@ave,y=-2:2@ave,gt=ssta@asn]<br>
+plot ubar*area_dtdx<br>
+<br>
+I used '@asn' for extending time coverage of climatology data to 100 year.<br>
+I guessed that seasonal cycle of the climatology would repeat 100 times after 
+regriding<br>
+but it did not happen.<br>
+<br>
+Only a curve  for 12 month of the first year showed up.<br>
+<br>
+i think what i did is not right.<br>
+<br>
+I hope you guys understand my question.<br>
+<br>
+Thank you very much  in advance<br>
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00112" href="msg00112.html">[ferret_users] different time axis</a></strong>
+<ul><li><em>From:</em> Seon Tae</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00112.html">[ferret_users] different time axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00114.html">[ferret_users] Mac OS X Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00112.html">Thread Prev</a>][<a href="msg00114.html">Thread Next</a>][<A HREF="threads.html#00113">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

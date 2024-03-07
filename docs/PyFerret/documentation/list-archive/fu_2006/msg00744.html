@@ -1,0 +1,298 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] save u wind at 850mb -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 21 Nov 2006 09:28:21 &#45;0800 -->
+<!--X-Message-Id: 45633732.8010409@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: F83C6ACE124F3E4D83B3A90C9CA0922D3B339C@exwa3&#45;per.nexus.csiro.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] save u wind at 850mb</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00743.html">Thread Prev</a>][<a href="msg00745.html">Thread Next</a>][<A HREF="threads.html#00744">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] save u wind at 850mb</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Yun.Li@DOMAIN.HIDDEN">Yun.Li@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] save u wind at 850mb</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 21 Nov 2006 09:28:18 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00742.html">F83C6ACE124F3E4D83B3A90C9CA0922D3B339C@exwa3-per.nexus.csiro.au</a>&gt;</li>
+<li>References: &lt;<a href="msg00742.html">F83C6ACE124F3E4D83B3A90C9CA0922D3B339C@exwa3-per.nexus.csiro.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.8 (Windows/20061025)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Yun,<br>
+Are you using an older version of Ferret? In Ferret versions prior to
+version 5.7, when Ferret was used to write data with an&nbsp;
+irregularly-spaced time axis, it issues this warning, as discussed in
+the email archives that Jaison pointed out.&nbsp; With more recent versions
+of Ferret, the default behavior is to write the time axis coordinates
+and also the bounds which describe the irregular grid boxes, and this
+allows the axis to later be appended to.&nbsp; The newer behavior is
+described in this edition of the Ferret Release notes, scroll down to
+the section about writing files.<br>
+<a class="moz-txt-link-freetext" href="">http://ferret.pmel.noaa.gov/Ferret/Documentation/Release_Notes/v57.html#nc_bounds</a><br>
+<br>
+If you can, I would suggest upgrading to a more recent version of
+Ferret.&nbsp; But also, note that what you did is all right. Your file is
+being written, and it is correct, but if you tried to append more time
+steps to it, the bounds of the boxes might not be correct. The lines
+Ferret writes are simply a warning, they do not indicate an error, but
+are only telling you that the size of the grid boxes are not saved in
+the file.<br>
+<br>
+Here is a script and the output file written with Ferret v6.0 similar
+to what's in the Users List archive message; the command ncdump used to
+look inside the file.&nbsp; See how the "bounds" are written for the
+irregular time axis.<br>
+<tt><br>
+yes? define axis/t/units=days/t0=1-jan-2001 t_out =
+{15,45,73,104,134,165,195,226,227,287,318,348}<br>
+yes? let timestamp = t[gt=t_out] * 0<br>
+yes? let v = timestamp&nbsp; + 6<br>
+yes? save/file=aa.nc/clobber v<br>
+yes? sp ncdump -h aa.nc <br>
+<br>
+netcdf aa {<br>
+dimensions:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT = UNLIMITED ; // (12 currently)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bnds = 2 ;<br>
+variables:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double T_OUT(T_OUT) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT:units = "DAYS since 2001-01-01 00:00:00" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT:time_origin = "1-JAN-2001" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT:axis = "T" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT:bounds = "T_OUT_bnds" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double T_OUT_bnds(T_OUT, bnds) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float AA(T_OUT) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AA:missing_value = -9.9999998e+33f ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AA:_FillValue = -9.9999998e+33f ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AA:long_name = "TIMESTAMP&nbsp; + 6" ;<br>
+<br>
+// global attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :history = "FERRET V6&nbsp;&nbsp; 21-Nov-06" ;<br>
+<br>
+data:<br>
+<br>
+&nbsp;T_OUT = 15, 45, 73, 104, 134, 165, 195, 226, 227, 287, 318, 348 ;<br>
+<br>
+&nbsp;T_OUT_bnds =<br>
+&nbsp; 0, 30,<br>
+&nbsp; 30, 59,<br>
+&nbsp; 59, 88.5,<br>
+&nbsp; 88.5, 119,<br>
+&nbsp; 119, 149.5,<br>
+&nbsp; 149.5, 180,<br>
+&nbsp; 180, 210.5,<br>
+&nbsp; 210.5, 226.5,<br>
+&nbsp; 226.5, 257,<br>
+&nbsp; 257, 302.5,<br>
+&nbsp; 302.5, 333,<br>
+&nbsp; 333, 363 ;<br>
+<br>
+&nbsp;AA = 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6&nbsp; ;<br>
+}</tt><br>
+<br>
+--------<br>
+If you wrote the same variable with Ferret v5.51, the bounds are not
+written but the data is present and the axis is correct, but you would
+need to be careful if you want to append more time steps.<br>
+<br>
+<br>
+<tt>ncdump aa_551.nc <br>
+netcdf aa_551 {<br>
+dimensions:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT = UNLIMITED ; // (12 currently)<br>
+variables:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; double T_OUT(T_OUT) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT:units = "DAYS since 2001-01-01 00:00:00" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T_OUT:time_origin = "1-JAN-2001" ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float V(T_OUT) ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V:missing_value = -9.9999998e+33f ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V:_FillValue = -9.9999998e+33f ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V:long_name = "TIMESTAMP&nbsp; + 6" ;<br>
+<br>
+// global attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :history = "FERRET V5.51&nbsp;&nbsp; 21-Nov-06" ;<br>
+<br>
+data:<br>
+<br>
+&nbsp;</tt><tt>T_OUT = 15, 45, 73, 104, 134, 165, 195, 226, 227, 287, 318,
+348 ;</tt><br>
+<tt><br>
+&nbsp;V = 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6 , 6&nbsp; ;<br>
+}</tt><br>
+<br>
+<br>
+<a class="moz-txt-link-abbreviated" href="">Yun.Li@csiro.au</a> wrote:
+<blockquote
+ cite=""
+ type="cite">
+  
+  
+  <o:SmartTagType
+ namespaceuri="urn:schemas-microsoft-com:office:smarttags" name="place">
+  <o:SmartTagType
+ namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="country-region"><!---->
+  </o:SmartTagType></o:SmartTagType>
+  <div class="Section1">
+  <div>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >Dear Ferret
+users,<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >I am trying
+to extract NCEP u wind at height
+850mb using the following lines.&nbsp; But I can not save u850.mon.nc
+properly,
+which contains warning message as follows.&nbsp; <o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >Can you
+please give me a help on how to
+save u850.mon.nc correctly?<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >Many thanks,<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >Yun Li<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >CSIRO, <st1:country-region
+ w:st="on"><st1:place w:st="on">Australia</st1:place></st1:country-region><o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >#######<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ ><o:p>&nbsp;</o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >yes? use
+uwnd.mon.mean.nc<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >yes? SET
+MEMORY/SIZE=50<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >&nbsp;!Cached
+data cleared from memory<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >yes? let
+u850 = uwnd[d=1, k=15]<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >yes? set
+var/title="Monthly mean u850
+wind (m/s)" u850<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >yes?
+save/CLOBBER/file=u850.mon.nc u850<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >&nbsp;LISTing to
+file u850.mon.nc<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >&nbsp;*** NOTE:
+Irregular T axis box
+limits cannot be saved<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >&nbsp;*** NOTE:
+in NetCDF files created by
+this means.<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >&nbsp;*** NOTE:
+To avoid this create the
+file using the qualifiers<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >&nbsp;***
+NOTE:&nbsp;&nbsp;&nbsp;&nbsp;
+/RIGID/HEADING=ENHANCED/LLIMITS=lo:hi<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >&nbsp;*** NOTE:
+This warning will not be
+repeated.<o:p></o:p></span></font></p>
+  <p class="MsoNormal"><font color="navy" face="Arial" size="2"><span
+ >yes?<o:p></o:p></span></font></p>
+  </div>
+  </div>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a class="moz-txt-link-abbreviated" href="">ansley.b.manke@noaa.gov</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00742" href="msg00742.html">RE: [ferret_users] save u wind at 850mb</a></strong>
+<ul><li><em>From:</em> Yun.Li</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00743.html">RE: [ferret_users] save u wind at 850mb</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00745.html">[ferret_users] How can I mark station</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00743.html">Thread Prev</a>][<a href="msg00745.html">Thread Next</a>][<A HREF="threads.html#00744">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

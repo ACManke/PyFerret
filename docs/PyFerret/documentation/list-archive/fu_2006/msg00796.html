@@ -1,0 +1,339 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] ASCII DATA -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 15 Dec 2006 09:37:17 &#45;0800 -->
+<!--X-Message-Id: C892B7C4&#45;C873&#45;4CA4&#45;9B77&#45;F86FB6665BF6@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f83b83e40612040739t1c6fa544u7f00f6b555d0b8bc@mail.gmail.com -->
+<!--X-Reference: Pine.LNX.4.58.0612120354430.25589@caos.iisc.ernet.in -->
+<!--X-Reference: 638F6683&#45;5C45&#45;425C&#45;8706&#45;9CF7304D65D2@noaa.gov -->
+<!--X-Reference: f83b83e40612130218g49ec9764s52feb4af1b2fd671@mail.gmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] ASCII DATA</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00792.html">Thread Prev</a>][<a href="msg00800.html">Thread Next</a>][<A HREF="threads.html#00796">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ASCII DATA</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ashley Watson &lt;<a href="mailto:ashleywats@DOMAIN.HIDDEN">ashleywats@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ASCII DATA</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 15 Dec 2006 09:37:18 -0800</li>
+<li>Cc: Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;,       Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00792.html">f83b83e40612130218g49ec9764s52feb4af1b2fd671@mail.gmail.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00777.html">f83b83e40612040739t1c6fa544u7f00f6b555d0b8bc@mail.gmail.com</a>&gt;&lt;<a href="msg00790.html">Pine.LNX.4.58.0612120354430.25589@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00791.html">638F6683-5C45-425C-8706-9CF7304D65D2@noaa.gov</a>&gt;&lt;<a href="msg00792.html">f83b83e40612130218g49ec9764s52feb4af1b2fd671@mail.gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Ashley -<br>
+<br>
+Since you only want to extract a field at a single month (at a time),  
+there is an easier solution to your problem.  Just read it on the  
+default x-axis (as long as there are fewer than 20480 records to read).<br>
+<br>
+Write a script, something like:<br>
+<br>
+! Assume you know the fortran format of the data!<br>
+! In this case I will assume for the example that<br>
+! lat,lon, Pre(t=1),Pre(t=2), ............,Pre(t=12)  are in format  
+(2f9.1,12f8.2)<br>
+! $1=month to plot<br>
+<br>
+if `$1 eq 1` then<br>
+   define symbol myform &quot;(2f9.1,f8.2)&quot;<br>
+else<br>
+   let skipper=`($1-1)*12`<br>
+   define symbol myform &quot;(2f9.1,`skipper`x,f8.2)&quot;<br>
+endif<br>
+file/format=($myform)/var=&quot;lon,lat,pre&quot; mydatafile.dat<br>
+<br>
+Now call this script each time you want to plot a particular month.<br>
+<br>
+Billy K<br>
+<br>
+On Dec 13, 2006, at 2:18 AM, Ashley Watson wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><br>
+ Hi Jaison &amp; William<br>
+                   Thanks for your detailed solutions for my  
+problem. I read the data sucessfully by the method described by  
+William.<br>
+I am reading lat/lon information form file because I want to plot  
+data with 3 arguments shade command.Like,<br>
+shade pre,lon,lat.<br>
+<br>
+With Regards<br>
+<br>
+Ashley<br>
+<br>
+<br>
+On 12/12/06, William S. Kessler &lt;William.S.Kessler@noaa.gov&gt; wrote:  
+Hi Ashley -<br>
+<br>
+Is there a reason why you need to read the lon,lat values in the<br>
+file? It sounds as if you already know the axis information (since<br>
+you are defining a grid based on some knowledge of the structure).<br>
+What is the point of having lon and lat on a lat/lon/time grid?<br>
+<br>
+But if you do want to keep this information, one way is to do 2<br>
+separate reads. It requires knowing the format of the data records<br>
+(or a careful read of Chapter 2, section 5.2 of the manual on<br>
+&quot;delimited reads&quot;), or see the last block below for a kluge.<br>
+<br>
+! first read lon,lat<br>
+define axis/x=8.0833E:22.917E/npo=90 xaxis<br>
+define axis/y=48.083:53.917/npo=36 yaxis<br>
+define grid/x=xaxis/y=yaxis mygridxy<br>
+file/var=&quot;lat,lon&quot;/g=mygridxy/ord=xy mydatafile.dat   ! note: need<br>
+those quotes around the variable list!<br>
+<br>
+! save the lon,lat variables for later use<br>
+save/file=saved_lon_lat.cdf lon,lat<br>
+<br>
+! now read the data pre, knowing the fortran format of the file<br>
+! if you decided that you don't really need lon,lat, then just start<br>
+here<br>
+define axis/t=15-SEP-1988:14-AUG-1989:`365.2425/12`/units=days/T0=15-<br>
+SEP-1988 taxis<br>
+define grid/x=xaxis/y=yaxis/t=taxis  mygridxyt<br>
+file/format=(12x,12f9.1)/var=pre/g= mygridxyt/col=12/ord=xyt<br>
+mydatafile.dat<br>
+! I have &quot;guessed&quot; at the format, note the use of &quot;12x&quot; to skip 12<br>
+spaces at the beginning of each record<br>
+<br>
+! if you don't know the format, or if it is free format, then you can<br>
+still do this as in step 1 above,<br>
+! using an extra write/read to force a format<br>
+file/<br>
+var=&quot;lat,lon,pre1,pre2,pre3,pre4,pre5,pre6,pre7,pre8,pre9,pre10,pre11, 
+pr<br>
+e12&quot;/g=mygridxy/ord=xy mydatafile.dat<br>
+! write it out to a dummy file<br>
+list/nohead/format=(12f9.1)/file=dummy.dat<br>
+pre1,pre2,pre3,pre4,pre5,pre6,pre7,pre8,pre9,pre10,pre11,pre12<br>
+! now read it back in, on the grid you want<br>
+file/format=(12f9.1)/var=pre/g= mygridxyt/col=12/ord=xyt dummy.dat<br>
+<br>
+I think that will work!<br>
+<br>
+Billy K<br>
+On Dec 11, 2006, at 2:41 PM, Jaison Kurian wrote:<br>
+<br>
+&gt; Hi Ashley,<br>
+&gt;             Your ascii file is not in a format which can be properly<br>
+&gt; opened in Ferret. Columns 3-14 contains data on an XYT grid, which<br>
+&gt; should be readed along the line/row using /COLUMNS qualifier. But  
+the<br>
+&gt; presence of lon and lat in the first 2 columns makes this jobs  
+diffi-<br>
+&gt; cult. Ferret can skip lines/rows easily, but not columns. There are<br>
+&gt; many Linux &quot;text&quot; commands which can modify the original ASCII data<br>
+&gt; to a format which can be opened in Ferret.<br>
+&gt;<br>
+&gt;       Here is an example using &quot;awk&quot; utility in Linux/Unix (you can<br>
+&gt; also try commands like column, cut, sed, colrm etc). Modify this<br>
+&gt; example according to your ASCII data and give a try. Please let me<br>
+&gt; know if you have any problems with this method.<br>
+&gt;<br>
+&gt; Regards,<br>
+&gt;<br>
+&gt; Jaison<br>
+&gt;<br>
+&gt; Example for reading ASCII data after removing first 2-columns<br>
+&gt; -------------------------------------------------------------<br>
+&gt; Suppose you have an ascii file with 3-lon, 2-lat &amp; 12-time points,<br>
+&gt; arranged as Lon, lat, data(t=1:12) ..like this<br>
+&gt;<br>
+&gt; 1   1   1  2  3  4  5  6  7  8  9  10  11  18<br>
+&gt; 2   1   0  8  9  7  6  5  4  2  3  19  10  13<br>
+&gt; 3   1   5  3  2  4  9  3  2  6  2  16  14  12<br>
+&gt; 1   2   1  2  3  4  5  6  7  8  9  10  11  18<br>
+&gt; 2   2   0  8  9  7  6  5  4  2  3  19  10  14<br>
+&gt; 3   2   5  3  2  4  9  3  2  6  2  16  14  12<br>
+&gt;<br>
+&gt; in a file latlon_prec.dat. Then try as follows<br>
+&gt;<br>
+&gt; !-----------------jnl file starts<br>
+&gt; here---------------------------------<br>
+&gt; ! If you precisely know the lat lon points to define the grid, then<br>
+&gt; you<br>
+&gt; !    don't need the first two columns of the ASCII data. Also ferret<br>
+&gt; !    will not skip &quot;columns&quot;. Remove first two columns using awk<br>
+&gt; command<br>
+&gt; !    as follows, save the resulting data to an intermediate file<br>
+&gt;<br>
+&gt;     spawn  rm -f prec.dat  ! remove if this intermediate file exists<br>
+&gt;     spawn  awk '{$1=$2=&quot;&quot;; print}' latlon_prec.dat &gt; prec.dat<br>
+&gt;<br>
+&gt; ! define input grid<br>
+&gt;<br>
+&gt;     define axis/x=1:3:1   xax<br>
+&gt;     define axis/y=1:2:1   yax<br>
+&gt;     define axis/t=1:12:1  tax<br>
+&gt;     define grid/x=xax/y=yax/t=tax gfile<br>
+&gt;<br>
+&gt; ! read in data from the intermediate file<br>
+&gt; !   give the proper ORDER in which data is arranged--&gt; along a line/<br>
+&gt; row<br>
+&gt; !   time varies fastest (since we are reading with COLUMNS  
+qualifier)<br>
+&gt; !   so T should come first....choose X and Y as required...<br>
+&gt;<br>
+&gt;     FILE/grid=gfile/ORDER=TXY/COLUMNS=12/var=prec prec.dat<br>
+&gt;<br>
+&gt;     list/i=3/j=2 prec  ! check if data has been properly read<br>
+&gt;<br>
+&gt;     set var/bad=-999.99/title=&quot;My variable&quot;/units=&quot;my_units&quot; prec<br>
+&gt;<br>
+&gt;     ! do your calculations here<br>
+&gt;<br>
+&gt;     ! save the data if you need to access it easily in future..<br>
+&gt;<br>
+&gt;     ! sp rm -f  savedata.nc<br>
+&gt;     ! save/file=savedata/APPEND prec<br>
+&gt;     ! save/file=savedata/APPEND other, variables, here<br>
+&gt;<br>
+&gt; ! remove the intermediate file<br>
+&gt;<br>
+&gt;     sp rm -f prec.dat<br>
+&gt; !------------------------------------------------------------------- 
+--<br>
+&gt; ---<br>
+&gt;<br>
+&gt; On Mon, 4 Dec 2006, Ashley Watson wrote:<br>
+&gt;<br>
+&gt;&gt; Hi everyone,<br>
+&gt;&gt;<br>
+&gt;&gt; I'm trying to read an ASCII data file with 3 variables. The file<br>
+&gt;&gt; looks like:<br>
+&gt;&gt;<br>
+&gt;&gt; lon  lat  Pre(t=1)  Pre(t=2) ............Pre(t=12)<br>
+&gt;&gt; ................................................................... 
+..<br>
+&gt;&gt; ...............<br>
+&gt;&gt; ................................................................... 
+..<br>
+&gt;&gt; ...............<br>
+&gt;&gt; ................................................................... 
+..<br>
+&gt;&gt; ..............<br>
+&gt;&gt;<br>
+&gt;&gt; So there are 14 columns in datafile. The first two variables are<br>
+&gt;&gt; lat, lon<br>
+&gt;&gt; and the third one is variable with 12 timesteps.<br>
+&gt;&gt; I tried to read this data with commnds:<br>
+&gt;&gt;<br>
+&gt;&gt; define axis/x=8.0833E:22.917E/npo=90 xaxis<br>
+&gt;&gt; define axis/y=48.083:53.917/npo=36 yaxis<br>
+&gt;&gt; define<br>
+&gt;&gt; axis/t=15-SEP-1988:14-AUG-1989:`365.2425/12`/units=days/T0=15-<br>
+&gt;&gt; SEP-1988 taxis<br>
+&gt;&gt; define grid/x=xaxis/y=yaxis/t=taxis  mygrid<br>
+&gt;&gt; file/var=lat,lon,pre/grid=mygrid/col=14/order=xyt mydatafile.dat<br>
+&gt;&gt;<br>
+&gt;&gt;<br>
+&gt;&gt; It does'nt work. show data command shows:<br>
+&gt;&gt;                 I            J        K         L<br>
+&gt;&gt; lon         1:90      1:36      ...       1:12<br>
+&gt;&gt; lat           1:90      1:36      ...       1:12<br>
+&gt;&gt; pre         1:90      1:36      ...       1:12<br>
+&gt;&gt;<br>
+&gt;&gt; The problem is L should be 1 for lat, lat variables. Whats  
+wrong. Any<br>
+&gt;&gt; suggestion<br>
+&gt;&gt;<br>
+&gt;&gt; Ashley<br>
+&gt;&gt;<br>
+<br>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>
+William S. Kessler<br>
+NOAA / Pacific Marine Environmental Laboratory<br>
+7600 Sand Point Way NE<br>
+Seattle WA 98115 USA<br>
+<br>
+william.s.kessler@noaa.gov<br>
+Tel: 206-526-6221<br>
+Fax: 206-526-6744<br>
+Home page: <a  href="http://www.pmel.noaa.gov/people/kessler/">http://www.pmel.noaa.gov/people/kessler/</a><br>
+<br>
+<br>
+<br>
+</blockquote><pre>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/people/kessler/">http://www.pmel.noaa.gov/people/kessler/</a>
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00777" href="msg00777.html">[ferret_users] ASCII DATA</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+<li><strong><a name="00790" href="msg00790.html">Re: [ferret_users] ASCII DATA</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00791" href="msg00791.html">Re: [ferret_users] ASCII DATA</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+<li><strong><a name="00792" href="msg00792.html">Re: [ferret_users] ASCII DATA</a></strong>
+<ul><li><em>From:</em> Ashley Watson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00792.html">Re: [ferret_users] ASCII DATA</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00800.html">[ferret_users] Different resolution</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00792.html">Thread Prev</a>][<a href="msg00800.html">Thread Next</a>][<A HREF="threads.html#00796">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

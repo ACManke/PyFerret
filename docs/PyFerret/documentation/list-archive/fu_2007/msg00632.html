@@ -1,0 +1,178 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] defining a variable in a loop -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 6 Nov 2007 16:19:57 &#45;0800 -->
+<!--X-Message-Id: 20071107003630.M54304@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41131.194.254.66.221.1194343315.squirrel@servmail.hmg.inpg.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] defining a variable in a loop</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00631.html">Thread Prev</a>][<a href="msg00633.html">Thread Next</a>][<A HREF="threads.html#00632">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] defining a variable in a loop</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Angelique.Melet@DOMAIN.HIDDEN">Angelique.Melet@xxxxxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] defining a variable in a loop</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 07 Nov 2007 06:08:59 +0530</li>
+<li>In-reply-to: &lt;<a href="mailto:41131.194.254.66.221.1194343315.squirrel@DOMAIN.HIDDEN">41131.194.254.66.221.1194343315.squirrel@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:41131.194.254.66.221.1194343315.squirrel@DOMAIN.HIDDEN">41131.194.254.66.221.1194343315.squirrel@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ang&#xE9;lique,
+              Please remember that Ferret alwyas works on the complete 
+arrays, 
+more  so with the definition of new variables. With &quot;LET&quot; command, you cannot 
+specify array indices. Hence a C/fortran style procedure will not work with 
+Ferret. To do the data extraction in your case, i think the SAMPLEXY external 
+function is the best solution. Please find the details about SAMPLEXY function
+in User Manual, Ch3 Sec2.3.34. (SAMPLEIJ is described in Ch3 Sec2.3.32).  
+
+Assuming pt_lon/pt_lat in d=1 is a one dimentioal array along X-axis, the 
+exact 
+answer to what you asked is as follows:
+
+  let ipts = pt_lon[d=2,i=1:47]
+  let jpts = pt_lat[d=2,i=1:47]
+
+  let T_model = SAMPLEIJ(votemper[d=1,l=8], ipts, jpts)
+  let S_model = SAMPLEIJ(vosaline[d=1,l=8], ipts, jpts)
+
+Now, assume that the pt_lon/pt_lat in d=2 corresponds to lon and lat of some 
+observation and votemper/vosaline in d=1 corresponds to some gridded model or 
+observational fields. In this case, you have to specify X and Y while 
+defining 
+the new variable, instead of I and J. The proper method is as follows:
+
+  let xpts = pt_lon[d=2,i=1:47]
+  let ypts = pt_lat[d=2,i=1:47]
+
+  let T_model = SAMPLEXY(votemper[d=1,l=8], xpts, ypts)
+  let S_model = SAMPLEXY(vosaline[d=1,l=8], xpts, ypts)
+
+Please let me know, if you have any questions.
+
+Jaison Kurian
+
+
+
+On Tue, 06 Nov 2007 11:01:55 +0100 (CET), melet wrote
+&gt; Hi everybody,
+&gt; 
+&gt; I would like to define a variable according a direction in a loop, 
+&gt; but I can't manage to do that.
+&gt; 
+&gt; I do :
+&gt; 
+&gt; repeat/range=1:47/name=jj \
+&gt; (let i_pt=pt_lon[d=2,i=`jj`]; \
+&gt; let j_pt=pt_lat[d=2,i=`jj`]; \
+&gt; let T_model=votemper[d=1,i=`i_pt`,j=`j_pt`,l=8]; \
+&gt; let S_model=vosaline[d=1,i=`i_pt`,j=`j_pt`,l=8])
+&gt; 
+&gt; Of course, my variables &quot;S_model&quot; and &quot;T_model&quot; are overwritten at each
+&gt; step, whereas I would like those variables to be defined in the
+&gt; i-direction with i being increased in the loop.
+&gt; 
+&gt; I would like to do :
+&gt; 
+&gt; repeat/range=1:47/name=jj \
+&gt; (let i_pt=pt_lon[d=2,i=`jj`]; \
+&gt; let j_pt=pt_lat[d=2,i=`jj`]; \
+&gt; let/i=`jj` T_model=votemper[d=1,i=`i_pt`,j=`j_pt`,l=8]; \
+&gt; let/i=`jj` S_model=vosaline[d=1,i=`i_pt`,j=`j_pt`,l=8])
+&gt; 
+&gt; So that T_model and S_model would have 47 components in the i-direction.
+&gt; But that doesn't seem to be allowed. How can I do ?
+&gt; 
+&gt; Thanks,
+&gt; 
+&gt; Ang&#xE9;lique Melet
+&gt; 
+&gt; -- 
+&gt; This message has been scanned for viruses and
+&gt; dangerous content by MailScanner, and is
+&gt; believed to be clean.
+
+
+--
+Centre for Atmospheric
+       and
+  Oceanic Sciences,
+Indian Institute of Science
+Bangalore-560 012
+India
+
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00631" href="msg00631.html">[ferret_users] defining a variable in a loop</a></strong>
+<ul><li><em>From:</em> melet</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00631.html">[ferret_users] defining a variable in a loop</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00633.html">[ferret_users] external function zcat,xcat,ycat,tcat</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00631.html">Thread Prev</a>][<a href="msg00633.html">Thread Next</a>][<A HREF="threads.html#00632">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

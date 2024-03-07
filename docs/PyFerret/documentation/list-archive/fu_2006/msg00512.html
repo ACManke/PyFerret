@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] question about window's aspect -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Tue, 8 Aug 2006 07:47:15 &#45;0700 -->
+<!--X-Message-Id: 44D8A3F2.2030106@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 20060808022739.31586.qmail@web7909.mail.in.yahoo.com -->
+<!--X-Derived: jpg00002.jpg -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] question about window's aspect</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00509.html">Thread Prev</a>][<a href="msg00513.html">Thread Next</a>][<A HREF="threads.html#00512">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] question about window's aspect</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jammal Tanclei &lt;<a href="mailto:jamaalzzz@DOMAIN.HIDDEN">jamaalzzz@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] question about window's aspect</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 08 Aug 2006 07:47:14 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00508.html">20060808022739.31586.qmail@web7909.mail.in.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00508.html">20060808022739.31586.qmail@web7909.mail.in.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.5 (Macintosh/20060719)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jammal,<br>
+Here is a script I use in this situation, for example if I want the 
+longer of the axes (x or y) to be 10 inches, and the lower-left, 
+upper-right corners to correspond to (90E,5S) and (110E,15N) and plot 
+there a set of points (mylon,mylat):<br>
+go chartaxes 10 90 -5 110 15<br>
+! chartaxes : assigns chart axes lengths given a desired longer<br>
+! axis length and the lowerleft and upperright coords<br>
+<br>
+let d2r=atan(1.)/45<br>
+let maxlen=$1<br>
+let minlon=$2 ; let maxlon=$4 ; let minlat=$3 ; let maxlat=$5<br>
+let xdegrees=($4-$2)*cos(d2r*($5+$3)/2) ; let ydegrees=$5-$3<br>
+let axratio=ydegrees/xdegrees<br>
+let xaxlen=if(axratio le 1)then $1 else $1/axratio<br>
+let yaxlen=if(axratio le 1)then $1*axratio else $1<br>
+ppl axlen,`xaxlen`,`yaxlen` ; ppl size,`xaxlen+1.5`,`yaxlen+1.5`<br>
+ppl origin,0.75,0.75<br>
+<br>
+The plot will appear with the aspect ratio appropriate to the mid-latitude.<br>
+Good luck,<br>
+Mick<br>
+PS Also below are two other short scripts that I call on all the time to 
+quickly create a appropriately shaped chart of an area, as for example:<br>
+<br>
+go getSStopo ! loads the smith-sandwell dataset<br>
+go chartaxes 10 90 -5 110 15 ! sets the window with appropriate size and 
+aspect ratio<br>
+go landchart ! charts the land in the region chosen in the previous 
+&quot;chartaxes&quot; call<br>
+repeat/k=1:10 (plot/o/vs/nolab/sym=18/line=8 `k+90`,`k-5`) ! overlays a 
+set of locations<br>
+<br>
+The result of this is attached.<br>
+<br>
+!------------------------------------------------------------------------------<br>
+<br>
+! chartaxes : assigns chart axes lengths given a desired longer<br>
+! axis length and the lowerleft and upperright coords<br>
+<br>
+let d2r=atan(1.)/45<br>
+let maxlen=$1<br>
+let minlon=$2 ; let maxlon=$4 ; let minlat=$3 ; let maxlat=$5<br>
+let xdegrees=($4-$2)*cos(d2r*($5+$3)/2) ; let ydegrees=$5-$3<br>
+let axratio=ydegrees/xdegrees<br>
+let xaxlen=if(axratio le 1)then $1 else $1/axratio<br>
+let yaxlen=if(axratio le 1)then $1*axratio else $1<br>
+ppl axlen,`xaxlen`,`yaxlen` ; ppl size,`xaxlen+1.5`,`yaxlen+1.5`<br>
+ppl origin,0.75,0.75<br>
+<br>
+!-------------------------------------------------------------------------------------<br>
+<br>
+! getSStopo : accesses smith-sandwell<br>
+<br>
+use smith_sandwell_topo ; set mem/size=500 ; set mode interp<br>
+let topo=rose[d=smith_sandwell_topo] ; let land=if(topo ge 0)then 1<br>
+<br>
+!-------------------------------------------------------------------------------------<br>
+<br>
+! landchart : Shades in black the land within the region specified by the<br>
+! variables minlon, maxlon, minlat, maxlat which were defined<br>
+! via an earlier call to chartaxes.jnl or chartborder.jnl<br>
+! The variable &quot;land&quot; is a mask defined from a bathymetry file<br>
+! as, for example, defined by &quot;go getSStopo&quot;<br>
+<br>
+shade/nolab/nokey/pal=black/x=`minlon`:`maxlon`/y=`minlat`:`maxlat` land<br>
+<br>
+!-------------------------------------------------------------------------------------<br>
+<br>
+jammal Tanclei wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi everybody~<br>
+I need your help.<br>
+It's simple and quick question.<br>
+In ferret, the window aspect is fixed, so when I change the region,<br>
+the distance of same degree's longitude and latitude become different.<br>
+So the shape of geographical map shrnks or expands horizontally or 
+vertically.<br>
+Is there any option or command to change window's aspect following the 
+real geographical shape not a fixed aspect?<br>
+Thanks.<br>
+<br>
+------------------------------------------------------------------------<br>
+Here&#x2019;s a new way to find what you're looking for - Yahoo! Answers 
+&lt;<a  href="http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/">http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/</a>&gt; 
+</blockquote><pre>
+</pre>
+<p><a href="jpg00002.jpg" ><img src="jpg00002.jpg" alt="JPEG image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00508" href="msg00508.html">[ferret_users] question about window's aspect</a></strong>
+<ul><li><em>From:</em> jammal Tanclei</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00509.html">Re: [ferret_users] question about window's aspect</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00513.html">Re: [ferret_users] question about window's aspect</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00509.html">Thread Prev</a>][<a href="msg00513.html">Thread Next</a>][<A HREF="threads.html#00512">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] CRU ascii file to netcdf -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Thu, 13 Mar 2008 09:07:39 &#45;0700 -->
+<!--X-Message-Id: 47D9514B.1000402@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 8cc42c030803130126n72c2a785g708a8e1f7f6e4612@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] CRU ascii file to netcdf</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00119.html">Thread Prev</a>][<a href="msg00121.html">Thread Next</a>][<A HREF="threads.html#00120">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] CRU ascii file to netcdf</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] CRU ascii file to netcdf</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 13 Mar 2008 09:07:39 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:8cc42c030803130126n72c2a785g708a8e1f7f6e4612@DOMAIN.HIDDEN">8cc42c030803130126n72c2a785g708a8e1f7f6e4612@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8cc42c030803130126n72c2a785g708a8e1f7f6e4612@DOMAIN.HIDDEN">8cc42c030803130126n72c2a785g708a8e1f7f6e4612@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.12 (Macintosh/20080213)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Peter,
+</pre><tt>   During many years of converting ASCII files of gridded data to 
+</tt><tt>netCDF, where the ASCII files were not written with Ferret in mind, I 
+</tt><tt>have come to the conclusion that the simplest solution (though usually 
+</tt><tt>not the most elegant) is best. Ferret likes ASCII data to come in 
+</tt><tt>records each of which has the same number of values so I would kick the 
+</tt><tt>original file into one or more temporary files each of which is &quot;Ferret 
+</tt><tt>friendly&quot;.
+</tt><tt>   The style of your data makes the creation of the temporary file easy 
+</tt><tt>since the data records are already of equal length and since there is no 
+</tt><tt>useful info in the 1st, 12th, 25th records other than to indicate the 
+</tt><tt>x-y ordering they can be discarded.
+</tt><pre style="margin: 0em;">
+
+Step 1: Make the temporary file
+   awk '{if(NR%11 != 1) print $0}' your.file &gt; your_new.file
+
+</pre><tt>This excludes all the &quot;lon,lat&quot; header records.  In less favorable 
+</tt><tt>circumstances I'd write a more complex script or a crude Fortran program 
+</tt><tt>to achieve the same purpose and, if the data rows were not of equal 
+</tt><tt>length (say the last year had only 8 months) might write only one value 
+</tt><tt>per record in the temporary file.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Step 2: Convert the temporary file to netCDF in a Ferret session (noting 
+</tt><tt>order of data is t-varying fastest, then y, then x)
+</tt><pre style="margin: 0em;">
+   def axis/x=4:258:1 xax ; def axis/y=1:228:1 yax ; def axis/t=1:120:1 tax
+   def grid/x=xax/y=yax/t=tax grd
+   file/form=free/col=12/g=grd/var=v/ord=tyx your_new.file
+   save/file=your_data.nc v
+
+</pre><tt>Hope this helps and do check for typos if you use it as I only did a 
+</tt><tt>quick check of concept. Perhaps someone else will provide an &quot;elegant&quot; 
+</tt><tt>solution.
+</tt><pre style="margin: 0em;">
+Mick
+--------------
+
+Peter Szabo wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Ferret Users,
+
+Its me, again...
+I have data set of CRU 10&quot; in ASCII format like this:
+   4   1
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+   4   2
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+ -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999 -999
+</pre><tt>The 1st, 12th, 23th... lines are the coordinate numbers of the data 
+</tt><tt>(the longitude goes from 4:258, the latitude goes from 1:228)
+</tt><tt>The &quot;real&quot; first row means a year 1961... The last one 1970. The 
+</tt><tt>columns mean months of the year. So 10*12 matrix i have after the grid 
+</tt><tt>defining numbers.
+</tt><tt>I would like to make a netcdf of it. Here is how i was trying to solve 
+</tt><tt>this problem.
+</tt><pre style="margin: 0em;">
+
+--------------------------
+define axis/t=1:120:1/np=120 time
+define grid/t=time grid
+</pre><tt>repeat/range=1:58140:1/name=m 
+</tt><tt>(file/ez/var=&quot;lon,lat&quot;/skip=`2+11*(m-1)`:`11+11*(m-1)` &quot;myfile&quot; ;\
+</tt><pre style="margin: 0em;">
+file/var=pre/skip=`1+11*(m-1)`/columns=12/grid=grid &quot;myfile&quot; ;\
+</pre><tt>save/file=&quot;o&#xE5;utput.nc 
+</tt><tt>&lt;<a  rel="nofollow" href="http://output.nc">http://output.nc</a>&gt;&quot;/append/clobber/ilimits=1:258/jlimits=1:228/i=`lon`/j=`lat` 
+</tt><tt>pre)
+</tt><pre style="margin: 0em;">
+----------------------------
+
+Has anyone faced this problem?
+Thank You,
+Peter Szabo, HMS
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00119" href="msg00119.html">[ferret_users] CRU ascii file to netcdf</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00119.html">[ferret_users] CRU ascii file to netcdf</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00121.html">Re: [ferret_users] CRU ascii file to netcdf</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00119.html">Thread Prev</a>][<a href="msg00121.html">Thread Next</a>][<A HREF="threads.html#00120">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

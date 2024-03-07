@@ -1,0 +1,164 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Re: Problem with PPL$YLEN height of plot -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 17 Jan 2008 10:14:44 &#45;0800 -->
+<!--X-Message-Id: 478F9B13.8020403@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 478F69CD.4040706@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Re: Problem with PPL$YLEN height of plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00041.html">Thread Next</a>][<A HREF="threads.html#00038">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: Problem with PPL$YLEN height of plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: Problem with PPL$YLEN height of plot</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 17 Jan 2008 10:14:43 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:478F69CD.4040706@DOMAIN.HIDDEN">478F69CD.4040706@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:478F69CD.4040706@DOMAIN.HIDDEN">478F69CD.4040706@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Patrick,
+</pre><tt>Just some background, what's happening with the two plots, is that by 
+</tt><tt>default when the margins are too small for a label, the Y origin is 
+</tt><tt>adjusted to make room. There's a plot qualifier PLOT/NOYADJUST, which 
+</tt><tt>would prevent the axis size from changing - search for NOYADJUST in the 
+</tt><tt>users guide (the new searchable Users Guide at 
+</tt><tt><a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide</a>). This is 
+</tt><tt>discussed with some examples  in the section about DEFINE VIEWPORT. 
+</tt><tt>
+</tt><tt>You're right that the value of PPL$YLEN and PPL$YORG should change when 
+</tt><tt>the Y origin is reset to make room for the label under the plot.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I was thinking that a workaround might be to define your own viewports 
+</tt><tt>with the /AXES qualifier, rather than the GO MARGINS script, which I 
+</tt><tt>like for locating the viewports on the page with much greater control, 
+</tt><tt>but I see the same inconsistency in the resulting values of PPL$YLEN and 
+</tt><tt>PPL$YORG
+</tt><pre style="margin: 0em;">
+
+set v UPPER
+go margins 3 0.5 1 1
+PLOT/VLIM=0:100/nolab I[I=1:100]*0+50
+say ($VP_HEIGHT) ($PPL$YORG) ($PPL$YLEN)
+!-&gt; MESSAGE/CONTINUE 4.4 0.5000 0.9000
+4.4 0.5000 0.9000
+
+!========================
+set v LOWER
+go margins 3 0.5 1 1
+PLOT/VLIM=0:100 I[I=1:100]*0+50
+say ($VP_HEIGHT) ($PPL$YORG) ($PPL$YLEN)
+!-&gt; MESSAGE/CONTINUE 4.4 0.5000 0.9000
+4.4 0.5000 0.9000
+
+
+can view
+!========================
+
+DEFINE VIEW/AXES/x=0.2:0.8/y=0.52:0.7 vhi
+DEFINE VIEW/AXES/x=0.2:0.8/y=0.02:0.2 vlo
+
+SET VIEW vhi
+PLOT/VLIM=0:100/nolab I[I=1:100]*0+50
+say ($VP_HEIGHT) ($PPL$YORG) ($PPL$YLEN)
+!-&gt; MESSAGE/CONTINUE 4.911 1.400 2.111
+4.911 1.400 2.111
+
+SET VIEW vlo
+PLOT/VLIM=0:100 I[I=1:100]*0+50
+say ($VP_HEIGHT) ($PPL$YORG) ($PPL$YLEN)
+!-&gt; MESSAGE/CONTINUE 3.935 0.2530 2.281
+3.935 0.2530 2.281
+
+
+Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+It seems that the PPL$YLEN is not updated with a correct value
+</pre><tt>when the height of a plot is modified by use/not use of the nolab 
+</tt><tt>qualifier.
+</tt><pre style="margin: 0em;">
+
+Run the attached script to see.
+Let me know how to handle this problem because I have scripts which
+do not work because of this problem.
+
+Check also PPL$XLEN which may has the same problem.
+
+Regards
+Patrick
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00037" href="msg00037.html">[ferret_users] Problem with PPL$YLEN height of plot</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00037.html">[ferret_users] Problem with PPL$YLEN height of plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00041.html">[ferret_users] Correlation of two variables from two different datasets</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00041.html">Thread Next</a>][<A HREF="threads.html#00038">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Re: How to move plot keys? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 7 Feb 2006 12:17:06 &#45;0800 -->
+<!--X-Message-Id: 43E90041.8010602@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20060207173700.48315.qmail@web32804.mail.mud.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Re: How to move plot keys?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00066.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00069">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Re: How to move plot keys?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jagadish karmacharya &lt;<a href="mailto:j_karmacharya@DOMAIN.HIDDEN">j_karmacharya@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Re: How to move plot keys?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 07 Feb 2006 12:17:05 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00066.html">20060207173700.48315.qmail@web32804.mail.mud.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00066.html">20060207173700.48315.qmail@web32804.mail.mud.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Jagadish,<br>
+To make dashed lines, you can use the PLOT/DASH qualifier, which allows
+you to specify dash characteristics, short or long dashes or
+combinations of short and long.&nbsp; See PLOT /DASH in the Users Guide.<br>
+<br>
+To get symbols on a line, use&nbsp; PLOT/SYMBOL/LINE, or
+PLOT/SYMBOL=nn/LINE, where nn is one of the plot symbols. These are
+shown in a table linked to the section in the Users Guide under
+"PLOT/SYMBOL". The symbols are placed at each data location. <br>
+<br>
+To make these special line styles appear in your legend, you will need
+to make your own version of the legend scripts, and put in these
+special qualifiers on the PLOT commands in the script so that your
+legend will match the style of the plot lines.<br>
+<br>
+Ansley<br>
+<br>
+jagadish karmacharya wrote:
+<blockquote
+ cite=""
+ type="cite"><font size="2"> </font>
+  <div><font size="2">Hi all,</font></div>
+  <font size="2"> </font>
+  <div><font size="2">&nbsp;</font></div>
+  <font size="2"> </font>
+  <div><font size="2">How can I use different line styles like
+dashed-dotted, dashed and double-dotted, long dashed etc with plot
+command without first producing&nbsp;meta file in color image and then
+converting it to&nbsp;b/w &nbsp;?</font></div>
+  <font size="2"> </font>
+  <div><font size="2">&nbsp;</font></div>
+  <font size="2"> </font>
+  <div><font size="2">Also, Is it possible to use line with symbols
+(like those produced with plot/line/sym) in legend using legline script
+other than specified by number 1-19?</font></div>
+  <font size="2"> </font>
+  <div><font size="2">&nbsp;</font></div>
+  <font size="2"> </font>
+  <div><font size="2">Thanks in advance</font></div>
+  <font size="2"> </font>
+  <div>Jagadish<br>
+  </div>
+  <div><b><i>Billy Kessler <a class="moz-txt-link-rfc2396E" href="">&lt;William.S.Kessler@noaa.gov&gt;</a></i></b>
+wrote:</div>
+  <blockquote class="replbq"
+ >I
+wrote a set of legend scripts that are more complicated,<br>
+but also allow complete flexibility about the legend<br>
+(Emily Vanvyve also contributed). The first one is in user<br>
+units, the second is no-user units (calls the first after<br>
+conver ting to user units):<br>
+    <br>
+------------------------- legline.go -------------<br>
+\can mode verify<br>
+! make a legend line and its label<br>
+! arg1=x-value of line starting point (user units)<br>
+! arg2=length of line (user units)<br>
+! arg3=y-value of line<br>
+! arg4=line type (number 1-19)<br>
+! arg5=text character height<br>
+! arg6=label text<br>
+! only gets label position right for positive-up axes<br>
+    <br>
+define symbol xend `$1+$2`<br>
+define symbol txstart `($xend)+$2/10`<br>
+ppl %range ($ppl$ymin1) ($ppl$ymax1) 10 ! get axis range user units<br>
+define symbol drop `$5/2` ! half char hgt in inches<br>
+define symbol txypos
+`($3)-(($drop))*((($ppl$range_high))-(($ppl$range_low)))/($ppl$ylen)`<br>
+! set pen for a dummy line number (not to interfere)<br>
+ppl pen,77,$4<br>
+ppl aline 77 $1 $3 ($xend) $3 <br>
+label ($txstart) ($txypos) -1 0 $5 $6<br>
+set mode/last verify<br>
+------------------------- legline-nu.go -----------<br>
+\can mode verify<br>
+! make a legend line and its label (nouser units)<br>
+! calls user-unit legline script, but pre-chooses to make nouser units<br>
+    <br>
+! arg1=x-value of line starting point (fraction of plot width)<br>
+! arg2=length of line (fraction of plot width)<br>
+! arg3=y-value of line (fraction of plot height)<br>
+! arg4=line type (number 1-19)<br>
+! arg5=text character height<br>
+! arg6=label text<br>
+! only gets label position right for positive-up axes<br>
+    <br>
+let xrange `($xaxis_max) - ($xaxis_min)`<br>
+let yrange `($yaxis_max) - (($yaxis_min))`<br>
+let leg1 `($xaxis_min) + xrange*$1`<br>
+let leg2 `xrange*$2`<br>
+let leg3 `($yaxis_min) + yrange*$3`<br>
+    <br>
+go legline.go `leg1` `leg2` `leg3` $4 $5 "$6"<br>
+set mode/last verify<br>
+-------------------------<br>
+    <br>
+Billy K<br>
+    <br>
+  </blockquote>
+  <br>
+  <p> </p>
+  <hr size="1">Relax. Yahoo! Mail <a
+ href="">virus
+scanning</a> helps detect nasty viruses!
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00066" href="msg00066.html">[ferret_users] Re: How to move plot keys?</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00066.html">[ferret_users] Re: How to move plot keys?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00066.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00069">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

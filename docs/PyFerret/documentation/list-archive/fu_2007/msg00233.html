@@ -1,0 +1,240 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] check if a particular file exists -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 18 Apr 2007 11:04:11 &#45;0700 -->
+<!--X-Message-Id: 46265D99.3020809@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8be1369e0704171634v5431e212kfd4dfd105dc04c32@mail.gmail.com -->
+<!--X-Reference: 4626436A.4030407@noaa.gov -->
+<!--X-Reference: Pine.LNX.4.58.0704182236470.22312@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] check if a particular file exists</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00232.html">Thread Prev</a>][<a href="msg00235.html">Thread Next</a>][<A HREF="threads.html#00233">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] check if a particular file exists</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] check if a particular file exists</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 18 Apr 2007 11:04:09 -0700</li>
+<li>Cc: David Wang &lt;<a href="mailto:climater@DOMAIN.HIDDEN">climater@xxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.58.0704182236470.22312@DOMAIN.HIDDEN">Pine.LNX.4.58.0704182236470.22312@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8be1369e0704171634v5431e212kfd4dfd105dc04c32@DOMAIN.HIDDEN">8be1369e0704171634v5431e212kfd4dfd105dc04c32@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4626436A.4030407@DOMAIN.HIDDEN">4626436A.4030407@xxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0704182236470.22312@DOMAIN.HIDDEN">Pine.LNX.4.58.0704182236470.22312@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.10 (Windows/20070221)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Thank you Jaison,<br>
+The RETURN=iend command is failing for these string variables. We'll
+look into why.<br>
+<pre wrap="">   yes? LET a = {1,3,4}
+   yes? say `a,return=iend`
+    !-&gt; MESSAGE/CONTINUE 3
+    3
+
+</pre>
+<br>
+<br>
+Jaison Kurian wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">Hi Ansley,
+            A minor correction to the suggested solution :
+
+On Wed, 18 Apr 2007, Ansley Manke wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi David,
+You can use the SPAWN command, see "spawn, string variables" in the 
+Users Guide index.
+
+    *yes? LET a = {"dummy", SPAWN:"ls myfile.nc"}
+    yes? LET nfiles = `a,RETURN=IEND`
+**    yes? IF `nfiles EQ 2` THEN SET DATA myfile.nc *
+
+If the file exists then nfiles will be 2, otherwise it'll be 1.
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+  Unfortunately, none of the Ferret versions (5.53,5.7,5.8 &amp; 6.0) on
+  my Linux PC gives the intended result (nfiles=2 or 1):
+
+  The above example will give nfiles a value, which is always 2000 
+  plus the number of dummy filenames used in the definition of "a",
+  irrespective of whether "myfile.nc" exists in pwd or not. 
+  This means that, in the presence of SPAWN command, Ferret have a
+  bug/difficulty in extracting the number of entries using RETURN 
+  command. 
+
+  This is the reason why i suggested to use XSEQUENCE to get the
+  number of files, in my earlier reply:
+  (<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2007/msg00225.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2007/msg00225.html</a>)
+
+  However, if the file "myfile.nc" does not exist in pwd, then the 
+  RETURN=IEND command will yield "1" instead of "0", irrespective of
+  whether we have used XSEQUENCE or not. See this example :
+
+      yes? let a = {spawn:"ls nonexistent.nc"}
+      yes? list a
+           ls: nonexistent.nc: No such file or directory
+                VARIABLE : {SPAWN:"ls nonexistent.nc"}
+                X        : 1
+             ""
+      yes?
+
+  Though the string "a" is blank, it does have a X-size of 1. So the
+  RETURN=IEND will give "1" in this case, but we expected "0".
+
+  SUMMARY
+  =======
+  The foolproof method for checking the existence of a file is to use 
+  the "string length" of the variable. Here is an example :
+
+       let fex = {spawn:"ls *.nc"}
+       IF `STRLEN(fex[i=1]) GT 0` THEN
+           let files  = XSEQUENCE(fex)
+           let nfiles = `files,r=isize`
+           say "  `nfiles` File/s exist in pwd/cwd."
+       ELSE
+           let nfiles = 0
+           say "  NO File exist in pwd/cwd."
+       ENDIF
+
+  Now, we can use the above logical construct, or we can make a new
+  one using "nfiles"
+
+       IF `nfiles GT 0` THEN
+             do something
+       ELSE
+             do something else
+       ENDIF
+
+
+
+Thanks and Regards,
+
+Jaison 
+
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Another possibility if you don't mind creating an error condition 
+intentionally, is to SET MODE IGNORE_ERROR, try to open the file, and 
+then check for the existence of the symbol RET_LAST_ERROR; this is 
+described in the Version 6.0 release notes,
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/Documentation/Release_Notes/v600.html#fer_last_error">http://ferret.pmel.noaa.gov/Ferret/Documentation/Release_Notes/v600.html#fer_last_error</a>
+
+Ansley
+
+David Wang wrote:
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Hello Ferreters,
+
+I'd like to make a conditional construct so that if a particular 
+netcdf file exists in the local directory, open it, if not, do 
+something else. this is quite trivial in MATLAB using exist function, 
+but seems nontrivial for me in FERRET. Does anyone have any ideas?
+
+Thanks,
+David
+
+      </pre>
+    </blockquote>
+    <pre wrap="">
+    </pre>
+  </blockquote>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:ansley.b.manke@xxxxxxxx">ansley.b.manke@xxxxxxxx</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00235" href="msg00235.html">Re: [ferret_users] check if a particular file exists</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00222" href="msg00222.html">[ferret_users] check if a particular file exists</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+<li><strong><a name="00230" href="msg00230.html">Re: [ferret_users] check if a particular file exists</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00232" href="msg00232.html">Re: [ferret_users] check if a particular file exists</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00232.html">Re: [ferret_users] check if a particular file exists</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00235.html">Re: [ferret_users] check if a particular file exists</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00232.html">Thread Prev</a>][<a href="msg00235.html">Thread Next</a>][<A HREF="threads.html#00233">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

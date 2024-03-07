@@ -1,0 +1,228 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to make transect into netcdf file? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 8 Apr 2008 11:52:21 &#45;0700 -->
+<!--X-Message-Id: 47FBBEE4.2050307@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 688067.40027.qm@web8906.mail.in.yahoo.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to make transect into netcdf file?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00167.html">Thread Prev</a>][<a href="msg00164.html">Thread Next</a>][<A HREF="threads.html#00169">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to make transect into netcdf file?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>golla nageswararao &lt;<a href="mailto:nag_ocean005@DOMAIN.HIDDEN">nag_ocean005@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to make transect into netcdf file?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 08 Apr 2008 11:52:20 -0700</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:688067.40027.qm@DOMAIN.HIDDEN">688067.40027.qm@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:688067.40027.qm@DOMAIN.HIDDEN">688067.40027.qm@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.12 (Windows/20080213)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi - <br>
+You can make one netcdf file with all of the data interpolated onto a
+single z axis. This will be similar to the example in the Users Guide,
+appending slabs to a netCDF file.&nbsp;
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/converting-to-netcdf/SIMPLE-CONVERSIONS-USING-FERRET#Chapter10-NetCDF">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/converting-to-netcdf/SIMPLE-CONVERSIONS-USING-FERRET#Chapter10-NetCDF</a>
+append<br>
+That example appends in depth, you will be appending one profile after
+another in the x direction, after putting the data onto the same Z
+axis.&nbsp; It will go something like this. I am guessing that your ascii
+files contain depths and data values at each depth. (This script has
+not been tested)<br>
+<blockquote>! Define an axis with the number of stations you will read,
+whatever number that is<br>
+yes? LET nstations = 20<br>
+yes? DEFINE AXIS/X=1:`nstations`:1 xaxis <br>
+  <br>
+! Define the output Z axis.&nbsp; You can define this however you like,
+perhaps like<br>
+! this for regular spacing, where you will put in the correct range<br>
+yes? DEFINE AXIS/Z=0:1000:20/DEPTH/UNITS=meters zaxis<br>
+  <br>
+! or, maybe an irregular axis, something like this:<br>
+yes? DEFINE AXIS/Z/DEPTH/UNITS=meters
+zaxis={0,10,20,30,50,75,100,150,200,300,400,600,800,1000}<br>
+  <br>
+! Now read the first profile. Use the depths from the file to define<br>
+! the input z axis, and put the data variable onto that axis.<br>
+yes? FILE/VAR="zval, var"&nbsp; data1.dat<br>
+yes? DEFINE AXIS/Z/DEPTH/UNITS=meters z_in = zval<br>
+yes? LET v_in = var[gz=z_in@ASN]<br>
+  <br>
+! Now interpolate the data onto the common z axis<br>
+yes? LET var_on_z = ZAXREPLACE(v_in, Z[GZ=z_in], Z[GZ=zaxis])<br>
+  <br>
+! Put this onto an x axis at x=1.<br>
+! You can define units&nbsp; or missing-value flag for the data here<br>
+yes? DEFINE AXIS/X=1:1:1 xaxis1<br>
+yes? LET/UNITS="deg C"/BAD=999&nbsp; var_out = var_on_z + 0*x[gx=xaxis1]<br>
+  <br>
+! Start the output netCDF file.<br>
+SAVE/FILE=all_stations.nc/XLIMITS=1:`nstations`/I=1 var_out<br>
+  <br>
+! Now do the same for the other stations. If the input files are named
+in a systematic way, this<br>
+! could be done in a repeat loop.&nbsp; I'll just show how to do the next
+file<br>
+  <br>
+yes? CANCEL DATA data1.dat<br>
+  <br>
+! Now read the first profile. Use the depths from the file to define<br>
+! the input z axis, and put the data variable onto that axis.<br>
+yes? FILE/VAR="zval, var"&nbsp; data2.dat<br>
+yes? DEFINE AXIS/Z/DEPTH/UNITS=meters z_in = zval<br>
+yes? LET v_in = var[gz=z_in@ASN]<br>
+  <br>
+! Now interpolate the data onto the common z axis<br>
+yes? LET var_on_z = ZAXREPLACE(v_in, Z[GZ=z_in], Z[GZ=zaxis])<br>
+  <br>
+! Put this onto an x axis at x=1 ( if<br>
+yes? DEFINE AXIS/X=2:2:1 xaxis1<br>
+yes? LET/UNITS="deg C"/BAD=999 var_out = var_on_z + 0*x[gx=xaxis1]<br>
+  <br>
+! Start the output netCDF file.<br>
+SAVE/FILE=all_stations.nc/APPEND/I=2 var_out<br>
+  <br>
+....<br>
+! After appending all the data, you can use your file.&nbsp; First cancel<br>
+! all input datasets and variable definitions<br>
+yes? CANCEL DATA/ALL<br>
+yes? CANCEL VARIABLE/ALL<br>
+  <br>
+yes? USE all_stations.nc<br>
+yes? SHOW data&nbsp;&nbsp; ! The variable var_out will depend on x and z<br>
+</blockquote>
+Now, if you have longitude values for the X station locations, you
+could either define the original x axis with those values or define a
+new x axis and after opening all_stations.nc, put the data onto that
+new longitude axis.<br>
+<br>
+Ansley<br>
+<br>
+golla nageswararao wrote:
+<blockquote cite=""
+ type="cite">Actually, each station data is in ascii format with
+different depth values. i.e., they are common for all stations and not
+regular. How to call different netcdf files on one plot in ferret? <br>
+  <br>
+  <b><i>Ansley Manke <a rel="nofollow" class="moz-txt-link-rfc2396E" href="mailto:Ansley.B.Manke@xxxxxxxx">&lt;Ansley.B.Manke@xxxxxxxx&gt;</a></i></b> wrote:
+  <blockquote class="replbq"
+ style="border-left: 2px solid rgb(16, 16, 255); padding-left: 5px; margin-left: 5px;">Hi
+Golla,<br>
+Do each the profiles have a depth axis? Or are they a list of values
+and depths?&nbsp; Either way you can read in the data for each station and
+use a regridding operation to interpolate the data onto a single depth
+axis.&nbsp; Are the input data in ascii files? or individual NetCDF files?&nbsp;
+If you write back with a little more information we can help you find a
+solution to this.<br>
+    <br>
+Ansley<br>
+    <br>
+    <br>
+golla nageswararao wrote:
+    <blockquote cite=""
+ type="cite">
+      <div>Hi all,</div>
+      <div>&nbsp;Recently I got one doubt regarding the making of netcdf
+file. The problem is,</div>
+      <div>&nbsp;I have one transect data that at a particular latitude i am
+having vertical temperature profiles at different longitudes. In that
+the depths and depth intervals&nbsp;are not same for all the stations. I
+want to single netcdf file to make a transect plot (fill). Is there any
+way or If I&nbsp;put the data in&nbsp;different netcdf files for different
+stations can I combinedly plot on one x-axis? </div>
+      <div>Thanks in advance.</div>
+      <div>&nbsp;</div>
+      <div>With regards,</div>
+      <div>G.NageswaraRao.</div>
+      <br>
+      <br>
+      <div dir="ltr"><em>From,</em></div>
+      <blockquote dir="ltr" style="margin-right: 0px;">
+        <div><em>G.Nageswara Rao,</em></div>
+        <div><em>Research Scholar,</em></div>
+        <div><em>INCOIS,</em></div>
+        <div><em>Jeeidmetla,</em></div>
+        <div><em>Hyderabad.</em></div>
+        <div><img
+ src=""
+ moz-do-not-send="true"></div>
+      </blockquote>
+      <div><!----></div>
+      <hr size="1"> Meet people who discuss and share your passions. <a rel="nofollow"
+ href="http://in.rd.yahoo.com/tagline_groups_7/*http://in.promos.yahoo.com/groups/bestofyahoo/"
+ moz-do-not-send="true">Join them now.</a> </blockquote>
+  </blockquote>
+  <br>
+  <a rel="nofollow" moz-do-not-send="true"
+ href="http://in.rd.yahoo.com/tagline_groups_10/*http://in.promos.yahoo.com/groups/citygroups/"></a></blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00167.html">Re: [ferret_users] how to make transect into netcdf file?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00164.html">[ferret_users] Polynomial Fits</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00167.html">Thread Prev</a>][<a href="msg00164.html">Thread Next</a>][<A HREF="threads.html#00169">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

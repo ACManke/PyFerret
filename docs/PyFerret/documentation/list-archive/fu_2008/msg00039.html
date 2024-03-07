@@ -1,0 +1,155 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] shade + plot/vs and curvilinear grid -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 17 Jan 2008 10:28:44 &#45;0800 -->
+<!--X-Message-Id: 478F9E5C.6020001@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20080117124652.M12769@peno.coppe.ufrj.br -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] shade + plot/vs and curvilinear grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00043.html">Thread Next</a>][<A HREF="threads.html#00039">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shade + plot/vs and curvilinear grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Luiz Alexandre de Araujo Guerra &lt;<a href="mailto:guerra@DOMAIN.HIDDEN">guerra@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shade + plot/vs and curvilinear grid</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 17 Jan 2008 10:28:44 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:20080117124652.M12769@DOMAIN.HIDDEN">20080117124652.M12769@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20080117124652.M12769@DOMAIN.HIDDEN">20080117124652.M12769@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Luiz,
+</pre><tt>The values need to be numbers, without any W or S designation. I'm 
+</tt><tt>guessing that this will work:
+</tt><pre style="margin: 0em;">
+
+ shade var,lon,lat
+ plot/vs/ov {350,350},{-35,-25}
+
+
+After you draw the plot with the curvilinear SHADE or FILL command, look at the symbols that describe the longitude and latitude range of the plot axes.
+
+SHOW SYMBOL PPL$XMIN, PPL$XMAX
+SHOW SYMBOL PPL$YMIN, PPL$YMAX
+
+Your list of points need to lie within these ranges for them to show up on the plot. That is, PLOT/VS does not automatically add or subtract 360 from the longitudes to match the modulo X axis of the plot (this is true even if we're not in curvilinear coordinates).
+
+If the points are in variables, say xpts and ypts, there's no reason to check them by hand; you could do something like this:
+
+ shade var,lon,lat
+ plot/vs/over xpts,ypts
+ let xmin = xpts[x=@min]
+ let xmax = xpts[x=@max]
+ IF `xmin lt ($ppl$xmin)` THEN plot/vs/over/nolab xpts+360,ypts
+ IF `xmax gt ($ppl$xmin)` THEN plot/vs/over/nolab xpts-360,ypts
+
+
+
+
+
+Luiz Alexandre de Araujo Guerra wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear coleagues,
+
+I am trying to make a figure using shade and plot/vs to draw a line but I have
+a problem. My data file is a model output with curvilinear grid. So, I use
+shade with three parameters: &quot;shade var,lon,lat&quot;. I want to draw a meridional
+line. I have been tried: &quot;plot/vs/ov {10W,10W},{35S,25S}&quot; or &quot;plot/vs/ov
+{-10,-10},{-35,-25}&quot; and both result an error message. I have already tried:
+&quot;plot/vs/ov {3574,3574},{1037,1182}&quot; (grid model indexes) and nothing happened.
+
+I have read some group messages about the use of @itp transform to draw lines
+in time series figures. I had success with that method and I expected to adapt
+it to my problem... but it didn&#xB4;t work too.
+
+I was wondering if the Ferret group could help.
+
+Thanks for your attention.
+
+Best regards,
+
+--
+Luiz Alexandre Guerra
+Aluno de Doutorado / Graduate Student
+
+Universidade Federal do Rio de Janeiro / Rio de Janeiro Federal University
+COPPE/PEnO / Ocean Engineering Program
+
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00043" href="msg00043.html">Re: [ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+<ul><li><em>From:</em> Luiz Alexandre de Araujo Guerra</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00036" href="msg00036.html">[ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+<ul><li><em>From:</em> Luiz Alexandre de Araujo Guerra</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00036.html">[ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00043.html">Re: [ferret_users] shade + plot/vs and curvilinear grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00043.html">Thread Next</a>][<A HREF="threads.html#00039">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

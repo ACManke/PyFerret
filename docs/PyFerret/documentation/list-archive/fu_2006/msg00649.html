@@ -1,0 +1,222 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How to combine files ??? -->
+<!--X-From-R13: "Re. Hvah Y. Hnyfnyn" <ivah.inyfnynNavrf.tb.wc> -->
+<!--X-Date: Wed, 4 Oct 2006 22:42:31 &#45;0700 -->
+<!--X-Message-Id: 1160025835.2671.661.camel@pc191&#45;118.nies.go.jp -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1159944015.2671.574.camel@pc191&#45;118.nies.go.jp -->
+<!--X-Reference: Pine.LNX.4.58.0610042142400.5858@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How to combine files ???</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00646.html">Thread Prev</a>][<a href="msg00650.html">Thread Next</a>][<A HREF="threads.html#00649">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to combine files ???</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to combine files ???</strong></li>
+<li><strong>From</strong>: <strong>&quot;Dr. Vinu K. Valsala&quot; &lt;<a href="mailto:vinu.valsala@DOMAIN.HIDDEN">vinu.valsala@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 05 Oct 2006 14:23:55 +0900</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00646.html">Pine.LNX.4.58.0610042142400.5858@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00644.html">1159944015.2671.574.camel@pc191-118.nies.go.jp</a>&gt;&lt;<a href="msg00646.html">Pine.LNX.4.58.0610042142400.5858@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jaison,
+
+Thank you for your reply.
+
+The method works fine. But, there is one missing
+value at each file boundaries in the combined 
+netcdf file. See the following table. The individual
+files have values for all latitudes but one value
+is missing in the combined netcdf file at each file boundaries.
+
+
+2-Individual files          combined netcdf file.
+===================         ====================
+22.5S / 8: -1.403  ----&gt;    22.5S / 24:   ....
+25.3S / 7: -0.184           25.3S / 23:  -0.18
+28.1S / 6:  0.336           28.1S / 22:   0.34
+30.9S / 5:  0.789           30.9S / 21:   0.79
+33.8S / 4:  1.653           33.7S / 20:   1.65
+36.6S / 3:  3.538           36.6S / 19:   3.54
+39.4S / 2:  5.956           39.4S / 18:   5.96
+42.2S / 1:  7.314           42.2S / 17:   7.31
+45S   / 8:  8.121  ----&gt;    45S   / 16:   ....
+47.8S / 7:  7.605           47.8S / 15:   7.60
+50.6S / 6:  6.409           50.6S / 14:   6.41
+53.4S / 5:  5.032           53.4S / 13:   5.03
+56.2S / 4:  3.785           56.2S / 12:   3.79
+59.1S / 3:  2.822           59.1S / 11:   2.82
+61.9S / 2:  2.421           61.9S / 10:   2.42
+64.7S / 1:  3.052           64.7S /  9:   3.05
+
+
+The steps I used are here,
+
+yes? use snapshots.000051.01.01.dta.nc.0000
+yes? define axis/y=-87.187:90.:2.8125/units=latitudes ylat
+yes? let u_model = u[d=1,gy=ylat]
+yes? sp rm n1n.nc
+yes? save/file=n1n.nc/JLIMITS=1:64/J=1:8/clobber u_model
+yes? cancel data 1
+yes? use snapshots.000051.01.01.dta.nc.0001
+yes? let u_model = u[d=1,gy=ylat]
+yes? save/file=n1n.nc/J=9:16/append u_model
+
+.... and so on.
+
+
+NOTE
+The missing value fills correctly when I use @nrst regridding
+mode. i.e.  let u_model = u[d=1,gy=ylat@nrst]
+So, is that necessary to put @nrst on regridding?
+
+Thanks in advance,
+-Vinu
+
+
+
+
+
+
+
+On Wed, 2006-10-04 at 22:09 +0530, Jaison Kurian wrote:
+&gt; Hi Vinu,
+&gt;          If you want to combine the NetCDF files decomposed
+&gt; on latitude, then (assuming the individual NetCDF files are
+&gt; on proper latitude axis)
+&gt; 
+&gt;  1. define the destination latitude axis 
+&gt; 
+&gt;       yes? define axis/y=-90:90:1/units=latitudes ylat ! 181 points
+&gt; 
+&gt;  2  Assign the destination grid to the variables as follows,
+&gt; 
+&gt;       yes? let temp_1 = temp[d=1,gy=ylat]
+&gt; 
+&gt;  3  Identify the start and end J, on 'ylat' axis, according
+&gt;       to each input NetCDF file (ie. from first processor 
+&gt;       owards). Let it be J=1:20, then open a new file as
+&gt; 
+&gt;       yes? sp rm -f ncout.nc
+&gt;       yes? save/file=ncout.nc/JLIMITS=1:181/J=1:20/CLOBBER temp_1
+&gt;       
+&gt;  4  Close the first input file. Open the second input file then,
+&gt;       (assuming J for this file is 21:40)
+&gt; 
+&gt;       yes? cancel data 1
+&gt;       yes? set data inputncfile2.nc.0001
+&gt;       yes? let temp_1 = temp[d=1,gy=ylat]
+&gt;       yes? save/file=ncout.nc/J=21:40/APPEND temp_1
+&gt; 
+&gt;  5 Repeat step 4 for other remaining input files.
+&gt; 
+&gt; If the number of input files and variables in each input files 
+&gt; are large, this method is not at all feasible. In this case you
+&gt; can try using the mppnccombine.c distributed with MOM4p0 code,
+&gt; (<a  href="https://fms.gfdl.noaa.gov/">https://fms.gfdl.noaa.gov/</a>) from GFDL. Which is fairly complex 
+&gt; enough to handle a wide range of input files. But you may have 
+&gt; to modify it, to suit for your input files.
+&gt; 
+&gt; Hope this helps,
+&gt; 
+&gt; Regards,
+&gt; 
+&gt; Jaison
+&gt; 
+&gt; On Wed, 4 Oct 2006, Vinu K. V. wrote:
+&gt; 
+&gt; &gt; Hi Ferreters,
+&gt; &gt; 
+&gt; &gt; 	A parallel run produces out put as pieces (netcdf), 
+&gt; &gt; each file contains a portion of latitude. How can one combine
+&gt; &gt; this individual files into one single file of entire
+&gt; &gt; latitudes ?
+&gt; &gt; 
+&gt; &gt; For example,
+&gt; &gt; 
+&gt; &gt; 10 files are produced, each file containing output 
+&gt; &gt; for a portion of latitudes, say, -90  to -80, -80 to -70 and so on.
+&gt; &gt; 
+&gt; &gt; I have tried save/file=my_file.nc/append over a dummy 
+&gt; &gt; file, whose grid is defined for entire globe, but didnt work.
+&gt; &gt; 
+&gt; &gt; I suppose there are other methods exist in Ferret to
+&gt; &gt; do this properly.
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Please help me to find a solution. Thanks in advance
+&gt; &gt; 
+&gt; &gt; -Vinu
+&gt; &gt; 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00650" href="msg00650.html">Re: [ferret_users] How to combine files ???</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00644" href="msg00644.html">[ferret_users] How to combine files ???</a></strong>
+<ul><li><em>From:</em> Vinu K. V.</li></ul></li>
+<li><strong><a name="00646" href="msg00646.html">Re: [ferret_users] How to combine files ???</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00646.html">Re: [ferret_users] How to combine files ???</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00650.html">Re: [ferret_users] How to combine files ???</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00646.html">Thread Prev</a>][<a href="msg00650.html">Thread Next</a>][<A HREF="threads.html#00649">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

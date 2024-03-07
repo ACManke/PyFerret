@@ -1,0 +1,231 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to compute the 5&#45;day averaged climatology -->
+<!--X-From-R13: Brgre Emnob <fmnocrg83Ntznvy.pbz> -->
+<!--X-Date: Fri, 4 Jul 2008 01:12:32 &#45;0700 -->
+<!--X-Message-Id: 8cc42c030807040112m37faef96l8188498fcd674d2@mail.gmail.com -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 681099.99439.qm@web53709.mail.re2.yahoo.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to compute the 5-day averaged climatology</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00356.html">Thread Prev</a>][<a href="msg00363.html">Thread Next</a>][<A HREF="threads.html#00357">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to compute the 5-day averaged climatology</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:yangxingz@DOMAIN.HIDDEN">yangxingz@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to compute the 5-day averaged climatology</strong></li>
+<li><strong>From</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 04 Jul 2008 10:12:29 +0200</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=relaxed/relaxed;        d=gmail.com; s=gamma; h=domainkey-signature:received:received:message-id:date:from:to :subject:cc:in-reply-to:mime-version:content-type:references; bh=7gJ9Z70qmgIsHQZ1yIPji3EkvfY5swuGLHA9qKA2hUw=; b=S0WP4Wk+D5biNGDQO3BN2KbbFxCAKuOrlUQqATWOJQihbjQ7qdCzcYyedmY9UfIc9V a67C4VrsBdVSAOobx8igAbQpE66GUU6dqQ7fMCr+0PC3PlgOsQ0TRdHWj3QSpHU/KX2Z NoaFt+4/anRdWBEPtbe+iQKdgL6H4Qs7PTxww=</li>
+<li>Domainkey-signature: a=rsa-sha1; c=nofws;        d=gmail.com; s=gamma; h=message-id:date:from:to:subject:cc:in-reply-to:mime-version :content-type:references; b=RjYuM/A5P/yIZp7YJNdtLbzEdPYblLxPO0kjeU5ZNblcl375Yuaz7/Tey3w85h5vMV 4/T705mqOcwc3Q8KOkZPUJbRhCvizneYKTA89tRuvafjaxSQr8G473PPqScqSkbJ1Zz5 Lcc5UvQ6ySnJIaEBIE+TBchpmuCqNPuUh9Hsg=</li>
+<li>In-reply-to: &lt;<a href="mailto:681099.99439.qm@DOMAIN.HIDDEN">681099.99439.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:681099.99439.qm@DOMAIN.HIDDEN">681099.99439.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Yangxing,<br>
+I also came across this problem, but someone helped me out (Ansley).<br>
+<br>
+Assume you have 1-day Net Surface Heat Flux and you want 5-day average of it, then you should use Boxcar-smoother. <font color="#000000"><br>
+yourvar[L=@SBX:5] starts at L=3. and this is the average of the data at L=1 through L=5.<br>
+So you only need to do the following:<br>
+<br>
+</font>
+let sflx_clim = sflx[gt=@sbx:5] <br>
+!though the two of the start and end points will become missing data, this is not an axis-changing function<br>
+list sflx_clim[l=3:365:5] <br>
+!every 5 point will represent the 5-day average. and it will produce 73 points.<br>
+<br>
+Hope this helps,<br>
+Peter Szabo<br>
+<br>
+<br>
+<br><div class="gmail_quote">On Fri, Jul 4, 2008 at 12:13 AM, yangxing zheng &lt;<a rel="nofollow" href="mailto:yangxingz@xxxxxxxxx">yangxingz@xxxxxxxxx</a>&gt; wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Hi,<br>
+<br>
+ &nbsp;This may not be a good and new question, but I am still wondering how to do &nbsp;it.<br>
+<br>
+ &nbsp;I read FAQ about how to create daily climatology, so I attempt to modify it following the method. Below is what I change<br>
+<br>
+---------------------------<br>
+!Get the length of a climatological year:365.2425<br>
+use climatological_axes<br>
+cancel data climatological_axes<br>
+<br>
+!use the length of the &quot;climatological year&quot; to define a pentad axis<br>
+define axis/t=0:365.2425:5/edges/npoints=73/T0=1-JAN-0001/Units=days/Modulo t_pentad<br>
+!define axis/t=0:365.2425:5/edges/npoints=73/Units=days/Modulo t_pentad<br>
+<br>
+!for example:<br>
+set data <a rel="nofollow" href="http://imet_epic_pentad.sflx.mc/" target="_blank">imet_epic_pentad.sflx.mc</a><br>
+<br>
+!define the pentad climatology<br>
+<br>
+let sflx_clim = sflx[gt=t_pentad@mod]<br>
+<br>
+list sflx_clim,sflx[l=1:73]<br>
+---------------------<br>
+The data <a rel="nofollow" href="http://imet_epic_pentad.sflx.mc/" target="_blank">imet_epic_pentad.sflx.mc</a> is 5-day averaged surface heat flux that I use as an example.<br>
+<br>I run the script, it does not any error message, but the result is
+not correct.The first column is to list climatology, the second column
+is the first year original datasets.<br>
+---------<br>
+list sflx_clim,sflx[l=1:73]<br>
+&nbsp;WARNING: Listed variables have ambiguous coordinates on axes: T<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; DATA SET: ./<a rel="nofollow" href="http://imet_epic_pentad.sflx.mc/" target="_blank">imet_epic_pentad.sflx.mc</a><br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Bouy Net Surface Heat Flux at the IMET Site<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; LONGITUDE: 85.2W<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; LATITUDE: 20.2S<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; DEPTH (m): -0.2<br>
+&nbsp;Column &nbsp;1: SFLX_CLIM[T=01-JAN &nbsp; &nbsp; &nbsp;00:00:01-JAN-0002 05:49] is SFLX[GT=T_PENTAD@MOD]<br>
+&nbsp;Column &nbsp;2: SFLX[T=01-JAN-2003 00:00:01-JAN-2004 00:00] is Net Surface Heat Flux (W/m^2)<br>
+ &nbsp; &nbsp; &nbsp;SFLX_CLI &nbsp; SFLX<br>
+L / &nbsp;1: &nbsp; &nbsp;.... &nbsp;117.7<br>
+L / &nbsp;2: &nbsp; &nbsp;.... &nbsp;109.5<br>
+L / &nbsp;3: &nbsp; &nbsp;.... &nbsp;106.3<br>
+L / &nbsp;4: &nbsp; &nbsp;.... &nbsp;129.3<br>
+L / &nbsp;5: &nbsp; &nbsp;.... &nbsp;150.8<br>
+L / &nbsp;6: &nbsp; &nbsp;.... &nbsp;150.6<br>
+L / &nbsp;7: &nbsp; &nbsp;.... &nbsp;129.6<br>
+L / &nbsp;8: &nbsp; &nbsp;.... &nbsp;124.7<br>
+L / &nbsp;9: &nbsp; &nbsp;.... &nbsp; 94.9<br>
+L / 10: &nbsp; &nbsp;.... &nbsp; 45.9<br>
+L / 11: &nbsp; &nbsp;.... &nbsp; 70.1<br>
+L / 12: &nbsp; &nbsp;.... &nbsp; 64.0<br>
+L / 13: &nbsp; &nbsp;.... &nbsp; 70.8<br>
+L / 14: &nbsp; &nbsp;.... &nbsp; 74.9<br>
+L / 15: &nbsp; &nbsp;.... &nbsp; 96.2<br>
+L / 16: &nbsp; &nbsp;.... &nbsp;109.6<br>
+L / 17: &nbsp; &nbsp;.... &nbsp; 86.3<br>
+L / 18: &nbsp; &nbsp;.... &nbsp; 32.1<br>
+L / 19: &nbsp; &nbsp;.... &nbsp; 33.8<br>
+L / 20: &nbsp; &nbsp;.... &nbsp; 17.5<br>
+L / 21: &nbsp; &nbsp;.... &nbsp; 38.2<br>
+L / 22: &nbsp; &nbsp;.... &nbsp; -8.8<br>
+L / 23: &nbsp; &nbsp;.... &nbsp; 34.6<br>
+L / 24: &nbsp; &nbsp;.... &nbsp;-16.8<br>
+L / 25: &nbsp; &nbsp;.... &nbsp; -0.6<br>
+L / 26: &nbsp; &nbsp;.... &nbsp; 14.2<br>
+L / 27: &nbsp; &nbsp;.... &nbsp;-23.1<br>
+L / 28: &nbsp; &nbsp;.... &nbsp;-44.0<br>
+L / 29: &nbsp; &nbsp;.... &nbsp; &nbsp;5.7<br>
+L / 30: &nbsp; &nbsp;.... &nbsp; &nbsp;0.0<br>
+L / 31: &nbsp; &nbsp;.... &nbsp;-12.4<br>
+L / 32: &nbsp; &nbsp;.... &nbsp;-16.2<br>
+L / 33: &nbsp; &nbsp;.... &nbsp; 61.3<br>
+L / 34: &nbsp; &nbsp;.... &nbsp;-67.6<br>
+L / 35: &nbsp; &nbsp;.... &nbsp;-13.5<br>
+L / 36: &nbsp; &nbsp;.... &nbsp;-26.4<br>
+L / 37: &nbsp; &nbsp;.... &nbsp; &nbsp;8.1<br>
+L / 38: &nbsp; &nbsp;.... &nbsp;-41.7<br>
+L / 39: &nbsp; &nbsp;.... &nbsp;-79.3<br>
+L / 40: &nbsp; &nbsp;.... &nbsp;-74.3<br>
+L / 41: &nbsp; &nbsp;.... -106.8<br>
+L / 42: &nbsp; &nbsp;.... &nbsp;-89.4<br>
+L / 43: &nbsp; &nbsp;.... &nbsp;-22.7<br>
+L / 44: &nbsp; &nbsp;.... &nbsp;-69.4<br>
+L / 45: &nbsp; &nbsp;.... &nbsp;-14.2<br>
+L / 46: &nbsp; &nbsp;.... &nbsp; 28.7<br>
+L / 47: &nbsp; &nbsp;.... &nbsp;-48.0<br>
+L / 48: &nbsp; &nbsp;.... &nbsp;-40.4<br>
+L / 49: &nbsp; &nbsp;.... &nbsp; 27.8<br>
+L / 50: &nbsp; &nbsp;.... &nbsp; 62.6<br>
+L / 51: &nbsp; &nbsp;.... &nbsp;-76.2<br>
+L / 52: &nbsp; &nbsp;.... &nbsp; &nbsp;6.0<br>
+L / 53: &nbsp; &nbsp;.... &nbsp; 42.4<br>
+L / 54: &nbsp; &nbsp;.... &nbsp;-19.9<br>
+L / 55: &nbsp; &nbsp;.... &nbsp; 73.7<br>
+L / 56: &nbsp; &nbsp;.... &nbsp; 77.9<br>
+L / 57: &nbsp; &nbsp;.... &nbsp; 61.7<br>
+L / 58: &nbsp; &nbsp;.... &nbsp;123.5<br>
+L / 59: &nbsp; &nbsp;.... &nbsp; 50.8<br>
+L / 60: &nbsp; &nbsp;.... &nbsp; 71.1<br>
+L / 61: &nbsp; &nbsp;.... &nbsp; 82.4<br>
+L / 62: &nbsp; &nbsp;.... &nbsp; 55.4<br>
+L / 63: &nbsp; &nbsp;.... &nbsp; 46.9<br>
+L / 64: &nbsp; &nbsp;.... &nbsp;155.8<br>
+L / 65: &nbsp; &nbsp;.... &nbsp;166.7<br>
+L / 66: &nbsp; &nbsp;.... &nbsp;120.6<br>
+L / 67: &nbsp; &nbsp;.... &nbsp;114.6<br>
+L / 68: &nbsp; &nbsp;.... &nbsp;109.0<br>
+L / 69: &nbsp; &nbsp;.... &nbsp; 96.4<br>
+L / 70: &nbsp; &nbsp;.... &nbsp;120.2<br>
+L / 71: &nbsp; &nbsp;.... &nbsp; 59.5<br>
+L / 72: &nbsp; &nbsp;.... &nbsp; 73.1<br>
+L / 73: &nbsp; 36.63 &nbsp; 50.2<br>
+-------------<br>
+Can anyone help me out?<br>
+<br>
+Happy Independence Day!<br>
+<font color="#888888"><br>
+Yangxing<br>
+<br>
+<br>
+<br>
+<br>
+</font></blockquote></div>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00356" href="msg00356.html">[ferret_users] how to compute the 5-day averaged climatology</a></strong>
+<ul><li><em>From:</em> yangxing zheng</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00356.html">[ferret_users] how to compute the 5-day averaged climatology</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00363.html">Re: [ferret_users] how to compute the 5-day averaged climatology</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00356.html">Thread Prev</a>][<a href="msg00363.html">Thread Next</a>][<A HREF="threads.html#00357">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

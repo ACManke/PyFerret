@@ -1,0 +1,238 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Interpolating in places given by a variable.Was:Creating custom variable along z axis. -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 26 Sep 2006 11:38:43 &#45;0700 -->
+<!--X-Message-Id: 451973AE.1060204@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: DFC70B6F538B9148BCE7E2C76E5008F5750EB1@EXCHANGE2.corp.gamesa.es -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Interpolating in places given by a variable.Was:Creating custom variable along z axis.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00610.html">Thread Prev</a>][<a href="msg00612.html">Thread Next</a>][<A HREF="threads.html#00611">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Interpolating in places given by a variable.Was:Creating custom variable along z axis.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;TEJEDA HERNANDEZ, CESAR&quot; &lt;<a href="mailto:ctejeda@DOMAIN.HIDDEN">ctejeda@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Interpolating in places given by a variable.Was:Creating custom variable along z axis.</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 26 Sep 2006 11:38:38 -0700</li>
+<li>Cc: Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00610.html">DFC70B6F538B9148BCE7E2C76E5008F5750EB1@EXCHANGE2.corp.gamesa.es</a>&gt;</li>
+<li>References: &lt;<a href="msg00610.html">DFC70B6F538B9148BCE7E2C76E5008F5750EB1@EXCHANGE2.corp.gamesa.es</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.7 (Windows/20060909)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Cesar,<br>
+This can be found in the Users Guide under "sigma coordinate data".&nbsp;
+The function to use is the ZAXREPLACE function, where you will define a
+Z axis in terms of height and use the function to put your "levels"
+data onto that. I've just added some more index entries and
+cross-references to the Users Guide, so the information is be easier to
+find.&nbsp; There are several examples, so give it a try and write back here
+to the users list if you need&nbsp; any help.<br>
+<br>
+Ansley <br>
+<br>
+TEJEDA HERNANDEZ, CESAR wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">Thank you for your help.
+It worked perfectly.
+
+I have another question:
+
+I have a variable "modulus" that gives me the wind in m/seg for I,j,k.
+But the k coordinate comes in 'sigma levels' and I want it interpolated
+at some heights in meters.
+The values for al sigma levels are given by the variable altz, and this is a variable that depends on I,j (on K too).
+
+So, I can get the sigma level for 60 m for each I,j with the
+Following command:
+
+let micooz=mialtz[z=2:6@loc:60]
+
+But now, I do not know how to use it to extract the interpolation of modulus in the sigma levels specified in micooz.
+
+Thank you very much,
+
+C&eacute;sar.
+
+
+-----Original Message-----
+From: Jaison Kurian [<a class="moz-txt-link-freetext" href="">mailto:jaison@caos.iisc.ernet.in</a>] 
+Sent: 26 September 2006 12:26
+To: TEJEDA HERNANDEZ, CESAR
+Cc: <a class="moz-txt-link-abbreviated" href="">ferret_users@noaa.gov</a>
+Subject: Re: [ferret_users] Creating custom variable along z axis.
+
+Hi Cesar,
+           You can use ZSEQUENCE function to define a 1D array 
+(on Z-axis). From user manual, Ch3 Sec2.3.25 :
+
+XSEQUENCE(A), YSEQUENCE(A), ZSEQUENCE(A), TSEQUENCE(A)  Unravels the 
+data from the argument into a 1-dimensional line of data on an ABSTRACT 
+axis. 
+
+So try something like this,
+
+    yes? let f2s = ZSEQUENCE({1, 0, 0, 0, 0})
+
+Now f2s will be on a "ABSTRACT" axis. If you want to assign a proper Z
+axis, then 
+
+    yes? define axis/z=1:5:1 zax
+    yes? let f2s_z = f2s[gz=zax@ASN]  ! @ASN regridding just assigns the
+                                      !       axis 
+
+Regarding the error message you got :
+
+    let f2s= {1, 0, 0, 0, 0} --&gt; will define f2s on X-axis (the default
+way) and it does not have any other valid axes. So when you try
+   
+    set variable/grid=migrid f2s
+
+there is a mismatch...like variable have only X-axis and the destination
+grid does have only Z-axis. This way it won't work. That is why Ferret 
+warns that "Grid for a user-defined variable is implied by its definition"
+If you want to remap from X to Z axis, you have to use RESHAPE function.
+
+In the solution i suggested earlier, the variable is defined on "Z" axis
+and the regridding is done on Z-Axis ..so it is consistent.
+
+Hope This Helps,
+
+Regards,
+
+Jaison
+
+On Tue, 26 Sep 2006, TEJEDA HERNANDEZ, CESAR wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hello,
+
+ 
+
+I want to create a variable with these values:
+
+ 
+
+let f2s= {1, 0, 0, 0, 0}
+
+ 
+
+But along z axis (not x). 
+
+ 
+
+This statements are not useful after the definition:
+
+ 
+
+yes? define axis /z=1:5:1 zaxis
+
+yes? define grid /z=zaxis migrid
+
+yes? set variable/grid=migrid f2s
+
+ **ERROR: invalid command: cannot specify grid for f2s
+
+          Grid for a user-defined variable is implied by its definition
+
+ 
+
+&iquest;Any hint?
+
+ 
+
+Thanks in advance.
+
+ 
+
+C&eacute;sar.
+
+ 
+
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+  </pre>
+</blockquote>
+<br>
+<pre class="moz-signature" cols="75">-- 
+
+~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+
+Ansley Manke, NOAA/PMEL   <a class="moz-txt-link-abbreviated" href="">ansley.b.manke@noaa.gov</a>
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+</pre>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00610" href="msg00610.html">RE: [ferret_users] Interpolating in places given by a variable.Was:Creating custom variable along z axis.</a></strong>
+<ul><li><em>From:</em> TEJEDA HERNANDEZ, CESAR</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00610.html">RE: [ferret_users] Interpolating in places given by a variable.Was:Creating custom variable along z axis.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00612.html">[ferret_users] Regridding monthly data to daily time scale</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00610.html">Thread Prev</a>][<a href="msg00612.html">Thread Next</a>][<A HREF="threads.html#00611">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

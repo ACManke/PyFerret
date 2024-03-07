@@ -1,0 +1,247 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] RE: regrid problem -->
+<!--X-From-R13: Lvovnb Lunat <mmunatNF@Q.ADU> -->
+<!--X-Date: Tue, 17 Jul 2007 12:31:02 &#45;0700 -->
+<!--X-Message-Id: MBEJJOLFCEFHKLOPNGAOIEBBCAAA.zzhang@tnc.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.58.0707172346290.29663@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] RE: regrid problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00431.html">Thread Prev</a>][<a href="msg00434.html">Thread Next</a>][<A HREF="threads.html#00433">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] RE: regrid problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] RE: regrid problem</strong></li>
+<li><strong>From</strong>: <strong>Zibiao Zhang &lt;<a href="mailto:zzhang@DOMAIN.HIDDEN">zzhang@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 17 Jul 2007 15:30:56 -0400</li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.58.0707172346290.29663@DOMAIN.HIDDEN">Pine.LNX.4.58.0707172346290.29663@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:zzhang@DOMAIN.HIDDEN">zzhang@xxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Thank you Jaison, that solved the problem. Key point is paying attention
+when regrid to a different dimension system, and using g=grd attributes.
+
+-----Original Message-----
+From: Jaison Kurian [<a  rel="nofollow" href="mailto:jaison@xxxxxxxxxxxxxxxxxx">mailto:jaison@xxxxxxxxxxxxxxxxxx</a>]
+Sent: Tuesday, July 17, 2007 2:21 PM
+To: Zibiao Zhang
+Subject: RE: regrid problem
+
+
+
+  The point to note is that your original grid contains X, Y and
+Z axes, but the newly defined &quot;grd&quot; contains only X and Y axes.
+
+  So either you have to do like
+
+     define axis/x=.......  xax
+     define axis/y=.......  yax
+     define grid/like=temp[d=1]/x=xax/y=yax grd
+     ! above line is same as
+     ! define grid/x=xax/y=yax/z=temp[d=1] grd
+     let temperature = temp[d=1,g=grd]
+
+  Or
+     define axis/x=.......  xax
+     define axis/y=.......  yax
+     let temperature = temp[d=1,gx=xax,gy=yax]
+
+
+If this fix/es worked for you, please do send a summary (a fresh
+mail, discussing relevant points) to the mailing list.
+
+Regards,
+
+Jaison
+
+
+
+
+On Tue, 17 Jul 2007, Zibiao Zhang wrote:
+
+&gt; Hi Jaison,
+&gt;
+&gt; It worked! thanks for your great help, I did not know there is a
+difference
+&gt; between the two:
+&gt; let temperature=temp[g=grd]
+&gt; and
+&gt; let temperature = temp[d=1,gx=xax,gy=yax] ! if 3d_ave.nc is d=1
+&gt;
+&gt; thanks
+&gt; Zibiao
+&gt; -----Original Message-----
+&gt; From: Jaison Kurian [<a  rel="nofollow" href="mailto:jaison@xxxxxxxxxxxxxxxxxx">mailto:jaison@xxxxxxxxxxxxxxxxxx</a>]
+&gt; Sent: Tuesday, July 17, 2007 1:38 PM
+&gt; To: Zibiao Zhang
+&gt; Subject: RE: regrid problem
+&gt;
+&gt;
+&gt;
+&gt;  After the script fails out, just use a &quot;show data&quot; command to make
+&gt; sure that either 3d_ave.nc is the only file opened or it is the
+&gt; default dataset. Also make sure that the variable temp exists in
+&gt; 3d_ave.nc.
+&gt;
+&gt;  If you pass above check, and still it fails, then instead of
+&gt;
+&gt;
+&gt;
+&gt; try
+&gt;      l
+&gt;      save/file=test.nc/append temperature
+&gt;
+&gt; Regards,
+&gt;
+&gt; Jaison
+&gt;
+&gt;
+&gt;
+&gt; On Tue, 17 Jul 2007, Zibiao Zhang wrote:
+&gt;
+&gt; &gt; Hi Jaison,
+&gt; &gt; I tried this already, they were the same.
+&gt; &gt; Zibiao
+&gt; &gt;
+&gt; &gt; -----Original Message-----
+&gt; &gt; From: Jaison Kurian [<a  rel="nofollow" href="mailto:jaison@xxxxxxxxxxxxxxxxxx">mailto:jaison@xxxxxxxxxxxxxxxxxx</a>]
+&gt; &gt; Sent: Tuesday, July 17, 2007 1:23 PM
+&gt; &gt; To: Zibiao Zhang
+&gt; &gt; Subject: Re: regrid problem
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Hi Zibiao,
+&gt; &gt;             Instead of
+&gt; &gt;
+&gt; &gt;     list/clobber/file=test.nc/format=&quot;CDF&quot; temperature
+&gt; &gt;
+&gt; &gt; first remove test.nc manually, then use
+&gt; &gt;
+&gt; &gt;     save/file=test.nc/append temperature
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; please Let me know whether this works or not.....
+&gt; &gt;
+&gt; &gt; Jaison
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Tue, 17 Jul 2007, Zibiao Zhang wrote:
+&gt; &gt;
+&gt; &gt; &gt; Hi Jaison,
+&gt; &gt; &gt; I have a data file I called 3d_ave.nc has the grid as following:
+&gt; &gt; &gt;
+&gt; &gt; &gt; Grid GGR1
+&gt; &gt; &gt; Longitude200_450 	longitud 	251mi	82.08W(-82.08)	62.08W(-62.08)
+&gt; &gt; &gt; Latitude800_1050	Latitude		251   i	32.838N	47.96N
+&gt; &gt; &gt; Depth_1-		Depth(m)	10     i-	0		200
+&gt; &gt; &gt; normal 			T
+&gt; &gt; &gt;
+&gt; &gt; &gt; I'd like to resample the data point to 81x81, instead of the original
+&gt; &gt; &gt; 251x251.
+&gt; &gt; &gt; I used the following scripts:
+&gt; &gt; &gt;
+&gt; &gt; &gt; can data/all;
+&gt; &gt; &gt; use 3d_ave
+&gt; &gt; &gt; def axis/x=82.08w:62.08w:0.25 xax;
+&gt; &gt; &gt; def axis/y=32.83n:47.96n:0.19 yax;
+&gt; &gt; &gt; def grid/x=xax/y=yax grd
+&gt; &gt; &gt; let temperature=temp[g=grd]	! temp is the varialbe in file 3d_ave
+&gt; &gt; &gt; list temperature
+&gt; &gt; &gt; list/clobber/file=test.nc/format=&quot;CDF&quot; temperature
+&gt; &gt; &gt;
+&gt; &gt; &gt; the result from &quot;list temperature&quot; looks fine, however when I save to
+&gt; the
+&gt; &gt; &gt; file test.nc, and list the temperature from the file, it has error:
+&gt; &gt; &gt;
+&gt; &gt; &gt; ** ERROR: variable unknown or not in data set: TEMP[G=grd]
+&gt; &gt; &gt;
+&gt; &gt; &gt; Can you tell me what is the problem?
+&gt; &gt; &gt;
+&gt; &gt; &gt; thank you very much,
+&gt; &gt; &gt; Zibiao
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt;
+&gt; --
+&gt; This message has been scanned for viruses and
+&gt; dangerous content by MailScanner, and is
+&gt; believed to be clean.
+&gt;
+&gt;
+&gt;
+
+--
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00431.html">[ferret_users] regrid problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00434.html">[ferret_users] Contour labels not appearing</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00431.html">Thread Prev</a>][<a href="msg00434.html">Thread Next</a>][<A HREF="threads.html#00433">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

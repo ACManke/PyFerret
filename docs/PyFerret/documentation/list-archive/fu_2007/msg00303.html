@@ -1,0 +1,182 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] extra point after monthly average -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 11 May 2007 09:51:19 &#45;0700 -->
+<!--X-Message-Id: 46449F07.1010605@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Prayer.1.0.18.0705091616030.29728@vimb5.rdg.ac.uk -->
+<!--X-Reference: 20070509.171240.85388323.furue@hawaii.edu -->
+<!--X-Reference: 6.2.3.4.2.20070510165723.04ed6a08@gmaomail.gsfc.nasa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] extra point after monthly average</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00297.html">Thread Prev</a>][<a href="msg00296.html">Thread Next</a>][<A HREF="threads.html#00303">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] extra point after monthly average</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:zhen.li@DOMAIN.HIDDEN">zhen.li@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] extra point after monthly average</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 11 May 2007 09:51:19 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:6.2.3.4.2.20070510165723.04ed6a08@DOMAIN.HIDDEN">6.2.3.4.2.20070510165723.04ed6a08@xxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:Prayer.1.0.18.0705091616030.29728@DOMAIN.HIDDEN">Prayer.1.0.18.0705091616030.29728@xxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:20070509.171240.85388323.furue@DOMAIN.HIDDEN">20070509.171240.85388323.furue@xxxxxxxxxx</a>&gt; &lt;<a href="mailto:6.2.3.4.2.20070510165723.04ed6a08@DOMAIN.HIDDEN">6.2.3.4.2.20070510165723.04ed6a08@xxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.10 (Windows/20070221)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Zhen,
+</pre><tt>The problem is in getting the start and end points exactly right for the 
+</tt><tt>equally-spaced Julian axis.  You've put the first and last coordinates 
+</tt><tt>in the middle of January and December, but for equally-spaced months, 
+</tt><tt>each of length `365.25/12` days, the start and end coordinate should be 
+</tt><tt>located at a coordinate that is half of the length of the month from the 
+</tt><tt>start of 1984 and the same amount of time from the end of 1992.
+</tt><pre style="margin: 0em;">
+
+Here is the definition you used,
+
+</pre><tt>yes? define 
+</tt><tt>axis/calendar=julian/t=&quot;15-jan-1984:12:00:00&quot;:&quot;15-dec-1992:12:00:00&quot;:`365.25/12`/units=days 
+</tt><tt>monthlytax
+</tt><pre style="margin: 0em;">
+yes? list tax_datestring(t[gt=monthlytax], t[gt=monthlytax], &quot;minutes&quot;)
+</pre><tt>            VARIABLE : TAX_DATESTRING(T[GT=MONTHLYTAX], 
+</tt><tt>T[GT=MONTHLYTAX], &quot;minutes&quot;)
+</tt><pre style="margin: 0em;">
+            SUBSET   : 109 points (TIME)
+            CALENDAR : JULIAN
+15-JAN-1984 /   1:&quot;15-JAN-1984 12:00&quot;
+14-FEB-1984 /   2:&quot;14-FEB-1984 22:30&quot;
+16-MAR-1984 /   3:&quot;16-MAR-1984 09:02&quot;
+15-APR-1984 /   4:&quot;15-APR-1984 19:32&quot;
+16-MAY-1984 /   5:&quot;16-MAY-1984 06:02&quot;
+...
+15-SEP-1992 / 105:&quot;15-SEP-1992 01:13&quot;
+15-OCT-1992 / 106:&quot;15-OCT-1992 11:43&quot;
+14-NOV-1992 / 107:&quot;14-NOV-1992 22:18&quot;
+15-DEC-1992 / 108:&quot;15-DEC-1992 08:48&quot;
+14-JAN-1993 / 109:&quot;14-JAN-1993 19:18&quot;
+
+</pre><tt>To get the equally-spaced axis that you want, it's probably simpler and 
+</tt><tt>more accurate to use DEFINE AXIS/EDGES/NPOINTS
+</tt><pre style="margin: 0em;">
+
+</pre><tt>yes? define 
+</tt><tt>axis/calendar=julian/edges/t=&quot;1-jan-1984:00:00:00&quot;:&quot;31-dec-1992:23:59:59&quot;/npoints=108/units=days 
+</tt><tt>monthlytax
+</tt><pre style="margin: 0em;">
+
+zhen.li@xxxxxxxxxxxxx wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ferret users:
+
+</pre><tt>I have a script (below) to average daily data from 1984 to 1992 to 
+</tt><tt>monthly mean output.
+</tt><tt>I should have 9(yr)*12 =108 data points after averaging. However, I 
+</tt><tt>got 109 points.
+</tt><tt>I wonder why there is an extra point?  My daily data has 3288 data 
+</tt><tt>points, and 3288/30.4375
+</tt><pre style="margin: 0em;">
+gives me 108 points on monthly basis.
+
+&gt;&gt;&gt;&gt;&gt;
+use &quot;salt_ave_daily.cdf&quot;
+
+</pre><tt>define 
+</tt><tt>axis/calendar=julian/t=&quot;15-jan-1984:12:00:00&quot;:&quot;15-dec-1992:12:00:00&quot;:`365.25/12`/units=days 
+</tt><tt>monthlytax
+</tt><pre style="margin: 0em;">
+define grid/x=xdeg/y=ydeg/t=monthlytax monthlygrd
+let salt_mon=salt_ave[gt=monthlygrd@ave]
+set mem/size=500
+save/file=salt_mon.cdf salt_mon
+&lt;&lt;&lt;&lt;&lt;
+
+Thanks very much for your help!
+
+Zhen
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+
+</pre><tt>~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+Ansley Manke, NOAA/PMEL   ansley.b.manke@xxxxxxxx
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00290" href="msg00290.html">[ferret_users] setting properties of dynamic axes</a></strong>
+<ul><li><em>From:</em> John Donners</li></ul></li>
+<li><strong><a name="00293" href="msg00293.html">[ferret_users] Shifting major tics?</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00297" href="msg00297.html">[ferret_users] extra point after monthly average</a></strong>
+<ul><li><em>From:</em> zhen . li</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00297.html">[ferret_users] extra point after monthly average</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00296.html">[ferret_users] ferret: how to plot y-z profils with vertical logarithmic coordinates</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00297.html">Thread Prev</a>][<a href="msg00296.html">Thread Next</a>][<A HREF="threads.html#00303">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Color&#45;filled vector script -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Sat, 27 Jan 2007 22:03:53 &#45;0800 -->
+<!--X-Message-Id: 429EB4F9&#45;B618&#45;4633&#45;9120&#45;E7992D6A101E@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Derived: gifSVcReOPjha.gif -->
+<!--X-Derived: binbe0C9AZWbv.bin -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Color-filled vector script</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00076.html">Thread Prev</a>][<a href="msg00080.html">Thread Next</a>][<A HREF="threads.html#00079">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Color-filled vector script</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Color-filled vector script</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 27 Jan 2007 22:03:50 -0800</li>
+<li>Cc: &quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Dear Ferreters -
+
+</pre><tt>Several versions of scripts to plot color-filled vectors have turned  
+</tt><tt>up on this list over the years, written originally by Ned Cokelet and  
+</tt><tt>modified by myself. This message gives yet another one, but I think  
+</tt><tt>this one is really the best way to do it. I have attached an example  
+</tt><tt>plot showing velocity and salinity on an isopycnal in the western  
+</tt><tt>equatorial Pacific from an OGCM. The advantage of the script is in  
+</tt><tt>visualizing multiple variables in a single plot, and seeing the  
+</tt><tt>relationship among them. The vectors are scaled so the area of the  
+</tt><tt>vector (not the length) scales by its magnitude, which I think is  
+</tt><tt>appropriate for such filled vectors.
+</tt><pre style="margin: 0em;">
+
+Billy K
+</pre><p><a href="gifSVcReOPjha.gif" ><img src="gifSVcReOPjha.gif" alt="GIF image"></a></p>
+<tt>There are comments at the top of the  attached script  
+</tt><tt>(poly_vectors_scaled_arrows_area.jnl), but it might be useful to see  
+</tt><tt>the commands used to make the above plot.
+</tt><pre style="margin: 0em;">
+
+There were 7 steps to using the script, shown schematically as follows:
+
+ 1) find u, v, and salt on isopycnals
+define axis/z=23:28:.5 axden
+let u_on_sigma=zaxreplace(u,sigma,z[gz=axden])
+let v_on_sigma=zaxreplace(v,sigma,z[gz=axden])
+let s_on_sigma=zaxreplace(salt,sigma,z[gz=axden])
+
+ 2) draw a basemap (essential; the vector script must be an overlay)
+</pre><tt>     In this step it is also essential to use the correct aspect  
+</tt><tt>ratio for the plot,
+</tt><pre style="margin: 0em;">
+     or else the vectors will not be correctly oriented
+set win/asp=.45     ! for 32 deg lon by 10 deg lat
+</pre><tt>shade/set/nolab/nokey/x=128e:160e/y=8s:2n/hli=128e:160e:5/vli=8s:2n:2/ 
+</tt><tt>lev=(0,10000,10000,-3)/pal=gray rose[d=etopo02]
+</tt><pre style="margin: 0em;">
+ppl yfor,(i5,''lat'')
+ppl shade
+
+</pre><tt> 3) define the positions (x_vec,y_vec) and values (u_comp,v_comp) of  
+</tt><tt>the vectors
+</tt><tt>     note that x,y_vec are defined to include values on the complete  
+</tt><tt>(x,y) grid: x+0*y, 0*x+y)
+</tt><pre style="margin: 0em;">
+let x_vec = x[gx=u_on_sigma,x=128e:160e] + 0*y[gy=u_on_sigma,y=8s:2n]
+let y_vec = 0*x[gx=u_on_sigma,x=128e:160e] + y[gy=u_on_sigma,y=8s:2n]
+let u_comp = u_on_sigma[z=25,x=128e:160e,y=8s:2n]
+let v_comp = v_on_sigma[z=25,x=128e:160e,y=8s:2n]
+
+ 4)  call the filled vector script (choosing scale length 100)
+</pre><tt>go poly_vectors_scaled_arrows_area.jnl x_vec y_vec u_comp v_comp 100  
+</tt><tt>&quot;arrow&quot;
+</tt><pre style="margin: 0em;">
+
+</pre><tt>5) define the value of the variable to be filled (using ysequence to  
+</tt><tt>make it a list along the y-axis)
+</tt><pre style="margin: 0em;">
+let saltseq = ysequence(s_on_sigma[z=25,x=128e:160e,y=8s:2n])
+
+6) use POLYGON to actually draw the vectors
+</pre><tt>    (plt_x_arrow, plt_y_arrow are the outputs of the filled vector  
+</tt><tt>script in step 4)
+</tt><tt>polygon/over/nolab/key/lev=(34.5,35.7,.1,1)/pal=default/line  
+</tt><tt>plt_x_arrow, plt_y_arrow, saltseq
+</tt><pre style="margin: 0em;">
+
+7) make a scale vector using the same script and call to POLYGON
+</pre><tt>    in this case there is only a single value for each and they are  
+</tt><tt>just written out using { } notation
+</tt><tt>let x_vec={141}; let y_vec={-5}; let u_comp={100}; let v_comp={0};  
+</tt><tt>let mag={1}
+</tt><tt>go poly_vectors_scaled_arrows_area.jnl x_vec y_vec u_comp v_comp 100  
+</tt><tt>&quot;arrow&quot;
+</tt><tt>polygon/over/nolab/nokey/lev=(0,1000,1000)/pal=red/LINE plt_x_arrow,  
+</tt><tt>plt_y_arrow, mag
+</tt><pre style="margin: 0em;">
+label 140 -6.5 -1 0 .18 @dr100 cm s^-^1
+
+</pre><p><strong>Attachment:
+<a href="binbe0C9AZWbv.bin" ><tt>poly_vectors_scaled_arrows_area.jnl</tt></a></strong><br>
+<em>Description:</em> Binary data</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00076.html">[ferret_users] Bilinear interpolation</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00080.html">[ferret_users] height to pressure inversion</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00076.html">Thread Prev</a>][<a href="msg00080.html">Thread Next</a>][<A HREF="threads.html#00079">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Why does ferret fail to support swapping integraland differential? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 17 Mar 2006 10:02:44 &#45;0800 -->
+<!--X-Message-Id: 441AF9C3.9050005@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: ed1da454416e.416eed1da454@wiscmail.wisc.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Why does ferret fail to support swapping integraland differential?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00171.html">Thread Prev</a>][<a href="msg00178.html">Thread Next</a>][<A HREF="threads.html#00177">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Why does ferret fail to support swapping integraland differential?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>FENG HE &lt;<a href="mailto:fenghe@DOMAIN.HIDDEN">fenghe@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Why does ferret fail to support swapping integraland differential?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 17 Mar 2006 10:02:43 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00171.html">ed1da454416e.416eed1da454@wiscmail.wisc.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00171.html">ed1da454416e.416eed1da454@wiscmail.wisc.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Feng,<br>
+Thank you for sending a clear example.<br>
+<br>
+This turns out to be because derivatives and integrals on fields in 
+latitude and longitude are done in units of meters on the earth, rather 
+than degrees latitude and longitude. The fact that degrees of longitude 
+are not a constant length over the earth means that the computations are 
+not linear. Try this case, where the numbers may be easier to interpret.<br>
+<br>
+  yes? use coads_climatology<br>
+  yes? set reg/x=1:3/y=51:55/L=1<br>
+<br>
+  yes? let uu_ddb = uu[x=@ddb]<br>
+  yes? let uu_ddb_iin = uu_ddb[y=@iin]<br>
+  yes? let uu_iin = uu[y=@iin]<br>
+  yes? let uu_iin_ddb = uu_iin[x=@ddb]<br>
+<br>
+   ! Define a function with simple integer values<br>
+<br>
+  yes? let uu = x[gx=uwnd] + y[gy=uwnd]<br>
+  yes? list uu<br>
+<br>
+   ! Set the axes so they are NOT in units of degrees<br>
+   ! longitude and latitude.<br>
+<br>
+  yes? set axis/units=&quot; &quot; coadsx<br>
+  yes? set axis/units=&quot; &quot; coadsy<br>
+<br>
+   ! The results are as you would expect.<br>
+<br>
+  yes? list uu_ddb<br>
+  yes? list uu_iin<br>
+  yes? list uu_ddb_iin<br>
+  yes? list uu_iin_ddb<br>
+<br>
+<br>
+<br>
+FENG HE wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Based on calculus, in a fixed domain, the integral and differential<br>
+could be swapped. 
+<br>
+Basically, d/dx(Int{a:b}u(x,y) dy) = Int{a:b}(du(x,y)/dx) dy<br>
+<br>
+But Ferret could not support it. Here is a code to do the test<br>
+<br>
+First,  an integral is performed in Y direction, and then a differential<br>
+in X direction. 
+Second, an differential is performed in X direction, and then an<br>
+integral in y direction. 
+<br>
+I expect the result is almost the same. But from the result, there are<br>
+big differences. 
+<br>
+use coads_climatology<br>
+set region/x=340:350/y=40:50/l=1<br>
+let UWND_iin= UWND[y=@iin]<br>
+let UWND_iin_ddb = UWND_iin[x=@ddb]<br>
+let UWND_ddb = UWND[x=@ddb]<br>
+let UWND_ddb_iin = UWND_ddb[y=@iin]<br>
+list UWND_ddb_iin<br>
+            VARIABLE : UWND_DDB[Y=@IIN]<br>
+            FILENAME : coads_climatology.cdf<br>
+            FILEPATH : /contrib/ferret-5.22//data/<br>
+            SUBSET   : 5 by 5 points (LONGITUDE-LATITUDE)<br>
+            TIME     : 16-JAN      06:00<br>
+              19W    17W    15W    13W    11W   
+             161    162    163    164    165<br>
+49N   / 70:  0.231 -2.136 -0.327 -1.634 -2.852<br>
+47N   / 69: -0.342 -1.077 -0.369 -1.615 -2.513<br>
+45N   / 68: -0.641 -0.924  0.486 -2.642 -1.725<br>
+43N   / 67: -0.236 -0.497 -0.051 -1.943 -1.921<br>
+41N   / 66: -0.071 -0.255  0.198 -1.417 -1.029<br>
+list UWND_iin_ddb<br>
+            VARIABLE : UWND_IIN[X=@DDB]<br>
+            FILENAME : coads_climatology.cdf<br>
+            FILEPATH : /contrib/ferret-5.22//data/<br>
+            SUBSET   : 5 by 5 points (LONGITUDE-LATITUDE)<br>
+            TIME     : 16-JAN      06:00<br>
+              19W    17W    15W    13W    11W   
+             161    162    163    164    165<br>
+49N   / 70:  0.182 -2.242 -0.318 -1.921 -3.125<br>
+47N   / 69: -0.376 -1.137 -0.346 -1.830 -2.680<br>
+45N   / 68: -0.651 -0.950  0.491 -2.755 -1.825<br>
+43N   / 67: -0.238 -0.505 -0.044 -1.988 -1.953<br>
+41N   / 66: -0.071 -0.255  0.198 -1.417 -1.029<br>
+Best regards<br>
+<br>
+Feng He 
+Center for Climate Research<br>
+Atmospheric and Oceanic Sciences<br>
+University of Wisconsin - Madison<br>
+ 
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00178" href="msg00178.html">Re: [ferret_users] Why does ferret fail to support swapping integraland differential?</a></strong>
+<ul><li><em>From:</em> FENG HE</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00171" href="msg00171.html">[ferret_users] Why does ferret fail to support swapping integral and differential?</a></strong>
+<ul><li><em>From:</em> FENG HE</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00171.html">[ferret_users] Why does ferret fail to support swapping integral and differential?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00178.html">Re: [ferret_users] Why does ferret fail to support swapping integraland differential?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00171.html">Thread Prev</a>][<a href="msg00178.html">Thread Next</a>][<A HREF="threads.html#00177">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

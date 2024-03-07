@@ -1,0 +1,212 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] [ferret users] add_connect: too many connects, cannot add another -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 11 Jun 2007 12:37:07 &#45;0700 -->
+<!--X-Message-Id: 466DA461.3040205@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 26DA7D06371FC141B27428A2A21FC1BDC97664@exvicn1&#45;mel.nexus.csiro.au -->
+<!--X-Reference: 466D8050.1090402@ec.gc.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] [ferret users] add_connect: too many connects, cannot add another</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00351.html">Thread Prev</a>][<a href="msg00353.html">Thread Next</a>][<A HREF="threads.html#00352">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] [ferret users] add_connect: too many connects, cannot add another</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Fabian Lienert &lt;<a href="mailto:cccma-student-003@DOMAIN.HIDDEN">cccma-student-003@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] [ferret users] add_connect: too many connects, cannot add another</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 11 Jun 2007 12:37:05 -0700</li>
+<li>Cc: <a href="mailto:Mark.Collier@DOMAIN.HIDDEN">Mark.Collier@xxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:466D8050.1090402@DOMAIN.HIDDEN">466D8050.1090402@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:26DA7D06371FC141B27428A2A21FC1BDC97664@DOMAIN.HIDDEN">26DA7D06371FC141B27428A2A21FC1BDC97664@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:466D8050.1090402@DOMAIN.HIDDEN">466D8050.1090402@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 1.5.0.12 (Windows/20070509)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi all,
+</pre><tt>The most recent release of Ferret allows for 100 files open at a time - 
+</tt><tt>this is something we can set when we build Ferret and the NetCDF 
+</tt><tt>libraries. Some previous versions had a limit of 32 files, which is the 
+</tt><tt>netCDF default value.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If the files represent time steps of a single variable or group of 
+</tt><tt>variables then you can have up to 5000 stepfiles, if they're set up as 
+</tt><tt>the stepfiles of a multi-file dataset by using a descriptor file.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>See &quot;limits&quot; in the Ferret Users Guide for a list of hard-coded program 
+</tt><tt>limits.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+Fabian Lienert wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi group,
+
+</pre><tt>At the moment I cannot search the archive, but are wondering if there 
+</tt><tt>is a simple way around the following error:
+</tt><pre style="margin: 0em;">
+
+add_connect: too many connects, cannot add another
+
+ ** netCDF error: NCSYSERR
+
+ is this a CDF file ?
+
+</pre><tt>when I try to add a 33 netcdf file to the session? Presumably it is 
+</tt><tt>some kind of limit? I would like to have all sets available at once 
+</tt><tt>if possible, without having to modify them?
+</tt></blockquote><pre style="margin: 0em;">
+
+Hi Mark,
+
+</pre><tt>You can either save your data after some steps of processing it. For 
+</tt><tt>instance save the winter temperatures using monthly mean data:
+</tt><pre style="margin: 0em;">
+
+let tas_djf = (tas[d=1]+tas[d=2]+tas[d=3])/3
+save/clobber/file=&quot;winter.nc&quot; tas_djf
+
+Then restart Ferret and load winter.nc in order to save file connections.
+
+</pre><tt>Or you need to create .des text files that describe the input netCDF 
+</tt><tt>files to be loaded and place them on a time axis. On Linux, this file 
+</tt><tt>looks like the input_descriptor_file.des below.
+</tt><pre style="margin: 0em;">
+Then load the .des file only:
+set data input_descriptor_file.des
+
+Good luck,
+
+Fabian
+
+## &lt;input_descriptor_file.des&gt;
+
+&amp;FORMAT_RECORD
+   D_TYPE      = '  MC'
+   D_FORMAT    = '  1A'
+/
+
+&amp;BACKGROUND_RECORD
+   D_TITLE     = ''
+   D_T0TIME    = '16-JAN-1960 00:00:00'
+   D_TIME_UNIT = 31557600
+   D_TIME_MODULO      = .FALSE.
+   D_CALTYPE   = 'GREGORIAN'
+/
+
+&amp;MESSAGE_RECORD
+   D_MESSAGE   = ' '
+   D_ALERT_ON_OPEN    = .FALSE.
+   D_ALERT_ON_OUTPUT  = .FALSE.
+/
+
+&amp;EXTRA_RECORD
+/
+
+&amp;STEPFILE_RECORD
+   S_FILENAME  = 'file1.nc'
+   S_AUX_SET_NUM      = 0
+   S_START     = 1
+   S_END       = 1
+   S_DELTA     = 1
+   S_NUM_OF_FILES     = 1
+   S_REGVARFLAG       = ' '
+/
+
+&amp;STEPFILE_RECORD
+   S_FILENAME  = 'file2.nc'
+   S_AUX_SET_NUM      = 0
+   S_START     = 2
+   S_END       = 2
+   S_DELTA     = 1
+   S_NUM_OF_FILES     = 1
+   S_REGVARFLAG       = ' '
+/
+&amp;STEPFILE_RECORD
+   S_FILENAME  = '**END OF STEPFILES**'
+/
+## &lt;/input_descriptor_file.des&gt;
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+
+</pre><tt>~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt;   ~&gt; 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+Ansley Manke, NOAA/PMEL   ansley.b.manke@xxxxxxxx
+7600 Sand Point Way NE, Seattle WA
+Phone 206-526-6246,  FAX 206-526-6744
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00350" href="msg00350.html">[ferret_users] [ferret users] add_connect: too many connects, cannot add another</a></strong>
+<ul><li><em>From:</em> Mark . Collier</li></ul></li>
+<li><strong><a name="00351" href="msg00351.html">Re: [ferret_users] [ferret users] add_connect: too many connects, cannot add another</a></strong>
+<ul><li><em>From:</em> Fabian Lienert</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00351.html">Re: [ferret_users] [ferret users] add_connect: too many connects, cannot add another</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00353.html">[ferret_users] Rando</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00351.html">Thread Prev</a>][<a href="msg00353.html">Thread Next</a>][<A HREF="threads.html#00352">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

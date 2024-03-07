@@ -1,0 +1,164 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] grid offset? -->
+<!--X-From-R13: Xbanguna Ivagre <wjvagreN[WF.SRG> -->
+<!--X-Date: Tue, 6 Feb 2007 14:14:54 &#45;0800 -->
+<!--X-Message-Id: 1170800091.6946.16.camel@tevere.mit.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1170704824.14639.26.camel@tevere.mit.edu -->
+<!--X-Reference: 45C7B61F.8050407@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] grid offset?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00095.html">Thread Prev</a>][<a href="msg00096.html">Thread Next</a>][<A HREF="threads.html#00100">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] grid offset?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] grid offset?</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Winter &lt;<a href="mailto:jwinter@DOMAIN.HIDDEN">jwinter@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 06 Feb 2007 17:14:51 -0500</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:45C7B61F.8050407@DOMAIN.HIDDEN">45C7B61F.8050407@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1170704824.14639.26.camel@DOMAIN.HIDDEN">1170704824.14639.26.camel@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:45C7B61F.8050407@DOMAIN.HIDDEN">45C7B61F.8050407@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Thanks for the reply.  The revised syntax you suggested (setting the
+region explicitly) works.  So
+
+let diff = var_sim-var_obs
+fill/level=(-10,10,1)/pal=light_centered/nolabel/set diff
+[i=6:33,j=6:33],x_page[i=6:33,j=6:33],y_page[i=6:33,j=6:33]
+ppl shakey ,,,,,,,,1.40,5.25; ppl fill
+
+works, and 
+
+let diff = var_sim[i=6:33,j=6:33]-var_obs[i=6:33,j=6:33]
+fill/level=(-10,10,1)/pal=light_centered/nolabel/set diff,x_page,y_page
+ppl shakey ,,,,,,,,1.40,5.25; ppl fill
+go mp_land_proj 1 &quot; &quot; 1 1
+
+does not.
+
+Thanks again for the fix.
+
+jonathan
+
+
+
+
+On Mon, 2007-02-05 at 14:56 -0800, Ansley Manke wrote:
+&gt; Hi Jonathan,
+&gt; I haven't seen anything like this.  Do the data that are now showing up 
+&gt; as white have a value of 0, or are they missing? Are the values close to 
+&gt; 0? (as a test, try it with a different palette, rather than 
+&gt; light_centered, and see how it compares.)  
+&gt; 
+&gt; Often for debugging strange behavior, the SHADE command is useful,  to 
+&gt; see what the grid cells have in them. Try your script with SHADE 
+&gt; substituted for FILL.
+&gt; 
+&gt; Do you see anything unusual if you plot the fields separately
+&gt; 
+&gt; shade var_sim[i=6:33,j=6:33]
+&gt; shade var_obs[i=6:33,j=6:33]
+&gt; shade x_page[i=6:33,j=6:33]
+&gt; shade y_page[i=6:33,j=6:33]
+&gt; 
+&gt; I'm a little confused by the way you're setting the subset in I and J. 
+&gt; Does it make any difference if you set the region explicitly as follows
+&gt; 
+&gt; let diff = var_sim-var_obs
+&gt; fill/level=(-10,10,1)/pal=light_centered/nolabel/set diff[i=6:33,j=6:33],x_page[i=6:33,j=6:33],y_page[i=6:33,j=6:33]
+&gt; ppl shakey ,,,,,,,,1.40,5.25; ppl fill
+&gt; 
+&gt; 
+&gt; Jonathan Winter wrote:
+&gt; &gt; One of the scripts I use doesn't work correctly ferret v6.  Basically
+&gt; &gt; the left most column and bottom row come out as white, so I get a row of
+&gt; &gt; white on the left and bottom edge of my plots.  Running the exact same
+&gt; &gt; script in ferret v5.80, it works fine.  It's a custom grid read in from
+&gt; &gt; a file, so the plotting commands looks like:
+&gt; &gt;
+&gt; &gt; let diff = var_sim[i=6:33,j=6:33]-var_obs[i=6:33,j=6:33]
+&gt; &gt; fill/level=(-10,10,1)/pal=light_centered/nolabel/set diff,x_page,y_page
+&gt; &gt; ppl shakey ,,,,,,,,1.40,5.25; ppl fill
+&gt; &gt; go mp_land_proj 1 &quot; &quot; 1 1
+&gt; &gt;
+&gt; &gt; When I list diff, x_page, and y_page they're all 28x28.
+&gt; &gt;
+&gt; &gt; Any idea why this is happening?  Did some protocol change between the
+&gt; &gt; two versions?  Thanks for the help.
+&gt; &gt;
+&gt; &gt; jonathan 
+&gt; &gt;
+&gt; &gt;   
+&gt; 
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00094" href="msg00094.html">[ferret_users] grid offset?</a></strong>
+<ul><li><em>From:</em> Jonathan Winter</li></ul></li>
+<li><strong><a name="00095" href="msg00095.html">Re: [ferret_users] grid offset?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00095.html">Re: [ferret_users] grid offset?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00096.html">[ferret_users] Overplot track data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00095.html">Thread Prev</a>][<a href="msg00096.html">Thread Next</a>][<A HREF="threads.html#00100">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?) -->
+<!--X-From-R13: Xnpdhrf Eghz <wnpdhrf.fghzNpyf.se> -->
+<!--X-Date: Fri, 30 Nov 2007 07:30:14 &#45;0800 -->
+<!--X-Message-Id: 47502C88.9000804@cls.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 474EC1A4.808@cls.fr -->
+<!--X-Reference: 474F107A.10800@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00665.html">Thread Prev</a>][<a href="msg00667.html">Thread Next</a>][<A HREF="threads.html#00666">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?)</strong></li>
+<li><strong>From</strong>: <strong>Jacques Stum &lt;<a href="mailto:jacques.stum@DOMAIN.HIDDEN">jacques.stum@xxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 30 Nov 2007 16:30:16 +0100</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>, Jacques Stum &lt;<a href="mailto:jstum@DOMAIN.HIDDEN">jstum@xxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:474F107A.10800@DOMAIN.HIDDEN">474F107A.10800@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:474EC1A4.808@DOMAIN.HIDDEN">474EC1A4.808@xxxxxx</a>&gt; &lt;<a href="mailto:474F107A.10800@DOMAIN.HIDDEN">474F107A.10800@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.0 (Windows/20070326)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Ansley Manke a &#xE9;crit :
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Jacques,
+</pre><tt>Thanks for including details on the contents of the file. That makes 
+</tt><tt>it possible to see what's happening.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The trouble with the coordinates in this data set is not the value 
+</tt><tt>9.20000000022014e-05 but the fact that the numbers jump from 359.xxx 
+</tt><tt>to 0.xxx.  We humans know that this is the modulo branch cut but that 
+</tt><tt>information isn't deduced from the coordinate values. The coordinate 
+</tt><tt>values themselves must be strictly increasing or decreasing.  If for 
+</tt><tt>instance the coordinates for the grid run from 180 up to 359.96, 0.0, 
+</tt><tt>0.04, 0.08, and on up to 179.96 then you'd get correct results if you 
+</tt><tt>changed them to run from -180, ..., -0.04, 0.0, 0.4, ... to 179.96.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>(Here is the data standard that Ferret uses for netCDF files, just for 
+</tt><tt>reference:
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/coards-netcdf-conventions">http://ferret.pmel.noaa.gov/Ferret/documentation/coards-netcdf-conventions</a>)
+
+</pre><tt>Ferret can probably fix this file without having to remake the netCDF 
+</tt><tt>file. To fix this, you can redefine the axis.  This is just an example 
+</tt><tt>assuming the coordinates run as I said above, you can adjust this to 
+</tt><tt>fit what the axis actually does, making the definition of the variable 
+</tt><tt>new_longitude into a monotonic variable that is the equivalent of the 
+</tt><tt>coordinates in the file.
+</tt><pre style="margin: 0em;">
+
+    yes? use TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.nc
+
+    yes? ! Define a variable with the same longitudes, but monotonic
+    yes? let xx = longitude
+    yes? let new_longitude = if xx GT 180 then (xx-180) else xx
+
+    yes? ! check what we have done
+    yes? list/i=1116:1129 new_longitude
+    yes? plot new_longitude
+
+    yes? ! Redefine the LONGITUDE axis
+    yes? define axis/modulo/units=degrees_east longitude = new_longitude
+
+    yes? !now you should see the plot on the longitude-latitude grid
+    yes? shade TEMPERATURE_DE_SURFACE_DE_LA_MER
+
+
+Jacques Stum wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hello Ferret users,
+
+Ferret failed to plot my NetCdf file as follows :
+
+$ferret
+       NOAA/PMEL TMAP
+       FERRET v6
+       Linux(g77) 2.4.21-32 - 08/23/06
+       29-Nov-07 14:14
+
+yes? set memory/size=128
+Cached data cleared from memory
+yes? use TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.nc
+</pre><tt>*** NOTE: Coordinates out of order or missing on axis Longitude at 
+</tt><tt>subscript 1126
+</tt><pre style="margin: 0em;">
+*** NOTE: A dummy axis of subscripts will be used
+yes? show data
+    currently SET data sets:
+</pre><tt>   1&gt; ./TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.nc  
+</tt><tt>(default)
+</tt><tt>name     title                             I         J         
+</tt><tt>K         L
+</tt><pre style="margin: 0em;">
+LONGITUDE
+</pre><tt>         Longitudes                       1:4500    ...       
+</tt><tt>...       ...
+</tt><pre style="margin: 0em;">
+      (invalid coordinate axis)
+TEMPERATURE_DE_SURFACE_DE_LA_MER
+</pre><tt>         sea surface temperature          ...       1:3500    
+</tt><tt>1:4500    ...
+</tt><pre style="margin: 0em;">
+
+yes? shade TEMPERATURE_DE_SURFACE_DE_LA_MER
+yes? quit
+
+</pre><tt>The result is : Ferret outputs a 2-D plot, but with x = Latitude, and 
+</tt><tt>y = a number between 1 and 4500 (expected : a 2-D plot with x = 
+</tt><tt>Longitude, and y = Latitude !)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Hereafter is the ncdump of my file : I just show you a subset of the 
+</tt><tt>LONGITUDE variable, between subscripts 1116 and 1129. It seems that 
+</tt><tt>Ferret does'nt interpret correctly subscript 1126 (Longitudes(1126) = 
+</tt><tt>9.20000000022014e-05)
+</tt><pre style="margin: 0em;">
+
+netcdf TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.cfs {
+dimensions:
+   Latitude = 3500 ;
+   Longitude = 4500 ;
+   double Latitude(Latitude) ;
+       Latitude:_FillValue = 1.84467440737096e+19 ;
+       Latitude:long_name = &quot;Latitudes&quot; ;
+       Latitude:units = &quot;degrees_north&quot; ;
+       Latitude:standard_name = &quot;latitude&quot; ;
+   double Longitude(Longitude) ;
+       Longitude:_FillValue = 1.84467440737096e+19 ;
+       Longitude:long_name = &quot;Longitudes&quot; ;
+       Longitude:units = &quot;degrees_east&quot; ;
+       Longitude:standard_name = &quot;longitude&quot; ;
+   short Temperature_de_surface_de_la_mer(Longitude, Latitude) ;
+       Temperature_de_surface_de_la_mer:_FillValue = 32767s ;
+</pre><tt>       Temperature_de_surface_de_la_mer:long_name = &quot;sea surface 
+</tt><tt>temperature&quot; ;
+</tt><pre style="margin: 0em;">
+       Temperature_de_surface_de_la_mer:units = &quot;degC&quot; ;
+       Temperature_de_surface_de_la_mer:scale_factor = 0.01 ;
+       Temperature_de_surface_de_la_mer:add_offset = 0. ;
+</pre><tt>       Temperature_de_surface_de_la_mer:standard_name = 
+</tt><tt>&quot;sea_surface_temperature&quot; ;
+</tt><pre style="margin: 0em;">
+       Temperature_de_surface_de_la_mer:valid_min = -162s ;
+       Temperature_de_surface_de_la_mer:valid_max = 2793s ;
+
+</pre><tt>Longitude(1116:1129) =   359.600092, 359.640092, 359.680092, 
+</tt><tt>359.720092, 359.760092, 359.800092,
+</tt><pre style="margin: 0em;">
+359.840092, 359.880092, 359.920092, 359.960092, 9.20000000022014e-05,
+0.0400920000000022, 0.0800920000000022, 0.120092000000002
+
+
+</pre><tt>Is it a known unavoidable Ferret bug, or is there a means to avoid 
+</tt><tt>it, maybe by telling to Ferret something more on the input data 
+</tt><tt>precision (double ?)
+</tt><pre style="margin: 0em;">
+
+Thank you for your help,
+
+Jacques
+
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre><tt>Cliquez ici 
+</tt><tt>&lt;<a  rel="nofollow" href="https://www.mailcontrol.com/sr/3ZuPWjxzrFcBMC5TJeZ2dUfK8eMmGgcuf%2166NrBUsCcQG64UImLu5Ga3C10sUHexRuShiRIC6jRCCzZIChncDek80fUprGx%21E1f8ihh8CqRwR+z8XT0XFkR7EyZQW79JTFD7zlQ6sVB3gA8I8mUAYv7oe5OBIW4Elz63Uk5fl84nirg9zl+Fiyo5ffRBzBGOScxUbMTLFPbhZgB%21tlhEhRqRVZ%21%21rMKK">https://www.mailcontrol.com/sr/3ZuPWjxzrFcBMC5TJeZ2dUfK8eMmGgcuf%2166NrBUsCcQG64UImLu5Ga3C10sUHexRuShiRIC6jRCCzZIChncDek80fUprGx%21E1f8ihh8CqRwR+z8XT0XFkR7EyZQW79JTFD7zlQ6sVB3gA8I8mUAYv7oe5OBIW4Elz63Uk5fl84nirg9zl+Fiyo5ffRBzBGOScxUbMTLFPbhZgB%21tlhEhRqRVZ%21%21rMKK</a>&gt; 
+</tt><tt>si ce message est ind&#xE9;sirable (pourriel).
+</tt><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+Ansley, it does'nt work properly yet, but it is in good progress :
+
+yes? let xx=longitude
+yes? list/i=1116:1129 xx
+            VARIABLE : LONGITUDE
+            DATA SET : SST collated file: avhrr17_g 20070917
+</pre><tt>            FILENAME : 
+</tt><tt>TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.cfs.nc
+</tt><pre style="margin: 0em;">
+            SUBSET   : 14 points (X)
+1116   / 1116:  359.6
+1117   / 1117:  359.6
+1118   / 1118:  359.7
+1119   / 1119:  359.7
+1120   / 1120:  359.8
+1121   / 1121:  359.8
+1122   / 1122:  359.8
+1123   / 1123:  359.9
+1124   / 1124:  359.9
+1125   / 1125:  360.0
+1126   / 1126:    0.0
+1127   / 1127:    0.0
+1128   / 1128:    0.1
+1129   / 1129:    0.1
+yes? let new_longitude = if xx GT 180 then (xx-360) else xx
+yes? list/i=1116:1129 new_longitude
+            VARIABLE : IF XX GT 180 THEN (XX-360) ELSE XX
+            DATA SET : SST collated file: avhrr17_g 20070917
+</pre><tt>            FILENAME : 
+</tt><tt>TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.cfs.nc
+</tt><pre style="margin: 0em;">
+            SUBSET   : 14 points (X)
+1116   / 1116: -0.3999
+1117   / 1117: -0.3599
+1118   / 1118: -0.3199
+1119   / 1119: -0.2799
+1120   / 1120: -0.2399
+1121   / 1121: -0.1999
+1122   / 1122: -0.1599
+1123   / 1123: -0.1199
+1124   / 1124: -0.0799
+1125   / 1125: -0.0399
+1126   / 1126:  0.0001
+1127   / 1127:  0.0401
+1128   / 1128:  0.0801
+1129   / 1129:  0.1201
+yes? define axis/modulo/units=degrees_east longitude=new_longitude
+*** NOTE: Orientation not specified via /X,/Y,/Z, or /T. X assumed.
+Replacing definition of axis LONGITUDE
+</pre><tt>*** NOTE: grid  used by data set 
+</tt><tt>TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.cfs
+</tt><pre style="margin: 0em;">
+*** NOTE: Redefinition may alter apparent contents of data set
+</pre><tt>*** NOTE: grid  used by data set 
+</tt><tt>TsurfAv17jL2pnv_20070917_103456_0079_-060_-044_0135.cfs
+</tt><pre style="margin: 0em;">
+*** NOTE: Redefinition may alter apparent contents of data set
+</pre><tt>yes? shade TEMPERATURE_DE_SURFACE_DE_LA_MER : plots in x axis the 
+</tt><tt>latitude and in y axis a variable named &quot;z (degrees_east)&quot; which values 
+</tt><tt>are longitude values
+</tt><pre style="margin: 0em;">
+
+How may I tell to ferret to put the longitude in x and latitude in y ?
+
+
+--
+</pre><tt>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
+</tt><tt>JACQUES STUM                                  	     ~~	  E-mail	 :  jstum@xxxxxx	
+</tt><pre style="margin: 0em;">
+Collecte Localisation Satellite,
+8-10 rue Herm&#xE8;s,                                 	     ~~	  Phone   :  33 5 61 39 48 12
+Parc Technologique du Canal,
+31526 Ramonville Saint-Agne, France	     ~~    	  Fax	 :  33 5 61 39 37 82
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00667" href="msg00667.html">Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?)</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00664" href="msg00664.html">[ferret_users] ferret failure to plot Netcdf file (precision problem ?)</a></strong>
+<ul><li><em>From:</em> Jacques Stum</li></ul></li>
+<li><strong><a name="00665" href="msg00665.html">Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?)</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00665.html">Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00667.html">Re: [ferret_users] ferret failure to plot Netcdf file (precision problem ?)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00665.html">Thread Prev</a>][<a href="msg00667.html">Thread Next</a>][<A HREF="threads.html#00666">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

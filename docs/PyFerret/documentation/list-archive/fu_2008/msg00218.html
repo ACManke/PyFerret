@@ -1,0 +1,264 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Defining long_name and standard_name for an axis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 5 May 2008 10:27:35 &#45;0700 -->
+<!--X-Message-Id: 481F4387.10403@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1FCC04E38B4F6C4094B67127333F86600C59C7@frost.shore.mbari.org -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Defining long_name and standard_name for an axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00216.html">Thread Prev</a>][<a href="msg00219.html">Thread Next</a>][<A HREF="threads.html#00218">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Defining long_name and standard_name for an axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;McCann, Mike&quot; &lt;<a href="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Defining long_name and standard_name for an axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 05 May 2008 10:27:35 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:1FCC04E38B4F6C4094B67127333F86600C59C7@DOMAIN.HIDDEN">1FCC04E38B4F6C4094B67127333F86600C59C7@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1FCC04E38B4F6C4094B67127333F86600C59C7@DOMAIN.HIDDEN">1FCC04E38B4F6C4094B67127333F86600C59C7@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Windows/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Mike,
+</pre><tt>You can do this (though it's not working completely as I'll show below). 
+</tt><tt>The syntax for specifying an coordinate variable is to put it in 
+</tt><tt>parentheses. Since coordinate variables, or axes, are different from 
+</tt><tt>regular variables, we used this different syntax.  For coordinate 
+</tt><tt>variables that come from netCDF files, you can do the following
+</tt><pre style="margin: 0em;">
+
+yes? use etopo60
+yes? show grid rose
+   GRID GQW1
+name       axis              # pts   start                end
+ETOPO60X  LONGITUDE          360mr   20.5E                19.5E(379.5)
+ETOPO60Y  LATITUDE           180 r   89.5S                89.5N
+normal    Z
+normal    T
+
+</pre><tt>yes? define attribute/output (ETOPO60Y).long_name = &quot;this is the Y axis 
+</tt><tt>of ROSE&quot;
+</tt><pre style="margin: 0em;">
+yes? save/clobber/file=aa.nc rose
+LISTing to file aa.nc
+
+yes? sp ncdump -h aa.nc
+netcdf aa {
+dimensions:
+       ETOPO60X = 360 ;
+       ETOPO60Y = 180 ;
+variables:
+       double ETOPO60X(ETOPO60X) ;
+               ETOPO60X:units = &quot;degrees_east&quot; ;
+               ETOPO60X:modulo = &quot; &quot; ;
+               ETOPO60X:point_spacing = &quot;even&quot; ;
+               ETOPO60X:axis = &quot;X&quot; ;
+       double ETOPO60Y(ETOPO60Y) ;
+               ETOPO60Y:units = &quot;degrees_north&quot; ;
+               ETOPO60Y:point_spacing = &quot;even&quot; ;
+               ETOPO60Y:long_name = &quot;this is the Y axis of ROSE&quot; ;
+               ETOPO60Y:axis = &quot;Y&quot; ;
+       float ROSE(ETOPO60Y, ETOPO60X) ;
+               ROSE:missing_value = -1.e+34f ;
+...
+
+</pre><tt>If you've defined the axis in Ferret, I'm finding that this doesn't 
+</tt><tt>always work:
+</tt><pre style="margin: 0em;">
+
+yes? ! define an axis, add an attribute, and synthesize a variable
+yes? ! on the axis. The attribute is saved to a file:
+
+yes? define axis/y=-89:89:1/units=deg longitude
+yes? let v = y[gy=longitude]
+
+</pre><tt>yes? define attribute/output (longitude).long_name = &quot;here is a new 
+</tt><tt>longitude axis&quot;
+</tt><pre style="margin: 0em;">
+yes? sh att/all (longitude)
+    attributes for coordinate axis
+(LONGITUDE).units = DEG
+(LONGITUDE).point_spacing = even
+(LONGITUDE).axis = Y
+(LONGITUDE).long_name = here is a new longitude axis
+
+yes? save/clobber/file=aa.nc  v
+LISTing to file aa.nc
+
+yes? sp ncdump -h aa.nc
+netcdf aa {
+dimensions:
+       LONGITUDE = 179 ;
+variables:
+       double LONGITUDE(LONGITUDE) ;
+               LONGITUDE:units = &quot;DEG&quot; ;
+               LONGITUDE:point_spacing = &quot;even&quot; ;
+               LONGITUDE:axis = &quot;Y&quot; ;
+               LONGITUDE:long_name = &quot;here is a new longitude axis&quot; ;
+       float V(LONGITUDE) ;
+               V:missing_value = -1.e+34f ;
+               V:_FillValue = -1.e+34f ;
+               V:long_name = &quot;Y[GY=LONGITUDE]&quot; ;
+
+
+! But, if we define an axis and regrid an existing variable to it:
+
+
+
+yes? use etopo120
+yes? define axis/y=-89:89:1/units=deg longitude
+</pre><tt>yes? define attribute/output (longitude).long_name = &quot;here is a 1-degree 
+</tt><tt>longitude axis&quot;
+</tt><pre style="margin: 0em;">
+yes? sh att/all (longitude)
+    attributes for coordinate axis
+(LONGITUDE).units = DEG
+(LONGITUDE).point_spacing = even
+(LONGITUDE).axis = Y
+(LONGITUDE).long_name = here is a 1-degree longitude axis
+
+yes? let rosey = rose[gy=longitude]
+yes? save/clobber/file=aa.nc rosey
+LISTing to file aa.nc
+
+yes? sp ncdump -h aa.nc
+netcdf aa {
+dimensions:
+       ETOPO120X = 180 ;
+       LONGITUDE = 179 ;
+variables:
+       double ETOPO120X(ETOPO120X) ;
+               ETOPO120X:units = &quot;degrees_east&quot; ;
+               ETOPO120X:modulo = &quot; &quot; ;
+               ETOPO120X:point_spacing = &quot;even&quot; ;
+               ETOPO120X:axis = &quot;X&quot; ;
+       double LONGITUDE(LONGITUDE) ;
+               LONGITUDE:units = &quot;degrees_north&quot; ;
+               LONGITUDE:point_spacing = &quot;even&quot; ;
+               LONGITUDE:axis = &quot;Y&quot; ;
+       float ROSEY(LONGITUDE, ETOPO120X) ;
+
+
+</pre><tt>This'll give you a start, and we'll work on getting the new attribute 
+</tt><tt>saved to files in all cases.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+McCann, Mike wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+</pre><tt> 
+</tt><tt>How does one set the attributes 'long_name' and 'standard_name' for output to netCDF on an axis?
+</tt><tt> 
+</tt><tt>I can do this for a variable:
+</tt><tt> 
+</tt><tt>  DEFINE ATTRIBUTE/output PSAL.standard_name = &quot;sea_water_salinity&quot;
+</tt><pre style="margin: 0em;">
+
+but for an axis defined like this:
+
+  DEFINE AXIS/X/UNITS=deg LONGITUDE=-122.39965
+
+I don't see how to set the long_name or standard_name.
+</pre><tt> 
+</tt><tt> 
+</tt><tt>I'm trying to get my data set to pass the CF compliance checker which is complaining like this:
+</tt><tt> 
+</tt><tt>------------------
+</tt><pre style="margin: 0em;">
+Checking variable: LONGITUDE
+------------------
+WARNING (3): No standard_name or long_name attribute specified
+
+-Mike
+
+--
+Mike McCann
+Software Engineer
+Monterey Bay Aquarium Research Institute
+7700 Sandholdt Road
+Moss Landing, CA 95039-9644
+</pre><tt>Voice: 831.775.1769  Fax: 831.775.1736 <a  rel="nofollow" href="http://www.mbari.org">http://www.mbari.org</a> &lt;<a  rel="nofollow" href="http://www.mbari.org/">http://www.mbari.org/</a>&gt; 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+
+
+
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00219" href="msg00219.html">RE: [ferret_users] Defining long_name and standard_name for an axis</a></strong>
+<ul><li><em>From:</em> McCann, Mike</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00216" href="msg00216.html">[ferret_users] Defining long_name and standard_name for an axis</a></strong>
+<ul><li><em>From:</em> McCann, Mike</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00216.html">[ferret_users] Defining long_name and standard_name for an axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00219.html">RE: [ferret_users] Defining long_name and standard_name for an axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00216.html">Thread Prev</a>][<a href="msg00219.html">Thread Next</a>][<A HREF="threads.html#00218">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

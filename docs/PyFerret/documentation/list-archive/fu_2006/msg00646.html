@@ -1,0 +1,157 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How to combine files ??? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 4 Oct 2006 09:32:41 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0610042142400.5858@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1159944015.2671.574.camel@pc191&#45;118.nies.go.jp -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How to combine files ???</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00644.html">Thread Prev</a>][<a href="msg00649.html">Thread Next</a>][<A HREF="threads.html#00646">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to combine files ???</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Vinu K. V.&quot; &lt;<a href="mailto:vinu.valsala@DOMAIN.HIDDEN">vinu.valsala@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to combine files ???</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 04 Oct 2006 22:09:45 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00644.html">1159944015.2671.574.camel@pc191-118.nies.go.jp</a>&gt;</li>
+<li>References: &lt;<a href="msg00644.html">1159944015.2671.574.camel@pc191-118.nies.go.jp</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Vinu,
+         If you want to combine the NetCDF files decomposed
+on latitude, then (assuming the individual NetCDF files are
+on proper latitude axis)
+
+ 1. define the destination latitude axis 
+
+      yes? define axis/y=-90:90:1/units=latitudes ylat ! 181 points
+
+ 2  Assign the destination grid to the variables as follows,
+
+      yes? let temp_1 = temp[d=1,gy=ylat]
+
+ 3  Identify the start and end J, on 'ylat' axis, according
+      to each input NetCDF file (ie. from first processor 
+      owards). Let it be J=1:20, then open a new file as
+
+      yes? sp rm -f ncout.nc
+      yes? save/file=ncout.nc/JLIMITS=1:181/J=1:20/CLOBBER temp_1
+      
+ 4  Close the first input file. Open the second input file then,
+      (assuming J for this file is 21:40)
+
+      yes? cancel data 1
+      yes? set data inputncfile2.nc.0001
+      yes? let temp_1 = temp[d=1,gy=ylat]
+      yes? save/file=ncout.nc/J=21:40/APPEND temp_1
+
+ 5 Repeat step 4 for other remaining input files.
+
+If the number of input files and variables in each input files 
+are large, this method is not at all feasible. In this case you
+can try using the mppnccombine.c distributed with MOM4p0 code,
+(<a  href="https://fms.gfdl.noaa.gov/">https://fms.gfdl.noaa.gov/</a>) from GFDL. Which is fairly complex 
+enough to handle a wide range of input files. But you may have 
+to modify it, to suit for your input files.
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+On Wed, 4 Oct 2006, Vinu K. V. wrote:
+
+&gt; Hi Ferreters,
+&gt; 
+&gt; 	A parallel run produces out put as pieces (netcdf), 
+&gt; each file contains a portion of latitude. How can one combine
+&gt; this individual files into one single file of entire
+&gt; latitudes ?
+&gt; 
+&gt; For example,
+&gt; 
+&gt; 10 files are produced, each file containing output 
+&gt; for a portion of latitudes, say, -90  to -80, -80 to -70 and so on.
+&gt; 
+&gt; I have tried save/file=my_file.nc/append over a dummy 
+&gt; file, whose grid is defined for entire globe, but didnt work.
+&gt; 
+&gt; I suppose there are other methods exist in Ferret to
+&gt; do this properly.
+&gt; 
+&gt; 
+&gt; Please help me to find a solution. Thanks in advance
+&gt; 
+&gt; -Vinu
+&gt; 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00649" href="msg00649.html">Re: [ferret_users] How to combine files ???</a></strong>
+<ul><li><em>From:</em> Dr. Vinu K. Valsala</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00644" href="msg00644.html">[ferret_users] How to combine files ???</a></strong>
+<ul><li><em>From:</em> Vinu K. V.</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00644.html">[ferret_users] How to combine files ???</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00649.html">Re: [ferret_users] How to combine files ???</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00644.html">Thread Prev</a>][<a href="msg00649.html">Thread Next</a>][<A HREF="threads.html#00646">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

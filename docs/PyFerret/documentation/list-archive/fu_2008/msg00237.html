@@ -1,0 +1,159 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] recursive variable definition -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 12 May 2008 15:42:53 &#45;0700 -->
+<!--X-Message-Id: 4828C7EC.4050709@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1210615206.482885a65958d@www.imp.polymtl.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] recursive variable definition</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00233.html">Thread Prev</a>][<a href="msg00236.html">Thread Next</a>][<A HREF="threads.html#00237">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] recursive variable definition</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Frederic Cyr &lt;<a href="mailto:frederic.cyr@DOMAIN.HIDDEN">frederic.cyr@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] recursive variable definition</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 12 May 2008 15:42:52 -0700</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1210615206.482885a65958d@DOMAIN.HIDDEN">1210615206.482885a65958d@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1210615206.482885a65958d@DOMAIN.HIDDEN">1210615206.482885a65958d@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.14 (Windows/20080421)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Frederic,
+</pre><tt>The RESHAPE function puts the data in the first argument onto the GRID 
+</tt><tt>of the second argument, so it's not useful for assigning data to a 
+</tt><tt>single location on an axis.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You can just add a variable whose value is 0, but which has the specific 
+</tt><tt>time, to a variable that has other dimensions, x, y, and/or z. This is 
+</tt><tt>called time-stamping, and is easily used to write a new file containing 
+</tt><tt>a time series formed by appending each time step to the file.  It should 
+</tt><tt>go something like this in your example (details will be different about 
+</tt><tt>opening files etc.):
+</tt><pre style="margin: 0em;">
+
+</pre><tt>  yes? DEFINE 
+</tt><tt>AXIS/CALENDAR=360_day/T=&quot;15-JAN-1998&quot;:&quot;15-DEC-2001&quot;:30/UNITS=days tax
+</tt><pre style="margin: 0em;">
+
+  yes? LET ai = T[GT=tax]
+
+  yes? REPEAT/RANGE=1:48/NAME=m ( \
+    USE file`m`.nc; \
+    LET a = concentration[x=@din,y=@din]+ ai[L=`m`]; \
+    SAVE/APPEND/FILE=all.nc a; \
+    CANCEL DATA/ALL )
+
+</pre><tt>Search the archives for &quot;timestamp&quot; to find more discussions of this, 
+</tt><tt>and also look up &quot;conformability&quot; in the index to the Users Guide :
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/variables-xpressions/XPRESSIONS#_VPID_90">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/variables-xpressions/XPRESSIONS#_VPID_90</a>
+
+Ansley
+
+Frederic Cyr wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi everyone,
+
+I know this may be a beginner question, but I can't find my answer in the
+archives.
+
+I simply want t build a time series of monthly ice extend after computing it
+from different files.
+
+This is how I work:
+
+yes? DEFINE AXIS/CALENDAR=360_day/T=&quot;15-JAN-1998&quot;:&quot;15-DEC-2001&quot;:30/UNITS=days
+tax
+yes? let ai=l[gl=tax]	! new variable
+
+Then I want to open different file, computing the result and put the value into
+de &quot;vector&quot; ai. This is in a repeat loop:
+
+yes? SET DATA ($fic)
+yes? let A=concentration[x=@din, y=@din] ! computing the total extent
+yes? let ai = if l eq ii then RESHAPE(A,ai) else ai  !here I want to put the
+value of &quot;A&quot; in &quot;ai&quot; at the indice &quot;ii&quot;
+
+Of course I get an error because of the recursive definition of ai...but I dont
+kno how I can manage to get rid of it!
+
+Thank you very Much
+Fred
+
+
+
+
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00233" href="msg00233.html">[ferret_users] recursive variable definition</a></strong>
+<ul><li><em>From:</em> Frederic Cyr</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00233.html">[ferret_users] recursive variable definition</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00236.html">[ferret_users] Has anyone installed Ferret on a Mac running Leopard (10.5)?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00233.html">Thread Prev</a>][<a href="msg00236.html">Thread Next</a>][<A HREF="threads.html#00237">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

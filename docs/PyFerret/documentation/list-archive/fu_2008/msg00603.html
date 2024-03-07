@@ -1,0 +1,171 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] computing annual seasonal averages -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 21 Nov 2008 14:10:14 &#45;0800 -->
+<!--X-Message-Id: 492731C4.5080807@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 1227281509.3132.8.camel@firn.physics.mun.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] computing annual seasonal averages</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00601.html">Thread Prev</a>][<a href="msg00604.html">Thread Next</a>][<A HREF="threads.html#00603">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] computing annual seasonal averages</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Tristan Hauser &lt;<a href="mailto:tristan.hauser@DOMAIN.HIDDEN">tristan.hauser@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] computing annual seasonal averages</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 21 Nov 2008 14:10:12 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:1227281509.3132.8.camel@DOMAIN.HIDDEN">1227281509.3132.8.camel@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1227281509.3132.8.camel@DOMAIN.HIDDEN">1227281509.3132.8.camel@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.18 (Windows/20081105)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Tristan,<br>
+You just need to define a time axis covering the time range of your
+data, with four points in each year - time coordinates in the middle of
+each January, April, July, October. Then regrid your data to that,
+using the @AVE regridding transformation, and save only every fourth
+point. You should be able to use the time axis of your data to create
+the seasonal time axis.&nbsp; Here's a dataset with a long time axis.&nbsp; These
+steps will work for any time axis - just make sure you get the right
+delta values when defining the seasonal axis and the subsampling to get
+down to just winter timesteps.&nbsp; Also make sure to start at the right
+place -- if you wanted to have the 3-month axis centered on February,
+or if the time series started in July, you'd need to adjust for that.&nbsp;
+(also have a look at DEFINE AXIS/EDGES if you want to be really careful
+about the axis definition)<br>
+<tt><br>
+</tt>
+<blockquote><tt>yes? use
+<a rel="nofollow" class="moz-txt-link-rfc2396E" href="http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/coads_air.cdf">"http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/coads_air.cdf"</a></tt><br>
+</blockquote>
+<blockquote><tt>yes? list/L=1:5 t[gt=air]</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : T</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis TIME</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DATA SET : COADS Surface Marine Observations
+(1854-1993)</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : coads_air.cdf</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILEPATH :
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/">http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/</a></tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 5 points (TIME)</tt><br>
+  <tt>&nbsp;15-JAN-1854 00 / 1:&nbsp; 56261.</tt><br>
+  <tt>&nbsp;15-FEB-1854 00 / 2:&nbsp; 56292.</tt><br>
+  <tt>&nbsp;15-MAR-1854 00 / 3:&nbsp; 56320.</tt><br>
+  <tt>&nbsp;15-APR-1854 00 / 4:&nbsp; 56351.</tt><br>
+  <tt>&nbsp;15-MAY-1854 00 / 5:&nbsp; 56381.</tt><br>
+  <tt>&nbsp; </tt><br>
+  <tt>&nbsp; ! Use a variable containing the time coordinates to define a new<br>
+&nbsp; !&nbsp; </tt><tt>seasonal time </tt><tt>axis.<br>
+  <br>
+  </tt><tt>yes? let tcoords = t[gt=air]</tt><br>
+  <tt>yes? define
+axis/t/units="`air,return=tunits`"/t0="`air,return=t0`" \</tt><br>
+  <tt>...? t_seas = tmonth[L=1:`air,return=Lsize`:3]</tt><br>
+  <tt>&nbsp;!-&gt; define axis/t/units="days"/t0="01-JAN-1700 00:00:00"
+t_seas = </tt><tt>tcoords </tt><tt>[L=1:1680:3]</tt><br>
+  <br>
+  <tt>&nbsp; ! Regrid the variable to the seasonal time axis</tt><br>
+  <tt>yes? let air_seas&nbsp; = air[gt=t_seas@ave]</tt><br>
+  <br>
+  <tt>&nbsp; ! Now every fourth point is the winter average for each year.</tt><br>
+  <tt>yes? let air_winter = air_seas[L=1:`air_seas,return=Lsize`:4]</tt><br>
+  <tt>&nbsp;!-&gt; DEFINE VARIABLE air_winter = air_seas[L=1:560:4]</tt><br>
+  <br>
+  <tt>&nbsp; ! Do whatever we like with this new winter value</tt><br>
+  <tt>yes? save/clobber/file=seas.nc
+air_winter[x=300:360@ave,y=20:40@ave]</tt><br>
+  <tt>&nbsp;LISTing to file seas.nc</tt><br>
+</blockquote>
+<br>
+<br>
+Tristan Hauser wrote:
+<blockquote cite=""
+ type="cite">
+  <pre wrap="">Hello all,
+  
+For a given variable I'm trying to compute the Dec-Jan-Feb (i.e. winter)
+average for each specific year of a multiple-year data set so I can
+compare these to the average winter value for the entire data set.  I
+can't find how to tell Ferret to compute a DJF average in such a way
+that I have a distinct seasonal average from each year.  The second
+part, an average winter value for the entire data set is
+straightforward.  Any pointers?
+
+Thank you for your time,
+Tristan Hauser 
+
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00601" href="msg00601.html">[ferret_users] computing annual seasonal averages</a></strong>
+<ul><li><em>From:</em> Tristan Hauser</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00601.html">[ferret_users] computing annual seasonal averages</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00604.html">[ferret_users] Display problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00601.html">Thread Prev</a>][<a href="msg00604.html">Thread Next</a>][<A HREF="threads.html#00603">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

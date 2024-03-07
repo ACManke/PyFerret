@@ -1,0 +1,186 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] thicken lines in postscript output -->
+<!--X-From-R13: Oaqerj Ivggraoret <Oaqerj.IvggraoretNabnn.tbi> -->
+<!--X-Date: Fri, 15 Dec 2006 11:09:44 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.64.0612151356040.2667@atw -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: B712A75D&#45;B7C4&#45;4BF0&#45;92F4&#45;77F6269290A3@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] thicken lines in postscript output</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00797.html">Thread Prev</a>][<a href="msg00799.html">Thread Next</a>][<A HREF="threads.html#00798">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] thicken lines in postscript output</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] thicken lines in postscript output</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 15 Dec 2006 14:07:38 -0500 (EST)</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00797.html">B712A75D-B7C4-4BF0-92F4-77F6269290A3@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00797.html">B712A75D-B7C4-4BF0-92F4-77F6269290A3@noaa.gov</a>&gt;</li>
+<li>Reply-to: Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Ferreters,<br>
+<br>
+On the same topic, see below for a tiny C-shell (csh) script that will 
+thicken all Ferret PostScript lines by any integer factor.  You'd put it 
+somewhere in your path, and make it executable with &quot;chmod +x ps_thicken&quot;. 
+Run &quot;ps_thicken&quot; without arguments for a usage message.<br>
+<br>
+Andrew<br>
+<br>
+<br>
+#!/bin/csh -f<br>
+# Usage: ps_thicken ps_file factor<br>
+<br>
+# get list of all arguments<br>
+set args = ($*)<br>
+<br>
+# if not enough arguments, complain.<br>
+if ($#args &lt; 2) then<br>
+   echo &quot;Usage: ps_thicken ps_file factor&quot;<br>
+   echo &quot;Thickens all lines in a PostScript file by changing the linewidth macro.&quot;<br>
+   echo &quot;Result goes to standard output.&quot;<br>
+   echo &quot;Example: ps_thicken myfile.ps 3 &gt; myfile_thick.ps&quot;<br>
+   exit 1<br>
+endif<br>
+<br>
+sed -e &quot;s/^\/lw {\(.*\) div setlinewidth/\/lw {$2 mul \1 div setlinewidth/&quot; $1<br>
+<br>
+<br>
+<br>
+<br>
+On Fri, 15 Dec 2006, William S. Kessler wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi Ferreters -
+
+Another answer, not question.
+
+Many will have noticed that the plot lines produced by Ferret look great in
+gif files, but are often too thin in postscript or pdf. Also, the
+distinctions between line thicknesses 1,2,3 are not pronounced in postscript.
+It is often desirable to thicken the lines. Here are two methods to
+automatically edit the postscript output of Fprint to do that, by editing the
+&quot;line weight&quot; (lw) lines in the postscript file. Either method accomplishes
+exactly the same thing.
+
+Billy K
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - -
+Method 1 (unix sed):
+
+Make a file &quot;double_line_wt&quot;, consisting of the following text (between the
+dashed lines):
+----------------
+# script to increase line weights of Ferret output
+sed 's_3.000000 lw_6.000000 lw_g' &lt; $1.ps &gt;! foo; \mv foo $1.ps
+sed 's_2.000000 lw_4.000000 lw_g' &lt; $1.ps &gt;! foo; \mv foo $1.ps
+sed 's_1.000000 lw_2.000000 lw_g' &lt; $1.ps &gt;! foo; \mv foo $1.ps
+----------------
+Make it executable: chmod a+x double_line_wt
+
+To double the thickness of all lines, call it from the command line with the
+filename made by Fprint (omit the .ps):
+
+double_line_wt filename
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - -
+Method 2 (vi):
+
+Make a file &quot;vi_double_line_wt&quot;, consisting of the following text (between
+the dashed lines):
+----------------
+:%s_3.000000 lw_6.000000 lw_g
+:%s_2.000000 lw_4.000000 lw_g
+:%s_1.000000 lw_2.000000 lw_g
+:wq
+----------------
+
+Use vi to thicken the lines. From the command line:
+
+vi filename.ps -s {vi_double_line_wt}
+
+This will quickly open the file in vi, perform the editing, and close it.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - -
+Extensions to stronger line-thickening are obvious.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/people/kessler/">http://www.pmel.noaa.gov/people/kessler/</a>
+
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00799" href="msg00799.html">[ferret_users] grayscale palette</a></strong>
+<ul><li><em>From:</em> jimmyc</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00797" href="msg00797.html">[ferret_users] thicken lines in postscript output</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00797.html">[ferret_users] thicken lines in postscript output</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00799.html">[ferret_users] grayscale palette</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00797.html">Thread Prev</a>][<a href="msg00799.html">Thread Next</a>][<A HREF="threads.html#00798">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

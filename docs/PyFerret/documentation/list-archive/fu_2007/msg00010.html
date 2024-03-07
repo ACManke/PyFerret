@@ -1,0 +1,196 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Keeping NetCDF dimension attributes on a subregion -->
+<!--X-From-R13: "Bnhyb P. Ayvirven" <cobNvcvzne.cg> -->
+<!--X-Date: Thu, 4 Jan 2007 07:43:01 &#45;0800 -->
+<!--X-Message-Id: 1167925038.31376.29.camel@eo -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Keeping NetCDF dimension attributes on a subregion</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00009.html">Thread Prev</a>][<a href="msg00011.html">Thread Next</a>][<A HREF="threads.html#00010">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Keeping NetCDF dimension attributes on a subregion</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret NOAA &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Keeping NetCDF dimension attributes on a subregion</strong></li>
+<li><strong>From</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 04 Jan 2007 15:37:18 +0000</li>
+<li>Organization: IPIMAR</li>
+<li>Reply-to: <a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello All, 
+
+I'm trying to create a regional subset of NCEP2 data
+(<a  rel="nofollow" href="ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis2">ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis2</a>) but the dimension
+attributes get lost. Is there a simple way to do this ?
+
+Thanks.
+
+
+Paulo.
+-----------
+Ferret cmds:
+
+use air.2m.gauss.1998.nc
+set reg/x=-25:-1/y=10:50
+save/file=sset.cdf/clobber air
+ LISTing to file sset.cdf
+ *** NOTE: Converting data type of missing_value NC_SHORT to match
+output type of variable NC_FLOAT
+
+
+NetCDF files:
+
+================================ OUTPUT ================================
+OUTPUT: -- dim and var attrib. lost.
+$ ncdump -h sset.cdf
+netcdf sset {
+dimensions:
+        LONN12_0 = 13 ;
+        LAT53_74 = 22 ;
+        bnds = 2 ;
+        LEVEL = 1 ;
+        TIME = UNLIMITED ; // (1460 currently)
+variables:
+        double LONN12_0(LONN12_0) ;
+        double LAT53_74(LAT53_74) ;
+        double LAT53_74_bnds(LAT53_74, bnds) ;
+        double LEVEL(LEVEL) ;
+        double TIME(TIME) ;
+        float AIR(TIME, LEVEL, LAT53_74, LONN12_0) ;
+                AIR:missing_value = 775.31f ;
+                AIR:_FillValue = 775.31f ;
+                AIR:long_name = &quot;6-Hourly Forecast of Air temperature at
+2 m&quot; ;
+                AIR:units = &quot;degK&quot; ;
+                AIR:history = &quot;From air.2m.gauss.1998&quot; ;
+
+================================ INPUT ================================
+$ ncdump -h air.2m.gauss.1998.nc
+netcdf air.2m.gauss.1998 {
+dimensions:
+        lon = 192 ;
+        lat = 94 ;
+        level = 1 ;
+        time = UNLIMITED ; // (1460 currently)
+variables:
+        float level(level) ;
+                level:units = &quot;m&quot; ;
+                level:actual_range = 2.f, 2.f ;
+                level:long_name = &quot;Level&quot; ;
+                level:positive = &quot;up&quot; ;
+                level:axis = &quot;z&quot; ;
+                level:coordinate_defines = &quot;point&quot; ;
+        float lat(lat) ;
+                lat:units = &quot;degrees_north&quot; ;
+                lat:actual_range = 88.542f, -88.542f ;
+                lat:long_name = &quot;Latitude&quot; ;
+                lat:standard_name = &quot;latitude_north&quot; ;
+                lat:axis = &quot;y&quot; ;
+                lat:coordinate_defines = &quot;point&quot; ;
+        float lon(lon) ;
+                lon:units = &quot;degrees_east&quot; ;
+                lon:long_name = &quot;Longitude&quot; ;
+                lon:actual_range = 0.f, 358.125f ;
+                lon:standard_name = &quot;longitude_east&quot; ;
+                lon:axis = &quot;x&quot; ;
+                lon:coordinate_defines = &quot;point&quot; ;
+        double time(time) ;
+                time:units = &quot;hours since 1800-1-1 00:00:0.0&quot; ;
+                time:long_name = &quot;Time&quot; ;
+                time:actual_range = 1735632., 1744386. ;
+                time:delta_t = &quot;0000-00-00 06:00:00&quot; ;
+                time:standard_name = &quot;time&quot; ;
+                time:axis = &quot;t&quot; ;
+                time:coordinate_defines = &quot;point&quot; ;
+        short air(time, level, lat, lon) ;
+                air:long_name = &quot;6-Hourly Forecast of Air temperature at
+2 m&quot; ;
+                air:valid_range = -32765s, -1765s ;
+                air:unpacked_valid_range = 120.f, 430.f ;
+                air:actual_range = 182.59f, 327.68f ;
+                air:units = &quot;degK&quot; ;
+                air:add_offset = 447.65f ;
+                air:scale_factor = 0.01f ;
+                air:missing_value = 32766s ;
+                air:_FillValue = -32767s ;
+                air:precision = 2s ;
+                air:least_significant_digit = 1s ;
+                air:GRIB_id = 11s ;
+                air:GRIB_name = &quot;TMP&quot; ;
+                air:var_desc = &quot;Air temperature&quot; ;
+                air:dataset = &quot;NCEP/DOE AMIP-II Reanalysis
+(Reanalysis-2)&quot; ;
+                air:level_desc = &quot;2 m&quot; ;
+                air:statistic = &quot;Mean&quot; ;
+                air:parent_stat = &quot;Individual Obs&quot; ;
+                air:standard_name = &quot;air_temperature&quot; ;
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00011" href="msg00011.html">Re: [ferret_users] Keeping NetCDF dimension attributes on a subregion</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00009.html">[ferret_users] coversion of model sigma coordinates</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00011.html">Re: [ferret_users] Keeping NetCDF dimension attributes on a subregion</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00009.html">Thread Prev</a>][<a href="msg00011.html">Thread Next</a>][<A HREF="threads.html#00010">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

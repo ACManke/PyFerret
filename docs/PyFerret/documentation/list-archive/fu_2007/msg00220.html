@@ -1,0 +1,254 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Problem with external function -->
+<!--X-From-R13: Xnzrf Qnirra <wnzrf_pnirraNhdne.dp.pn> -->
+<!--X-Date: Tue, 17 Apr 2007 08:31:59 &#45;0700 -->
+<!--X-Message-Id: 1176823912.2945.71.camel@caveenjt42.uqar.qc.ca -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Problem with external function</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00219.html">Thread Prev</a>][<a href="msg00234.html">Thread Next</a>][<A HREF="threads.html#00220">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Problem with external function</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Problem with external function</strong></li>
+<li><strong>From</strong>: <strong>James Caveen &lt;<a href="mailto:james_caveen@DOMAIN.HIDDEN">james_caveen@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 17 Apr 2007 11:31:52 -0400</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear ferreters,
+
+I have been trying to solve a problem with an external function for
+quite some time now and I finally decide to turn to the Ferret
+Community.  I realize that  this message is somewhat long but here I go
+anyway.
+
+ 
+I have written a Ferret  external function to reconstruct a 3D grid that
+is stored using compression by gathering as described in Section 8.2 of
+the CF Convention :
+(<a  rel="nofollow" href="http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-current.html#gath">http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-current.html#gath</a>)
+
+and everything works fine when I use one NetCDF file.  However, if I try
+to open a second file, Ferret's limit for irregular axis is exceeded;
+my data is stored in a 295000 element vector with uneven spacing. 
+
+Following is a ncdum -h of one of my files:
+
+
+netcdf COMP_TEST.ROM_TEMP_copie1 {
+dimensions:
+        XGULF = 236 ;
+        YGULF = 150 ;
+        ZGULF = 73 ;
+        ZGULFedges = 74 ;
+        TGULF = UNLIMITED ; // (4 currently)
+        IWET = 295000 ;
+variables:
+        float XGULF(XGULF) ;
+                XGULF:point_spacing = &quot;even&quot; ;
+        float YGULF(YGULF) ;
+                YGULF:point_spacing = &quot;even&quot; ;
+        float ZGULF(ZGULF) ;
+                ZGULF:positive = &quot;down&quot; ;
+                ZGULF:point_spacing = &quot;uneven&quot; ;
+                ZGULF:edges = &quot;ZGULFedges&quot; ;
+        float ZGULFedges(ZGULFedges) ;
+        float TGULF(TGULF) ;
+                TGULF:units = &quot;HOURS since 1901-01-15 00:00:00&quot; ;
+                TGULF:time_origin = &quot;15-JAN-1901&quot; ;
+        int IWET(IWET) ;
+                IWET:compress = &quot;XGULF YGULF ZGULF&quot; ;
+                IWET:point_spacing = &quot;uneven&quot; ;
+        float TEMP(TGULF, IWET) ;
+                TEMP:fill_value = 9.96921e+36f ;
+                TEMP:missing_value = 9.96921e+36f ;
+                TEMP:long_name = &quot;TEMP&quot; ;
+                TEMP:units = &quot;celcius&quot; ;
+
+and here is an example script where I use my nc_rar() external function:
+
+set memory/size=500
+use COMP_TEST.ROM_TEMP.nc
+let a = x[gx=xgulf]*0 + y[gy=ygulf]*0 + z[gz=zgulf]*0 + t[gt=tgulf]*0
+let b = nc_rar(a,temp])
+shade b[l=1,k=1]
+
+        
+
+So here I go with my Question 1:
+All my files use the same IWET axis.  Is there a way that I can tell
+Ferret that the IWET axis of file two is identical to the IWET axis of
+file one and thus force Ferret not to allocate extra space for the
+second IWET axis?
+
+
+Being somewhat naive, I attempted to fool Ferret by pretending the IWET
+axis is evenly spaced as follows:
+
+ 
+        int IWET(IWET) ;
+                IWET:compress = &quot;XGULF YGULF ZGULF&quot; ;
+                IWET:point_spacing = &quot;even&quot; ;
+
+Now I can open two,three,... NetCDF files without encountering the
+memory limit problem but my external function doesn't work anymore (all
+indices returned by ef_get_coordinates() are wrong).  
+
+So, here is my second question:
+Could someone briefly explain to me what pre-treatment Ferret does to
+axis variables before passing them on to an external function?
+
+
+Finally, being somewhat stubborn, I decided to convert my IWET axis into
+a regular variable (WET) and to define an evenly spaced axis XWET which
+is common to all my variables:   
+
+netcdf COMP_TEST.ROM_TEMP_copie1 {
+dimensions:
+        XGULF = 236 ;
+        YGULF = 150 ;
+        ZGULF = 73 ;
+        ZGULFedges = 74 ;
+        TGULF = UNLIMITED ; // (4 currently)
+        XWET = 295000 ;
+variables:
+        float XGULF(XGULF) ;
+                XGULF:point_spacing = &quot;even&quot; ;
+        float YGULF(YGULF) ;
+                YGULF:point_spacing = &quot;even&quot; ;
+        float ZGULF(ZGULF) ;
+                ZGULF:positive = &quot;down&quot; ;
+                ZGULF:point_spacing = &quot;uneven&quot; ;
+                ZGULF:edges = &quot;ZGULFedges&quot; ;
+        float ZGULFedges(ZGULFedges) ;
+        float TGULF(TGULF) ;
+                TGULF:units = &quot;HOURS since 1901-01-15 00:00:00&quot; ;
+                TGULF:time_origin = &quot;15-JAN-1901&quot; ;
+        int XWET(XWET) ;
+                IWET:compress = &quot;XGULF YGULF ZGULF&quot; ;
+                IWET:point_spacing = &quot;even&quot; ;
+        float TEMP(TGULF, XWET) ;
+                TEMP:fill_value = 9.96921e+36f ;
+                TEMP:missing_value = 9.96921e+36f ;
+                TEMP:long_name = &quot;TEMP&quot; ;
+                TEMP:units = &quot;celcius&quot; ;
+        float WET(XWET) ;
+                WET:fill_value = 9.96921e+36f ;
+                WET:missing_value = 9.96921e+36f ;
+                WET:long_name = &quot;Indices points mouilles&quot; ;
+
+
+I then modified my external function so as to supply to it the WET
+variable which contains the wet-cell indices:
+
+set memory/size=500
+use COMP_TEST.ROM_TEMP.nc
+let a = x[gx=xgulf]*0 + y[gy=ygulf]*0 + z[gz=zgulf]*0 + t[gt=tgulf]*0
+let b = nc_rar(a,temp,wet)
+shade b[l=1,k=1]
+
+
+The problem is that now inside my nc_rar() function all variables (temp
+and wet) have zero values everywhere.  Everything else inside my
+function appears to be right: arg_lo_ss, arg_hi_ss, etc. so I obviously
+have an addressing problem or something similar. 
+
+So here is my final question:
+
+Has anybody ever encountered this behaviour with external functions and
+managed to solve it?
+
+
+I realize that Ferret does not support the CF Convention for NetCDF
+files but the disk space savings resulting from compression by gathering
+are very interesting.  So, I intend to investigate this avenue further
+for our own needs.  Any tip or advice to help me solve this problem
+would be greatly appreciated.
+
+
+
+
+James
+
+
+
+-- 
+James Caveen
+Analyste-programmeur
+Service des technologies de l'information
+Universit&#xE9; du Qu&#xE9;bec &#xE0; Rimouski
+310 des Ursulines
+Rimouski (Qu&#xE9;bec) G5L 3A1
+Tel: (418) 723-1986 poste 1295
+Fax: (418) 724-1842
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00234" href="msg00234.html">Re: [ferret_users] Problem with external function</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00219.html">[ferret_users] how to change the projection and read the actual lat lon data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00234.html">Re: [ferret_users] Problem with external function</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00219.html">Thread Prev</a>][<a href="msg00234.html">Thread Next</a>][<A HREF="threads.html#00220">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

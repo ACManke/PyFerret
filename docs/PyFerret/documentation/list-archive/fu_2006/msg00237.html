@@ -1,0 +1,143 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] variance up to a time&#45;varying level -->
+<!--X-From-R13: "Uhfgnsfba, Ivyyvnz W" <jvyyvnz.thfgnsfbaNcay.tbi> -->
+<!--X-Date: Wed, 5 Apr 2006 09:49:35 &#45;0700 -->
+<!--X-Message-Id: C05942D2.252A%william.gustafson@pnl.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.64.0604041907190.12092@atw -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] variance up to a time-varying level</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00233.html">Thread Prev</a>][<a href="msg00235.html">Thread Next</a>][<A HREF="threads.html#00237">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] variance up to a time-varying level</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] variance up to a time-varying level</strong></li>
+<li><strong>From</strong>: <strong>&quot;Gustafson, William I&quot; &lt;<a href="mailto:william.gustafson@DOMAIN.HIDDEN">william.gustafson@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 05 Apr 2006 09:48:02 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00233.html">Pine.LNX.4.64.0604041907190.12092@atw</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Microsoft-Entourage/11.1.0.040913</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Andrew,
+
+That is exactly what I needed. Creating a mask crossed my mind, but I
+couldn't get it to work. Your trick of using the vertical index values is
+the syntax I was missing.
+
+Thanks,
+   Bill
+
+
+On 4/4/06 4:20 PM, &quot;Andrew Wittenberg&quot; &lt;Andrew.Wittenberg@noaa.gov&gt; wrote:
+
+&gt; Hi Bill,
+&gt; 
+&gt; You could use a masking expression to eliminate (set to missing) all
+&gt; points above the highest cloud top level, and then compute the variance of
+&gt; that masked field.  E.g.
+&gt; 
+&gt; let w_below = IF k[gk=w] LE cloud_top_lev THEN w
+&gt; let w_var = w_below[i=1:`w,r=iend`@var,j=1:`w,r=jend`@var,k=@var]
+&gt; 
+&gt; Andrew
+&gt; 
+&gt; On Tue, 4 Apr 2006, Gustafson, William I wrote:
+&gt; 
+&gt;&gt; I have come up with an algorithm that works at one time, but it fails
+&gt;&gt; when applied to a multi-time dataset because I have to evaluate an
+&gt;&gt; expression to a scalar to get it into the k=1:`lev`@var command. If
+&gt;&gt; anybody can get around this problem, I would be grateful for your
+&gt;&gt; assistance.
+&gt;&gt; 
+&gt;&gt; Here is what I am doing right now...
+&gt;&gt; 
+&gt;&gt; let cloudthresh = 0.00001
+&gt;&gt; let cloudmixr = qcloud+qice
+&gt;&gt; let event_mask = cloudmixr[k=@evnt:`cloudthresh`]   !Counts number of cloudy
+&gt;&gt; cells from the bottom of the domain
+&gt;&gt; let event_max = event_mask[k=@max]   !At each column, find out how many
+&gt;&gt; cloudy cells exist
+&gt;&gt; let event_max_mask = if event_mask eq event_max then 1   !Make a mask that
+&gt;&gt; goes to 1 at the top of the clouds for each col.
+&gt;&gt; let cloud_top_lev3d = event_max_mask[k=@loc:1]    !The level of the highest
+&gt;&gt; cloud top within each column
+&gt;&gt; let cloud_top_lev = cloud_top_lev3d[i=@max,j=@max]  !The single highest
+&gt;&gt; cloud top level in the domain
+&gt;&gt; let w_var =
+&gt;&gt; w[i=1:`w,return=iend`@var,j=1:`w,return=jend`@var,k=1:`cloud_top_lev`@var]
+&gt;&gt; !Variance of w up to cloud_top_lev
+&gt; 
+&gt; 
+
+--------------------------------------------------------------------
+William I. Gustafson Jr.
+Atmospheric Science and Global Change Division
+Pacific Northwest National Laboratory
+3200 Q Ave., MSIN K9-30
+Richland, WA 99352
+(509)372-6110
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00233" href="msg00233.html">Re: [ferret_users] variance up to a time-varying level</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00233.html">Re: [ferret_users] variance up to a time-varying level</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00235.html">[ferret_users] =?gb2312?B?SG93IHRvIGNwbm5lY3QgaW5kaXZpZHVhbCBwb2ludD8=?=</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00233.html">Thread Prev</a>][<a href="msg00235.html">Thread Next</a>][<A HREF="threads.html#00237">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

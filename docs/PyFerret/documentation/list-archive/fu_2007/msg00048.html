@@ -1,0 +1,183 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Plot title at upper side -->
+<!--X-From-R13: "jvyyvnz f. xrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 17 Jan 2007 16:37:31 &#45;0800 -->
+<!--X-Message-Id: 44B35235&#45;34E9&#45;4A15&#45;A4D1&#45;937F012D31DA@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f8346a6c0701121610tdc46173ha460b625e00c1a6c@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Plot title at upper side</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00049.html">Thread Next</a>][<A HREF="threads.html#00048">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Plot title at upper side</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Paulo Henrique &lt;<a href="mailto:paulohsm@DOMAIN.HIDDEN">paulohsm@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Plot title at upper side</strong></li>
+<li><strong>From</strong>: <strong>&quot;william s. kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 17 Jan 2007 16:37:30 -0800</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:f8346a6c0701121610tdc46173ha460b625e00c1a6c@DOMAIN.HIDDEN">f8346a6c0701121610tdc46173ha460b625e00c1a6c@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f8346a6c0701121610tdc46173ha460b625e00c1a6c@DOMAIN.HIDDEN">f8346a6c0701121610tdc46173ha460b625e00c1a6c@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Paulo -
+
+</pre><tt>As far as I know, the plot title given by /title can only go at the  
+</tt><tt>bottom. Therefore you will have to do this using labels (not ppl  
+</tt><tt>commands). Fortunately this is easy:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>plot/nolab vobs, velm1, velm2, velm3, velm4, vlens  ! a plot without  
+</tt><tt>any labels
+</tt><pre style="margin: 0em;">
+label/nou 4 6.4 0 0 .25 Meu Titulo
+
+</pre><tt>If you are using the standard plot aspect ratio, the plot box is 8  
+</tt><tt>inches wide by 6 inches high. Thus setting label/nou (/nouser means  
+</tt><tt>to work in inches rather than plot units), and specifying the  
+</tt><tt>position to be at x=4 (centered) and y=6.4 (0.4 above the plot top  
+</tt><tt>border) works pretty well. I often make 2 titles, a main one at  
+</tt><tt>height 6.9 and a secondary one at height 6.4.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If you have changed the aspect ratio of the plot box, here is a  
+</tt><tt>script that will figure these positions for you:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Make a file &quot;getlens.go&quot;,  or whatever you want to call it, in your  
+</tt><tt>ferret path.
+</tt><pre style="margin: 0em;">
+Paste the following in it (between the dashed lines):
+
+----------------
+! get the current value of the PPLUS axis lengths.
+let xxlen = ($ppl$xlen) ; let yylen = ($ppl$ylen)
+let ctr = xxlen/2; let toplab = yylen+.9; let toplab2 = yylen+.4
+say xxlen, yylen, xxlen/yylen = `xxlen`, `yylen`, `xxlen/yylen`
+set mode/last verify
+----------------
+</pre><tt>This defines 3 useful quantities: ctr is the center of the plot box  
+</tt><tt>in the x direction, and toplab and toplab2 are 0.4 and 0.9 inches  
+</tt><tt>above the plot box. Thus:
+</tt><pre style="margin: 0em;">
+
+set win/asp=N     ! ratio of height to width; N is a number less than 2
+</pre><tt>plot/nolab vobs, velm1, velm2, velm3, velm4, vlens  ! a plot without  
+</tt><tt>any labels
+</tt><tt>go getlens.go             ! run the script to define the quantities  
+</tt><tt>for this plot box
+</tt><pre style="margin: 0em;">
+label/nou `ctr` `toplab` 0 0 .25 Meu Primeiro Titulo
+label/nou `ctr` `toplab2` 0 0 .16 Meu Segundo Titulo
+
+</pre><tt>Note the back-quotes around `ctr`, `toplab` and `toplab2`. This  
+</tt><tt>evaluates these as numbers.
+</tt><tt>Also note that the script must be run each time the plot box shape is  
+</tt><tt>changed.
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+
+
+
+On 12Jan 2007, at 4:10 PM, Paulo Henrique wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+</pre><tt>I have just a simple question: how do I put the title of my plot at  
+</tt><tt>the upper side of plot box?
+</tt><pre style="margin: 0em;">
+
+I'm using the command
+
+plot vobs, velm1, velm2, velm3, velm4, vlens
+
+And my data is plotted with correspondent labels.
+
+When I try
+
+plot/title=&quot;Meu Titulo&quot; vobs, velm1, velm2, velm3, velm4, vlens
+
+</pre><tt>data labels are replaced by the string &quot;Meu Titulo&quot;. I want to add  
+</tt><tt>the string &quot;Meu Titulo&quot; at top and keep data labels at bottom.
+</tt><pre style="margin: 0em;">
+
+I have null experience using PPL commands.
+
+How can I do it?
+
+Thanks!
+
+Paulo Henrique
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00037" href="msg00037.html">[ferret_users] Plot title at upper side</a></strong>
+<ul><li><em>From:</em> Paulo Henrique</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00037.html">[ferret_users] Plot title at upper side</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00049.html">Re: [ferret_users] Plot title at upper side (font hints and tips)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00049.html">Thread Next</a>][<A HREF="threads.html#00048">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] calculate vertical velocity in ferret -->
+<!--X-From-R13: "jvyyvnz f. xrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Mon, 26 Nov 2007 13:29:12 &#45;0800 -->
+<!--X-Message-Id: 0FAC7602&#45;47DC&#45;49B0&#45;9F55&#45;D351B21326E2@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 318189.39414.qm@web53709.mail.re2.yahoo.com -->
+<!--X-Reference: Pine.SGI.4.51.0711261336110.2343846@www.coaps.fsu.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] calculate vertical velocity in ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00656.html">Thread Prev</a>][<a href="msg00658.html">Thread Next</a>][<A HREF="threads.html#00657">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] calculate vertical velocity in ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>yangxing zheng &lt;<a href="mailto:yangxingz@DOMAIN.HIDDEN">yangxingz@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] calculate vertical velocity in ferret</strong></li>
+<li><strong>From</strong>: <strong>&quot;william s. kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 26 Nov 2007 13:29:04 -0800</li>
+<li>Cc: &quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;,        Steve Guimond &lt;<a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>&gt;,        Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.SGI.4.51.0711261336110.2343846@DOMAIN.HIDDEN">Pine.SGI.4.51.0711261336110.2343846@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:318189.39414.qm@DOMAIN.HIDDEN">318189.39414.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.SGI.4.51.0711261336110.2343846@DOMAIN.HIDDEN">Pine.SGI.4.51.0711261336110.2343846@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>To find the error associated with this calculation, use the rules for  
+</tt><tt>&quot;propagation of error&quot;.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Note that the many formulae on the web if you google &quot;propagation of  
+</tt><tt>error&quot; apply to independent samples only, which is generally not the  
+</tt><tt>case for geophysical measurements and will lead to an overly- 
+</tt><tt>optimistic estimate (even Wikipedia, need to fix that). One source  
+</tt><tt>that gives the correct formulas, taking into account the possible  
+</tt><tt>correlation among the variables, is:
+</tt><pre style="margin: 0em;">
+
+<a  rel="nofollow" href="http://www.itl.nist.gov/div898/handbook/mpc/section5/mpc552.htm">http://www.itl.nist.gov/div898/handbook/mpc/section5/mpc552.htm</a>
+
+However, this simply lists formulae without explanation.
+
+</pre><tt>The basic idea is a Taylor series approximation. If A is a function  
+</tt><tt>of (x,y), then:
+</tt><pre style="margin: 0em;">
+
+deltaA = (dA/dx)deltax + (dA/dy)deltay
+
+</pre><tt>Estimating the standard deviation of A by squaring and averaging,  
+</tt><tt>leads to:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>s_A = [ (s_x^2)*(dA/dx)^2 + (s_y^2)*(dA/dy)^2 + 2*r_xy*s_x*s_y*(dA/dx) 
+</tt><tt>*(dA/dy) ]^.5     (1)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>where s_q is the standard deviation of q and r_xy is the correlation  
+</tt><tt>of x and y.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>(1) is the general form for any function A(x,y) and can be extended  
+</tt><tt>to more than 2 variables in the obvious way. If the quantities are  
+</tt><tt>independent, then r_xy=0 and (1) reduces to the simple expressions  
+</tt><tt>you find on the web.
+</tt><pre style="margin: 0em;">
+
+So in this case, the centered derivatives you take are operations like:
+
+</pre><tt>w[i,j] = (-1)*( (u[i+1]-u[i-1])/(2*deltax) + (v[j+1]-v[j-1])/ 
+</tt><tt>(2*deltay) )
+</tt><pre style="margin: 0em;">
+
+so the expression in (1) for dw/du is just:
+
+</pre><tt>dw[i,j]/du = (-1)*( (u[i+1]-u[i-1])/(2*deltax) ), and correspondingly  
+</tt><tt>for dw/dv.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The standard deviation of of the average value of w at each gridpoint  
+</tt><tt>is therefore estimated by taking the time average of dw/du and dw/dv,  
+</tt><tt>finding the standard deviations of u and v and their correlation, and  
+</tt><tt>applying (1).
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+
+
+
+On 26Nov 2007, at 10:49 AM, Steve Guimond wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+  Assuming the flow is Boussinesq (density constant everywhere except
+where coupled with gravity i.e. incompressible) you can use
+
+du/dx + dv/dy = -dw/dz
+
+To do this in Ferret,
+
+!div is dw/dz
+
+let div = -1*(u[x=@ddc] + v[y=@ddc])
+
+By imposing boundary conditions at the top and bottom of w=0 you can
+integrate dw/dz to find the vertical velocity at each level.
+
+
+Steve
+
+=======================================================
+Stephen R. Guimond
+Graduate Research Assistant
+Center for Ocean-Atmospheric Prediction Studies (COAPS)
+=======================================================
+
+On Mon, 26 Nov 2007, yangxing zheng wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi ferret_users,
+
+    I have gridded ocean data with variables including
+u,v, temp, ...
+Unfortunately I need vertical velocity w which is not
+an output of model. One way to get w is to use
+continuity equation. Does anyone have any idea how to
+do it in ferret, also how is potential error produced
+using continuity equation to calculate w?
+
+   Thanks a lot!
+
+   Yangxing
+
+
+</pre><tt>       
+</tt><tt>_____________________________________________________________________ 
+</tt><tt>_______________
+</tt><pre style="margin: 0em;">
+Get easy, one-click access to your favorites.
+Make Yahoo! your homepage.
+<a  rel="nofollow" href="http://www.yahoo.com/r/hs">http://www.yahoo.com/r/hs</a>
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00654" href="msg00654.html">[ferret_users] calculate vertical velocity in ferret</a></strong>
+<ul><li><em>From:</em> yangxing zheng</li></ul></li>
+<li><strong><a name="00656" href="msg00656.html">Re: [ferret_users] calculate vertical velocity in ferret</a></strong>
+<ul><li><em>From:</em> Steve Guimond</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00656.html">Re: [ferret_users] calculate vertical velocity in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00658.html">Re: [ferret_users] calculate vertical velocity in ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00656.html">Thread Prev</a>][<a href="msg00658.html">Thread Next</a>][<A HREF="threads.html#00657">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

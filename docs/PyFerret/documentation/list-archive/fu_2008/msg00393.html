@@ -1,0 +1,176 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Wrong time issue with T0="01&#45;jan&#45;0001 00:00" ? -->
+<!--X-From-R13: =?vfb&#45;8859&#45;1?C?X=S9e=T4zr?= =?vfb&#45;8859&#45;1?C?_Zrs=S8ier?= <wrebzr.yrsrierNabhzrn.veq.ap> -->
+<!--X-Date: Tue, 29 Jul 2008 19:51:59 &#45;0700 -->
+<!--X-Message-Id: 5.0.2.1.2.20080730135101.03f46358@mail.ird.nc -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Wrong time issue with T0=&quot;01-jan-0001 00:00&quot; ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00391.html">Thread Prev</a>][<a href="msg00394.html">Thread Next</a>][<A HREF="threads.html#00393">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Wrong time issue with T0=&quot;01-jan-0001 00:00&quot; ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Wrong time issue with T0=&quot;01-jan-0001 00:00&quot; ?</strong></li>
+<li><strong>From</strong>: <strong>J&#xE9;r&#xF4;me Lef&#xE8;vre &lt;<a href="mailto:jerome.lefevre@DOMAIN.HIDDEN">jerome.lefevre@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 30 Jul 2008 14:05:28 +1100</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+
+</pre><tt>I use Ferret V6.08 and I have a strange issue with time axis when T0 is 
+</tt><tt>like &quot;01-jan-0001 00:00&quot;.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I use a netcdf field LANDSFC from NCEP Reanalysis and I would like to copy 
+</tt><tt>and shift in time the field with ferret.
+</tt><tt>In the original NCEP field, Torigin is &quot;01-jan-0001 00:00&quot;, Tunits=&quot;days&quot; 
+</tt><tt>and i keep the same Torigin and Tunits for the new time shifted axis 
+</tt><tt>definition.
+</tt><pre style="margin: 0em;">
+But If I check out with &quot;ncdump -v TIME&quot;, i found a 2 days shift.
+
+I try CALENDAR options in DEFINE AXIS/T but without success.
+
+</pre><tt>Should I take some special care when i play with data field with 
+</tt><tt>T0=&quot;01-jan-0001 00:00&quot; from NCEP ?
+</tt><pre style="margin: 0em;">
+
+Many thanks
+J. Lefevre
+
+Please find below how to reproduct my trouble :
+
+CA/ALL DA
+CA/ALL VA
+CA/ALL REGION
+
+</pre><tt>SET DATA 
+</tt><tt>&quot;<a  rel="nofollow" href="http://nomad1.ncep.noaa.gov:9090/dods/reanalyses/reanalysis-2/6hr/flx/flx&quot">http://nomad1.ncep.noaa.gov:9090/dods/reanalyses/reanalysis-2/6hr/flx/flx&quot</a>;
+</tt><tt>LIST/FORMAT=CDF/FILE=&quot;LANDSFC_20070103_00z.cdf&quot;/x=160E:163E/y=25S:23S/t=&quot;03-jan-2007 
+</tt><tt>00:00&quot; LANDSFC
+</tt><pre style="margin: 0em;">
+
+sp ncdump -v TIME LANDSFC_20070103_00z.cdf
+! you should see :
+! double TIME(TIME) ;
+! TIME:units = &quot;days since 0001-01-01 00:00:00&quot; ;
+! TIME:long_name = &quot;time&quot; ;
+! TIME:time_origin = &quot;01-JAN-0001 00:00:00&quot; ;
+! TIME:axis = &quot;T&quot; ;
+! // snipped //
+! data:
+! TIME = 732680 ;
+!}
+
+CA/ALL DA
+
+! Load again LANDSFC and do 7 days shift
+DEFINE SYMBOL my_NEW_DATE = &quot;10-jan-2007 00:00&quot;
+
+SET DATA LANDSFC_20070103_00z.cdf
+
+DEFINE SYMBOL UNITS = `LANDSFC,return=tunits`
+DEFINE SYMBOL T0 = `LANDSFC,return=t0`
+DEFINE AXIS/T/T0=&quot;($T0)&quot;/T=($my_NEW_DATE)/NPOINT=1/unit=&quot;($UNITS)&quot; T_AXE
+
+</pre><tt>LET LANDSFC_RG = 
+</tt><tt>reshape(LANDSFC[d=1],x[gx=LANDSFC,d=1]+y[gy=LANDSFC,d=1]+t[gt=T_AXE])
+</tt><pre style="margin: 0em;">
+LIST/CLOBBER/FORMAT=CDF/FILE=&quot;LANDSFC_20070110_00z.cdf&quot; LANDSFC_RG
+
+</pre><tt>SP ncrename -d T_AXE,TIME -v T_AXE,TIME -v LANDSFC_RG,LANDSFC 
+</tt><tt>LANDSFC_20070110_00z.cdf
+</tt><pre style="margin: 0em;">
+
+SP ncdump -v TIME LANDSFC_20070104_00z.cdf
+! you should see :
+! double TIME(TIME) ;
+! TIME:units = &quot;DAYS since 0001-01-01 00:00:00&quot; ;
+! TIME:axis = &quot;T&quot; ;
+! TIME:time_origin = &quot;01-JAN-0001 00:00:00&quot; ;
+! // snipped //
+! data:
+! TIME = 732685 ;             &lt; -  WRONG, SHOULD BE 732687 !
+!}
+
+PAUSE
+CA/ALL DA
+CA/ALL VA
+USE LANDSFC_20070103_00z.cdf
+USE LANDSFC_20070110_00z.cdf
+sho grid LANDSFC[d=1]
+! TIME TIME 1 r 03-JAN-2007 00:00 03-JAN-2007 00:00
+sho grid LANDSFC[d=2]
+! TIME1 TIME 1 r 08-JAN-2007 00:00 08-JAN-2007 00:00
+
+??
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00394" href="msg00394.html">Re: [ferret_users] Wrong time issue with T0=&quot;01-jan-0001 00:00&quot; ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00391.html">[ferret_users] Publication quality plots</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00394.html">Re: [ferret_users] Wrong time issue with T0=&quot;01-jan-0001 00:00&quot; ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00391.html">Thread Prev</a>][<a href="msg00394.html">Thread Next</a>][<A HREF="threads.html#00393">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

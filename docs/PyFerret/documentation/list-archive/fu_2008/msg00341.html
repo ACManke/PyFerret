@@ -1,0 +1,183 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] FILL w/o interpolation at coast line? -->
+<!--X-From-R13: Egrir Qbhfvaf <pbhfvafNhzvg.znvar.rqh> -->
+<!--X-Date: Fri, 27 Jun 2008 08:57:18 &#45;0700 -->
+<!--X-Message-Id: alpine.LFD.0.999.0806271121090.10006@razzo.umeoce.maine.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: fc.004c4d1937910c7e3b9aca00ded8d236.37910c81@umit.maine.edu -->
+<!--X-Reference: alpine.LFD.0.999.0806261824170.28684@razzo.umeoce.maine.edu -->
+<!--X-Reference: fc.004c4d193792dd4b3b9aca00ded8d236.3792dd4e@umit.maine.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] FILL w/o interpolation at coast line?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00336.html">Thread Prev</a>][<a href="msg00335.html">Thread Next</a>][<A HREF="threads.html#00341">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] FILL w/o interpolation at coast line?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] FILL w/o interpolation at coast line?</strong></li>
+<li><strong>From</strong>: <strong>Steve Cousins &lt;<a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 27 Jun 2008 11:56:54 -0400 (EDT)</li>
+<li>Cc: <a href="mailto:Pierre.St-Laurent@DOMAIN.HIDDEN">Pierre.St-Laurent@xxxxxxxxxxxxxxxx</a>,        Ferret Mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:fc.004c4d193792dd4b3b9aca00ded8d236.3792dd4e@DOMAIN.HIDDEN">fc.004c4d193792dd4b3b9aca00ded8d236.3792dd4e@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:fc.004c4d1937910c7e3b9aca00ded8d236.37910c81@DOMAIN.HIDDEN">fc.004c4d1937910c7e3b9aca00ded8d236.37910c81@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:alpine.LFD.0.999.0806261824170.28684@DOMAIN.HIDDEN">alpine.LFD.0.999.0806261824170.28684@xxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:fc.004c4d193792dd4b3b9aca00ded8d236.3792dd4e@DOMAIN.HIDDEN">fc.004c4d193792dd4b3b9aca00ded8d236.3792dd4e@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+
+On Fri, 27 Jun 2008, martin.schmidt@xxxxxxxxxxxxxxxxx wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Steve,
+
+guess your problem is, that you have zero and not missing values in your
+land points? Then you may want to replace such data with missing values
+before you
+make a plot. Possibly this helps.
+</pre></blockquote><pre style="margin: 0em;">
+
+Hi Martin,
+
+The land values are not zeroes. The metadata for this variable is:
+
+	short temp(time, zpos, ypos, xpos) ;
+		temp:valid_range = -5.f, 30.f ;
+		temp:long_name = &quot;Temperature&quot; ;
+		temp:units = &quot;Celsius&quot; ;
+		temp:scale_factor = 0.0005340739f ;
+		temp:add_offset = 12.5f ;
+		temp:missing_value = -99999.f ;
+
+</pre><tt>After the scale factor, offset and short integer modulo arithmetic the 
+</tt><tt>missing value in the file becomes -25184 which translates back to 
+</tt><tt>-0.950117.
+</tt><pre style="margin: 0em;">
+
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Another hint - there is a function fill_xy, which extrapolates data as
+smooth as possible. It fills missing values with average values from
+valid neighbour points.
+It is of some help, if you want to interpolate and extrapolate data and
+have some of your interpolation grid points near land.
+
+use coads_climatology
+fill/l=10 sst[d=1]
+SET MEMORY/SIZE=100
+go fland 5
+
+You will see some white areas near land.
+
+Now define a field of ones, needed for fill_xy
+
+let mask=0*missing(sst[l=1],1)+1
+let sst_fill=fill_xy(sst,mask,2)
+
+fill_xy fills missings, if the mask is 1 and does nothing, if mask is 0.
+&quot;2&quot; is the number of
+nearest neighbour filling cycles.
+
+Enhancing this value defines SST also around Antarctica. So be carefull.
+
+set win 2
+fill/l=10 sst_fill[d=1]
+go fland 5
+
+If you have zeros at land, you may proceed in two steps. First replace
+zeros by missings. Then you
+may extrapolate as described here.
+
+Please note, a nearest neighbour filler does about the same here. But
+again, first you should
+replace zeros (valid data) with missing values.
+
+Does this solve your problem?
+</pre></blockquote><pre style="margin: 0em;">
+
+
+I see no difference between the FILL TEMP and the FILL SST_FILL:
+
+	<a  rel="nofollow" href="http://rocky.umeoce.maine.edu/cousins/ferret">http://rocky.umeoce.maine.edu/cousins/ferret</a>
+
+</pre><tt>However, what is the purpose of fland here? I tried it but it complained 
+</tt><tt>about not having etopo5:
+</tt><pre style="margin: 0em;">
+
+yes? go fland 5
+ **TMAP ERR: non-existent or not on line
+             Searched $FER_DESCR and $FER_DATA for etopo5(.des,.cdf,.nc)
+set data etopo5
+Command file, command group, or REPEAT execution aborted
+
+Was this part of fill_xy technique you were describing or just an example.
+
+Thanks for your help.
+
+Steve
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00334" href="msg00334.html">Re: [ferret_users] FILL w/o interpolation at coast line?</a></strong>
+<ul><li><em>From:</em> Steve Cousins</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00336.html">Re: [ferret_users] FILL w/o interpolation at coast line?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00335.html">[ferret_users] regridding 360_day to yearly data (yearly maximum)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00336.html">Thread Prev</a>][<a href="msg00335.html">Thread Next</a>][<A HREF="threads.html#00341">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

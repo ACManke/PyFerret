@@ -1,0 +1,215 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] seasonal mask -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 27 Apr 2006 00:47:21 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0604271317150.1735@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: B81B6A47&#45;4EE3&#45;4D8B&#45;93FC&#45;CF19D2CDA9B4@ucar.edu -->
+<!--X-Reference: 1146090502.32695.28.camel@saipan.nrlssc.navy.mil -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] seasonal mask</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00282.html">Thread Prev</a>][<a href="msg00283.html">Thread Next</a>][<A HREF="threads.html#00284">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] seasonal mask</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Prasad Thoppil (Forn-Natl)&quot; &lt;<a href="mailto:thoppil@DOMAIN.HIDDEN">thoppil@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] seasonal mask</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 27 Apr 2006 13:18:57 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00282.html">1146090502.32695.28.camel@saipan.nrlssc.navy.mil</a>&gt;</li>
+<li>References: &lt;<a href="msg00281.html">B81B6A47-4EE3-4D8B-93FC-CF19D2CDA9B4@ucar.edu</a>&gt;&lt;<a href="msg00282.html">1146090502.32695.28.camel@saipan.nrlssc.navy.mil</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Prasad,
+            If your data is for the period 1948-1997, it doesn't include
+years 2000 &amp; 2005. Hence you are left with only 4 &quot;strong&quot; years.
+
+ The &quot;easy&quot; method will be extracting the 4 years data to 4 different
+variables and then finding the mean. Like
+
+    define axis/t=01-JAN-0001:31-DEC-0001:1/units=days/T0=31-DEC-0000/\
+                    MODULO  tclim
+    let wind_1950_1 = wind[t=01-JAN-1950:31-DEC-1950]
+    let wind_1950   = wind_1950_1[gt=tclim@ASN]
+    .................................................
+    .................................................
+    let wind_1970_1 = wind[t=01-JAN-1970:31-DEC-1970]
+    let wind_1970   = wind_1970_1[gt=tclim@ASN]
+    let wind_strg_mean = ( wind_1950 + wind_1965 + wind_1966 + wind_1970 )/4
+
+But as the number of years to be included in the calculation increases,
+there is a possibility for running out of memory. Hence the neat way to
+do this is to apply a mask over time axis and then find the climatology
+using @MOD regridding (as you tried to do). But here the problem is that
+if the calendar for the variable is not NOLEAP/360_DAY, then you will not
+get an exact match with the above method. Hence it will be better if you
+can regrid your data to a noleap calendar time axis before using the
+masking method described below.
+
+Have a look at the example below. If you need more explanation regarding
+any step, please let me know.
+
+Hope this helps,
+
+Regards,
+
+Jaison
+
+!----------Example---------------------------------------------------------
+
+! let us create a dummy variable
+
+     define axis/t=01-JAN-1948:31-DEC-1997:1/units=days/\
+                         T0=31-DEC-1947/CALENDAR=NOLEAP time
+     let wind = SIN(t[gt=time]/100)
+
+! get the &quot;L&quot; indices of &quot;strong&quot; days in the &quot;strong&quot; years in a text file
+
+     cancel reg/all  ! keep it here itself
+
+     let l_start = `wind,r=lstart`
+     let l_end   = `wind,r=lend`
+
+     let yr_strong = TSEQUENCE({1950,1965,1966,1970}) ! should be in the
+                                                      ! ascending order.
+     sp rm -f dummy_L.dat
+     REPEAT/RANGE=1:`yr_strong,r=lend`:1/NAME=yy ( ;\
+        let cyr = yr_strong[l=`yy`] ;\
+        list/nohead/file=dummy_L.dat/format=(3x,f10.1)/quiet/append \
+                   L[gt=wind,t=01-JAN-`cyr`:31-DEC-`cyr`]  ;\
+      )
+
+! read in this &quot;L&quot; indices and map it back to original time axis using @XACT
+
+     let strong_days = `{spawn:&quot;cat dummy_L.dat | wc -l&quot;}`
+
+     define axis/t=1:`strong_days`:1 tfile
+     define grid/t=tfile gfile
+
+     FILE/grid=gfile/var=lindx dummy_L.dat
+     define axis/t/from_var tdum=lindx   ! use d=1 or d=2 stuff if needed
+     let strg = t[gt=tdum]*0+100
+
+     define axis/t=`l_start`:`l_end`:1 tabs
+
+     let strg_map =  strg[gt=tabs@XACT]
+
+! create a mask
+
+     let strg_mask = IF strg_map THEN 1
+     let strg_wind = wind[gt=tabs@ASN] * strg_mask
+
+     plot  wind[gt=tabs@ASN], strg_wind
+
+! find the mean and do a cross check
+
+     define axis/t=01-JAN-0001:31-DEC-0001:1/units=days/T0=31-DEC-0000/\
+                    MODULO/CALENDAR=NOLEAP  tclim
+
+     define axis/t=1:365:1/MODULO tabs_clim
+
+     let strg_wind_mean = strg_wind[gt=tabs_clim@MOD]
+     let strg_wind_clim = strg_wind_mean[gt=tclim@ASN] ! the final variable
+
+     list/t=31-JAN-0001  strg_wind_clim
+
+     let dummy = (wind[t=31-JAN-1950] + wind[t=31-JAN-1965] + \
+                  wind[t=31-JAN-1966] + wind[t=31-JAN-1970] )/4
+
+     list dummy
+
+! remove intermediate files
+
+     sp rm -f dummy_L.dat
+
+!----------End of Example----------------------------------------------------
+
+On Wed, 26 Apr 2006, Prasad Thoppil (Forn-Natl) wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>I know this is rather a simple question. Suppose I have 50 years
+(1948-1997) of daily time-series of wind speed, how do I find average
+only for selected years. That is out of 50 years I want to find average
+for 6 years such as
+
+Let strong = {1950,1965,1966,1970,2000,2005}
+Then apply a mask if year_of_wind EQ strong THEN wind
+
+Though I tried my logic, I could not get it right.
+
+Once I have a masked time-series, it is possible to find 6 year mean
+(daily) by
+def axis/t=1-jan-0000:31-dec-0000:1/unit=days taxis
+let strong_avg = wind[gt=taxis@MOD]
+
+Thanks
+
+Prasad
+
+
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00281" href="msg00281.html">[ferret_users] Old AIX problem</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+<li><strong><a name="00282" href="msg00282.html">[ferret_users] seasonal mask</a></strong>
+<ul><li><em>From:</em> Prasad Thoppil (Forn-Natl)</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00282.html">[ferret_users] seasonal mask</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00283.html">Re: [ferret_users] Old AIX problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00282.html">Thread Prev</a>][<a href="msg00283.html">Thread Next</a>][<A HREF="threads.html#00284">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

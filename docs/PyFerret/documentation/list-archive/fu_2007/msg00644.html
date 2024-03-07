@@ -1,0 +1,545 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] problem in reading .mc files. -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 15 Nov 2007 10:44:47 &#45;0800 -->
+<!--X-Message-Id: 473C939E.8080005@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 400123.22322.qm@web53706.mail.re2.yahoo.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] problem in reading .mc files.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00641.html">Thread Prev</a>][<a href="msg00645.html">Thread Next</a>][<A HREF="threads.html#00644">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] problem in reading .mc files.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>yangxing zheng &lt;<a href="mailto:yangxingz@DOMAIN.HIDDEN">yangxingz@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] problem in reading .mc files.</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 15 Nov 2007 10:44:46 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:400123.22322.qm@DOMAIN.HIDDEN">400123.22322.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:400123.22322.qm@DOMAIN.HIDDEN">400123.22322.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.6 (Windows/20070728)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi,<br>
+I'm not sure what more to suggest. If you look at that file for time 21
+with ncdump, is there anything different about the way the variable
+temp is specified?<br>
+<br>
+You might try one of these tools for creating the descriptor file
+that's listed in Chapter 10.4.1 of the Ferret documentation:<br>
+&nbsp;<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/converting-to-netcdf/CREATING-A-MULTI-FILE-NETCDF-DATA-SET#_VPID_367">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/converting-to-netcdf/CREATING-A-MULTI-FILE-NETCDF-DATA-SET#_VPID_367</a><br>
+<br>
+You give the tool a list of your files and it'll check their time
+information and write the .mc file.<br>
+<br>
+Ansley<br>
+<br>
+yangxing zheng wrote:
+<blockquote cite=""
+ type="cite">
+  <pre wrap="">Hi,
+
+     Thank you for kind help. Ansley, I try your way,
+using
+repeat/l=1:22 shade temp
+it stops at l=21. It can not plot temp, however, if I
+plot u first,
+yes?shade u
+then I plot temp at l=21 again,
+yes?shade temp
+it works! It is really surpring to me about ferret
+working.
+P.S.: I using the individual cdf file (l=21), it has
+no problem to plot temp
+
+The following is what I try:
+yes? set region/k=1/x=110w:100w/x=10s:0
+yes? repeat/l=1:22 shade temp
+.........
+!-&gt; REPEAT: L=15
+!-&gt; REPEAT: L=16
+!-&gt; REPEAT: L=17
+!-&gt; REPEAT: L=18
+!-&gt; REPEAT: L=19
+!-&gt; REPEAT: L=20
+!-&gt; REPEAT: L=21
+ ** netCDF error: Variable not found
+shade temp
+Command file, command group, or REPEAT execution
+aborted
+yes? set region/l=21
+yes? shade temp
+ ** netCDF error: Variable not found
+yes? shade u
+yes? shade temp
+......
+
+------------------
+Do you think it is a bug for ferret v5.70 Mac OS?
+--- Ansley Manke <a rel="nofollow" class="moz-txt-link-rfc2396E" href="mailto:Ansley.B.Manke@xxxxxxxx">&lt;Ansley.B.Manke@xxxxxxxx&gt;</a> wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi Yangxing,
+Accessing data in Ferret occurs in several stages.
+The command
+
+    yes? set data test.mc
+
+reads the .mc file to see what's in there, and it
+uses that information 
+to create the time axis. Then the first file is
+opened, and information 
+about the other axes and the variables is stored
+from what's in that 
+file. This is all that has happened at the point
+where you do a SHOW 
+DATA command. The other stepfiles are opened and
+read only when data 
+from them is required by the other commands - plot,
+shade, load, or 
+other commands that produce an output.
+
+I wonder if one of the step files is missing the
+variable TEMP.  Since 
+you're seeing the error in the first 100 time steps,
+you could try:
+
+    yes? cancel region
+    yes? repeat/L=1:100
+(shade/x=110w:80w/y=10s:10n/k=1 temp)
+
+And see if you hit an error message.
+
+
+yangxing zheng wrote:
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Thank all of you for prompt response. Now I
+      </pre>
+    </blockquote>
+    <pre wrap="">include
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">the .mc file to diagnose what the problem is.
+--- Roman Tonkonojenkov <a rel="nofollow" class="moz-txt-link-rfc2396E" href="mailto:romantonk@xxxxxxx">&lt;romantonk@xxxxxxx&gt;</a> wrote:
+
+  
+      </pre>
+      <blockquote type="cite">
+        <pre wrap="">Hi Yangxing,
+
+Maybe a stupid remark, but I had similar problems
+        </pre>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">in
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">the past and 
+at least in one instance I was using the wrong
+        </pre>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">case
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">(i.e. the variable was
+TEMP instead of temp). I don't think it is the
+        </pre>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">issue
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">with you,
+but at least try it 
+Cheers,
+Roman
+
+On Tue, Nov 13, 2007 06:39 PM, yangxing zheng
+<a rel="nofollow" class="moz-txt-link-rfc2396E" href="mailto:yangxingz@xxxxxxxxx">&lt;yangxingz@xxxxxxxxx&gt;</a> wrote:
+    
+I have a problem about reading mc file from
+        </pre>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">ferret.
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">The following is an example. The files are
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">there.
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">      
+          </pre>
+        </blockquote>
+        <pre wrap="">We
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">show data/variables, the variable temp exists.
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">If I
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">make a plot by seting an individual l (set
+region/l=11), it works. But if I want to plot
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">time
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">series of temp, it says: ** netCDF error:
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">Variable
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">      
+          </pre>
+        </blockquote>
+        <pre wrap="">not
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">found.
+   But variable temp is obvious there. Also if I
+      
+          </pre>
+        </blockquote>
+        <pre wrap="">plot
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">a time series of u and v (the grid is identical
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">to
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">temp), it does work! Do you think what the major
+problem is? I attached the .mc file to you as a
+reference.
+
+      [mac35:yzheng/HYCOM/Pacific] yzheng%
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">ferret
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">       NOAA/PMEL TMAP
+       FERRET v5.70 (alpha)
+       Mac OS X 10.3.4 - 10/08/04
+       13-Nov-07 16:08    
+
+yes? set data test.mc
+yes? show data/variables
+    currently SET data sets:
+   1&gt; ./test.mc  (default)
+    HYCOM-NCODA Assimilation Run NOGAPS
+name     title                             I    
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap=""> 
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">      
+          </pre>
+        </blockquote>
+        <pre wrap=""> 
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">J         K         L
+U        Zonal Velocity                   1:1376
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap=""> 
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">      
+1:937     1:19      1:425
+            cm/s on grid GFP1 with -9999 for
+      
+          </pre>
+        </blockquote>
+        <pre wrap="">missing
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">data
+            X=180E:70W  Y=35.1S:35.1N  Z=-5:1050
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">V        Meridional Velocity              1:1376
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap=""> 
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">      
+1:937     1:19      1:425
+            cm/s on grid GFP1 with -9999 for
+      
+          </pre>
+        </blockquote>
+        <pre wrap="">missing
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">data
+            X=180E:70W  Y=35.1S:35.1N  Z=-5:1050
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">TEMP     Temperature                      1:1376
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap=""> 
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">      
+1:937     1:19      1:425
+            DegC on grid GFP1 with -9999 for
+      
+          </pre>
+        </blockquote>
+        <pre wrap="">missing
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">data
+            X=180E:70W  Y=35.1S:35.1N  Z=-5:1050
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap=""> time range: 03-NOV-2003 00:00 to 31-DEC-2004
+      
+          </pre>
+        </blockquote>
+        <pre wrap="">00:00
+    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">yes? set region/l=12
+yes? yes? set region/x=110w:80w/y=10s:10n/k=1
+yes? yes? fill temp
+yes? set region/l=1:100/i=100/j=700/k=1
+yes? yes? plot temp
+** netCDF error: Variable not found
+yes? plot u
+yes? plot v
+
+----------------------------
+
+
+    
+      
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!---->____________________________________________________________________________________
+  </pre>
+  <blockquote type="cite">
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">    
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">Be a better sports nut!  Let your teams follow
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">you 
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">with Yahoo Mobile. Try it now. 
+      
+          </pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!----><a rel="nofollow" class="moz-txt-link-freetext" href="http://mobile.yahoo.com/sports;_ylt=At9_qDKvtAbMuh1G1SQtBI7ntAcJ">http://mobile.yahoo.com/sports;_ylt=At9_qDKvtAbMuh1G1SQtBI7ntAcJ</a>
+  </pre>
+  <blockquote type="cite">
+    <blockquote type="cite">
+      <pre wrap="">  
+      </pre>
+      <blockquote type="cite">
+        <blockquote type="cite">
+          <pre wrap="">      
+          </pre>
+        </blockquote>
+        <pre wrap="">    
+        </pre>
+      </blockquote>
+      <pre wrap="">
+     
+      </pre>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!---->____________________________________________________________________________________
+  </pre>
+  <blockquote type="cite">
+    <blockquote type="cite">
+      <pre wrap="">Never miss a thing.  Make Yahoo your home page. 
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://www.yahoo.com/r/hs">http://www.yahoo.com/r/hs</a>
+      </pre>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!---->
+
+
+      ____________________________________________________________________________________
+Never miss a thing.  Make Yahoo your home page. 
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://www.yahoo.com/r/hs">http://www.yahoo.com/r/hs</a>
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00645" href="msg00645.html">Re: [ferret_users] problem in reading .mc files.</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00641" href="msg00641.html">Re: [ferret_users] problem in reading .mc files.</a></strong>
+<ul><li><em>From:</em> yangxing zheng</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00641.html">Re: [ferret_users] problem in reading .mc files.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00645.html">Re: [ferret_users] problem in reading .mc files.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00641.html">Thread Prev</a>][<a href="msg00645.html">Thread Next</a>][<A HREF="threads.html#00644">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

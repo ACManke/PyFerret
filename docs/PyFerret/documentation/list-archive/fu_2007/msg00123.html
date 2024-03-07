@@ -1,0 +1,188 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Transform grid -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 26 Feb 2007 02:27:44 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.58.0702261607440.6531@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4.0.1&#45;J.20070217171345.03037ef0@211.10.130.85 -->
+<!--X-Reference: 4.0.1&#45;J.20070221180506.030632e0@211.10.130.85 -->
+<!--X-Reference: F83C6ACE124F3E4D83B3A90C9CA0922D45AD29@exwa3&#45;per.nexus.csiro.au -->
+<!--X-Reference: Pine.LNX.4.58.0702261457090.5469@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Transform grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00122.html">Thread Prev</a>][<a href="msg00124.html">Thread Next</a>][<A HREF="threads.html#00123">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Transform grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Yun.Li@DOMAIN.HIDDEN">Yun.Li@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Transform grid</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 26 Feb 2007 16:10:53 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:Pine.LNX.4.58.0702261457090.5469@DOMAIN.HIDDEN">Pine.LNX.4.58.0702261457090.5469@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4.0.1-J.20070217171345.03037ef0@DOMAIN.HIDDEN">4.0.1-J.20070217171345.03037ef0@xxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4.0.1-J.20070217171345.03037ef0@DOMAIN.HIDDEN">4.0.1-J.20070217171345.03037ef0@xxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4.0.1-J.20070221180506.030632e0@DOMAIN.HIDDEN">4.0.1-J.20070221180506.030632e0@xxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:F83C6ACE124F3E4D83B3A90C9CA0922D45AD29@DOMAIN.HIDDEN">F83C6ACE124F3E4D83B3A90C9CA0922D45AD29@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:Pine.LNX.4.58.0702261457090.5469@DOMAIN.HIDDEN">Pine.LNX.4.58.0702261457090.5469@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi All,
+         Sorry, there was a typo in earlier mail. Please change 
+the following line
+ 
+       let sst_mon = RESHAPE(sst_mon,dest_grid)
+ as 
+       let sst_mon = RESHAPE(sst[d=1],dest_grid) 
+    
+Thanks,
+
+Jaison
+
+On Mon, 26 Feb 2007, Jaison Kurian wrote:
+
+&gt; Hi Yun,
+&gt;         The easy way to achieve this is by using RESHAPE function. For
+&gt; details about this function, please have a look at the user manual,
+&gt; Ch3 Sec2.3.23.
+&gt; 
+&gt;   RESHAPE function takes two arguments : first one is the original 
+&gt; variable (to be reshaped) and second one is a variable on the destination
+&gt; grid (after reshaping). In your case the Z-axis to be changed to T-axis,
+&gt; so a procedure as follows will work.
+&gt; 
+&gt;      use HADISST_1_1_SST_2004.nc
+&gt;      define axis/t=16-JAN-2004:15-DEC-2004:`365.2425/12`/units=days\
+&gt;                  /T0=31-DEC-2003  tmonth  ! monthly time axis for 2004
+&gt;      ! now define a variable on the destination grid.
+&gt;      let dest_grid = x[gx=sst,d=1]*0 + y[gy=sst,d=1]*0 + t[gt=tmonth]*0  
+&gt;      ! RESHAPE it....
+&gt;      let sst_mon = RESHAPE(sst_mon,dest_grid)
+&gt;      ! assign proper title and units
+&gt;      set var/title=&quot;Hadi Monthly SST 2004&quot;/units=&quot;Deg_C&quot; sst_mon
+&gt;      ! save to a NetCDF file for future use
+&gt;      sp rm -f Hadi_mon_sst_2004.nc
+&gt;      save/file=Hadi_mon_sst_2004.nc/APPEND sst_mon
+&gt; 
+&gt; Hope this helps..if you find any problem with this method, please let me know.
+&gt; 
+&gt; Regards,
+&gt; 
+&gt; Jaison
+&gt; 
+&gt; On Mon, 26 Feb 2007 Yun.Li@xxxxxxxx wrote:
+&gt; 
+&gt; &gt; 
+&gt; &gt; Dear All,
+&gt; &gt; 
+&gt; &gt; I have a copy of monthly HADISST_1_1_SST_2004.nc as follows. 
+&gt; &gt; 
+&gt; &gt; yes? use HADISST_1_1_SST_2004.nc
+&gt; &gt; yes? show data
+&gt; &gt;      currently SET data sets:
+&gt; &gt;     1&gt; ./HADISST_1_1_SST_2004.nc  (default)
+&gt; &gt;  name     title                             I         J         K
+&gt; &gt; L
+&gt; &gt;  T        Fake time                        1:12      ...       ...
+&gt; &gt; ...
+&gt; &gt;  LON      Longitude                        1:360     ...       ...
+&gt; &gt; ...
+&gt; &gt;  LAT      Latitude                         1:180     ...       ...
+&gt; &gt; ...
+&gt; &gt;  SST      SST                              1:360     1:180     1:12
+&gt; &gt; ...
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Ferret cannot draw the plots properly due to the incorrect grid settings
+&gt; &gt; (K =1:12). Could you please help me to transform the grid as the correct
+&gt; &gt; format (L=1:12)? That is,
+&gt; &gt; 
+&gt; &gt; &gt; show data
+&gt; &gt;      currently SET data sets:
+&gt; &gt;     1&gt; ./HADISST_1_1_SST_2004.nc  (default)
+&gt; &gt;  name     title                             I         J         K
+&gt; &gt; L
+&gt; &gt;  SST      SST                              1:360     1:180     ...
+&gt; &gt; 1:12
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Regards,
+&gt; &gt; 
+&gt; &gt; Yun Li
+&gt; &gt; CSIRO, Australia
+&gt; &gt; 
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00124" href="msg00124.html">Re: [ferret_users] Transform grid</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00114" href="msg00114.html">[ferret_users] Reading ascii data</a></strong>
+<ul><li><em>From:</em> Ben Burford</li></ul></li>
+<li><strong><a name="00120" href="msg00120.html">Re: [ferret_users] Reading ascii data</a></strong>
+<ul><li><em>From:</em> Ben Burford</li></ul></li>
+<li><strong><a name="00121" href="msg00121.html">[ferret_users] Transform grid</a></strong>
+<ul><li><em>From:</em> Yun . Li</li></ul></li>
+<li><strong><a name="00122" href="msg00122.html">Re: [ferret_users] Transform grid</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00122.html">Re: [ferret_users] Transform grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00124.html">Re: [ferret_users] Transform grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00122.html">Thread Prev</a>][<a href="msg00124.html">Thread Next</a>][<A HREF="threads.html#00123">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

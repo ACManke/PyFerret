@@ -1,0 +1,205 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] saving from a descriptor file -->
+<!--X-From-R13: "jvyyvnz f. xrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Mon, 6 Nov 2006 11:39:01 &#45;0800 -->
+<!--X-Message-Id: B37CE08A&#45;AE70&#45;4493&#45;BFF4&#45;2D8620DF175C@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200611061903.kA6J3bCp023035@pantheon&#45;po09.its.yale.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] saving from a descriptor file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00712.html">Thread Prev</a>][<a href="msg00714.html">Thread Next</a>][<A HREF="threads.html#00713">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] saving from a descriptor file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaclyn Brown &lt;<a href="mailto:jaclyn.brown@DOMAIN.HIDDEN">jaclyn.brown@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] saving from a descriptor file</strong></li>
+<li><strong>From</strong>: <strong>&quot;william s. kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 06 Nov 2006 11:39:00 -0800</li>
+<li>Cc: Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;,       Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00711.html">200611061903.kA6J3bCp023035@pantheon-po09.its.yale.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00711.html">200611061903.kA6J3bCp023035@pantheon-po09.its.yale.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jaci, Jaison -<br>
+<br>
+I think the problem is that the index L in the REPEAT statement is  
+not being interpreted as the time index of the variable uvel. How  
+about something like the following:<br>
+<br>
+save/file=u_1949.nc/clobber/l=1 uvel     ! omit LLIMITS which should  
+not be necessary for a time axis<br>
+repeat/l=2:122 (let ll='l'; define symbol lll 'll'; save/ 
+file=u_1949.nc/append uvel[l=($lll)])<br>
+<br>
+I'm not sure why you need to do the variable and symbol definitions  
+like this, which seem redundant, but I'm pretty sure that otherwise  
+Ferret will not interpret the REPEAT index L in evaluating the  
+variable uvel. It should, but it doesn't. You could test these things  
+by doing a LIST (of just a bit of uvel) instead of SAVE.<br>
+<br>
+Billy K<br>
+<br>
+On 6Nov 2006, at 11:03 AM, Jaclyn Brown wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Thanks Jaison,<br>
+I have to save the data one time step at a time because it is so  
+large. So<br>
+doing save/file=u_1949.nc/append uvel won't work.<br>
+Also the L='L' returned an error.<br>
+<br>
+I tried defining the time axis again (define axis/t=..), and  
+assigning it to<br>
+the variable (u=uvel[gt=taxis@asn]) even though this seems to be  
+redundant.<br>
+Nevertheless it did the trick. No idea why. I think there must be some<br>
+problem with my descriptor file that I can't see.<br>
+<br>
+I made the descriptor with make_des.pl  
+one_file.nc&gt;collated_files.des and<br>
+then added the extra files by typing in extra stepfile_records. I  
+did this<br>
+because the descriptor file wouldn't join the files together  
+automatically.<br>
+I guess this is where some error has been introduced.<br>
+<br>
+Cheers,<br>
+Jaci<br>
+<br>
+-----Original Message-----<br>
+From: Jaison Kurian [<a  href="mailto:jaison@caos.iisc.ernet.in">mailto:jaison@caos.iisc.ernet.in</a>]<br>
+Sent: Monday, November 06, 2006 1:22 PM<br>
+To: Jaclyn Brown<br>
+Cc: ferret_users@noaa.gov<br>
+Subject: Re: [ferret_users] saving from a descriptor file<br>
+<br>
+Hi Jaclyn,<br>
+           If you want to write the data for l=1:122, there is<br>
+no need to open the output file with /LLIMITS qualifier. Just<br>
+go like this :<br>
+<br>
+  use &quot;/kuroshio/jb842/POP/ful.....<br>
+  set reg/l=1:122<br>
+  save/fie=u_1949.nc uvel<br>
+<br>
+That is all !<br>
+<br>
+In your method, The following line is fine<br>
+<br>
+   save/file=u_1949.nc/clobber/llimits=1:122/l=1 uvel<br>
+<br>
+I think the next line should be<br>
+<br>
+   repeat/l=2:122 (save/file=u_1949.nc/L=`L`/append uvel)<br>
+<br>
+Because, each time you have to specify the L index or indices<br>
+that you are appending to the file opened with /LLIMITS. This<br>
+method is used only if there is a basic difference between the<br>
+time axis of source data and that of the final output one or<br>
+say you want to do some processing only for a give period. In<br>
+normal case &quot;set reg&quot; or specifying region as<br>
+&quot;save/L=1:122/file=somefile.nc/append uvel&quot; will work just fine.<br>
+<br>
+Hope this helps,<br>
+<br>
+Jaison<br>
+<br>
+On Mon, 6 Nov 2006, Jaclyn Brown wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><br>
+Hi,<br>
+I am trying to save a subset of a descriptor file I created. When  
+I open<br>
+</blockquote><pre>the
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">descriptor file in ferret the time axis is as it should be. When I  
+save<br>
+</blockquote><pre>some
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">of it (see below) the new file does not have the correct time  
+axis. Every<br>
+point has the same time 2-Jan-1949, which is the first time step.<br>
+Any ideas where I am going wrong?<br>
+Cheers,<br>
+Jaci<br>
+<br>
+<br>
+use &quot;/kuroshio/jb842/POP/full_output_July2006/Pacific1949.des&quot; ! 
+reads in<br>
+datafiles<br>
+<br>
+save/file=u_1949.nc/clobber/llimits=1:122/l=1 uvel<br>
+repeat/l=2:122 (save/file=u_1949.nc/append uvel)<br>
+<br>
+<br>
+<br>
+</blockquote><pre>
+
+</pre>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00714" href="msg00714.html">Re: [ferret_users] saving from a descriptor file</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00711" href="msg00711.html">RE: [ferret_users] saving from a descriptor file</a></strong>
+<ul><li><em>From:</em> Jaclyn Brown</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00712.html">RE: [ferret_users] saving from a descriptor file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00714.html">Re: [ferret_users] saving from a descriptor file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00712.html">Thread Prev</a>][<a href="msg00714.html">Thread Next</a>][<A HREF="threads.html#00713">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

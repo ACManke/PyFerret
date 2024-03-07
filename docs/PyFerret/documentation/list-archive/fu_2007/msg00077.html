@@ -1,0 +1,250 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] seasonal averages -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 26 Jan 2007 11:52:07 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.58.0701270118100.28318@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 45BA248E.7010908@nrel.colostate.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] seasonal averages</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00074.html">Thread Prev</a>][<a href="msg00130.html">Thread Next</a>][<A HREF="threads.html#00077">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] seasonal averages</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Knox &lt;<a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] seasonal averages</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 27 Jan 2007 01:34:01 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:45BA248E.7010908@DOMAIN.HIDDEN">45BA248E.7010908@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:45BA248E.7010908@DOMAIN.HIDDEN">45BA248E.7010908@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Steve,
+          Please note that @AVE is a &quot;weighted&quot; regridding, hence
+simple/direct methods may fail to give expected results. For more 
+details please see the following sections in user guide 
+
+    Ch3 Sec2.4.6.  @AVE average
+    Ch3 Sec2.4.1.  General information about transformations
+
+and the discussions starting with this mail in the archive,
+
+    <a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2006/msg00679.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2006/msg00679.html</a>
+
+How to find exact values then ? Obviously there are two solutions
+
+ 1. Supply exact grid boundaries for the destination axis.
+ 2. Make the grid box lengths uniform by assigning an Abstract time
+        axis.
+
+    Please find examples for these two methods below. Explanations and 
+relevant references in the user guide are also given in the example. 
+Please let me know if you have any questions.
+
+    Both these methods can be adapted to other such regridding 
+calculations, with proper modifications to the example given below.
+ 
+    Please note that you may have to use any recent version of Ferret,
+for Method 1.
+ 
+Regards,
+
+Jaison
+
+!------------------------Example Starts Here--------------------------
+\ cancel mode verify
+!
+! Examples for two methods to find accurate seasonal mean from monthly 
+!   data.
+!
+! define variable &quot;pre&quot;, on a monthly time axis with 12 points
+
+  let var = TSEQUENCE({2.00,3.10,7.00,11.90,36.90,77.80,75.60,57.20,\
+                        64.00,22.70,3.90,1.90})
+  define axis/t=&quot;15-JAN-1901&quot;:&quot;15-DEC-1901&quot;:`365.2425/12`/units=days\
+                  /T0=&quot;30-DEC-1900&quot;  tmon
+  let pre = var[GT=tmon@ASN]
+
+! Method 1 : Using Gridbox boundaries and Edges 
+!
+!      The trick is to supply exact boundaries for weighted averaging.
+!          I Guess that this method will be efficient than the next one
+!          since there is no &quot;axis&quot; changing business, especially for
+!          datasets with many time points. 
+!
+!             For details about Gridbox/Bounds/Edges etc. please see
+!                Ch3 Sec1.3.  Pseudo-variables 
+!                GLOSSARY
+!                Ref Sec4.3.  DEFINE AXIS (look for EDGES and BOUNDS)
+!                Ch10 Sec3.5.3.  Unevenly spaced coordinates  
+
+  let t_lobo = tboxlo[gt=pre,l=1]    ! lowest  grid bound for tmon
+  let t_hibo = tboxhi[gt=pre,l=12]   ! highest grid bound for tmon
+
+  define symbol t_zero = `pre,r=T0`       ! get the details of original
+  define symbol t_cal  = `pre,r=calendar` !      monthly time axis
+  define symbol t_unt  = `pre,r=tunits`
+
+        ! get the &quot;edge&quot; values : seasonal time axis will have 4 points
+        !   and hence it will have 5 &quot;edge&quot; values. Therefore, we need to 
+        !   get 5 equally spaced points between t_lobo and t_hibo, including
+        !   them.
+
+  define axis/t=`t_lobo`:`t_hibo`/npoints=5 tedges 
+ 
+  define axis/t/T0=&quot;($t_zero)&quot;/calendar=($t_cal)/units=($t_unt)\
+                   /EDGES/from_data tseas=t[gt=tedges] ! destination seasonal
+                                                       !    time axis
+  let pre_seas = pre[gt=tseas@AVE]
+
+  list pre_seas
+
+! Method 2 : Using Abstract axis
+!
+!    @AVE on abstract axis will yield expected result. But may not suit for
+!         datasets with too big time axis, though we use @ASN to move between
+!         abstract and calendar time axis.
+
+  define axis/t=1:12:1  tabs 
+  define axis/t=2:11:3  tabs_sonl   ! for exact results
+
+  let pre_abs       = pre[gt=tabs@ASN]          ! assign abstract axis
+  let pres_abs_sonl = pre_abs[gt=tabs_sonl@AVE] ! find exact seasonal mean
+  
+  define axis/edges/t=1-jan-1901:31-dec-1901/npoints=4   tsonl
+  
+  let pres_sonl     = pres_abs_sonl[gt=tsonl@ASN] ! assign calendar axis
+
+  list pres_sonl
+
+!------------------------Example Ends Here--------------------------
+
+
+
+On Fri, 26 Jan 2007, Steve Knox wrote:
+
+&gt; I'm trying to compute averages in groups of 3 months: 
+&gt; avg(jan,feb,mar),avg(apr,may,jun), etc
+&gt; 
+&gt; It seems to work, sortof. For example, the first avg = 4.11, but if you 
+&gt; calculate the average by hand of 2+3.1+7 you get 4.03 not 4.11.
+&gt; The next group of 3 months is 11.9+36.9+77.8 and the average is 42.2 not 
+&gt; 42.55
+&gt; What am I missing?
+&gt; 
+&gt; Thanks,
+&gt; 
+&gt; Steve
+&gt; use pre
+&gt; show data
+&gt;      currently SET data sets:
+&gt;     1&gt; ./pre.nc  (default)
+&gt;  name     title                             I         J         K         L
+&gt;  PRE      Precipitation                    1:720     1:360     ...       
+&gt; 1:1200
+&gt;  
+&gt; *define axis/edges/t=1-jan-1901:31-dec-1901/npoints=`4` myaxis*
+&gt;  !-&gt; define axis/edges/t=1-jan-1901:31-dec-1901/npoints=4 myaxis
+&gt; *let pre2=pre[gt=myaxis@ave]*
+&gt; *list/x=97.25/y=33.25 pre[l=1:12]*
+&gt;              VARIABLE : Precipitation (mm/month)
+&gt;              FILENAME : pre.nc
+&gt;              SUBSET   : 12 points (TIME)
+&gt;              LONGITUDE: 97.2E
+&gt;              LATITUDE : 33.2N
+&gt;                     97.25E
+&gt;                     555
+&gt;  15-JAN-1901 /  1:   2.00
+&gt;  14-FEB-1901 /  2:   3.10
+&gt;  17-MAR-1901 /  3:   7.00
+&gt;  16-APR-1901 /  4:  11.90
+&gt;  16-MAY-1901 /  5:  36.90
+&gt;  16-JUN-1901 /  6:  77.80
+&gt;  16-JUL-1901 /  7:  75.60
+&gt;  16-AUG-1901 /  8:  57.20
+&gt;  15-SEP-1901 /  9:  64.00
+&gt;  16-OCT-1901 / 10:  22.70
+&gt;  15-NOV-1901 / 11:   3.90
+&gt;  16-DEC-1901 / 12:   1.90
+&gt; *list/x=97.25/y=33.25 pre2*
+&gt;              VARIABLE : PRE[GT=MYAXIS@AVE]
+&gt;              FILENAME : pre.nc
+&gt;              SUBSET   : 4 points (TIME)
+&gt;              LONGITUDE: 97.2E
+&gt;              LATITUDE : 33.2N
+&gt;                    97.25E
+&gt;                    555
+&gt;  15-FEB-1901 / 1:   4.11
+&gt;  17-MAY-1901 / 2:  42.55
+&gt;  16-AUG-1901 / 3:  65.54
+&gt;  15-NOV-1901 / 4:   9.52
+&gt; 
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00074" href="msg00074.html">[ferret_users] seasonal averages</a></strong>
+<ul><li><em>From:</em> Steve Knox</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00074.html">[ferret_users] seasonal averages</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00130.html">[ferret_users] Seasonal Averages</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00074.html">Thread Prev</a>][<a href="msg00130.html">Thread Next</a>][<A HREF="threads.html#00077">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

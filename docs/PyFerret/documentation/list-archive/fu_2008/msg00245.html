@@ -1,0 +1,156 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] EOF analysis -->
+<!--X-From-R13: "Ivyyvnz.E.Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 16 May 2008 23:19:25 &#45;0700 -->
+<!--X-Message-Id: 5F461527&#45;57E9&#45;4A2A&#45;94E9&#45;80C60AF17EEE@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: fc49f7093e514.4826774c@hawaii.edu -->
+<!--X-Reference: 48289D0C.6090106@noaa.gov -->
+<!--X-Reference: 44E195E3&#45;700D&#45;47BE&#45;8E8B&#45;A1C50975BE41@hawaii.edu -->
+<!--X-Reference: 4828B15A.7030706@noaa.gov -->
+<!--X-Reference: 954C6E9C&#45;5008&#45;44C6&#45;9DE2&#45;BCE875B7BF8D@hawaii.edu -->
+<!--X-Reference: 9E5EFF37&#45;9594&#45;452F&#45;B34C&#45;B5D2969BFA05@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] EOF analysis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00244.html">Thread Prev</a>][<a href="msg00233.html">Thread Next</a>][<A HREF="threads.html#00245">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] EOF analysis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Kim &lt;<a href="mailto:seonk@DOMAIN.HIDDEN">seonk@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] EOF analysis</strong></li>
+<li><strong>From</strong>: <strong>&quot;William.S.Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 16 May 2008 23:19:22 -0700</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:9E5EFF37-9594-452F-B34C-B5D2969BFA05@DOMAIN.HIDDEN">9E5EFF37-9594-452F-B34C-B5D2969BFA05@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:fc49f7093e514.4826774c@DOMAIN.HIDDEN">fc49f7093e514.4826774c@xxxxxxxxxx</a>&gt; &lt;<a href="mailto:48289D0C.6090106@DOMAIN.HIDDEN">48289D0C.6090106@xxxxxxxx</a>&gt; &lt;<a href="mailto:44E195E3-700D-47BE-8E8B-A1C50975BE41@DOMAIN.HIDDEN">44E195E3-700D-47BE-8E8B-A1C50975BE41@xxxxxxxxxx</a>&gt; &lt;<a href="mailto:4828B15A.7030706@DOMAIN.HIDDEN">4828B15A.7030706@xxxxxxxx</a>&gt; &lt;<a href="mailto:954C6E9C-5008-44C6-9DE2-BCE875B7BF8D@DOMAIN.HIDDEN">954C6E9C-5008-44C6-9DE2-BCE875B7BF8D@xxxxxxxxxx</a>&gt; &lt;<a href="mailto:9E5EFF37-9594-452F-B34C-B5D2969BFA05@DOMAIN.HIDDEN">9E5EFF37-9594-452F-B34C-B5D2969BFA05@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>I wrote this routine a very long time ago, and I'm not in a position  
+</tt><tt>to test it now, but I think this is correct.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The result of the EOF computation (before normalization) has both the  
+</tt><tt>EOF and time function dimensionless, and all the amplitude is in the  
+</tt><tt>eigenvalues. The result has the valuable property that the original  
+</tt><tt>data can be recovered by the sum over all EOFs n=1:N, where N is the  
+</tt><tt>min(#space pts,# time points). Using subscript _0 to represent these  
+</tt><tt>original fields:
+</tt><pre style="margin: 0em;">
+
+data(x,t) = SUM_n[EVALUE(n)*EOF_0(x,n)*TAF_0(t,n)]
+
+</pre><tt>The normalization simply distributes the amplitude-containing  
+</tt><tt>eigenvalue over the EOFs and TAFs: It multiplies the original EOFs  
+</tt><tt>and time functions by the sqrt(eigenvalue). Thus, for the Ferret EOF  
+</tt><tt>output:
+</tt><pre style="margin: 0em;">
+
+data(x,t) = SUM_n[EOF(x,n)*TAF(t,n)]
+
+The result of this is that, for output of the Ferret EOF routines:
+
+</pre><tt>The sum over all space of any single EOF^2 equals the corresponding  
+</tt><tt>eigenvalue.
+</tt><tt>The sum over all time of any single (time function)^2 equals the  
+</tt><tt>number of observations.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>To reverse the normalization, simply reverse this process: divide by  
+</tt><tt>the sqrt(eigenvalue). But note that if you want to retain the data- 
+</tt><tt>recovery property of EOFs (or if you want to correctly plot or  
+</tt><tt>present the EOF results including both the space and time functions),  
+</tt><tt>then you must make this change to BOTH the EOF and the time function.
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+
+On 16/05/2008, at 7:18 PM, Peter Kim wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Hi All
+
+According to Ferret documentation, EOF_SPACE returns
+the normalized eigenfuctions so that they have the units of data.
+I would like to know how it is normalized.
+</pre><tt>I want to get dimensionless eigenvectors, in other words,  
+</tt><tt>eigenvectors of unit length.
+</tt><pre style="margin: 0em;">
+
+-Seon Tae-
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00232" href="msg00232.html">[ferret_users] illegal limits</a></strong>
+<ul><li><em>From:</em> Seon Tae Kim</li></ul></li>
+<li><strong><a name="00234" href="msg00234.html">Re: [ferret_users] illegal limits</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00235" href="msg00235.html">Re: [ferret_users] illegal limits</a></strong>
+<ul><li><em>From:</em> Peter Kim</li></ul></li>
+<li><strong><a name="00244" href="msg00244.html">[ferret_users] EOF analysis</a></strong>
+<ul><li><em>From:</em> Peter Kim</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00244.html">[ferret_users] EOF analysis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00233.html">[ferret_users] recursive variable definition</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00244.html">Thread Prev</a>][<a href="msg00233.html">Thread Next</a>][<A HREF="threads.html#00245">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

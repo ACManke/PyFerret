@@ -1,0 +1,253 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom? -->
+<!--X-From-R13: Szvyvr Hnailir <inailirNnfge.hpy.np.or> -->
+<!--X-Date: Mon, 2 Oct 2006 05:38:31 &#45;0700 -->
+<!--X-Message-Id: D0FBAB0C&#45;049E&#45;49D0&#45;8CD0&#45;C505B96C8951@astr.ucl.ac.be -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: FED41689&#45;35F6&#45;426B&#45;883A&#45;3DFBA4062A31@astr.ucl.ac.be -->
+<!--X-Reference: Pine.LNX.4.58.0609300043400.5212@caos.iisc.ernet.in -->
+<!--X-Derived: tif00001.tif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00631.html">Thread Prev</a>][<a href="msg00641.html">Thread Next</a>][<A HREF="threads.html#00639">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</strong></li>
+<li><strong>From</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 02 Oct 2006 13:36:27 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00631.html">Pine.LNX.4.58.0609300043400.5212@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00628.html">FED41689-35F6-426B-883A-3DFBA4062A31@astr.ucl.ac.be</a>&gt;&lt;<a href="msg00631.html">Pine.LNX.4.58.0609300043400.5212@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Mick and Jaison,<br>
+<br>
+I tried all methods but couldn't implement the most rigourous ones  
+since the grid of my variables doesn't match properly any of the  
+solutions you suggested. The grid is x y z t with x and y = km and z  
+= a sigma coordinate. Since I want to plot a cross section of the  
+wind versus latitude and pressure, everything gets more complex. I  
+can not regrid everything on new axis or I loose my &quot;topography&quot;.<br>
+<br>
+Therefore I use this solution: fill the graph with a uniform colour  
+before plotting my variable. It works fine, is dead easy to do, but  
+leads to a tiny problem that I don't understand: at the northest  
+latitude, I get a &quot;column&quot; of grey.  I attach the graph so that you  
+can see.<br>
+<br>
+Here is how I plot this graph. It's extracted from a bigger script  
+dealing with the time dimension or other thing, some steps here after  
+might look a bit weird for that reason.<br>
+<br>
+x or i = distance along a parallel, expressed in km<br>
+y or j = dimension perpendicular to x, expressed in km<br>
+z or k = vertical dimension, sigma coordinate (k=40 is the surface)<br>
+<br>
+varS[x,y,z] = zonal wind<br>
+pp[y,z] = pressure averaged over 10W-10E (i=40:96@ave)<br>
+ll[y] = latitude averaged over 10W-10E (i=40:96@ave)<br>
+<br>
+1. Get the background in grey:<br>
+<br>
+let vv = if varS ne 0 then varS/varS else varS+1  ! vv = 1 everywhere<br>
+let vp = if k eq 40 then pp/pp*1000 else pp       ! vertical  
+dimension for the background variable, I need to extend it until 1000  
+hPa to get my &quot;topography&quot;<br>
+<br>
+shade/nolabel/nokey/palette=grey/vlimit=1000:0:-100/k=7:40 vv 
+[i=40:96@ave],ll,vp<br>
+<br>
+2. Plot over this the zonal wind:<br>
+<br>
+shade/key/pal=.../level=.../nolabel/vlimit=1000:0:-100/k=7:40/over/ 
+set varS[i=40:96@ave],ll,pp<br>
+  go layout ; ppl ylab &quot;PRESSURE (hPa)&quot; ; ppl fill/over<br>
+<br>
+<br>
+<br>
+I don't understand why the variable 'vv' extends much further  
+northwards than the variable 'varS'. I don't do anything to this  
+dimension, so both should be the same. What's going on here then?<br>
+<br>
+<br>
+Emilie<br>
+<br>
+<p><a href="tif00001.tif" ><img src="tif00001.tif" alt="TIFF image"></a></p>
+<pre>
+
+On 29 Sep 2006, at 20:16, Jaison Kurian wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Emilie,<br>
+           Here are 3 methods to solve your problem.<br>
+<br>
+Also have a look at<br>
+<br>
+<a  href="http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_98/msg00242.html">http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_98/msg00242.html</a><br>
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00083.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00083.html</a><br>
+<br>
+And see : ferret/examples/two_dee_plot_of_1d.jnl<br>
+<br>
+Plese have a trial with the example below,<br>
+<br>
+Hope this helps,<br>
+<br>
+Jaison<br>
+<br>
+!---------------------------------------------------------------------<br>
+\ cancel mode verify<br>
+!<br>
+! 3 methods to overlay bottom topography on vertical section plots<br>
+!<br>
+!-------------------------------------------------------------------<br>
+!<br>
+!--1. THE BEST ONE : from ferret/examples/two_dee_plot_of_1d.jnl<br>
+!         Please note that the topography is not in the data  
+resolution<br>
+<br>
+   set data etopo20<br>
+   set data levitus_climatology<br>
+   set region/x=180:360/y=20n/z=0:5000<br>
+   let bottom = (-1)*rose[d=etopo20]<br>
+   let bottom_2d = bottom - z[g=temp]<br>
+   fill temp[x=@fln:100]<br>
+   fill/over/lev=(-10000)(0)/palette=black/nolab bottom_2d<br>
+<br>
+   pause<br>
+<br>
+!--2. Simple one, bit ugly, works good only with SHADE command.<br>
+!        Here the topography is in the resolution of the data.<br>
+!        Trick : define a variable which is valid where temperature<br>
+!                 is missing, then overlay this variable.<br>
+<br>
+   let topo = IF temp THEN (`temp,r=bad`) ELSE 1<br>
+   shade temp<br>
+   shade/ov/nolab/nokey/pal=black topo<br>
+<br>
+   pause<br>
+<br>
+!--3. Better method than 2, both SHADE and FILL works fine.<br>
+!        Here the topography is in the resolution of the data.<br>
+!        Trick : Fill the plot area with a color (define a variable<br>
+!                 with the same grid as temperature but with the<br>
+!                 value 1 EVERYWHERE, use this variable to fill).<br>
+!                 Then fill or shade temperature over this.<br>
+!    This method will also work in one (default) view port, with<br>
+!      &quot;/overlay&quot; as in 2 above. But sometime it may lead to<br>
+!      problems with color key and &quot;/set&quot; &amp; &quot;ppl fill&quot;.<br>
+<br>
+   define view/xlim=0:1/ylim=0:1 v1<br>
+   define view/xlim=0:1/ylim=0:1 v2<br>
+   set reg/x=180:360/y=20n/z=0:5000<br>
+   let topo = IF temp THEN 1 ELSE 1<br>
+   set view v1<br>
+     shade/pal=black/nolab/nokey/noaxes topo<br>
+   set view v2<br>
+     fill temp<br>
+!---------------------------------------------------------------------<br>
+<br>
+On Fri, 29 Sep 2006, Emilie Vanvyve wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ferret users,<br>
+<br>
+I looked at the online help, found some clues to help me, but I<br>
+haven't succeeded so far and thought of submitting my question to  
+you.<br>
+<br>
+I plot a cross section of the zonal wind with a simple &quot;shade/x=0/ 
+l=1/<br>
+vlimit=1000:0:-100 uairdy,lat,pressure&quot;. The resulting graph is<br>
+joined to this email.<br>
+How can I get the imitation of the surface topography (the white<br>
+area) shaded in grey or black or whatever colour?<br>
+<br>
+In the sigma_coordinate_demo.jnl script, some similar graphs are made<br>
+and obviously succeeded where I fail. But the problem is taken<br>
+backwards: first the topography is defined (variable &quot;bathymetry&quot;),<br>
+then the variable is computed, then the variable is plotted, then the<br>
+bathymetry is overlayed.<br>
+How can I compute the surface topography from my data? I can get the<br>
+value of the pressure at the surface, but I haven't succeeded to make<br>
+it 3D &quot;under the surface&quot; and even less to plot it nicely.<br>
+<br>
+Would anybody know how to do?<br>
+<br>
+Many thanks in advance,<br>
+<br>
+Emilie<br>
+<br>
+<br>
+</blockquote><pre>
+</pre>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00641" href="msg00641.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00628" href="msg00628.html">[ferret_users] shade: a cross section with the surface topography filled at thebottom?</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+<li><strong><a name="00631" href="msg00631.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00631.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00641.html">Re: [ferret_users] shade: a cross section with the surface topographyfilled at the bottom?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00631.html">Thread Prev</a>][<a href="msg00641.html">Thread Next</a>][<A HREF="threads.html#00639">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

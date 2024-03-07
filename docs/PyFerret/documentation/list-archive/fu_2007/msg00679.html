@@ -1,0 +1,174 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] height in meters -->
+<!--X-From-R13: Bnhy Kbhat <cnhy.lbhatNngz.pu.pnz.np.hx> -->
+<!--X-Date: Wed, 12 Dec 2007 03:29:08 &#45;0800 -->
+<!--X-Message-Id: 475FC5F4.2090608@atm.ch.cam.ac.uk -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 475FB50B.7080600@m.titech.ac.jp -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] height in meters</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00677.html">Thread Prev</a>][<a href="msg00681.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] height in meters</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&#x30DE;&#x30A6;&#x30ED; &lt;<a href="mailto:suga.m.aa@DOMAIN.HIDDEN">suga.m.aa@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] height in meters</strong></li>
+<li><strong>From</strong>: <strong>Paul Young &lt;<a href="mailto:paul.young@DOMAIN.HIDDEN">paul.young@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 12 Dec 2007 11:28:52 +0000</li>
+<li>Cc: Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:475FB50B.7080600@DOMAIN.HIDDEN">475FB50B.7080600@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:475FB50B.7080600@DOMAIN.HIDDEN">475FB50B.7080600@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (X11/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Mauro,
+
+I put my cross-section plots on a height axis by regridding the variable
+using the 'zaxreplace' function. Here's how I do it:
+
+I have 2 netCDF files containing a 4D field of the pressure at my 19
+sigma model levels. One file has the actual pressure for each grid
+square (taking orography into account) and the other has a constant
+pressure for each level globally. The former file can be used for cross
+sections of particular longitudes, where you want to preserve the
+orography detail, and the latter for zonal means, where you would like
+the plot to start at zero for all latitudes. You can use either file
+with a script similar to this one below (credit G. Carver, Cambridge for
+providing me a similar version):
+
+! pres2height.jnl
+!
+! To regrid data to true height (using 4D pressure field)
+!
+! Args: 1 = variable to regrid (e.g ozone)
+! 2 = pressure field (varying or constant)
+! 3 = name of new regridded variable
+
+\cancel mode verify
+
+!Z Axis definitions
+let zmin = 0
+let zmax = 20
+let zinc = 0.1
+
+define axis/z=`zmin`:`zmax`:`zinc`/units=km kmz
+
+!Convert pressure (Pa) to height (km)
+let conv2ht = (44330.77*(1.-($2/100900.0)^0.19026))/1000.0
+
+!Replace sigma z axis with height
+let $3 = zaxreplace($1,conv2ht,z[gz=kmz])
+
+! end of script
+set mode verify
+
+You can run the script like this:
+
+yes? use my_output.nc !your model data
+yes? use my_pressure.nc !your model pressure field
+yes? let my_var = o3[d=1]
+yes? let my_pres = pres[d=2]
+yes? go pres2height my_var my_pres my_var_km
+
+Hope this works for you,
+
+Paul
+
+-- 
+
+Paul Young
+
+Centre for Atmospheric Science
+Department of Chemistry
+University of Cambridge
+Lensfield Road
+Cambridge CB2 1EW UK
+
+Tel: +44 (0)1223 763 814
+Fax: +44 (0)1223 763 823
+
+<a  rel="nofollow" href="http://www.atm.ch.cam.ac.uk/cas">http://www.atm.ch.cam.ac.uk/cas</a>
+<a  rel="nofollow" href="http://www.atm.ch.cam.ac.uk/~paul">http://www.atm.ch.cam.ac.uk/~paul</a>
+
+&gt; Hello Ferret users,
+&gt;
+&gt; I am a novice user and currently needing a help,
+&gt;
+&gt; My problem is: although I could generate a cross-section, I want to
+&gt; change Z into meters.
+&gt;
+&gt; Below follows the plot; instead 27 Z levels, I would like to change it
+&gt; into meters
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; best regards,
+&gt; Mauro
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00677" href="msg00677.html">[ferret_users] height in meters</a></strong>
+<ul><li><em>From:</em> &#x30DE;&#x30A6;&#x30ED;</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00677.html">[ferret_users] height in meters</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00681.html">Re: [ferret_users] height in meters</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00677.html">Thread Prev</a>][<a href="msg00681.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

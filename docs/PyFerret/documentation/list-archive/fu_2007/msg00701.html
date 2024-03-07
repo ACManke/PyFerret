@@ -1,0 +1,243 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] change axis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 14 Dec 2007 15:27:11 &#45;0800 -->
+<!--X-Message-Id: 4763114E.7080209@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 30122775.1197586466144.JavaMail.root@webmail.kordi.re.kr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] change axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00697.html">Thread Prev</a>][<a href="msg00699.html">Thread Next</a>][<A HREF="threads.html#00701">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] change axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Chan Joo Jang &lt;<a href="mailto:cjjang@DOMAIN.HIDDEN">cjjang@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] change axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 14 Dec 2007 15:27:10 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:30122775.1197586466144.JavaMail.root@DOMAIN.HIDDEN">30122775.1197586466144.JavaMail.root@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:30122775.1197586466144.JavaMail.root@DOMAIN.HIDDEN">30122775.1197586466144.JavaMail.root@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.9 (Windows/20071031)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi,<br>
+Thanks for the example file.&nbsp; Ferret has some tools to deal with this
+kind of profile data. As you found, if we just point to the data, it's
+on a grid that doesn't make sense:<br>
+<blockquote><tt>yes? USE argo2900623_prof.nc</tt><br>
+  <tt>yes? SHOW GRID temp</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; GRID GAI4</tt><br>
+  <tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end</tt><br>
+  <tt>&nbsp;N_LEVELS&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 48 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 48</tt><br>
+  <tt>&nbsp;N_PROF&nbsp;&nbsp;&nbsp; Y&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 35 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 35</tt><br>
+  <tt>&nbsp;normal&nbsp;&nbsp;&nbsp; Z</tt><br>
+  <tt>&nbsp;normal&nbsp;&nbsp;&nbsp; T</tt><br>
+</blockquote>
+The attributes in the file don't give Ferret enough information to know
+that N_LEVELS should be a Z axis and N_PROF should be a T axis.&nbsp; We can
+use the /ORDER qualifier to force the correct directions to be used:<tt><br>
+</tt>
+<blockquote><tt>yes? CANCEL DATA/ALL</tt><br>
+  <tt>yes? USE/ORDER=ZT </tt><br>
+  <tt>yes? SHOW GRID temp</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; GRID GAI4</tt><br>
+  <tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end</tt><br>
+  <tt>&nbsp;normal&nbsp;&nbsp;&nbsp; X</tt><br>
+  <tt>&nbsp;normal&nbsp;&nbsp;&nbsp; Y</tt><br>
+  <tt>&nbsp;N_LEVELS&nbsp; Z&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 48 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 48</tt><br>
+  <tt>&nbsp;N_PROF&nbsp;&nbsp;&nbsp; T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 35 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 35</tt><br>
+</blockquote>
+Now, we'd like to use the variable JULD to define a time axis.&nbsp; In
+files like this, sometimes the times are not in monotonically
+increasing order, and so we would need to sort them. I'll come back to
+this. In this file, the times are monotonically increasing, so we can
+just use them as is.<br>
+<tt><br>
+</tt>
+<blockquote><tt>! this gives us the units and time origin.<br>
+  </tt><tt>yes? LIST juld.units&nbsp; </tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "days since 1950-01-01 00:00:00 UTC"</tt><br>
+  <br>
+  <tt>! Define a time axis based on JULD</tt><br>
+  <tt>yes? DEFINE AXIS/T/T0="1-jan-1950:00:00"/UNITS=days tday = juld</tt><br>
+  <br>
+  <tt>! Also define a new Z axis. This is ocean data, so it should</tt><br>
+  <tt>! be increasing downwards.&nbsp; First define zz, a variable
+containing </tt><br>
+  <tt>! the levels, then define an axis from that variable.</tt><br>
+  <br>
+  <tt>yes? LET zz = z[gz=temp]&nbsp; </tt><br>
+  <tt>yes? DEFINE AXIS/Z/UNITS=levels/DEPTH zlev = zz&nbsp; </tt><br>
+  <br>
+  <tt>! Now define a new variable on these corrected axes, </tt><br>
+  <tt>! using the @ASN transformation to just put them onto</tt><br>
+  <tt>! the new axes. Keep the units and title from TEMP.</tt><br>
+  <br>
+  <tt>yes? LET/UNITS="`temp,RETURN=units`"/\</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; TITLE="`temp,RETURN=title`" \</tt><br>
+  <tt>&nbsp; temperature = temp[GZ=zlev@ASN,&nbsp; GT=tday@ASN]</tt><br>
+</blockquote>
+<tt></tt>
+<blockquote><tt>! Now the variable is on the correct ZT grid,<br>
+! For example, we can do these things:<br>
+  <br>
+  </tt><tt>yes? plot/L=1 temperature </tt><br>
+  <tt>yes? shade temperature</tt><br>
+</blockquote>
+If the JULD variable were not monotonic, we would need to SORT the
+variable JULD, and use the result to both define the new time axis and
+also to reorder TEMP in T before assigning it to the new T axis.<tt><br>
+</tt><br>
+Ansley<br>
+<br>
+Chan Joo Jang wrote:
+<blockquote
+ cite=""
+ type="cite">
+  
+  <p><img moz-do-not-send="true"
+ src=""></p>
+Hi Ferr users,<br>
+  <br>
+I got ARGO float data files from <a rel="nofollow" moz-do-not-send="true"
+ href="http://www.usgodae.org/cgi-bin/argo_select.pl">http://www.usgodae.org/cgi-bin/argo_select.pl</a>
+.<br>
+&nbsp;(One of those nc files is attached for your reference.)<br>
+  <br>
+Using some functions&nbsp;such as &nbsp;RESHAPE, I tried to change original axis
+(n_prof, n_levels)&nbsp;to (time, depth) of TEMP (temperature), without any
+success.<br>
+&nbsp;<br>
+In other words, I want to have TEMP(julian day, pres) instead of
+TEMP(n_prof, n_levels). All informations for julian day(juld) and depth
+(pres) are in the nc files.<br>
+  <br>
+  <br>
+Any ideas or suggestions would be welcome.<br>
+  <br>
+oceanboy<br>
+=======<br>
+PS) Some parts of ncdump output are as follows:&nbsp;<br>
+  <br>
+netcdf 2900623_prof {<br>
+dimensions:<br>
+&nbsp;DATE_TIME = 14 ;<br>
+&nbsp;STRING256 = 256 ;<br>
+&nbsp;STRING64 = 64 ;<br>
+&nbsp;STRING32 = 32 ;<br>
+&nbsp;STRING16 = 16 ;<br>
+&nbsp;STRING8 = 8 ;<br>
+&nbsp;STRING4 = 4 ;<br>
+&nbsp;STRING2 = 2 ;<br>
+&nbsp;N_PROF = 35 ;<br>
+&nbsp;N_PARAM = 3 ;<br>
+&nbsp;N_LEVELS = 48 ;<br>
+&nbsp;N_CALIB = 1 ;<br>
+&nbsp;N_HISTORY = UNLIMITED ; // (0 currently)<br>
+variables:<br>
+&nbsp;float PRES(N_PROF, N_LEVELS) ;<br>
+&nbsp;&nbsp;PRES:long_name = "SEA PRESSURE" ;<br>
+&nbsp;&nbsp;PRES:_FillValue = 99999.f ;<br>
+&nbsp;&nbsp;PRES:units = "decibar" ;<br>
+&nbsp;&nbsp;PRES:valid_min = 0.f ;<br>
+&nbsp;&nbsp;PRES:valid_max = 12000.f ;<br>
+&nbsp;&nbsp;PRES:comment = "In situ measurement, sea surface = 0" ;<br>
+&nbsp;&nbsp;PRES:C_format = "%7.1f" ;<br>
+&nbsp;&nbsp;PRES:FORTRAN_format = "F7.1" ;<br>
+&nbsp;&nbsp;PRES:resolution = 0.1f ;<br>
+&nbsp;float TEMP(N_PROF, N_LEVELS) ;<br>
+&nbsp;&nbsp;TEMP:long_name = "SEA TEMPERATURE IN SITU ITS-90 SCALE" ;<br>
+&nbsp;&nbsp;TEMP:_FillValue = 99999.f ;<br>
+&nbsp;&nbsp;TEMP:units = "degree_Celsius" ;<br>
+&nbsp;&nbsp;TEMP:valid_min = -2.f ;<br>
+&nbsp;&nbsp;TEMP:valid_max = 40.f ;<br>
+&nbsp;&nbsp;TEMP:comment = "In situ measurement" ;<br>
+&nbsp;&nbsp;TEMP:C_format = "%9.3f" ;<br>
+&nbsp;&nbsp;TEMP:FORTRAN_format = "F9.3" ;<br>
+&nbsp;&nbsp;TEMP:resolution = 0.001f ; <br>
+  <br>
+------------------------------------------------<br>
+  <strong><font color="#0000ff">Currently&nbsp;at&nbsp;Dep. of Oceanography,
+Texas A&amp;M&nbsp;Univ</font></strong><br>
+Chan Joo Jang, Ph.D., researcher <br>
+Korea Ocean Research and Development Institute<br>
+1270 Sa2-dong, SangRok-gu, Ansan&nbsp; 426-744, Korea<br>
+Tel: +82-31-400-6317 Fax: +82-31-408-5827<br>
+  <a rel="nofollow" moz-do-not-send="true" href="mailto:cjjang@xxxxxxxxxxx">cjjang@xxxxxxxxxxx</a>,
+  <a rel="nofollow" moz-do-not-send="true" href="http://ogcm.kordi.re.kr">http://ogcm.kordi.re.kr</a><br>
+------------------------------------------------ <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00697" href="msg00697.html">[ferret_users] change axis</a></strong>
+<ul><li><em>From:</em> Chan Joo Jang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00697.html">[ferret_users] change axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00699.html">[ferret_users] wind average</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00697.html">Thread Prev</a>][<a href="msg00699.html">Thread Next</a>][<A HREF="threads.html#00701">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>
