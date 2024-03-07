@@ -1,0 +1,272 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: geostrophic current -->
+<!--X-From-R13: @nzon Fnxnln <gnxnlnanzon7Nlnubb.pb.wc> -->
+<!--X-Date: Tue, 7 Dec 2004 12:54:36 &#45;0800 -->
+<!--X-Message-Id: 20041207205420.30390.qmail@web2705.mail.mci.yahoo.co.jp -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200412071331.iB7DVLMI005568@ferret.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: geostrophic current</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00886.html">Thread Prev</a>][<a href="msg00889.html">Thread Next</a>][<A HREF="threads.html#00892">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: geostrophic current</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: geostrophic current</strong></li>
+<li><strong>From</strong>: <strong>Namba Takaya &lt;<a href="mailto:takayanamba7@DOMAIN.HIDDEN">takayanamba7@xxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 8 Dec 2004 05:54:20 +0900 (JST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>, &lt;<a href="mailto:takayanamba@DOMAIN.HIDDEN">takayanamba@xxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00886.html">200412071331.iB7DVLMI005568@ferret.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Billy
+
+Thank you very much for your suggestion.
+
+I corrected it as you tought and GO it. The script below
+is corrected one. The result looks OK. I am  going to
+check the result with dynamic_height.jnl.
+
+
+! Set your data file (I assume you have a netCDF file of
+model output)
+use woa01_salt.nc
+use woa01_temp.nc
+let ss=salt[d=woa01_salt.nc,l=2]
+let tt=temp[d=woa01_temp.nc,l=2]
+let yy=y[gy=ss];let zz=z[gz=ss]
+! Set parameters
+let g = 9.81
+let pi = 3.14159
+let omega = 7.292e-5
+let f = 2*omega*sin(yy*pi/180)
+set reg/i=660:720/j=120:200/k=1:24
+!!!set reg/i=1:ni/j=1:nj/k=1:nk
+
+! Compute density
+! I'll assume you have two variables S and T in your data
+file and that
+! your vertical levels are in dbars (meters would be
+pretty close)
+let rho = rho_un(ss,tt,zz)
+
+! Compute vertical shears
+let gamma = g/(rho*f)
+let u_z = gamma*rho[y=@DDC]
+let v_z = gamma*rho[x=@DDC]*(-1)
+
+! Compute geostrophic field
+! To compute absolute velocity you either have to know
+some reference
+! velocity or assume a level of no motion (as is
+traditionally done)
+! The level of no motion argument is what is used when
+calculating
+! the surface geostrophic field from "dynamic topography".
+You can
+! assume that the flow is zero at the bottom for example
+and then
+! integrate vertically to the level at which you want the
+flow field.
+
+! The flow field at the surface
+let u = u_z[k=@DIN]
+let v = v_z[k=@DIN]
+! The flow field at the base of a 100 m mixed layer
+assuming the
+! depth of no motion is at 5000 m.
+let um = u_z[z=5000:100@DIN]
+let vm = v_z[z=5000:100@DIN]
+
+
+
+--- Billy Kessler &lt;William.S.Kessler@noaa.gov&gt; からのメ
+ッセージ：
+&gt; An obvious problem is that you cannot use file
+&gt; variables (y and z, 
+&gt; in this case) as ordinary variables. The 2
+&gt; statements below are
+&gt; incorrect:
+&gt; 
+&gt; let f = 2*omega*sin(y*pi/180)
+&gt; let rho = rho_un(ss[G=ggrid],tt[G=ggrid],z)
+&gt; 
+&gt; Try instead:
+&gt; 
+&gt; let yy=y[gy=ss]; let zz=z[gz=ss]
+&gt; 
+&gt; and then use yy and zz in the above two statements.
+&gt; 
+&gt; Billy K
+&gt; 
+&gt; &gt; I have tried to calculate the geostrophic current
+&gt; with the
+&gt; &gt; script below by Dr. David Oxilia
+&gt; &gt; submitted to the mailing list on 15th Jan 1999.
+&gt; &gt; In addition, I have the World Ocean Atlas 1/4 (24
+&gt; standard
+&gt; &gt; levels) supported by Dr. Jaison Kurian.
+&gt; &gt; However, I could not succeed in this calculation
+&gt; as some
+&gt; &gt; axis errors come. Especially I do not have
+&gt; confidence of
+&gt; &gt; two lines
+&gt; &gt; set reg/i=660:720/j=120:200/k=1:24
+&gt; &gt; and 
+&gt; &gt; let rho = rho_un(ss[G=ggrid],tt[G=ggrid],z)
+&gt; &gt; Could you give me some suggestions?
+&gt; &gt; 
+&gt; &gt; ============= geostrophic current script
+&gt; ==========
+&gt; &gt; ! Set your data file (I assume you have a netCDF
+&gt; file of
+&gt; &gt; model output)
+&gt; &gt; !!!use SaltTemp
+&gt; &gt; use woa01_salt.nc
+&gt; &gt; use woa01_temp.nc
+&gt; &gt; let ss=salt[d=woa01_salt.nc,l=1]  !!!WOA 1/4
+&gt; salinity
+&gt; &gt; let tt=temp[d=woa01_temp.nc,l=1]  !!!WOA 1/4
+&gt; temperature
+&gt; &gt; ! Set parameters
+&gt; &gt; let g = 9.81
+&gt; &gt; let pi = 3.14159
+&gt; &gt; let omega = 7.292e-5
+&gt; &gt; let f = 2*omega*sin(y*pi/180)
+&gt; &gt; define axis/x=160e:180e:0.25/unit=degree xxaxis
+&gt; &gt; define axis/y=60s:40s:0.25/unit=degree yyaxis
+&gt; &gt; define axis/z zaxis = {0, 10, 20, 30, 50, 75, 100,
+&gt; 125,
+&gt; &gt; 150,\
+&gt; &gt; 200, 250, 300, 400, 500, 600, 700, 800, 900, \
+&gt; &gt; 1000, 1100, 1200, 1300, 1400, 1500}
+&gt; &gt; define grid/x=xxaxis/y=yyaxis/z=zaxis ggrid
+&gt; &gt; ! Set region to all space (use actual values for
+&gt; ni, nj
+&gt; &gt; and nk)
+&gt; &gt; !set reg/i=1:ni/j=1:nj/k=1:nk
+&gt; &gt; set reg/i=660:720/j=120:200/k=1:24
+&gt; &gt; !!!set reg/x=165e:180e/y=60s:40s/z=0:1500
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; ! Compute density
+&gt; &gt; ! I'll assume you have two variables S and T in
+&gt; your data
+&gt; &gt; file and that
+&gt; &gt; ! your vertical levels are in dbars (meters would
+&gt; be
+&gt; &gt; pretty close)
+&gt; &gt; let rho = rho_un(ss[G=ggrid],tt[G=ggrid],z)
+&gt; &gt; 
+&gt; &gt; ! Compute vertical shears
+&gt; &gt; let gamma = g/(rho*f)
+&gt; &gt; let u_z = gamma*rho[y=@DDC]
+&gt; &gt; let v_z = gamma*rho[x=@DDC]*(-1)
+&gt; &gt; 
+&gt; &gt; ! Compute geostrophic field
+&gt; &gt; ! To compute absolute velocity you either have to
+&gt; know
+&gt; &gt; some reference
+&gt; &gt; ! velocity or assume a level of no motion (as is
+&gt; &gt; traditionally done)
+&gt; &gt; ! The level of no motion argument is what is used
+&gt; when
+&gt; &gt; calculating
+&gt; &gt; ! the surface geostrophic field from "dynamic
+&gt; topography".
+&gt; &gt; You can
+&gt; &gt; ! assume that the flow is zero at the bottom for
+&gt; example
+&gt; &gt; and then
+&gt; &gt; ! integrate vertically to the level at which you
+&gt; want the
+&gt; &gt; flow field.
+&gt; &gt; 
+&gt; &gt; ! The flow field at the surface
+&gt; &gt; let u = u_z[k=@DIN]
+&gt; &gt; let v = v_z[k=@DIN]
+&gt; &gt; ! The flow field at the base of a 100 m mixed
+&gt; layer
+&gt; &gt; assuming the
+&gt; &gt; ! depth of no motion is at 5000 m.
+&gt; &gt; let um = u_z[z=5000:100@DIN]
+&gt; &gt; let vm = v_z[z=5000:100@DIN]
+&gt; &gt; 
+&gt; &gt; Takaya Namba
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; __________________________________
+&gt; &gt; STOP HIV/AIDS.
+&gt; &gt; Yahoo! JAPAN Redribbon Campaign
+&gt; &gt; <a  href="http://pr.mail.yahoo.co.jp/redribbon/">http://pr.mail.yahoo.co.jp/redribbon/</a>
+&gt; &gt; 
+&gt; 
+
+__________________________________
+STOP HIV/AIDS.
+Yahoo! JAPAN Redribbon Campaign
+<a  href="http://pr.mail.yahoo.co.jp/redribbon/">http://pr.mail.yahoo.co.jp/redribbon/</a>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00886" href="msg00886.html">Re: geostrophic current</a></strong>
+<ul><li><em>From:</em> Billy Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00886.html">Re: geostrophic current</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00889.html">Re: geostrophic current</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00886.html">Thread Prev</a>][<a href="msg00889.html">Thread Next</a>][<A HREF="threads.html#00892">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

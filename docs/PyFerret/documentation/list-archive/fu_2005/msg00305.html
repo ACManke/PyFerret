@@ -1,0 +1,192 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to calculate the annual average -->
+<!--X-From-R13: [vat Knat <zlnatNrznvy.hap.rqh> -->
+<!--X-Date: Fri, 1 Apr 2005 10:16:55 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.44+UNC.0504011311270.17443&#45;100000@dali.gphys.unc.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 424D89AB.4080402@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to calculate the annual average</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00304.html">Thread Prev</a>][<a href="msg00306.html">Thread Next</a>][<A HREF="threads.html#00305">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to calculate the annual average</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to calculate the annual average</strong></li>
+<li><strong>From</strong>: <strong>Ming Yang &lt;<a href="mailto:myang@DOMAIN.HIDDEN">myang@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 1 Apr 2005 13:13:36 -0500 (EST)</li>
+<li>Cc: Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00304.html">424D89AB.4080402@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi, Ansley
+   Thank you for your reply. I try your approach, but still there are
+problems. Here is what I got
+
+yes? use cresum001710.sst.nc
+yes? show data
+     currently SET data sets:
+    1&gt; ./cresum001710.sst.nc  (default)
+ name     title                             I         J         K        L
+ SST      Sea surface temperature          1:144     1:72      ...      1:4800
+yes? define axis/t=6:4800:12  yearaxis
+yes? let sst_year = sst[gt=yearaxis@ave]
+yes? list/file=&quot;cresum001710.sst.a.nc&quot; sst_year
+ **ERROR: regridding: only @ASN regridding between calendar and
+          non-calendar axes: SST
+
+   What this means?
+
+Ming
+
+
+On Fri, 1 Apr 2005, Ansley Manke wrote:
+
+&gt; Hi Ming,
+&gt; When the time series is done in terms of index value, you caon compute
+&gt; the annual averages like this:
+&gt;
+&gt;   define axis/t=6:4800:12  yearaxis
+&gt;   let sst_year = sst[gt=yearaxis@ave]
+&gt;
+&gt; The output axis is in the same units (which is just the index value, but
+&gt; you can think of it as months).  I start with 6 so that the averages are
+&gt; taken over the first 12 points, then 13 through 24, and so on.  To test
+&gt; what this is doing, here is an example where I make up some data, where
+&gt; the variable has the value of the index.
+&gt;
+&gt;    yes? def axis/t=1:4800:1 tmonth
+&gt;    yes? def axis/t=6:4800:12 tyear
+&gt;
+&gt;    yes? let tt =  t[gt=tmonth]
+&gt;    yes? let ttyear = tt[gt=tyear@ave]
+&gt;
+&gt;    yes? list/l=1:5 ttyear
+&gt;              VARIABLE : TT[GT=TYEAR@AVE]
+&gt;              SUBSET   : 5 points (T)
+&gt;     6    / 1:   6.26
+&gt;     18   / 2:  18.00
+&gt;     30   / 3:  30.00
+&gt;     42   / 4:  42.00
+&gt;     54   / 5:  54.00
+&gt;
+&gt; The first value is different from the expected 6 because the first
+&gt; averaging interval in T (t=1 to 12)  is taken from the start of the time
+&gt; axis, 0.5,  to 12, so the weighting factor is 11.5. The start of the
+&gt; axis is t=0.5 not 0. The second interval (t=12 to 24) takes the average
+&gt; from 12 to 24, so the weighting is 12.
+&gt;
+&gt; We can also see this if we compute unweighted average computed by taking
+&gt; the transformation @SUM and dividing by the number of good data, @NGD:
+&gt;
+&gt;    yes? let ttsum = tt[gt=tyear@sum]
+&gt;    yes? let ttcount = tt[gt=tyear@ngd]
+&gt;    yes? let ttyear = ttsum/ttcount
+&gt;    yes? list/l=1:5 ttsum, ttcount, ttyear
+&gt;                 T: 0 to 60
+&gt;     Column  1: TTSUM is TT[GT=TYEAR@SUM]
+&gt;     Column  2: TTCOUNT is TT[GT=TYEAR@NGD]
+&gt;     Column  3: TTYEAR is TTSUM/TTCOUNT
+&gt;              TTSUM TTCOUNT TTYEAR
+&gt;    6    / 1:   72.0   11.50   6.26
+&gt;    18   / 2:  216.0   12.00  18.00
+&gt;    30   / 3:  360.0   12.00  30.00
+&gt;    42   / 4:  504.0   12.00  42.00
+&gt;    54   / 5:  648.0   12.00  54.00
+&gt;
+&gt;
+&gt;
+&gt; Ming Yang wrote:
+&gt;
+&gt; &gt;Hi, Ansley
+&gt; &gt;   After I reading the FAQ, I still cannot figure out how to compute the
+&gt; &gt;annual average. It is probably because my data set is different from the
+&gt; &gt;example listed in the FAQ. Here is the basical information of my dataset
+&gt; &gt;yes? use cresum001710.sst.nc
+&gt; &gt;yes? show data
+&gt; &gt;     currently SET data sets:
+&gt; &gt;    1&gt; ./cresum001710.sst.nc  (default)
+&gt; &gt; name     title                       I         J         K      L
+&gt; &gt; SST      Sea surface temperature    1:144     1:72      ...   1:4800
+&gt; &gt;
+&gt; &gt;   I think the difference is that in my dataset the grid is defines as
+&gt; &gt;IJKL instead of XYZT. And also the L axis is not based on any calendars.
+&gt; &gt;Basically what I want to do is to calculate the average values for every
+&gt; &gt;12 Ls so that to the transformed data has 400 points in L axis. Do you
+&gt; &gt;know what is the best way for me to do so? Thank you for your help.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;Ming
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt;
+&gt;
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00306" href="msg00306.html">Re: How to calculate the annual average</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00304" href="msg00304.html">Re: How to calculate the annual average</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00304.html">Re: How to calculate the annual average</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00306.html">Re: How to calculate the annual average</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00304.html">Thread Prev</a>][<a href="msg00306.html">Thread Next</a>][<A HREF="threads.html#00305">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

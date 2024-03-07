@@ -1,0 +1,183 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How to control contours interval? -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Thu, 24 Nov 2005 07:41:14 &#45;0800 -->
+<!--X-Message-Id: 09D9A83A&#45;D423&#45;4128&#45;981B&#45;BBD5F983D621@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.4.63+UNC.0511221550220.28402@seismo.gphys.unc.edu -->
+<!--X-Reference: 438496EC.1050703@noaa.gov -->
+<!--X-Reference: 200511240945.11543.goran@icbm.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How to control contours interval?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01030.html">Thread Prev</a>][<a href="msg01033.html">Thread Next</a>][<A HREF="threads.html#01032">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to control contours interval?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Goran Georgievski &lt;<a href="mailto:goran@DOMAIN.HIDDEN">goran@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to control contours interval?</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 24 Nov 2005 07:41:10 -0800</li>
+<li>Cc: ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg01030.html">200511240945.11543.goran@icbm.de</a>&gt;</li>
+<li>References: &lt;<a href="msg01024.html">Pine.GSO.4.63+UNC.0511221550220.28402@seismo.gphys.unc.edu</a>&gt; &lt;<a href="msg01029.html">438496EC.1050703@noaa.gov</a>&gt; &lt;<a href="msg01030.html">200511240945.11543.goran@icbm.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Goran -<br>
+<br>
+It is possible to &quot;influence&quot; the number of contour levels ....  
+&quot;control&quot; would be too strong a word. The pplus graphics code uses an  
+algorithm to avoid contour labels overwriting contour lines, so where  
+the lines are dense it omits labels. There are several interacting  
+methods to influence the number of labels drawn, see the  
+documentation for the qualifiers:<br>
+<br>
+CONTOUR/SIZE/SPACING<br>
+<br>
+Reducing SIZE and SPACING should get you more labels. In my  
+experience, SPACING acts very non-linearly. Reducing the default 5  
+(inches) makes little difference until somewhere between 2 and 3,  
+then suddenly as the value is made smaller there will be many more  
+labels.<br>
+<br>
+Also note that if you are drawing the same contour lines over a FILL  
+plot, it is not necessary to write out the CONTOUR command as you do  
+here. Simply:<br>
+<br>
+PPL CONTOUR/OVER<br>
+<br>
+or do<br>
+<br>
+FILL/LINE/KEY to get the whole thing in one command (note that FILL  
+is an alias for CONTOUR/FILL)<br>
+<br>
+Another useful method is to use few FILL levels (say no more than 7  
+or 8), with a non-continuous key. Then overlay finer contour lines.  
+The viewer can easily see the coarse, discrete color levels, then use  
+the contours to distinguish the finer details.<br>
+<br>
+A desperation move to get more labels is to overlay separate contour  
+plots for each level. That thwarts the algorithm to prevent label  
+overwriting, and the results may not be pretty, but it will produce  
+more labels.<br>
+<br>
+Billy K<br>
+<br>
+On Nov 24, 2005, at 12:45 AM, Goran Georgievski wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hello ferret users,<br>
+<br>
+Is it possible to have more control over labels used for contour  
+intervals?<br>
+I have the following script for producing attached plot (please  
+have a look at<br>
+the attached file: giants_pme_anom.gif)<br>
+<br>
+contour/fill/levels=(-1600,-800,200)(-800,-300,100)(-300,300,25) 
+(300,800,100)<br>
+(800,1600,200)/key=continous/nolab/set_up pme-pme_ctrl<br>
+ppl axlint,2,2<br>
+ppl axlsze,0.2,0.2<br>
+ppl shakey 1, 0, 0.14, 6, , , 1.15, 9.25, 0.5, 0.7<br>
+ppl fill<br>
+contour/size=.1/levels=(-1600,-800,200)(-800,-300,100)(-300,300,25)<br>
+(300,800,100)(800,1600,200)del(0)/nolab/ov pme-pme_ctrl<br>
+go land<br>
+<br>
+I have several anomaly patterns that I want to compare (values  
+spans from<br>
+-1600 to 1600), but for the attached figure values spans form -250  
+to 250.<br>
+However, altough values are in that range (-250, 250), when I plot the<br>
+contour only labels for 25 and -25 isolines appear, even though I  
+used levels<br>
+qualifier. I would expect that not only 25 levels are marked, but also<br>
+25,50,75 etc... How to do that?<br>
+<br>
+Thank you for your support,<br>
+<br>
+Goran<br>
+<br>
+<br>
+<br>
+--<br>
+Goran Georgievski<br>
+ICBM, Physical Oceanography (Theory), University of Oldenburg<br>
+PO Box 2503, D-26111 Oldenburg, Germany<br>
+Tel: +49-(0)441-798-4061, Fax: +49-(0)441-798-3404<br>
+<br>
+<br>
+<br>
+&lt;giants_pme_anom.gif&gt;<br>
+<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="01033" href="msg01033.html">Re: [ferret_users] How to control contours interval?</a></strong>
+<ul><li><em>From:</em> Goran Georgievski</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01024" href="msg01024.html">[ferret_users] Question about using script</a></strong>
+<ul><li><em>From:</em> Ming Yang</li></ul></li>
+<li><strong><a name="01029" href="msg01029.html">Re: [ferret_users] Question about using script</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="01030" href="msg01030.html">[ferret_users] How to control contours interval?</a></strong>
+<ul><li><em>From:</em> Goran Georgievski</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01030.html">[ferret_users] How to control contours interval?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg01033.html">Re: [ferret_users] How to control contours interval?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01030.html">Thread Prev</a>][<a href="msg01033.html">Thread Next</a>][<A HREF="threads.html#01032">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

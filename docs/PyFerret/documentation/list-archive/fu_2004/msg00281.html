@@ -1,0 +1,159 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to handle the mean of multiple files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 8 Apr 2004 08:44:59 &#45;0700 -->
+<!--X-Message-Id: 40757379.80903@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY14&#45;F57d9kA6uhmWB000304d7@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to handle the mean of multiple files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00279.html">Thread Prev</a>][<a href="msg00277.html">Thread Next</a>][<A HREF="threads.html#00281">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to handle the mean of multiple files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>du hui &lt;<a href="mailto:bjduhui@DOMAIN.HIDDEN">bjduhui@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to handle the mean of multiple files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 08 Apr 2004 08:44:57 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00276.html">BAY14-F57d9kA6uhmWB000304d7@hotmail.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00276.html">BAY14-F57d9kA6uhmWB000304d7@hotmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello,
+If I understand what you are doing, I think that you do not need REPEAT
+commands at all, and that you do not need to do separate steps to form
+the average for each Z level. If you have the same time axis in each file,
+and the same set of levels, then you should be able to do it in just one
+step. This is the great strength of Ferret, to operate on entire grids
+without having to write loops.
+
+use output.00.nc
+use output.06.nc
+use output.12.nc
+use output.18.nc
+set region/x=1:357.5/y=-90:90
+
+let umean=(u[d=1]+u[d=2]+u[d=3]+u[d=4])/4
+let vmean=(v[d=1]+v[d=2]+v[d=3]+v[d=4])/4
+save/file=outputmean.nc umean,vmean
+
+If the time axis is different in the files, then you will need to do
+some steps to put the variables onto a common axis before
+forming the mean, and I can help with that if you need assistance.
+If the above does not work, then could you tell more about the
+grids in the files; what is the output of
+
+USE output.00.nc
+SHOW GRID u[d=1]
+SHOW AXIS axisname ! where axisname is the name of the time axis
+! seen in the output of SHOW GRID.
+
+
+
+du hui wrote:
+
+&gt; Dear ferret users: I have sent a email about the question to how to do
+&gt; the mean of the 4 files. But I think I made a mistake. I have
+&gt; re-edited my script as following, but it doesn't work
+&gt;
+&gt; use output.00.nc
+&gt; use output.06.nc
+&gt; use output.12.nc
+&gt; use output.18.nc
+&gt; set region/x=1:357.5/y=-90:90
+&gt;
+&gt; let umean=(u[d=1,k=1]+u[d=2,k=1]+u[d=3,k=1]+u[d=4,k=1])/4
+&gt; let vmean=(v[d=1,k=1]+v[d=2,k=1]+v[d=3,k=1]+v[d=4,k=1])/4
+&gt; repeat/l=1:731 save/file=outputmean.nc/append umean,vmean
+&gt;
+&gt; let umean=(u[d=1,k=2]+u[d=2,k=2]+u[d=3,k=2]+u[d=4,k=2])/4
+&gt; let vmean=(v[d=1,k=2]+v[d=2,k=2]+v[d=3,k=2]+v[d=4,k=2])/4
+&gt; repeat/l=1:731 save/file=outputmean.nc/append umean,vmean
+&gt;
+&gt;
+&gt; When I excuted the above script, after finishing the level 1, then the
+&gt; following messages appeared,
+&gt;
+&gt; let umean=(u[d=1,k=2]+u[d=2,k=2]+u[d=3,k=2]+u[d=4,k=2])/4
+&gt; let vmean=(v[d=1,k=2]+v[d=2,k=2]+v[d=3,k=2]+v[d=4,k=2])/4
+&gt; repeat/l=1:731 save/file=outputmean.nc/append umean,vmean
+&gt; !-&gt; REPEAT: L=1
+&gt; LISTing to file outputmean.nc
+&gt; **TMAP ERR: Requested data range is outside of data set limits
+&gt; Expected: UMEAN[K= 2 : 2 ] Found: UMEAN[K= 1 : 1 ]
+&gt; LIST/FORMAT=CDF/file=outputmean.nc/append umean,vmean
+&gt; Command file, command group, or REPEAT execution aborted
+&gt;
+&gt; What is the mistake in my script?
+&gt; Could anyone give me some hints for this problem
+&gt; Thanks a lot
+&gt;
+&gt; _________________________________________________________________
+&gt; √‚∑—œ¬‘ÿ MSN Explorer: <a  href="http://explorer.msn.com/lccn/">http://explorer.msn.com/lccn/</a>
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00276" href="msg00276.html">How to handle the mean of multiple files</a></strong>
+<ul><li><em>From:</em> du hui</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00279.html">Re: How to handle the mean of multiple files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00277.html">plot upside down</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00279.html">Thread Prev</a>][<a href="msg00277.html">Thread Next</a>][<A HREF="threads.html#00281">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

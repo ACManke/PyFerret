@@ -1,0 +1,193 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: subsampling of grided data onto point location and time. -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 12 Nov 2004 08:17:17 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0411122129440.16468&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4194C3DD.5080509@bgc&#45;jena.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: subsampling of grided data onto point location and time.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00799.html">Thread Prev</a>][<a href="msg00802.html">Thread Next</a>][<A HREF="threads.html#00800">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: subsampling of grided data onto point location and time.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: subsampling of grided data onto point location and time.</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 12 Nov 2004 22:01:21 +0530 (IST)</li>
+<li>Cc: &quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00799.html">4194C3DD.5080509@bgc-jena.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Yogesh,
+           If you 'just' want to get the data at a particular point from
+a gridded file to a new variable then use 'let' command to extract the
+data like..
+    
+        !suppose you want to get data at 59E and 1S
+
+          set data coads_climatology
+
+        ! to get 12 values corresponding to each month
+
+        LET airt_x59E_y1S = airt[X=59E,Y=1S,l=1:12] 
+
+        ! to get 1 value  corresponding to APR-15
+
+        LET airt_x59E_y1S = airt[X=59E,Y=1S,t=&quot;15-APR&quot;]
+
+You can use this new variable to compare with the second &quot;point&quot;
+dataset values. Or if you want to fix the location according to 
+the second dataset then you have to make sure that you have common
+lat, lon &amp; time points in both the datasets. If you want a better
+feedback please post the result of 'ncdump -c' for both the NetCDF
+files and explain exactly what you want do with these two datasets
+..(like comparison of time series). Anyway here is a quick example.
+
+Hope This Helps
+
+With Regards 
+
+Jaison 
+
+!----------example.jnl-----------------------
+    set data coads_climatology  ! gridded data
+    sh da                       ! see the contents 
+
+    ! let us create some &quot;point data&quot;
+    !   suppose data at one particular location say..59E,1S
+    !   is available for mid-day of each month for one year 
+    !   (for conviniece take it as 0000 to match with coads
+    !   climatology)
+
+    let tair = TSEQUENCE({26.3,27.4,27.2,26.9,28.0,27.9,28.3,\
+                          28.3,28.5,28.7,28.2,27.8})
+    let lonx = 59
+    let laty = -1
+    
+    DEFINE AXIS/t=&quot;16-JAN-0000:00&quot;:&quot;16-DEC-0000:00&quot;:`365.2425/12`/\
+                units=days/T0=&quot;01-JAN-0000:00&quot; tmon
+    DEFINE AXIS/x=`lonx`:`lonx`:1/units=longitude xaxlon
+    DEFINE AXIS/y=`laty`:`laty`:1/units=latitude  yaxlat
+
+    let xyt_stamp = X[GX=xaxlon] *0 + Y[GY=yaxlat] *0 + T[GT=tmon]*0
+    let tair_xyt  = RESHAPE(tair,xyt_stamp)
+
+    plot tair_xyt-airt[d=1,x=59,y=1S,l=1:12]
+
+!-----------------end of example.jnl---------------  
+
+
+On Fri, 12 Nov 2004, Yogesh K. Tiwari wrote:
+
+&gt; Hello Ferret Users,
+&gt; 
+&gt; How I can do the subsampling of a grided data on a given point location 
+&gt; and time.
+&gt; 
+&gt; Both the grided data and point data are in netcdf format.
+&gt; 
+&gt; The grided data looks like, for example :
+&gt; 
+&gt; title         I        J      K        L
+&gt; CO2_mod     1:360    1:180   --      1:100
+&gt; 
+&gt; here L is time steps.
+&gt; 
+&gt; And point data looks like :
+&gt; 
+&gt; title         I        J      K        L
+&gt; CO2_sat      --       --      --    1:1860206
+&gt; lat          --       --      --    1:1860206
+&gt; lon          --       --      --    1:1860206
+&gt; 
+&gt; here L is number of index.
+&gt; 
+&gt; I could not get much help from ferret users guide.
+&gt; 
+&gt; Many thanks in advance,
+&gt; 
+&gt; Regards,
+&gt; Yogesh
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00799" href="msg00799.html">subsampling of grided data onto point location and time.</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00799.html">subsampling of grided data onto point location and time.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00802.html">Re: subsampling of grided data onto point location and time.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00799.html">Thread Prev</a>][<a href="msg00802.html">Thread Next</a>][<A HREF="threads.html#00800">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] geostrophic currents -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sat, 6 Aug 2005 13:13:20 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0508070138590.17473@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20050805113050.42800.qmail@web50606.mail.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] geostrophic currents</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00746.html">Thread Prev</a>][<a href="msg00752.html">Thread Next</a>][<A HREF="threads.html#00751">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] geostrophic currents</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] geostrophic currents</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 7 Aug 2005 01:46:26 +0530 (IST)</li>
+<li>Cc: Prakya Shree Ram &lt;<a href="mailto:srprakhya@DOMAIN.HIDDEN">srprakhya@xxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00746.html">20050805113050.42800.qmail@web50606.mail.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00746.html">20050805113050.42800.qmail@web50606.mail.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Sriram,
+            See the script for calculating surface geostrophic current
+from satellite sea level anomaly below. For details see the informations
+in the script below and the suggested URL's.
+
+Hope This Helps
+
+With Regards
+
+Jaison
+
+!---------------surface_uv_from_ssh.jnl------------------
+\ cancel mode verify
+!
+! To compute surface geostrophic currents from satellite altimetry.
+!
+! (this data is obtained from <a  href="ftp://ftp.cls.fr/pub/oceano/enact/msla/j1/">ftp://ftp.cls.fr/pub/oceano/enact/msla/j1/</a>
+!    &amp; units is cm )
+!
+! For details of the eqns, please see
+!  <a  href="http://oceanworld.tamu.edu/resources/ocng_textbook/chapter10/chapter10_03.htm">http://oceanworld.tamu.edu/resources/ocng_textbook/chapter10/chapter10_03.htm</a>
+!  <a  href="http://oceanworld.tamu.edu/resources/ocng_textbook/chapter10/chapter10_02.htm">http://oceanworld.tamu.edu/resources/ocng_textbook/chapter10/chapter10_02.htm</a>
+!
+!--------------------------------------------------------------------------
+
+    set data hh_msla_oer_j1_h_20093.nc
+
+    let sla   = GRID_0001! name of the sea level anomaly variable in the file
+
+    let g     = 9.8      ! acceleration due to gravity (m/s^2)
+    let pi    = 3.14     ! constant
+    let omega = 7.292E-5 ! Angular speed of rotation of Earth (rad/s)
+    let cm2m  = 1/100    ! convertion factor ==&gt; from cm to m
+
+    let f     = 2 * omega * sin(y[gy=sla]*pi/180.0) ! coriolis parameter
+                                                    ! 2*omega*sin(phi)
+    !
+    !        -g    d(eta)                g    d(eta)
+    !   Us = --- * ------   ;      Vs = --- * ------
+    !         f    dY                    f    dX
+    ! At equator f --&gt; 0 &amp; hence 1/f --&gt; infinity....so mask the region
+    !    near equator using an IF condition
+    !   @DDC ==&gt; centred derivative
+
+    let Us    = IF ABS(y[gy=sla]) GT 3.0 THEN (-1*(g/f)*sla[Y=@DDC]*cm2m)
+    let Vs    = IF ABS(y[gy=sla]) GT 3.0 THEN (   (g/f)*sla[X=@DDC]*cm2m)
+
+    set var/title=&quot;Surface Geostrophic U from Jason's SSH&quot;/units=m Us
+    set var/title=&quot;Surface Geostrophic V from Jason's SSH&quot;/units=m Vs
+
+    set reg/x=30:120/y=-30:30
+
+    vec/xskip=4/yskip=4/len=0.5 Us, Vs
+    go land
+
+    ! save data to a NetCDF file for future use
+    ! sp rm -f surface_uv_from_ssh.nc
+    ! save/file=surface_uv_from_ssh.nc/append   Us, Vs
+
+!------------end of surface_uv_from_ssh.jnl------------------
+
+
+On Fri, 5 Aug 2005, Prakya Shree Ram wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Dear Ferret guru,
+
+How to obtain geostrophic currents from altimeter
+data?  Please help me with the code if any one has it.
+
+Looking forward to the help.
+
+Thanks in advance,
+Sriram
+
+
+
+__________________________________
+Yahoo! Mail for Mobile
+Take Yahoo! Mail with you! Check email on your mobile phone.
+<a  href="http://mobile.yahoo.com/learn/mail">http://mobile.yahoo.com/learn/mail</a>
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00746" href="msg00746.html">[ferret_users] geostrophic currents</a></strong>
+<ul><li><em>From:</em> Prakya Shree Ram</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00746.html">[ferret_users] geostrophic currents</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00752.html">Re: [ferret_users] geostrophic currents</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00746.html">Thread Prev</a>][<a href="msg00752.html">Thread Next</a>][<A HREF="threads.html#00751">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

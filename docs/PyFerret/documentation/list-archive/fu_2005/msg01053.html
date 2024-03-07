@@ -1,0 +1,159 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Variable Unknown Problem -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 1 Dec 2005 09:31:08 &#45;0800 -->
+<!--X-Message-Id: 438F335C.50303@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 438E1B89.8060803@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Variable Unknown Problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01045.html">Thread Prev</a>][<a href="msg01054.html">Thread Next</a>][<A HREF="threads.html#01053">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Variable Unknown Problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>John Schattel &lt;<a href="mailto:john.schattel@DOMAIN.HIDDEN">john.schattel@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Variable Unknown Problem</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Dec 2005 09:31:08 -0800</li>
+<li>Cc: ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg01045.html">438E1B89.8060803@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg01045.html">438E1B89.8060803@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi John,<br>
+When you are doing a block IF statement, do not use the continuation 
+character \ .  These are all separate commands but your use of the 
+continuation character concatenates them all into a single command. 
+You've given Ferret the single long command quoted in the error message. 
+I haven't checked all your commands in detail but your script should 
+work if you remove all the backslashes.<br>
+<br>
+There is another syntax in Ferret for checking the value of script 
+arguments. It's a very compact syntax, but once you learn it, it's more 
+direct. (Look up &quot;go scripts, writing GO tools in the Users Guide 
+index.) It lets you check a single value of a symbol or several allowed 
+values for argument 3. You can check for them as follows<br>
+<br>
+IF  ($theVar1%0|XX&gt;1|&gt;0%) THEN<br>
+  IF ($3%0|temp&gt;1|salt&gt;1|u&gt;1|v&gt;1|*&gt;0%) THEN<br>
+     cancel region/z<br>
+     let sig = z[gz=$3]<br>
+     let depthValues = sig * ( depth + zeta )<br>
+...<br>
+<br>
+The first line says, If symbol ($theVar1) has no value, substitute 0, or 
+if it has the value XX then substitute 1, and if it has no value at all, 
+substitute 0. Evaluate the symbol, using the syntax ($symbolname).  So 
+the argument of the IF is 1 only if ($theVar1) is XX.<br>
+<br>
+The second line says, if ($3) has no value substitute 0.  If it is temp, 
+salt, u, or v, substitute 1, and if it is anything else substitute 0.  
+So the argument to the second IF is true only if ($3) is temp, salt, u, 
+or v.<br>
+<br>
+John Schattel wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi All,<br>
+<br>
+I am trying to execute some code (see at bottom) to regrid data that 
+is on a sigma vertical axis onto a grid that is on a depth coordinate 
+and am getting the error:<br>
+<br>
+* **ERROR: variable unknown or not in data set: 
+DEPTHVALUES[X=@MIN,Y=@MIN,Z=@MIN,T=@MIN] cancel region/z let sig = 
+z[gz=u] let depthValues = sig * ( depth + zeta ) LET zmin = 
+`depthValues[x=@min,y=@min,z=@min,t=@min]` LET zmax = 
+`depthValues[x=@max,y=@max,z=@max,t=@max]` define 
+axis/z=`zmin`:`zmax`:10/units=meters/depth zdepth let var1OnDepth = 
+zaxreplace(u,depthValues,z[gz=zdepth]) let var1IsOnZ = &quot;true&quot; Command 
+file, command group, or REPEAT execution aborted *.<br>
+<br>
+Any suggestions why Ferret doesn't recognize DEPTHVALUES?<br>
+<br>
+Regards,<br>
+<br>
+John<br>
+<br>
+IF `strcmp(&quot;($theVar1)&quot;, &quot;XX&quot;) ne 0.0`  THEN \<br>
+   (if `strcmp(&quot;($3)&quot;,&quot;temp&quot;) eq 0.0 or strcmp(&quot;($3)&quot;,&quot;salt&quot;) eq 0.0 
+or strcmp(&quot;($3)&quot;,&quot;u&quot;) eq 0.0 or strcmp(&quot;($3)&quot;,&quot;v&quot;) eq 0.0` then \<br>
+      cancel region/z \<br>
+      let sig = z[gz=$3] \<br>
+      let depthValues = sig * ( depth + zeta ) \<br>
+      LET zmin = `depthValues[x=@min,y=@min,z=@min,t=@min]` \<br>
+      LET zmax = `depthValues[x=@max,y=@max,z=@max,t=@max]` \<br>
+      define axis/z=`zmin`:`zmax`:10/units=meters/depth zdepth \<br>
+      let var1OnDepth = zaxreplace($3,depthValues,z[gz=zdepth]) \<br>
+      let var1IsOnZ = &quot;true&quot; \<br>
+   else \<br>
+      let var1IsOnZ = &quot;false&quot; \<br>
+   endif) \<br>
+endif<br>
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="01054" href="msg01054.html">Re: [ferret_users] Variable Unknown Problem</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01045" href="msg01045.html">[ferret_users] Variable Unknown Problem</a></strong>
+<ul><li><em>From:</em> John Schattel</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01045.html">[ferret_users] Variable Unknown Problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg01054.html">Re: [ferret_users] Variable Unknown Problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01045.html">Thread Prev</a>][<a href="msg01054.html">Thread Next</a>][<A HREF="threads.html#01053">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

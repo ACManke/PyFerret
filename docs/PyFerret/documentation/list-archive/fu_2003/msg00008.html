@@ -1,0 +1,134 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Gaps and @AVE regridding transform -->
+<!--X-From-R13: "[pQnaa, [vxr" <zppnaaNzonev.bet> -->
+<!--X-Date: Wed, 8 Jan 2003 11:03:12 &#45;0800 (PST) -->
+<!--X-Message-Id: D6339A2D5F4D0143BD5C887F24751A57C78260@cirrus.shore.mbari.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Gaps and @AVE regridding transform</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00007.html">Thread Prev</a>][<a href="msg00017.html">Thread Next</a>][<A HREF="threads.html#00008">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Gaps and @AVE regridding transform</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Gaps and @AVE regridding transform</strong></li>
+<li><strong>From</strong>: <strong>&quot;McCann, Mike&quot; &lt;<a href="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Jan 2003 11:02:56 -0800</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello ferret users,
+
+I've encountered a little problem in re-gridding a 10-minute gappy time series to a 1-hour axis using the @AVE transform.  Here's a ferret script that shows the problem:
+
+USE &quot;<a  href="http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/deployments/m1/199705/m1/netcdf/m1_metsys_19970731.nc&quot">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/deployments/m1/199705/m1/netcdf/m1_metsys_19970731.nc&quot</a>;
+DEFINE SYMBOL DMIN = &quot;31-JUL-1997 18:00&quot;
+DEFINE SYMBOL DMAX = &quot;24-SEP-1998 21:00&quot;
+LET BAR = y[gy=LATITUDE]   	! Scalar for below
+LET FOO = x[gx=LONGITUDE]  	! Scalar for below
+DEFINE SYMBOL TOUT = TIME_HR
+DEFINE SYMBOL YOUT = LATITUDE_MET_HR
+DEFINE SYMBOL XOUT = LONGITUDE_MET_HR
+DEFINE AXIS/T=($DMIN):($DMAX):3600/T0=&quot;01-JAN-1970 00:00:00&quot;/UNITS=seconds ($TOUT)
+DEFINE AXIS/Y/UNITS=deg ($YOUT)=BAR
+DEFINE AXIS/X/UNITS=deg ($XOUT)=`FOO+360`
+SET AXIS/MODULO LONGITUDE LONGITUDE[L=1]
+
+! Change missing data flag so that it's not 1
+LET WIND_SPEED_1 = missing(WIND_SPEED_FLAG, -9999)
+
+!
+! Catch all flags.  Good data set to 1
+!
+LET WIND_SPEED_1F = IF WIND_SPEED_1 EQ 0 THEN 1
+LET WIND_SPEED_2 = WIND_SPEED * WIND_SPEED_1F
+
+!
+! Regrid WIND_SPEED to new time grid
+!
+LET WIND_SPEED_AVG = WIND_SPEED_2[gt=($TOUT)@AVE,gy=($YOUT),gx=($XOUT)]
+
+LET WIND_SPEED_LIN = WIND_SPEED_2[gt=($TOUT)@LIN,gy=($YOUT),gx=($XOUT)]
+
+SET REGION/T=22-sep-1997:24-sep-1997
+PLOT WIND_SPEED_2
+PLOT/OV WIND_SPEED_AVG, WIND_SPEED_LIN
+
+
+
+WIND_SPEED_AVG has a value of 120.7 after the 7 hour gap that begins at 1800 on Sep 22.  There also appears to be &quot;invented&quot; values at the beginning of the gap.  Perhaps I don't understand the use of the @AVE transform for doing this re-gridding.  Is there something better I should be using?
+
+Thanks in advance for any help.
+
+-Mike
+
+--
+Mike McCann (mccann@mbari.org)
+Monterey Bay Aquarium Research Institute
+7700 Sandholdt Road
+Moss Landing, CA 95039-9644
+Voice: (831) 775-1769 Fax: (831) 775-1646 <a  href="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</a>
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00017" href="msg00017.html">Re: Gaps and @AVE regridding transform</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00007.html">time axis labels</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00017.html">Re: Gaps and @AVE regridding transform</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00007.html">Thread Prev</a>][<a href="msg00017.html">Thread Next</a>][<A HREF="threads.html#00008">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

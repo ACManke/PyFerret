@@ -1,0 +1,159 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Comparing Two Curvilinear Variables -->
+<!--X-From-R13: Rnely Vremznaa <nxeuremNvnfgngr.rqh> -->
+<!--X-Date: Mon, 28 Jun 2004 22:29:10 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0406290003130.15581@pircsds0.agron.iastate.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Comparing Two Curvilinear Variables</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00471.html">Thread Prev</a>][<a href="msg00473.html">Thread Next</a>][<A HREF="threads.html#00472">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Comparing Two Curvilinear Variables</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Comparing Two Curvilinear Variables</strong></li>
+<li><strong>From</strong>: <strong>Daryl Herzmann &lt;<a href="mailto:akrherz@DOMAIN.HIDDEN">akrherz@xxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 29 Jun 2004 00:29:06 -0500 (CDT)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ferret!
+
+I am in a dill of a pickle and have been trying to think like a Ferret 
+without much luck.  Perhaps a kind person could help me out with a 
+documentation reference I have probably missed :(
+
+I have MM5 model forecasted precip on one curvilinear grid.  The NetCDF 
+highlights are:
+
+    float rain_non(time, i_cross, j_cross) ;
+        rain_non:long_name = &quot;ACCUMULATED NONCONVECTIVE PRECIPITATION&quot; ;
+        rain_non:units = &quot;cm&quot; ;
+    float latitcrs(i_cross, j_cross) ;
+        latitcrs:long_name = &quot;LATITUDE (SOUTH NEGATIVE)&quot; ;
+        latitcrs:units = &quot;degrees&quot; ;
+    float longicrs(i_cross, j_cross) ;
+        longicrs:long_name = &quot;LONGITUDE (WEST NEGATIVE)&quot; ;
+        longicrs:units = &quot;degrees&quot; ;
+
+And I have NCEP stage4 precip data on a different curvilinear grid. Again, 
+the NetCDF highlights.
+
+    float APCP_SFC(YCells, XCells) ;
+        APCP_SFC:long_name = &quot;Total precipitation&quot; ;
+        APCP_SFC:units = &quot;inch&quot; ;
+    float longitude(YCells, XCells) ;
+        longitude:long_name = &quot;longitude&quot; ;
+        longitude:units = &quot;degrees_east&quot; ;
+    float latitude(YCells, XCells) ;
+        latitude:long_name = &quot;latitude&quot; ;
+        latitude:units = &quot;degrees_north&quot; ;
+
+
+So, thinking like a Ferret, I would think I need to regrid these two 
+curvilinear grids onto a common regular lat-lon grid and then proceed with 
+the comparison between the two.  Unfortunately, I can't figure out how to 
+do this :(  From the docs, I see this in Chp 8 Sec 8.2
+
+&quot;To perform the analysis in a rectilinear coordinate system, the
+conversion of the curvilinear data is most easily done with SAMPLEXY_CURV
+(under development06/00 ).&quot;
+
+I can't seem to find that samplexy_curve was implemented. So I searched 
+the email archives and found this post which suggests to use scat2grid 
+functions.
+
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00084.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00084.html</a>
+
+But those functions don't seem to work for me.  The resulting grid is 
+always &quot;No valid data&quot;.  For example I did:
+
+yes? use APCP_06171200.nc  ! My NCEP data
+yes? DEFINE AXIS/X=100w:90w:0.5/UNITS=degrees x0
+yes? DEFINE AXIS/Y=40n:50n:0.5/UNITS=degrees y0
+yes? show data
+     currently SET data sets:
+    1&gt; ./APCP_06171200.nc  (default)
+ name     title                             I         J         K      L
+ APCP_SFC Total precipitation              1:1121    1:881     ...    ...
+ MAPPROJECTION
+          MapProjection                    ...       ...       ...    ...
+ LONGITUDE
+          longitude                        1:1121    1:881     ...    ...
+ LATITUDE latitude                         1:1121    1:881     ...    ...
+
+yes? LET outg = SCAT2GRIDGAUSS_XY(longitude, latitude, APCP_SFC, x[gx=x0], 
+y[gy=y0],0.5,0.5,2,2)
+yes? shade outg
+
+
+I am using Ferret 5.53 on Fedora Core 1 and am probably doing something 
+ignorant :(
+
+thanks,
+  daryl
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00475" href="msg00475.html">Re: Comparing Two Curvilinear Variables</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00473" href="msg00473.html">Re: Comparing Two Curvilinear Variables</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00471.html">double precision</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00473.html">Re: Comparing Two Curvilinear Variables</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00471.html">Thread Prev</a>][<a href="msg00473.html">Thread Next</a>][<A HREF="threads.html#00472">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

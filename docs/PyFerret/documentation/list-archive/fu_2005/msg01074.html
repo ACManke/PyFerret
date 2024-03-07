@@ -1,0 +1,133 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: MOM4p0 [ferret_users] reading netcdf&#45;files, prepared with ferret -->
+<!--X-From-R13: [negva Epuzvqg <zfpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Thu, 8 Dec 2005 07:55:33 &#45;0800 -->
+<!--X-Message-Id: 200512081547.jB8FllG30410@phy&#45;33.io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01073.html">Thread Prev</a>][<a href="msg01075.html">Thread Next</a>][<A HREF="threads.html#01074">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.gfdl.mom4p0@DOMAIN.HIDDEN">oar.gfdl.mom4p0@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:mschmidt@DOMAIN.HIDDEN">mschmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 08 Dec 2005 16:47:47 +0100</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>, <a href="mailto:V.Balaji@DOMAIN.HIDDEN">V.Balaji@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I send this mail to the mom4 and ferret list, because there
+is a possible incompatibility in the understanding
+of netcdf in ferret and mom4 (fms).
+
+Trying to read netcdf-files through the data_override utility I
+have found the following:
+
+- ferret is a useful tool to process netcdf-files. Recent
+versions add bounds, if axes are non equidistant. This is a nice
+feature as far as information on data is kept accurate.
+
+Ferret adds a dimension bnds to the netcdf-file and defines a
+double variable like in the example 
+        LON = 44 ;
+        LAT = 38 ;
+        bnds = 2 ;
+        TAX = UNLIMITED ; // (1714 currently)
+        double LAT(LAT) ;
+               LAT:units = &quot;degrees_north&quot; ;
+               LAT:point_spacing = &quot;uneven&quot; ;
+               LAT:axis = &quot;Y&quot; ;
+               LAT:bounds = &quot;LAT_bnds&quot; ;
+        double LAT_bnds(LAT, bnds) ;
+
+There is no axis named bnds!
+
+- mom4 tries to read bounds too. However, it expects a complete
+axis. In mpp_read_meta the number of dimensions is read and then
+axes are allocated:
+
+        allocate(Axis(ndim))
+        
+However, the axis corresponding to the dimension bnds is not
+there and remains unknown. Later in get_axis_bounds, mom4
+gets confused. It finds bounds in the attribute
+list of one axis and tries to extract the values from a
+data structure, which has the type of axis. However,
+there is no axis but a field. Mom4 falls back to the default axis
+(nothing), gets the axis length -1 which gives an error stop.
+
+Hence, two important codes, Ferret and MOM4 (FMS) make different assumptions
+on the &quot;correct&quot; structure of a netcdf File. Please note,
+also LAS 6.4 fails with netcdf-files with bounds
+from ferret. 
+
+I put this on the two list to draw developers attention to this problem. 
+
+Kind regards,
+Martin Schmidt
+        
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="01075" href="msg01075.html">Re: MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01073.html">[ferret_users] i index from X</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg01075.html">Re: MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01073.html">Thread Prev</a>][<a href="msg01075.html">Thread Next</a>][<A HREF="threads.html#01074">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

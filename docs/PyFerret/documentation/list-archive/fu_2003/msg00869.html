@@ -1,0 +1,157 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Can we change vertical height  from millibar to Km. in ferret -->
+<!--X-From-R13: [vpx.EcvyynarNabnn.tbi -->
+<!--X-Date: Mon, 29 Dec 2003 16:38:21 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0312291423400.1013&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3FE97541.9000004@bgc&#45;jena.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Can we change vertical height  from millibar to Km. in ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00864.html">Thread Prev</a>][<a href="msg00866.html">Thread Next</a>][<A HREF="threads.html#00869">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Can we change vertical height  from millibar to Km. in ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:Yogesh.Tiwari@DOMAIN.HIDDEN">Yogesh.Tiwari@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Can we change vertical height  from millibar to Km. in ferret</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a></strong></li>
+<li>Date: Mon, 29 Dec 2003 16:38:18 -0800 (PST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00864.html">3FE97541.9000004@bgc-jena.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Yogesh,
+	You can convert between height in kilometers and pressure in mbar
+using the &quot;standard atmosphere&quot;, for which calculators and definitions are
+available on the web (do a google search on standard atmosphere.)  For
+example www.digitaldutch.com/atmoscalc/ or aero.stanford.edu/StdAtm.html .
+&gt;From the StdAtm.html site using &quot;View / Page Source&quot; you can acquire
+the algorithms in Javascript.
+
+I'll do a demo for HEIGHTS &lt; 11,000m (Pressures &gt; 220mbar approx)
+*****************************************************************
+	The standard atmosphere (as you probably know) is a series of
+layers of linearly changing or constant temperature, from which the gas
+law (P = rho*R*T) and the hydrostatic law (dP/dh = -rho*g) allow the
+P vs h relationship to be derived. In the TROPOSPHERE (0 - 11,000m) the
+temperature decreases linearly at 6.5 K/km and the P vs h relationship is
+
+	P = 1013.25 * (1 - h/44.330)^5.255876
+
+for P in mbar (hPa) and h in km.
+Inverting this gives the relationship you want
+
+	h = 44.330 * [1 - (P/1013.25)^0.1902632]
+
+The simplest way to do plots is with plot/vs as in parts 1 and 2 of
+the demo below.  It is possible using &quot;def axis/from_data&quot; to regrid
+pressure &lt;=&gt; height as shown in part 3 of the demo.
+
+!--------------------------------------------------------------
+! PART 1: DATASET WITH A Z-AXIS CONSISTING OF PRESSURES IN MBAR
+def axis/depth/z=250:1000:50/units=mbar zmb ; def grid/z=zmb gmb
+let/title=&quot;Demo Variable&quot; myvar = (z[g=gmb]/1000)^2
+! compute &quot;axis&quot; values in kilometers
+let/title=&quot;Height (km)&quot; hkm = 44.330*(1 - (z[g=gmb]/1013.25)^0.1902632)
+set view upper
+plot/set myvar ; ppl xaxis,0,1,0.1 ; ppl plot
+set view lower
+plot/set/vs/line=1 myvar,hkm
+ppl xaxis,0,1,0.1 ; ppl yaxis,0,11,1 ; ppl yfor,(i2) ; ppl plot
+!------------------------------------------------------------------
+message
+!------------------------------------------------------------------
+! PART 2: DATASET WITH A Z-AXIS CONSISTING OF HEIGHTS IN KILOMETERS
+def axis/z=0:11:1/units=km zkm ; def grid/z=zkm gkm
+let/title=&quot;Demo Variable&quot; myvar = z[g=gkm]^2
+let/title=&quot;Pressure (mbar)&quot; pmb = 1013.25*(1-z[g=gkm]/44.330)^5.255876
+set view upper
+plot/set myvar ; ppl xaxis,0,120,10 ; ppl plot
+set view lower
+plot/set/vs/line=1 myvar,pmb
+ppl yaxis,1013.25,220,-100 ; ppl yfor,(i4) ; ppl plot
+!---------------------------------------------------------------
+message
+!---------------------------------------------------------------
+! PART 3: THE 2nd DEMO BUT USING A REGRID RATHER THAN PLOT/VS
+! This is a bit tricky because axes must be monotonic increasing.
+! Start with (-1) * MillibarPressures ...
+def axis/z/name=zax/units=mbar/from_data (-1)*pmb ; def grid/z=zax grd
+set view lower
+plot/set myvar[g=grd,gz=@asn]
+! ... then use negative argument in &quot;ppl axlsze&quot; to remove minuses
+ppl yaxis,-1013.25,-220,100 ; ppl axlsze,,-0.1 ; ppl plot
+!---------------------------------------------------------------
+
+Hope this helps. Perhaps ferret users in the atmospheric sciences
+may have a better way (not limited to the troposphere). It would
+be easy to extend the above to the top of the stratosphere (20km)
+using for example
+	let pmb = if (h le 11) then htropo else hstrato
+where htropo is the P vs h relationship given above for h &lt; 11km
+and hstrato is the corresponding relationship for 11 &lt; h &lt; 20km.
+
+Mick (mick.spillane@noaa.gov)
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00864" href="msg00864.html">Can we change vertical height  from millibar to Km. in ferret</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00864.html">Can we change vertical height  from millibar to Km. in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00866.html">How to plot the &quot;seasonal cycle - time series&quot; of any trace gas</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00864.html">Thread Prev</a>][<a href="msg00866.html">Thread Next</a>][<A HREF="threads.html#00869">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

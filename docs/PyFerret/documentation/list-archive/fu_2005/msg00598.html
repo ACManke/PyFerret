@@ -1,0 +1,207 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: griding of ASCII data file for the meridional mean -->
+<!--X-From-R13: [nel Chvagba <dhvagbaznelNlnubb.pbz> -->
+<!--X-Date: Mon, 13 Jun 2005 13:45:28 &#45;0700 -->
+<!--X-Message-Id: 20050613204418.6121.qmail@web53310.mail.yahoo.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 42AC3712.1090606@bgc&#45;jena.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: griding of ASCII data file for the meridional mean</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00589.html">Thread Prev</a>][<a href="msg00591.html">Thread Next</a>][<A HREF="threads.html#00598">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: griding of ASCII data file for the meridional mean</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;,       ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: griding of ASCII data file for the meridional mean</strong></li>
+<li><strong>From</strong>: <strong>Mary Quinton &lt;<a href="mailto:quintonmary@DOMAIN.HIDDEN">quintonmary@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Jun 2005 13:44:18 -0700 (PDT)</li>
+<li>Domainkey-signature: a=rsa-sha1; q=dns; c=nofws; s=s1024; d=yahoo.com; h=Message-ID:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding; b=VuldozpVSIX9PgsEkNR18cB6cPpETarvqFyxWVhza2zmnENP4/0YNJqSXvVsDES5wGt+EbCbnMY4CWujRTsoY9OkQpGPpZq87I2fEmInd2j0xrqRDaJJqCscQLBd5fFOFNMf8Rrtpt/RUR4rsD4HdZooqbKqXqJYb3jvBxOmY0k=  ;</li>
+<li>In-reply-to: &lt;<a href="msg00589.html">42AC3712.1090606@bgc-jena.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Yogesh,
+The commads you have used will read in the data as if
+they are already organized on the same grid as the
+grid &quot;newgrid&quot; that you define, and with longitude
+varying fastest, then latitude and then time. Are the
+data on a grid?  It sounds as if your data are in
+columns
+
+time   xlon   ylat   ht   c02
+
+If the data are not organized on a grid
+1:360,1:180,1:13792, then you need to read the
+variables all in as simple lists of values, and then
+use Ferret commands to put them on a grid. 
+
+set data/ez/var=&quot;time,lat,lon,ht,co2&quot; data.txt
+
+This will result in your data being in five
+1-dimensional lists, one for each variable time, lat,
+lon, and so on.  To put the data on a grid in X and Y,
+you can define longitude and latitude axes and use a
+scat2grid function to put the HT and CO2 data on that
+grid. (If all the data are at different times, then
+what this does is make the data as if it were all at
+the same time. I don't think there are any 3-D
+gridding tools in Ferret)
+
+define axis/x=1:360:1/units=degrees/modulo xlon
+define axis/y=-90:90:1/units=degrees ylat
+
+let ht_gridded = scat2gridlaplace_xy (lon, lat, ht,
+x[gx=xlon], y[gy=ylon], 2, 5)
+shade ht_gridded
+
+! You may need to changethe last two parameters, 
+! depending on the spacing of your data relative
+! to the spacing of the output grid.
+
+let co2_gridded = scat2gridlaplace_xy (lon, lat, co2,
+x[gx=xlon], y[gy=ylon], 2, 5)
+shade co2_gridded
+
+
+
+--- &quot;Yogesh K. Tiwari&quot; &lt;ktiwari@bgc-jena.mpg.de&gt;
+wrote:
+
+&gt; Hello,
+&gt; 
+&gt; I am using ferret v5.80 on Suse Linux.
+&gt; 
+&gt; I have airplane CO2 obsercations  in ASCII format.
+&gt; 
+&gt; The whole data spans between latitude -40 to +40.
+&gt; 
+&gt; I want to take the 5 degree latitudional mean of 
+&gt; whole data.
+&gt; 
+&gt; I tried to write a small script and I defined the 
+&gt; axis as following :-
+&gt; 
+&gt; define axis/x=1:360:1 xlon
+&gt; 
+&gt; define axis/y=1:180:1 ylat
+&gt; 
+&gt; define axis/t=1:13792:1 time
+&gt; 
+&gt; define grid/x=xlon/y=ylat/t=time newgrid
+&gt; 
+&gt; file/var=&quot;time,lat,lon,ht,co2&quot;/grid=newgrid\
+&gt; data.txt
+&gt; 
+&gt; Ferret complains while using the command for the 
+&gt; plot :-
+&gt; 
+&gt; **ERROR: stack overflow
+&gt; *** NOTE: Check for recursion in variable
+&gt; definitions
+&gt; 
+&gt; 
+&gt; The airplane observations are of many months and 
+&gt; the latitude is not in monotonic increasing order
+&gt; i.e. observations are irragular.
+&gt; 
+&gt; Kindly suggest me how I can define the axis so I 
+&gt; can grid the data to take the 5 degree meridional 
+&gt; mean.
+&gt; 
+&gt; Or simply, how one can grid , defile axises of any 
+&gt; ASCII data format which has irragular observations.
+&gt; 
+&gt; This will really help to take the means of either 
+&gt; zonal or meridional if the data amount is really
+&gt; much.
+&gt; 
+&gt; Many thanks for your help.
+&gt; 
+&gt; Regards,
+&gt; Yogesh
+&gt; 
+&gt; -- 
+&gt; 
+&gt; ===========================================
+&gt; Yogesh Tiwari,
+&gt; Max-Planck Institute for Biogeochemistry,
+&gt; Hans-Knoell Strasse 10,
+&gt; D-07745 Jena,
+&gt; Germany
+&gt; 
+&gt; Office   : 0049 3641 576 376
+&gt; Home     : 0049 3641 223 163
+&gt; Fax      : 0049 3641 577 300
+&gt; Cell     : 0049 1520 4591 008
+&gt; e-mail   : yogesh.tiwari@bgc-jena.mpg.de
+&gt; ===========================================
+&gt; 
+&gt; 
+&gt; 
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+<a  href="http://mail.yahoo.com">http://mail.yahoo.com</a> 
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00589" href="msg00589.html">griding of ASCII data file for the meridional mean</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00589.html">griding of ASCII data file for the meridional mean</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00591.html">Ferret: Vector plots of velocity on a C-grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00589.html">Thread Prev</a>][<a href="msg00591.html">Thread Next</a>][<A HREF="threads.html#00598">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

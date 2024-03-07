@@ -1,0 +1,257 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Distribution of annual data across months -->
+<!--X-From-R13: Egrir Vnaxva <Egrira.Q.VnaxvaNabnn.tbi> -->
+<!--X-Date: Tue, 16 Mar 2004 15:45:34 &#45;0800 -->
+<!--X-Message-Id: 4057919B.ED4EC0E4@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: MHEOJEBLPHDBKECLDPHPAEIHCIAA.bbaker@tnc.org -->
+<!--X-Derived: gif00003.gif -->
+<!--X-Derived: gif00004.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Distribution of annual data across months</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00188.html">Thread Prev</a>][<a href="msg00175.html">Thread Next</a>][<A HREF="threads.html#00178">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Distribution of annual data across months</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Barry Baker &lt;<a href="mailto:bbaker@DOMAIN.HIDDEN">bbaker@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Distribution of annual data across months</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 16 Mar 2004 15:45:31 -0800</li>
+<li>Cc: Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00174.html">MHEOJEBLPHDBKECLDPHPAEIHCIAA.bbaker@tnc.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Barry,
+<p>If I am understanding your problem correctly what you want is to replicate
+the points on the annual axis 12 times each in order to align index-by-index
+with the points of the monthly axis.&nbsp; In principle the regridding
+transformation g=@nrst (take the "nearest" source point) should do just
+what you need.&nbsp; However, to make it work right it will be important
+that the time points on the annual axis are roughly centered within the
+year that each point represents.&nbsp; (For info see <A HREF="">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/current/fer_html.htm</A>
+and select "regridding" from the Index.)
+<p>Suppose that v100 is a variable defined on your annual axis (t100) and
+v1200 is a variable defined on your monthly axis (t1200). I think that
+if you replace
+<br>&nbsp;&nbsp; define axis/t="15-jun-2001:12:00":"15-jun-2100:12:00"/np=100
+t100
+<br>&nbsp;&nbsp; define axis/t="15-jan-2001:12:00":"15-dec-2100:12:00"/np=1200
+t1200
+<br>with
+<br>&nbsp;&nbsp; define axis/edges/t="1-jun-2001":"31-dec-2100:12:00"/np=100
+t100
+<br>&nbsp;&nbsp; define axis/edges/t="1-jan-2001":"31-dec-2100:12:00"/np=1200
+t1200
+<br>then you should find that
+<br>&nbsp;&nbsp;&nbsp; v100[gt=t1200@nrst]
+<br>has the character that you need.
+<p>The preceding has been typed in untested, so please allow for typos,
+logic errors, and outright misunderstandings!
+<p>&nbsp;&nbsp;&nbsp; good luck - steve
+<p>P.S. Note that the Users' Guide (and the searchable email archives)
+contain instructions on defining true calendar axes -- if you want the
+months to have the correct number of days (31, 28, 30 ...) rather than
+being equally spaced at 1/1200 of 100 years.
+<p>==================================
+<p>Barry Baker wrote:
+<blockquote TYPE=CITE>&nbsp;<span class=963332018-16032004><font face="Arial"><font size=-1>Hello
+Ferreters,</font></font></span><span 
+class=963332018-16032004></span><span class=963332018-16032004><font face="Arial"><font size=-1>At
+Ansley's request I am sending this out to the list.&nbsp; The problem started
+out simply as a request with a do loop and thanks to Ansley and Jaison
+I have made some progress but still need a little more help.</font></font></span><span 
+class=963332018-16032004></span><span class=963332018-16032004><font face="Arial"><font size=-1>Here's
+the situation.</font></font></span><span 
+class=963332018-16032004></span><span class=963332018-16032004><span class=403165406-16032004><font face="Arial"><font color="#0000FF"><font size=-1>I
+am trying to manipulate two files, one has annual data for 100 years (ann_var).&nbsp;
+The other has monthly data for 1 year (norm_var which is created from the
+NC file I read in).&nbsp; I want to distribute the 100 annual values over
+12 months such that the value for each month in a year is the same as the
+annual value (a total of twelve hundred values).&nbsp; For the second file
+I want to distribute the monthly values over the 100 years such that the
+value for January in year one is the same as January in year 100.&nbsp;</font></font></font></span><span class=403165406-16032004></span><span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font color="#0000FF"><font size=-1>As
+you can see in the JNL below I was able to calculate the second step by
+using a climatological_axes.&nbsp; But what am not able to figure out is
+how to do the first step, distributing the annual data over the 1200 points
+such that every month in a year contains the annual value.</font></font></font></span></span><span class=403165406-16032004><span class=963332018-16032004></span></span><span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font color="#0000FF"><font size=-1>Thanks
+for your help with this.&nbsp; I'll post the solution to the listserve
+once we get it figured out.&nbsp; ..By the way, we've explored using a
+nested do loop but I cannot get it to work correctly</font></font></font></span></span><span class=403165406-16032004><span 
+class=963332018-16032004></span></span><span class=403165406-16032004><span 
+class=963332018-16032004></span></span><span class=403165406-16032004><span 
+class=963332018-16032004></span></span><span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font color="#0000FF"><font size=-1>Many
+thanks,</font></font></font></span></span><span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font color="#0000FF"><font size=-1>Barry</font></font></font></span></span><span class=403165406-16032004><span class=963332018-16032004></span></span><span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>!--------Baker
+JNL ------------------------------------------------------</font></font></span></span><span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>--
+HadCM3 A2M</font></font>
+<br><font face="Arial"><font size=-1>!- Define Magnitude of Warming for
+Model and Scenario (scenario.txt)</font></font>
+<br><font face="Arial"><font size=-1>let tmpGW = 3.938</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>!
+Define lat and lon axis</font></font>
+<br><font face="Arial"><font size=-1>!----------------------------</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define axis/x=-179.75:179.75:0.5/units=degrees
+lon</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define axis/y=-89.75:89.75:0.5/units=degrees
+lat</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>!
+Define 3 time axes</font></font>
+<br><font face="Arial"><font size=-1>!----------------------------</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define axis/t="15-jan-2080:12:00":"15-dec-2080:12:00"/np=12
+t12</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define axis/t="15-jun-2001:12:00":"15-jun-2100:12:00"/np=100
+t100</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define axis/t="15-jan-2001:12:00":"15-dec-2100:12:00"/np=1200
+t1200</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>set
+axis/modulo t12</font></font>
+<br><font face="Arial"><font size=-1>set axis/modulo t100</font></font>
+<br><font face="Arial"><font size=-1>set axis/modulo t1200</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>!
+Define 1D grid and read ascii file containing simulated (*.ann file)</font></font>
+<br><font face="Arial"><font size=-1>!&nbsp; annual global mean temperatures
+2001 - 2100&nbsp; (1,100)</font></font>
+<br><font face="Arial"><font size=-1>!-----------------------------</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define axis/t="15-jun-2001 12:00":"15-jun-2100
+12:00"/np=100/units=year tax</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define grid/t=t100 a2_ann</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;file/grid=a2_ann/var=tann&nbsp;
+"/mnt/hgfs/climdata/tyn_sc_2.01/anal_03_09_04/a2.txt"</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>!
+Define Grids</font></font>
+<br><font face="Arial"><font size=-1>!----------------------------</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define grid/x=lon/y=lat/t=t12
+gt12</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define grid/x=lon/y=lat/t=t100
+gt100</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;define grid/x=lon/y=lat/t=t1200
+gt1200</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>!
+Convert 1D grid to 3D grid of Annual Global Warming</font></font>
+<br><font face="Arial"><font size=-1>!----------------------------</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;let zero = 0*x[gx=lon] + 0*y[gy=lat]
++ 0*t[gt=t100]</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;let ann_var = zero + tann[d=1,gt=t100@asn]</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>!
+Read in netcdf file containing monthly 2080 anomaly (720,360,12)</font></font>
+<br><font face="Arial"><font size=-1>!-----------------------------</font></font>
+<br><font face="Arial"><font size=-1>&nbsp;use&nbsp; "/mnt/hgfs/climdata/tyn_sc_2.01/anal_03_09_04/hd.had3.a2m.2080s.pre.nc"</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>set
+axis/modulo time</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>use
+climatological_axes</font></font>
+<br><font face="Arial"><font size=-1>cancel data climatological_axes</font></font></span></span>&nbsp;<span class=403165406-16032004><span class=963332018-16032004><font face="Arial"><font size=-1>let
+test = pre[d=2,gt=month_reg@mod]</font></font>
+<br><font face="Arial"><font size=-1>let test1 =&nbsp; 0*x[gx=lon] + 0*y[gy=lat]
++ 0*t[gt=t1200]</font></font>
+<br><font face="Arial"><font color="#FF0000"><font size=-1>let norm_var
+= test1 + test[gt=t1200@asn]</font></font></font>
+<br></span></span><span class=403165406-16032004><span class=963332018-16032004></span></span></span>&nbsp;
+<hr align=left noShade SIZE=1>
+<table BORDER=0 CELLSPACING=0 CELLPADDING=0  >
+<caption><TBODY>
+<br></TBODY></caption>
+
+<tr>
+<td ><b><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>Barry
+B. Baker, Ph.D.</font></font></b>
+<br><i><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>Climate
+Change Modeler</font></font></i>
+<p><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>bbaker@tnc.org</font></font>
+<br><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>(303)
+541-0322 (Phone)&nbsp;</font></font>
+<br><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>(303)
+449-4328 (Fax)</font></font>
+<br><a href="">nature.org\tncscience\scientists\misc\baker.html</a></td>
+
+<td VALIGN=TOP><img SRC="gif00003.gif" height=105 width=1></td>
+
+<td VALIGN=TOP NOWRAP><b><font face="Verdana, Arial, Helvetica, sans-serif"><font color="#339933"><font size=-1>The
+Nature Conservancy</font></font></font></b>
+<br><b><font face="Verdana, Arial, Helvetica, sans-serif"><font color="#339933"><font size=-1>Global
+Climate Change Initiative</font></font></font></b>
+<p><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>2424
+Spruce Street</font></font>
+<br><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>Suite
+100</font></font>
+<br><font face="Verdana, Arial, Helvetica, sans-serif"><font size=-1>Boulder,
+CO 80302</font></font>
+<br><span 
+      ></span><a href="">nature.org</a></td>
+
+<td>&nbsp;</td>
+
+<td VALIGN=TOP ><span 
+      ><a href=""><img SRC="gif00004.gif" ALT=""  ></a></span>
+<br><span 
+      ></span><span 
+      ></span></td>
+</tr>
+
+<tr ALIGN=CENTER>
+<td COLSPAN="5" ><i><font face="Book Antiqua"><font size=+0>"A
+reverence for uncertainty is one of the unrecognized implications of systems
+thinking" Peter Senge</font></font></i></td>
+</tr>
+</table>
+&nbsp;</blockquote>
+
+<p>--
+<p>Steve Hankin, NOAA/PMEL -- Steven.C.Hankin@noaa.gov
+<br>7600 Sand Point Way NE, Seattle, WA 98115-0070
+<br>ph. (206) 526-6080, FAX (206) 526-6744
+<br>&nbsp;
+
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00174" href="msg00174.html">Distribution of annual data across months</a></strong>
+<ul><li><em>From:</em> Barry Baker</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00188.html">Re: Distribution of annual data across months</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00175.html">eofs functions</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00188.html">Thread Prev</a>][<a href="msg00175.html">Thread Next</a>][<A HREF="threads.html#00178">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

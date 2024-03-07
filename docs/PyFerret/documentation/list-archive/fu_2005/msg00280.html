@@ -1,0 +1,194 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: ferret 5.8 does things it should not do -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 22 Mar 2005 14:03:32 &#45;0800 -->
+<!--X-Message-Id: 424095DC.9080508@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 42404104.1010506@io&#45;warnemuende.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: ferret 5.8 does things it should not do</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00277.html">Thread Prev</a>][<a href="msg00288.html">Thread Next</a>][<A HREF="threads.html#00280">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: ferret 5.8 does things it should not do</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: ferret 5.8 does things it should not do</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 22 Mar 2005 14:02:04 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00277.html">42404104.1010506@io-warnemuende.de</a>&gt;</li>
+<li>References: &lt;<a href="msg00277.html">42404104.1010506@io-warnemuende.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Martin,<br>
+Thank you for writing.  We like to know how the changes we make to 
+Ferret affect long-time users like you. Well, we make things more 
+convenient for some, and unfortunately changing the output makes things 
+difficult for others.  I'd first like to note that we have a project in 
+the works now to give users complete control over netCDF attributes, 
+which will make it easier to work with all of the attributes and control 
+what is written to your output files. This may answer much of what 
+you're asking for. I described a bit more about this project in a 
+message not too long ago: 
+<a  href="http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_2005/msg00248.html">http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_2005/msg00248.html</a><br>
+<br>
+-- With the introduction of the concept of &quot;subspan modulo&quot; axes we set 
+Ferret so that an axis with units of degrees longitude is modulo by 
+default. This allows us to use different longitude axes together in 
+comparisons. What kind of trouble is this causing you?  The Ferret 
+command to remove the modulo behavior is<br>
+<br>
+  cancel axis/modulo `var,return=xaxis`<br>
+<br>
+-- The implementation of the bounds attribute is part of our move 
+towards adherence to the CF metadata standard. 
+(<a  href="http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html">http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html</a> ).  We could 
+think about adding a qualifier SAVE/NOBOUNDS.  I'll have to think 
+through whether there are implications of this that make it undesirable, 
+but it seems like a simple solution.<br>
+<br>
+-- First a quick explanation of the use of bounds when appending time 
+series. Time axes have an upper bound, seen in the Ferret 
+pseudo-variable TBOXHI[gt=var] and a lower bound, TBOXLO[gt=var].  When 
+appending more time steps to a time axis, there will often be a gap 
+between the last  upper bound of the existing data and the first lower 
+bound of the new data.  If there is, then Ferret inserts the void 
+point.  (If the new lower bound is less than or equal to the old upper 
+bound, no void point is inserted.) We felt this was a more accurate way 
+to represent the data.  For instance if a year's monthly data is output, 
+January through December 2002, and then some data from the next year, 
+April through November 2003 is appended, then a void point is added 
+whose lower bound is the end of December 2002 and upper bound is the 
+start of April 2003.  Without this void point, there is a data point 
+with a large grid cell: the April 2003 data would seem to extend from 
+the start of January to the end of April. 
+<br>
+One could imagine getting something similar to the old behavior by 
+defining a time axis with the /EDGES qualifier to tell Ferret that you 
+want the first lower bound of the data being appended to match the upper 
+bound of the last time from the previous data.<br>
+<br>
+<br>
+Martin Schmidt wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ansley,<br>
+<br>
+I am using ferret 5.8,<br>
+<br>
+FERRET v5.80  Linux(g77) 2.4.20 - 01/03/05<br>
+22-Mar-05 16:17<br>
+<br>
+and found several points, where ferret &quot;knows better&quot; than it should. 
+Opening a netcdf-file<br>
+<br>
+use my_file<br>
+<br>
+and writing one of the variables with (doing nothing else)<br>
+<br>
+save/clobber/file=my_file.nc my_var<br>
+<br>
+I see, the x-axis is now modulo.        Originally:<br>
+<br>
+float xt_i(xt_i) ;<br>
+               xt_i:long_name = &quot;Longitude of T points&quot; ;<br>
+               xt_i:units = &quot;degrees_E&quot; ;<br>
+               xt_i:cartesian_axis = &quot;X&quot; ;<br>
+new file:<br>
+double XT_I(XT_I) ;<br>
+               XT_I:units = &quot;degrees_east&quot; ;<br>
+               XT_I:modulo = 360. ;<br>
+               XT_I:point_spacing = &quot;uneven&quot; ;<br>
+               XT_I:axis = &quot;X&quot; ;<br>
+               XT_I:bounds = &quot;XT_I_bnds&quot; ;<br>
+<br>
+I could cancel the modulo flag, but wouldn't it be better, if ferret 
+leaves the axis definition<br>
+as it is? A previous version (5.4) did not add the modulo flag.<br>
+<br>
+It also adds always bounds which can be very disturbing in some cases. 
+This cannot be supressed.<br>
+<br>
+The final issue is:<br>
+With previous ferrets one could concatenate files, which have the same 
+grid but an unlimited time axis. It worked simply by opening  file 
+after file and writing to an output file.<br>
+This does not work anymore, because ferret adds void timeslices. 
+Indeed the time axis is irregular, but I did neither specify the 
+bounds attribute not used /rigid to get a regular axis. I could not 
+find out, how to get rid of these void points.<br>
+<br>
+Especially for the last point any idea for a workaround is welcome.<br>
+<br>
+Kind regards,<br>
+Martin Schmidt<br>
+<br>
+<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00288" href="msg00288.html">opening Binary file</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00277" href="msg00277.html">ferret 5.8 does things it should not do</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00277.html">ferret 5.8 does things it should not do</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00288.html">opening Binary file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00277.html">Thread Prev</a>][<a href="msg00288.html">Thread Next</a>][<A HREF="threads.html#00280">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

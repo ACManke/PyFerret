@@ -1,0 +1,190 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: change T&#45;axis -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 5 Jan 2005 04:56:48 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0501051832300.6617&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: NSchNNIAfWGUm0vk0zw00006e0f@ns.scsio.ac.cn -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: change T-axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00007.html">Thread Prev</a>][<a href="msg00016.html">Thread Next</a>][<A HREF="threads.html#00010">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: change T-axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: change T-axis</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 5 Jan 2005 18:34:51 +0530 (IST)</li>
+<li>Cc: <a href="mailto:gaorz@DOMAIN.HIDDEN">gaorz@xxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00007.html">NSchNNIAfWGUm0vk0zw00006e0f@ns.scsio.ac.cn</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Gao Rongzhen,
+                  You need to assign a new time axis for that variable.
+You can assign a new time axis in two ways: 1) define a new time axis
+and use regridding utilities (like @ASN), 2) use RESHAPE function to 
+change the grid of a the variable to that of a second variable. I think
+the second method will be more flexible. Please refer user manual ( @ASN:
+Ch4 Sec2.4.1.  Regridding transformations , RESHAPE:Ch3 Sec2.3.23.  
+RESHAPE )
+for details. Here is an example using monthly_navy_winds dataset with 
+neccessary details. If you need any mode clarification please let me know.
+
+With Regards 
+
+Jaison
+
+!--------example.jnl---------------------
+
+     set data monthly_navy_winds  ! dataset available with Ferret
+
+     let l_lo =  13     ! low  value for L   
+     let l_hi = 120     ! high value for L
+
+     let u = uwnd[d=1,l=`l_lo`:`l_hi`]  ! extract the subset data
+   
+! now extract the time values corresponding to the subset; needed 
+! only if the original variable is on a calendar time axis
+
+     let t_data = T[gt=uwnd,l=`l_lo`:`l_hi`]
+
+! get other details about the original time axis
+ 
+     define symbol t_units = `u,r=TUNITS`    ! time units (days/hours...)
+     define symbol t_zero  = `u,r=T0`        ! Ref. time 
+     define symbol t_cal   = `u,r=CALENDAR`  ! calendar type
+ 
+! define a destination time axis with these details
+ 
+     define axis/t/T0=&quot;($t_zero)&quot;/units=($t_units)/CALENDAR=($t_cal)/\
+            from_data tsub=t_data  
+
+! suppose your original variable is not on a &quot;CALENDAR&quot; time
+! axis, then just after extracting the subset, define an abstract &quot;T&quot; 
+! axis like
+!           yes? define axis/t=1:`l_hi-l_lo+1`:1 tsub 
+! and use this in the following sequence of commands
+   
+! create a new variable &quot;t_stamp&quot;  on the destination grid with XYT grid
+!                           put + Z[gz=u]*0 if needed
+
+    let t_stamp = X[gx=u]*0 + Y[gy=u]*0 + T[gt=tsub]  ! destination grid
+
+    let u_t = RESHAPE(u,t_stamp)   ! put variable on the destination grid
+
+! comparison
+
+    list/x=60/y=10/l=1:20 u
+    list/x=60/y=10/l=1:20 u_t
+
+    plot/x=60/y=10 u_t, u
+
+! now you can use u_t ; for u_t &quot;/L=1&quot; ==&gt; first point on time axis
+
+!---------end of example.jnl----------------------------
+
+
+
+On Wed, 5 Jan 2005, [gb2312] ∏ﬂ»Ÿ’‰ wrote:
+
+&gt; Hi, all
+&gt; 
+&gt; I have a time series with length N=191. 
+&gt; And now, i want to select part of the data from N=13 to 191 to form a new variable. 
+&gt; By,  let ccoral=coral[d=1,l=13:191] 
+&gt; Now,  list/l=1:20 ccoral 
+&gt; The information shown on the screen is as below:
+&gt; ------------------------------------------------------------
+&gt; VARIABLE : CORAL[D=sst4503-9211s.asc,L=13:191]
+&gt; SUBSET   : 8 points (TIME)
+&gt; 13:  0.4100
+&gt; 14: -0.0900
+&gt; 15: -0.8500
+&gt; 16: -0.2800
+&gt; 17: -0.2700
+&gt; 18:  0.0500
+&gt; 19: -0.2800
+&gt; 20:  0.3300
+&gt; ------------------------------------------------------------
+&gt; My problem is the defination of T-axis of the new variable.
+&gt; What i wanted is the first value of ccoral starts from L=1 not from L=13, and the last value ends with L=179 not with L=191. Is there a way by Ferret to change the T-axis of the new  variable ccoral? 
+&gt; 
+&gt; Thanks in advance.
+&gt; 
+&gt; Gao Rongzhen
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00007" href="msg00007.html">change T-axis</a></strong>
+<ul><li><em>From:</em> =?gb2312?B?uN/I2dXk?=</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00007.html">change T-axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00016.html">Fw: Re: Re: change T-axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00007.html">Thread Prev</a>][<a href="msg00016.html">Thread Next</a>][<A HREF="threads.html#00010">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

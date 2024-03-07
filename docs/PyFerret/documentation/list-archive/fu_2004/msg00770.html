@@ -1,0 +1,173 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Wind rose plot -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Fri, 29 Oct 2004 16:26:22 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0410291410140.14751&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41828AF0.9030907@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Wind rose plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00767.html">Thread Prev</a>][<a href="msg00768.html">Thread Next</a>][<A HREF="threads.html#00770">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Wind rose plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Wind rose plot</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 29 Oct 2004 16:26:21 -0700 (PDT)</li>
+<li>Cc: &lt;<a href="mailto:paco@DOMAIN.HIDDEN">paco@xxxxxxx</a>&gt;, &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00767.html">41828AF0.9030907@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Fri, 29 Oct 2004, Ansley Manke wrote:
+
+&gt; Hi Francisco,
+&gt; ... if you mean a script that depicts wind data in a circular plot with
+&gt; direction and magnitude it should be possible using the POLYGON command.
+
+!-------------------------------------------------------------------
+! A compass rose for wind direction only
+
+! step 0 : suppose that you are provided with the frequencies of
+! occurance of the 16 wind directions N,NNE,NE,ENE,E, ... NW,NNW
+let freq={7,5,2,6,6,3,6,6,7,10,11,9,6,3,6,7}
+
+! step 1 : put them on a suitable axis (units of degrees)
+def axis/x=0:337.5:22.5 x16 ; def grid/x=x16 g16
+let r16=freq[g=g16,gx=@asn]
+
+! step 2 : extend the grid to complete the circle. maybe there is a
+!          way to avoid this using modulo but I couldn't see it
+def axis/x=0:360:22.5 x17 ; def grid/x=x17 g17
+let r17=missing(r16[g=g17],r16[i=1])
+
+! step 3 : a 22.5 degree increment is too coarse - move to 1 degree
+def axis/x=0:360:1 x360 ; def grid/x=x360 g360
+let r360=r17[g=g360,gx=@nrst]    ! @nrst is nearest neighbor regridding
+
+! step 4 : represent the frequency distribution in polar coords
+let d2r=atan(1.0)/45             ! degree to radian factor
+let x360=r360*sin(d2r*x[g=g360])
+let y360=r360*cos(d2r*x[g=g360])
+
+! step 5 : set axis lengths for square figure and shade polygon
+ppl axlen,6,6
+polygon/nolab/pal=red/hlim=-10:10/vlim=-10:10 x360,y360
+plot/o/vs/nolab/sym=4 0,0
+!----------------------------------------------------------------------
+
+!----------------------------------------------------------------------
+! wind rose when frequencies are provided for speed and direction bins
+
+! Continue with a similar example (16 directions) but with say 8
+! speed classes centered at 1,2,... m/s. With the data on a grid the
+! 3-argument &quot;shade&quot; becomes available, and modulo becomes easy
+
+def axis/x=0:337.5:22.5/modulo x16 ! 16 directions N,NNE,... as before
+! use edges and from_data in defining the &quot;speed&quot; axis
+let spd=ysequence({0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5})
+def axis/y/name=y8/edges/from_data spd
+def grid/x=x16/y=y8 gxy
+
+! step 0 : make a fake dataset
+let xy=x[g=gxy]+y[g=gxy]
+let v=randu(xy)
+
+! step 1 : introduce the polar coords of the grid
+let d2r=atan(1.0)/45
+let xv=y[g=xy]*sin(d2r*x[g=xy])
+let yv=y[g=xy]*cos(d2r*x[g=xy])
+
+! step 2 : set axis lengths for square figure and shade
+ppl axlen,6,6
+shade/nolab/hlim=-10:10/vlim=-10:10 v,xv,yv
+
+! this simple-minded approach has a few problems
+!    a) there is no provision for the zero speed class
+!    b) the azimuth resolution is coarse
+!    c) only half of the first and last speed bins are drawn
+! the first two are easy to solve (and the first might even be
+! absent if the input data included the zero class). Completing
+! the outermost ring, seems like it should be easier than my
+! ad-hoc solution below
+
+! step 3 : improvements
+def axis/x=0:360:1/modulo x360 ! for spreading the azimuth
+let vzero=0.5 ! the zero speed class, when not included in the grid
+def axis/y=0:9:1 y0  ! a y-axis that includes zero speed
+def grid/x=x360/y=y0 gxy0
+let v0=missing(v[g=gxy0,gx=@nrst],vzero)
+let xv0=y[g=gxy0]*sin(d2r*x[g=gxy0])
+let yv0=y[g=gxy0]*cos(d2r*x[g=gxy0])
+! shade/nolab/hlim=-10:10/vlim=-10:10 v0,xv0,yv0 ! outer ring incomplete
+let v0f=if(y[g=gxy0] le 8)then v0
+shade/nolab/hlim=-10:10/vlim=-10:10 v0f,xv0,yv0 ! outer ring complete
+!--------------------------------------------------------------------
+
+Hope these help,
+Mick
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00767" href="msg00767.html">Re: Wind rose plot</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00767.html">Re: Wind rose plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00768.html">monthly averages from daily</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00767.html">Thread Prev</a>][<a href="msg00768.html">Thread Next</a>][<A HREF="threads.html#00770">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

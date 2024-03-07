@@ -1,0 +1,163 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Vectors on polar stereographic plots -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 26 Feb 2004 09:31:22 &#45;0800 -->
+<!--X-Message-Id: 403E2D74.3010707@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 403DC988.5010700@reading.ac.uk -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Vectors on polar stereographic plots</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00129.html">Thread Prev</a>][<a href="msg00131.html">Thread Next</a>][<A HREF="threads.html#00130">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Vectors on polar stereographic plots</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Stephen Nash &lt;<a href="mailto:s.d.nash@DOMAIN.HIDDEN">s.d.nash@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Vectors on polar stereographic plots</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 26 Feb 2004 09:31:32 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00128.html">403DC988.5010700@reading.ac.uk</a>&gt;</li>
+<li>References: &lt;<a href="msg00128.html">403DC988.5010700@reading.ac.uk</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Steven,
+I don't see anything wrong with your script just from reading it,
+but without the data I can't tell what might be happening.  Could you
+perhaps make an example with one of the standard datasets that
+comes with the Ferret distribution?
+
+A couple of things to try, which you may of course have done
+
+- Do a rectangular vector plot.  Do the vectors look correct?
+
+-  In your map-projection plot, allow the default scaling of the vectors,
+by leaving off the /LENGTH qualifier.
+
+- Try the script mp_poly_vectors.  This uses a different method of
+scaling and rotating the vectors.  There is a demo script, poly_vec_demo.jnl
+which shows how to use this script.
+
+Ansley Manke
+
+Stephen Nash wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">I am currently trying to produce some polar stereographic plots with 
+vectors.  I have produced the same plots in a 'normal' projection and 
+had no problems.  I have also been able to produce 'fill' plots on the 
+stereographic plots with no problems.  However, when producing vector 
+plots I only get arrows from regions where my measured field has its 
+highest values.  At some point in the code it seems that the small 
+values are being filtered out (and they're not that much smaller):<br>
+<br>
+set mode metafile<br>
+use u10_2000_01_djf.cdf<br>
+set grid u10<br>
+let pi=4*atan(1)<br>
+let wind=((u10^2)+(v10^2))^0.5<br>
+let ang=atan(v10/u10)<br>
+let dir=if u10 gt 0 then ((pi/2)-ang) else (((3*pi)/2)-ang)<br>
+let Ts=(5.1e-4)*(wind^3)<br>
+let Tsx=Ts*sin(dir)<br>
+let Tsy=Ts*cos(dir)<br>
+set window/aspect=2<br>
+set viewport lower<br>
+set region/x=0:360/y=-90:0/l=1:90<br>
+go mp_stereographic_south<br>
+!fill/levels=(0,1.5,0.1)/nolab/title=&quot;Seasonally-Averaged Integrated 
+Stokes Transport for DJF 2000/01 based on the math of McWilliams and 
+Restrepo, Southern Hemisphere&quot; Ts[t=0:1@ave]*mp_mask, x_page, y_page<br>
+vector/length=0.5 Tsx[t=0:1@ave]*mp_mask, 
+Tsy[t=0:1@ave]*mp_mask,x_page,y_page<br>
+go mp_fland<br>
+label/nouser `($PPL$XLEN)*0.5`,-0.4,0,0,.05 Seasonally-Averaged 
+Integrated Stokes Transport for DJF 2000/01 based on the math of 
+McWilliams and Restrepo, Southern Hemisphere<br>
+set viewport upper<br>
+set region/x=0:360/y=0:90/l=1:90<br>
+go mp_stereographic_north<br>
+!fill/levels=(0,1.5,0.1)/nolab/title=&quot;Seasonally-Averaged Integrated 
+Stokes Transport for DJF 2000/01 based on the math of McWilliams and 
+Restrepo, Northern Hemisphere&quot; Ts[t=0:1@ave]*mp_mask, x_page, y_page<br>
+vector/length=0.1 Tsx[t=0:1@ave]*mp_mask, Tsy[t=0:1@ave]*mp_mask, 
+x_page, y_page<br>
+go mp_fland<br>
+label/nouser `($PPL$XLEN)*0.5`,-0.4,0,0,.05 Seasonally-Averaged 
+Integrated Stokes Transport for DJF 2000/01 based on the math of 
+McWilliams and Restrepo, Northern Hemisphere<br>
+cancel mode metafile<br>
+<br>
+Hope someone can help!!<br>
+<br>
+Thank you,<br>
+<br>
+Stephen Nash<br>
+<br>
+<br>
+<br>
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00128" href="msg00128.html">Vectors on polar stereographic plots</a></strong>
+<ul><li><em>From:</em> Stephen Nash</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00129.html">Re: Vectors on polar stereographic plots</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00131.html">Grib reader?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00129.html">Thread Prev</a>][<a href="msg00131.html">Thread Next</a>][<A HREF="threads.html#00130">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: usage of @LOC along y&#45;direction -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 17 May 2004 11:49:32 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0405172340050.20636&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 7269A3DE93C81E41A59A84EEABEB3FAB214AAD@saipan.ad.nps.navy.mil -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: usage of @LOC along y-direction</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00383.html">Thread Prev</a>][<a href="msg00387.html">Thread Next</a>][<A HREF="threads.html#00386">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: usage of @LOC along y-direction</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: usage of @LOC along y-direction</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 18 May 2004 00:24:15 +0530 (IST)</li>
+<li>Cc: &quot;Thoppil, Prasad IND&quot; &lt;<a href="mailto:prasad@DOMAIN.HIDDEN">prasad@xxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00383.html">7269A3DE93C81E41A59A84EEABEB3FAB214AAD@saipan.ad.nps.navy.mil</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Prasad,
+            Yes, it can be done. Here is an example to make a fill
+plot and make an over plot of northern most isotherm. You can find the 
+explanations in the example.
+
+ By default, the j=1 point on a latitudinal axis will be its southern
+most point and hence it will start looking for the value specified 
+from south to north. The trick is to assign the value(j=1) to
+(j=last) and so on. Then do a @loc &amp; convert the resultand lat to 
+actual lat. A simple example..(for fine details see the jnl file below )
+
+	define axis/y=-18:0:2/units=latitudes yax ! lat axis
+ 
+        let temp = 2.8 + sin(Y[gy=yax])           ! some data
+        list/j=1:10 temp                
+
+        let rev_j = `1+10` - j[gy=temp]           ! reverse &quot;j&quot;
+        list rev_j
+
+        let temp_rev_j = samplej(temp,rev_j)      ! data at 18S ==&gt; 0N
+                                                  ! data at 16S ==&gt; 2S ...
+                                                  ! data at 14S ==&gt; 4S
+        let temp_rev   = temp_rev_j[gy=temp@asn]  ! assigning a lat grid
+  
+        let iso2  = `-18+0` - (temp_rev[y=@loc:2]) ! locate value 2 and
+                                                   ! get the &quot;actual&quot; lat 
+        let iso2_def = temp[y=@loc:2]  ! the default one
+ 
+        list iso2, iso2_def
+ 
+   ...iso2 is the northern most lat with the value 2. 
+
+Hope This Helps...If there is any difficulty in getting through...post
+it back to mailing list.
+
+With Regards
+
+Jaison
+
+---------fill plot with northern most isotherm overlayed------------
+
+! loc_N2S_along_y.jnl
+!
+\ cancel mode verify
+
+!---user INPUTS-----------------------------------------------------
+        set data levitus_climatology	   ! data
+
+        define symbol var   = temp         ! variable name
+        define symbol x_reg = 110W:50E     ! lon range  
+        define symbol y_reg = 50S:50N      ! lat range 
+        define symbol z_reg = 0            ! depth 
+        define symbol t_reg = 01-jan-0001  ! time
+
+        let iso = 26                       ! isotherm value
+        let col = 18                       ! color for isotherm
+
+! ----no need to change anything below--------------------------
+
+        cancel mode latitude    ! to get **S or **N as -** or +**
+                                !        from  &quot;return&quot;; ex. 80S ==&gt; -80
+        cancel reg/all          ! it is safe to specify the region
+                                !    as arguments to fill and plot command 
+
+!  latitude domain (whole data) size and range      
+
+        let y_start = `($var),r=ystart` ; let y_end = `($var),r=yend`
+        let j_start = `($var),r=jstart` ; let j_end = `($var),r=jend`
+
+!  for y axis &quot;latitude&quot; j_start ( say 1) will be southern most point
+!                        j_end  (say 180) will be northern most point
+!     hence a default @loc will start from southern most values. 
+!   here we are making an array of inverse &quot;j&quot; ie from j_end to j_start
+!                       rev_j ==&gt; &quot;reverse j&quot;          
+
+        let rev_j      = `j_start+j_end` - 
+j[gy=($var),j=`j_start`:`j_end`]
+
+!  then sample the actual data from north to south using rev_j
+
+        let temp_rev_j = samplej(($var),rev_j)
+
+!  assign a latitudinal grid
+
+        let temp_rev   = temp_rev_j[gy=($var)@asn]
+
+!  now the &quot;northern most value of actual variable&quot; is the southern most
+!      value of temp_rev ; again temp_rev is a latitudinal axis ;
+!      hence @loc command on temp_rev will start from the northern most
+!      value of our actual variable to southern most value.
+!    reducing the result of @loc from &quot;y_start+y_end&quot; will give the 
+!    corresponding latitude of original variable
+
+        let iso_n2s  = `y_start+y_end` - (temp_rev[y=@loc:`iso`])
+
+!  if &quot;set reg&quot; is explicitly specified, it will give rise to unwanted
+!      lines for some missing/fill data regions. Hence for safety always
+!      specify the region as arguments to fill / plot command 
+
+        fill/x=($x_reg)/y=($y_reg)/z=($z_reg)/t=&quot;($t_reg)&quot; ($var)
+
+        plot/ov/z=($z_reg)/t=&quot;($t_reg)&quot;/color=`col` iso_n2s
+
+!--------------------------------------------------------------------------
+
+
+On Fri, 14 May 2004, Thoppil, Prasad IND wrote:
+
+&gt; Hi Ferret users,
+&gt; 
+&gt; I would like to find the location of first isotherm, say 2C between the
+&gt; equator and 80S. To demonstrate clearly, 
+&gt; 
+&gt; Assume that the contours look like this
+&gt; 
+&gt; -------------------------- 2C ---------------- 60S (this is the location
+&gt; I want to get)
+&gt; -------------------------- 3C ---------------- 65S
+&gt; -------------------------- 4C ----------------- 70S 
+&gt; -------------------------- 3C ----------------- 75S
+&gt; -------------------------- 2C ----------------- 80S (not this)
+&gt; 
+&gt; let iso2 = sst[y=80S:60S@LOC:2.0],
+&gt; 
+&gt; iso2 would return the location of the 2C from south to north, that I get
+&gt; 80S. 
+&gt; Is there anyway that I can locate the first 2C isotherm from north to
+&gt; south instead of south to north?
+&gt; 
+&gt; Thanks for your help,
+&gt; 
+&gt; Prasad
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00383" href="msg00383.html">usage of @LOC along y-direction</a></strong>
+<ul><li><em>From:</em> Thoppil, Prasad IND</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00383.html">usage of @LOC along y-direction</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00387.html">Re: usage of @LOC along y-direction</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00383.html">Thread Prev</a>][<a href="msg00387.html">Thread Next</a>][<A HREF="threads.html#00386">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

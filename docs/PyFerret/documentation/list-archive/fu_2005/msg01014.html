@@ -1,0 +1,171 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] [FERRET]memory issues in ferret -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 17 Nov 2005 13:23:55 &#45;0800 -->
+<!--X-Message-Id: 437CF4EA.5010307@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6.2.1.2.2.20051115131044.084c4428@gmaomail.gsfc.nasa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] [FERRET]memory issues in ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01004.html">Thread Prev</a>][<a href="msg01015.html">Thread Next</a>][<A HREF="threads.html#01014">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] [FERRET]memory issues in ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:zhen.li@DOMAIN.HIDDEN">zhen.li@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] [FERRET]memory issues in ferret</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 17 Nov 2005 13:23:54 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg01003.html">6.2.1.2.2.20051115131044.084c4428@gmaomail.gsfc.nasa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg01003.html">6.2.1.2.2.20051115131044.084c4428@gmaomail.gsfc.nasa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Zhen,<br>
+What do you mean when you say  that the @VAR calculation &quot;Does not 
+work&quot;?  Is this the point in the script where you run out of memory?<br>
+<br>
+Ferret will let you define all the variables you want, but it does not 
+try to load data until you give it a command that asks for some action. 
+Plotting commands, or a LIST or SAVE, or LOAD are the commands that 
+trigger Ferret to go and try to get the data and do calculations. If the 
+calculation involves several operations, like the regridding and then 
+rho_un function and then zaxreplace Ferret makes a stack of operations 
+and carries them out in sequence. I don't see any of the &quot;action&quot; 
+commands in the piece of the script you've included. 
+<br>
+You can try inserting LOAD commands into a script to see whether Ferret 
+can execute the calculation at a particular point in the script.<br>
+<br>
+  define axis/x=120E:295E:1/units=degrees x1deg<br>
+  define axis/Y=45S:20N:1/units=degrees y1deg<br>
+<br>
+  let salt_1deg=salt[GX=x1deg@ave, GY=y1deg@ave]<br>
+  LOAD salt_1deg<br>
+<br>
+I'm sure you'll run into the memory error right there.  Ferret won't be 
+able to load 700*390*43*120 words of data for any calculation. Have you 
+looked at  the documentation under &quot;mode desperate&quot;? I admit I haven't 
+used that myself but it might be a way to get Ferret to break up the 
+calculations into chunks.<br>
+<br>
+Ansley<br>
+<br>
+zhen.li@gsfc.nasa.gov wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ferret Users:<br>
+<br>
+Lately, I've often run into the memory limit in ferret. I am trying to 
+process a multi-year model output (see the script<br>
+below). The script fails at T=@VAR transform for both original, fine 
+grid (1/4 x 1/6) and regridded coarse (1x1) grid.<br>
+<br>
+The problem occurs after I executes &quot;std_var_245=salt245[T=@VAR]^0.5&quot;, 
+because std_var_245 still have the same dimension as salt245 with 
+l=120. T=@VAR transform doesn't work for both the fine and coarse grid.<br>
+<br>
+On the other hand, T=@VAR transform does work if I just use it on 
+&quot;salt[l=1,T=@VAR] &quot; without the calculation of sigma and saltonsigma. 
+I believe that after calculation of rho_un and ZAXREPLACE, the memory 
+has been used up. So, T=@VAR transform can not be carried out. I don't 
+know how to fix this problem.<br>
+<br>
+Any help is greatly appreciated.<br>
+<br>
+Below is my script.<br>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<br>
+use ts_9099  [monthly salinity and temperature data for pacific ocean 
+from year 1990 to 1999]<br>
+ [SALT     Salinity                                1:700     1:390 
+1:43      1:120<br>
+ TEMP     Potential temperature           1:700     1:390     
+1:43      1:120]<br>
+Note: the data set is too large, so I have to regrid to 1deg, but even 
+with 1 deg data set,<br>
+I still run into the memory problem,<br>
+<br>
+define axis/x=120E:295E:1/units=degrees x1deg<br>
+define axis/Y=45S:20N:1/units=degrees y1deg<br>
+<br>
+let salt_1deg=salt[GX=x1deg@ave, GY=y1deg@ave]  &gt;&gt;&gt;dimension [176 66 
+43 120]<br>
+let temp_1deg=salt[GX=x1deg@ave, GY=y1deg@ave]<br>
+<br>
+let sigma=rho_un(salt_1deg,temp_1deg,0)-1000;<br>
+define axis/z=23:26:0.5 axden;<br>
+<br>
+let saltonsigma=ZAXREPLACE(salt_1deg, sigma, z[gz=axden]);<br>
+<br>
+let salt245=saltonsigma[z=24.5];<br>
+let std_var_245=salt245[T=@VAR]^0.5<br>
+<br>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;<br>
+<br>
+<br>
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="01015" href="msg01015.html">Re: [ferret_users] [FERRET]memory issues in ferret</a></strong>
+<ul><li><em>From:</em> zhen.li</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01003" href="msg01003.html">[ferret_users] [FERRET]memory issues in ferret</a></strong>
+<ul><li><em>From:</em> zhen.li</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01004.html">[ferret_users] Re: [FERRET]memory issues in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg01015.html">Re: [ferret_users] [FERRET]memory issues in ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01004.html">Thread Prev</a>][<a href="msg01015.html">Thread Next</a>][<A HREF="threads.html#01014">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: varaince and var_n jnl files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 24 Jun 2004 09:10:19 &#45;0700 -->
+<!--X-Message-Id: 40DAFD01.9070409@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.4.33.0406240755230.8548&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: varaince and var_n jnl files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00464.html">Thread Prev</a>][<a href="msg00466.html">Thread Next</a>][<A HREF="threads.html#00465">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: varaince and var_n jnl files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Mick Spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: varaince and var_n jnl files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 24 Jun 2004 09:10:41 -0700</li>
+<li>Cc: Dr Sudheer Joseph &lt;<a href="mailto:sjo@DOMAIN.HIDDEN">sjo@xxxxxxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00464.html">Pine.GSO.4.33.0406240755230.8548-100000@heron.pmel.noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00464.html">Pine.GSO.4.33.0406240755230.8548-100000@heron.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi all,<br>
+Thanks to Sudheer for reporting this, and Mick for seeing what the trouble<br>
+was.  The script var_n did not apply the n/n-1 correction to all of the 
+variables<br>
+that are part of the definition of CORREL.  The corrected var_n.jnl is 
+below,<br>
+and we'll get it fixed in the FAQ and the Ferret distribution.<br>
+<br>
+Ansley Manke<br>
+<br>
+----------------------------------------------------------------------------<br>
+CANCEL MODE VERIFY<br>
+<br>
+! var_n.jnl<br>
+! Description: Correct &quot;GO variance&quot; definitions by n/n-1 factor<br>
+<br>
+! 6/24/2004  add new definitions for masked variables, so that<br>
+! CORREL will be corrected (see the FAQ on computing correleations).<br>
+<br>
+! compute n/n-1 factor to get the variances exact<br>
+let l1 = l<br>
+let nm1 = l1[l=@max] - l1[l=@min]<br>
+let ndnm1 = (nm1+1)/nm1<br>
+<br>
+! redefine terms with n/n-1 factor<br>
+let/title=&quot;VARIANCE OF P&quot;        P_VAR = P_DSQ[l=@ave] * ndnm1<br>
+let/title=&quot;VARIANCE OF Q&quot;        Q_VAR = Q_DSQ[l=@ave] * ndnm1<br>
+let/title=&quot;COVARIANCE OF P AND Q&quot;  COVAR = PQ_DSQ[l=@ave] * ndnm1<br>
+<br>
+<br>
+let/quiet/title=&quot;VARIANCE OF P WHEN Q PRESENT&quot; P_VAR_MASK = 
+P_DSQ_MASK[l=@ave] * ndnm1<br>
+let/quiet/title=&quot;VARIANCE OF Q WHEN P PRESENT&quot; Q_VAR_MASK = 
+Q_DSQ_MASK[l=@ave] * ndnm1<br>
+<br>
+<br>
+SET GRID P<br>
+SET MODE/LAST VERIFY<br>
+----------------------------------------------------------------------------<br>
+<br>
+<br>
+Mick Spillane wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hello Sudheer,<br>
+	I agree that there is something wrong in the way variance.jnl and<br>
+var_n.jnl combine in the demonstration link<br>
+	<a  href="http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/correlations.html">http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/correlations.html</a><br>
+The reported maximum correlation of &quot;Maximum value: 1.0841&quot; near the end<br>
+of the page is clear indication that something is wrong, and it is not<br>
+just roundoff error.<br>
+	The trouble lies in the use of var_n.jnl I think.  The purpose of<br>
+the n/n-1 factor is to get unbiased estimates of the variances and the<br>
+covariance.  But the correction factor should cancel when the correlation<br>
+coefficient is computed because it appears in both the numerator and the<br>
+denominator.  So in the demo, while it is correct that the covariance<br>
+value (and the p and q variances) should change before and after the use<br>
+of var_n.jnl, the value of &quot;correl&quot; should not have changed. I think that<br>
+some of the &quot;masked&quot; variables are not getting the n/n-1 correction.<br>
+<br>
+	If I am right in this, if you want to compute and plot &quot;correl&quot;<br>
+you should do so without using var_n.jnl<br>
+!---------------------------------------------<br>
+SET DATA coads_climatology<br>
+LET p = sst[x=150:220,y=0:40]<br>
+LET q = airt[x=150:220,y=0:40]<br>
+go variance<br>
+stat correl<br>
+!...<br>
+Maximum value: 0.9938  !!! That's more like it !!!<br>
+!---------------------------------------------<br>
+Then, if you were interested in reporting or plotting the unbiassed<br>
+variances or covariance, you could define the correction factor<br>
+yourself (12/11 = 1.090909 in this example) and apply it, skipping<br>
+var_n.jnl entirely.<br>
+<br>
+Good luck,<br>
+Mick<br>
+<br>
+|!!! Mick.Spillane@noaa.gov !!!|<br>
+|__Room 2070 Bldg#3 NOAA/PMEL__|<br>
+|____Phone_:_(206)526-6780_____|<br>
+<br>
+<br>
+ 
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00464" href="msg00464.html">Re: varaince and var_n jnl files</a></strong>
+<ul><li><em>From:</em> Mick Spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00464.html">Re: varaince and var_n jnl files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00466.html">ferret how to:</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00464.html">Thread Prev</a>][<a href="msg00466.html">Thread Next</a>][<A HREF="threads.html#00465">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

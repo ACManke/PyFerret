@@ -1,0 +1,136 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to shade and interpolate a scattered data file ? -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Wed, 9 Apr 2003 07:54:48 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0304090725530.25136&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3E93169B.5050405@cs.dal.ca -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to shade and interpolate a scattered data file ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00293.html">Thread Prev</a>][<a href="msg00296.html">Thread Next</a>][<A HREF="threads.html#00294">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to shade and interpolate a scattered data file ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<a href="mailto:chi@DOMAIN.HIDDEN">chi@xx</a>&quot; &lt;<a href="mailto:chi@DOMAIN.HIDDEN">chi@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to shade and interpolate a scattered data file ?</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 09 Apr 2003 07:54:46 -0700 (PDT)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00293.html">3E93169B.5050405@cs.dal.ca</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Ding Chi,
+
+You are right in thinking that shade (also fill and contour) apply to
+data that are 2-D with an underlying grid.  The command &quot;define axis&quot;
+is used to define the grid axes, not the plotting region.  If your data
+are 2-D but scattered, you might try the &quot;polygon&quot; command if you want
+to avoid interpolating the scattered points to a grid.  Here is a simple
+example where I generate random x-z locations and define the value to
+be represented as an algebraic function. At each point a rectangular
+box is filled with a color that represents the value.  The size of the
+boxes is controlled by the values dx and dz
+
+region/i=1:1000 ! 1000 data triplets lon,depth,value
+! define the data triplets
+let xx=i
+let/title=&quot;Longitude&quot; lon=10*randn(xx)
+let/title=&quot;Depth&quot; depth=(-50)*randu(xx)
+let value=cos(0.01745*lon)*exp(depth/10)
+! and the corners of the box centered on each data point
+let dx=0.5 ; let bx=ysequence({`(-1)*dx`,`dx`,`dx`,`(-1)*dx`})
+let dz=0.5 ; let bz=ysequence({`dz`,`dz`,`(-1)*dz`,`(-1)*dz`})
+! then use &quot;polygon&quot; to show the data structure without interpolation
+polygon bx+lon,bz+depth,value
+
+Hope this helps.  In your case you would read in the data triplets with
+something like
+file/form=free/var=lon,depth,value your.file
+let dx=... ; let bx=ysequence({`(-1)*dx`,`dx`,`dx`,`(-1)*dx`})
+let dz=... ; let bz=ysequence({`dz`,`dz`,`(-1)*dz`,`(-1)*dz`})
+! where dx and dz are values that make suitable sized boxes for your case
+polygon bx+lon,bz+depth,value
+
+One slight change you might need is if your depth values are all positive
+(say in the range 0 to 50) and you want the deepest values at the bottom
+of the plot.  Then you would use something like
+
+polygon/vlimits=50:0:-10 bx+lon,bz+depth,value
+
+Good luck,
+Mick
+
+|____spillane@pmel.noaa.gov____|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00296" href="msg00296.html">Re: How to shade and interpolate a scattered data file ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00293" href="msg00293.html">How to shade and interpolate a scattered data file ?</a></strong>
+<ul><li><em>From:</em> chi@cs</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00293.html">How to shade and interpolate a scattered data file ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00296.html">Re: How to shade and interpolate a scattered data file ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00293.html">Thread Prev</a>][<a href="msg00296.html">Thread Next</a>][<A HREF="threads.html#00294">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

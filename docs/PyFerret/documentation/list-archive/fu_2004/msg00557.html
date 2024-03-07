@@ -1,0 +1,302 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Fwd: ferret question -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 16 Aug 2004 12:04:46 &#45;0700 -->
+<!--X-Message-Id: 4121054D.6000604@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.44.0408112324570.27110&#45;100000@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Fwd: ferret question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00554.html">Thread Prev</a>][<a href="msg00193.html">Thread Next</a>][<A HREF="threads.html#00557">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Fwd: ferret question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Fwd: ferret question</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 16 Aug 2004 12:04:45 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>, Gary Strand &lt;<a href="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00554.html">Pine.LNX.4.44.0408112324570.27110-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00554.html">Pine.LNX.4.44.0408112324570.27110-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+Jaison's correct that often it's clearest and easiest to write
+intermediate<br>
+results to a file; then we know exactly what we have and how we got
+there.<br>
+<br>
+In this instance I just want to point out an alternative; the integral
+@DIN<br>
+is, according to the documentation, "the <font color="#1f1a17" size="3"
+ face="Times">sum of the grid_box*variable product <br>
+at each grid point" in the range specified.&nbsp; Gary's contact wanted
+something <br>
+along the lines of </font>a variable defined at each K with <br>
+<pre wrap="">rep/k=1:22:1 (let tran=var[k=`k`@din])
+
+</pre>
+(I have simplified the variable down to the K dependence).&nbsp; Here by the
+definition<br>
+of @DIN, the result at each K&nbsp; is the value of the variable times its
+box size on the<br>
+Z axis. We could define a variable which has the desired values<br>
+<br>
+let tran = var* zbox[gz=var]<br>
+<br>
+For instance,<br>
+yes? use levitus_climatology<br>
+yes? list/x=180/y=0 temp<br>
+yes? let tran = var* zbox[gz=temp]<br>
+<br>
+yes? list/x=180/y=0/k=1 temp, tran, temp[k=@din]<br>
+yes? list/x=180/y=0/k=2 temp, tran, temp[k=@din]<br>
+<br>
+yes? list/list/x=180/y=0 tran<br>
+<pre wrap="">---------------- here is the output --------------------
+
+yes? use levitus_climatology
+yes? let tran = temp* zbox[gz=temp]
+ 
+yes? list/x=180/y=0/k=1 temp, tran, temp[k=@din]
+             DATA SET: /home/ja9/tmap/fer_dsets/data/levitus_climatology.cdf
+             LONGITUDE: 179.5E
+             LATITUDE: 0.5S
+             DEPTH (m): 0
+ Column  1: TEMP is TEMPERATURE (DEG C)
+ Column  2: TRAN is TEMP* ZBOX[GZ=TEMP]
+ Column  3: TEMP[Z=@DIN] is TEMPERATURE (DEG C)
+           TEMP   TRAN   TEMP 
+I / *:     28.12  140.6  140.6
+
+yes? list/x=180/y=0/k=2 temp, tran, temp[k=@din]
+             DATA SET: /home/ja9/tmap/fer_dsets/data/levitus_climatology.cdf
+             LONGITUDE: 179.5E
+             LATITUDE: 0.5S
+             DEPTH (m): 10
+ Column  1: TEMP is TEMPERATURE (DEG C)
+ Column  2: TRAN is TEMP* ZBOX[GZ=TEMP]
+ Column  3: TEMP[Z=@DIN] is TEMPERATURE (DEG C)
+           TEMP   TRAN   TEMP 
+I / *:     28.06  280.6  280.6
+ 
+yes? list/x=180/y=0 tran
+             VARIABLE : TEMP* ZBOX[GZ=TEMP]
+             FILENAME : levitus_climatology.cdf
+             FILEPATH : /home/ja9/tmap/fer_dsets/data/
+             SUBSET   : 20 points (DEPTH (m))
+             LONGITUDE: 179.5E
+             LATITUDE : 0.5S
+                179.5E 
+                160
+ 0       /  1:   141.
+ 10      /  2:   281.
+ 20      /  3:   280.
+ 30      /  4:   419.
+ 50      /  5:   626.
+ 75      /  6:   691.
+ 100     /  7:  1022.
+ 150     /  8:  1222.
+ 200     /  9:  1304.
+ 300     / 10:  1133.
+ 400     / 11:  1421.
+ 600     / 12:  1407.
+ 800     / 13:  1091.
+ 1000    / 14:   904.
+ 1200    / 15:   963.
+ 1500    / 16:  1218.
+ 2000    / 17:  1646.
+ 3000    / 18:  1601.
+ 4000    / 19:  1350.
+ 5000    / 20:   552.
+</pre>
+<br>
+<br>
+Jaison Kurian wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <pre wrap="">Hi Gary Strand,
+                In Ferret we can define an "array" with let command. But 
+we can't assign values to successive array locations "directly" (as often
+we do in Fortran) by let command. In this kind of situations I used to 
+write the values calculated inside the repeat loop to an ascii/netCDF 
+file (if it is a temporary variable then ascii file or if I need that 
+variable for later use then netCDF file) and then read it back 
+for further calculations/plotting.
+
+!Let us make a dummy variable with x,y &amp; z dimensions 
+!----------------------------------------------------
+
+   define axis/y=11:15:1/units=latitudes    ylat
+   define axis/x=-75:-5:5/units=longitudes  xlon
+   define axis/z=1:10:1/units="levels"      zlev  ! only 10 levels
+
+   let vel = sin(x[gx=xlon]+y[gy=ylat]+z[gz=zlev])
+
+!use set reg/ instead of specifying x &amp; y explicitly
+!--------------------------------------------------------
+
+   set reg/y=11n/x=-65:-10
+   set list/precision=7    ! set to required precision
+   
+! 1. Ascci file method
+!-----------------
+
+   repeat/k=1:10 ( let trpall=vel[x=@din]/10e6 ; list/nohead/file=trpall.dat/append trpall)
+   ! note that k=1@din doesn't makes sense &amp; inside a repeat loop with 
+   !   "k" index, at each time the calculations will be done for the 
+   !   respective "k" level.
+
+   ! read it back
+   cancel variable trpall ! since we are reading an already defined variable
+                          !    from a new file
+   define axis/y=11:11:1/units=latitudes y11  !  proper grids to 
+   define grid/y=y11/z=vel grd                !    read trpall
+
+   file/grid=grd/var="trpall" trpall.dat
+   list trpall
+   ! after all plotting/calculation remove the trpall.dat file 
+   sp  rm -f trpall.dat
+
+! 2. netCDF file method
+!----------------------
+! we can open a netcdf file for wrting in successive steps as follows:   
+!    Our transport variable will have levels(depth) and latitude infor-
+!    mation. Hence we will create a new netCDF file with /JLIMITS and 
+!    /KLIMITS qualifiers at the first step. For successive steps we will
+!    append the data with spefying the respective J &amp; K positions.
+! If you have any problems with appending to a netcdf file in this way
+! please refer this mail in the archive
+! <a class="moz-txt-link-freetext" href="">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00282.html</a>
+
+   let trpall    = vel[x=@din,k=1]/10e6 
+   set var/title="Transport over 65W-10W"/units="sv" trpall 
+   SAVE/file=trpall.nc/JLIMITS=1:1/KLIMITS=1:10/J=1/k=1/CLOBBER trpall
+
+   repeat/k=2:10 ( let trpall=vel[x=@din]/10e6 ; save/file=junk.nc/J=1/K=`k`/APPEND trpall)
+
+   ! read it back
+   cancel var trpall  ! since we are reading an already declared variable
+                      !    from a new file
+   set data trpall.nc
+   list trpall
+
+   ! after all plotting/calculation remove the trpall.dat file 
+   sp rm -f trpall.nc
+
+
+Hope This Helps
+
+With Regards
+
+Jaison 
+
+
+
+On Tue, 10 Aug 2004, Gary Strand wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap=""> From a colleague:
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">I calculate the oceanic volume transport by layer along a zonal section
+in the Equatorial Atlantic.
+
+For example, at a zonal section on 11N, I made:
+
+let tranp1=vvel[y=11n,x=-65:-10@din,k=1@din]/10e6 - I have the 
+transport
+(sv) at the first layer.
+let tranp2=vvel[y=11n,x=-65:-10@din,k=2@din]/10e6 - at the second 
+layer.
+
+I try to create a repeat command to do this for all the 22 layers:
+
+rep/k=1:22:1 (let tranpall=vvel[y=11n,x=-65:-10@din,k=`k`@din]/10e6)
+
+But every variable "transpall" record only the last value o K and not
+the 22 layers.
+You have any idea how can I put all the transport values in the same
+variable??
+      </pre>
+    </blockquote>
+    <pre wrap="">I've forgotten how to do this. TIA!
+
+Gary Strand
+<a class="moz-txt-link-abbreviated" href="">strandwg@ucar.edu</a>
+<a class="moz-txt-link-freetext" href="">http://www.cgd.ucar.edu/ccr/strandwg</a>
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00554" href="msg00554.html">Re: Fwd: ferret question</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00554.html">Re: Fwd: ferret question</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00193.html">animated gif sequences</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00554.html">Thread Prev</a>][<a href="msg00193.html">Thread Next</a>][<A HREF="threads.html#00557">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

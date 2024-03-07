@@ -1,0 +1,148 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] missing values and scale factors interfere? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 8 Nov 2005 09:24:04 &#45;0800 -->
+<!--X-Message-Id: 4370DF2F.6070707@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BB5FF6FEF7DFF54ABCF8106777A6AC856FB5C3@EX4.d.ethz.ch -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] missing values and scale factors interfere?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00989.html">Thread Prev</a>][<a href="msg00990.html">Thread Next</a>][<A HREF="threads.html#00993">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] missing values and scale factors interfere?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Grant Andrea Nicole &lt;<a href="mailto:andrea.grant@DOMAIN.HIDDEN">andrea.grant@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] missing values and scale factors interfere?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 08 Nov 2005 09:23:59 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00989.html">BB5FF6FEF7DFF54ABCF8106777A6AC856FB5C3@EX4.d.ethz.ch</a>&gt;</li>
+<li>References: &lt;<a href="msg00989.html">BB5FF6FEF7DFF54ABCF8106777A6AC856FB5C3@EX4.d.ethz.ch</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Andrea,<br>
+You're right!  Thank you for the report. The CF standard, 
+<a  href="http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html">http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html</a>, which we use 
+for NetCDF files, has this paragraph<br>
+<br>
+   The missing values of a variable with scale_factor and/or add_offset<br>
+   attributes (see section 8.1<br>
+   &lt;<a  href="http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html#pack">http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html#pack</a>&gt;)<br>
+   are interpreted relative to the variable's external values, i.e.,<br>
+   the values stored in the netCDF file. Applications that process<br>
+   variables that have attributes to indicate both a transformation<br>
+   (via a scale and/or offset) and missing values should first check<br>
+   that a data value is valid, and then apply the transformation. Note<br>
+   that values that are identified as missing should not be transformed.<br>
+<br>
+Ferret does save the correct value as the missing-value flag (say 
+`temanom,return=bad` does return the -9999 missing value), but when it 
+applies the the scale and offset, it does not check for the missing 
+value flag before rescaling. This bug will be fixed in the next release. 
+You're correct that the workaround for the time being is to<br>
+<br>
+ set ver/bad =-99.99 my_var<br>
+<br>
+but of course that is not a good solution if a variable might contain valid values of -99.99!<br>
+<br>
+Ansley<br>
+<br>
+Grant Andrea Nicole wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+<br>
+I have a netcdf file of the CRUTem2v global surface tempertures from the Climatic 
+Research Unit (<a  href="http://www.cru.uea.ac.uk/cru/data/temperature/">http://www.cru.uea.ac.uk/cru/data/temperature/</a>).<br>
+In the attributes the 'scale_factor' is set to 0.01 and 
+'missing_value' is set to -9999. In the file, the raw data indeed contains many<br>
+-9999. However, when I read it into ferret, these all become -99.99 after the<br>
+scale factor is applied and when I then try to do a shade command the 
+colorbar scale is worthless because so many -99s are plotted. It is easy<br>
+enough to work around by defining<br>
+<br>
+set ver/bad =-99.99 my_var<br>
+<br>
+but I'm wondering if this is something that could be fixed? The other programs I've<br>
+used (grads or matlab) are able to interpret this combination correctly. Or is<br>
+it that the header should be defined differently, but possibly then other software<br>
+wouldn't interpret it correctly? I am new to gridded data and not sure if there is<br>
+a universal convention about these sorts of things.<br>
+<br>
+Thanks,<br>
+<br>
+Andrea<br>
+<br>
+<br>
+Andrea Grant 
+Institut für Atmosphäre und Klima 
+ETH Zürich 
+Universitätsstrasse 16 
+CH-8092 Zürich 
+Schweiz 
+Tel: +41 (0)44 632 79 75 
+andrea.grant@env.ethz.ch<br>
+<br>
+ 
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00989" href="msg00989.html">[ferret_users] missing values and scale factors interfere?</a></strong>
+<ul><li><em>From:</em> Grant  Andrea Nicole</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00989.html">[ferret_users] missing values and scale factors interfere?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00990.html">[ferret_users] Accessing a DODS Aggregation Server with Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00989.html">Thread Prev</a>][<a href="msg00990.html">Thread Next</a>][<A HREF="threads.html#00993">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

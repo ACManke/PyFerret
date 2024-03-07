@@ -1,0 +1,327 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Latitude axis read from a ASCII file -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 19 Jul 2004 09:52:37 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0407192229500.3235&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 5CFC7D40&#45;D995&#45;11D8&#45;8DDE&#45;000A95A51444@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Latitude axis read from a ASCII file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00515.html">Thread Prev</a>][<a href="msg00517.html">Thread Next</a>][<A HREF="threads.html#00516">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Latitude axis read from a ASCII file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Latitude axis read from a ASCII file</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 Jul 2004 22:32:37 +0530 (IST)</li>
+<li>Cc: Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00515.html">5CFC7D40-D995-11D8-8DDE-000A95A51444@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie,
+             The problem is with the NORTH to SOUTH ordering of the
+data instead of ferret's preferred oerdering SOUTH to NORTH. There 
+are few nice solutions for this problem...please have a look at
+
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00650.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00650.html</a>
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00156.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00156.html</a>
+
+
+Here is an example using the reverse &quot;j&quot; indices to sample data in the
+south to north direction.
+
+
+gpcc.dat contains lon, lat and some dummy values for the variable &quot;ppt&quot;
+-----------------------------------------------------------------------
+  -20.0  10    10.1
+  -10.0  10    10.2
+    0.0  10    10.3
+   10.0  10    10.4
+   20.0  10    10.5
+  -20.0  5     5.1
+  -10.0  5     5.2
+    0.0  5     5.3
+   10.0  5     5.4
+   20.0  5     5.5
+  -20.0  0     0.1
+  -10.0  0     0.2
+    0.0  0     0.3
+   10.0  0     0.4
+   20.0  0     0.5
+  -20.0  -5    -5.1
+  -10.0  -5    -5.2
+    0.0  -5    -5.3
+   10.0  -5    -5.4
+   20.0  -5    -5.5
+  -20.0  -10   -10.1
+  -10.0  -10   -10.2
+    0.0  -10   -10.3
+   10.0  -10   -10.4
+   20.0  -10   -10.5
+
+ferret script :
+--------------
+
+   define axis/x=20W:20E:10/units=longitudes xlon
+   define axis/y=10:-10:5/units=latitudes    ylat
+   define axis/CALENDAR=360_DAY/t=&quot;30-SEP-1993&quot;:&quot;30-SEP-1993&quot;:30/units=days tdy
+   define grid/x=xlon/y=ylat/t=tdy grd
+
+   file/grid=grd/var=&quot;lon,lat,ppt&quot; gpcc.dat
+
+   let  jsize = `ppt,r=jend`  ! size of &quot;Y AXIS&quot;
+   list jsize                
+
+   let reverse_j = `jsize+1` - j[g=ppt]  ! get the reversed indices for &quot;j&quot;
+   list reverse_j
+
+   let ppt_rev_j = samplej(ppt,reverse_j) ! get the data ordered in SOUTH to 
+                                          !   NORTH direction
+   let pptn = ppt_rev_j[g=grd@asn]        ! impose the lat grid 
+   
+   set var/title=&quot;GPCC precipitation&quot;/units=&quot;something&quot; pptn  ! title 
+
+!   now let us have a comparison
+ 
+   list/i=1 ppt   ! variable which is readed in
+   list/i=1 pptn  !  variable in ordered south to north along y
+
+! save to a netcdf file for future use
+!  save/file=gpcc.nc/append pptn
+
+
+Hope This Helps
+
+WIth Regards 
+
+Jaison 
+
+
+
+
+On Mon, 19 Jul 2004, Emilie Vanvyve wrote:
+
+&gt; Dear Ferret users,
+&gt; 
+&gt; I need some help to understand and solve the problem explained 
+&gt; hereafter... The point is that Ferret always reads upside down my 
+&gt; latitude axis. North Pole becomes South Pole, and South Pole North one.
+&gt; 
+&gt; I read an ASCII file (GPCC-pre-199309.dat) containing 3 columns of data 
+&gt; (longitude, latitude, precipitation) :
+&gt; 
+&gt; Data         : GPCC 1.0 degree | mean precipitation
+&gt; Period       : September  1993
+&gt; Area         : global (-180./+180.) (Lon: -180.00 &lt;-&gt;  180.00  Lat:  
+&gt; -90.00 &lt;-&gt;   90.00)
+&gt; Output-Id    : 15072004135347_GPCC_VISUALIZER
+&gt; Columns      : Lon Lat Value (at grid center)
+&gt; Missing-Value: -99999.99
+&gt; 
+&gt; -179.50   89.50 -99999.99
+&gt; -178.50   89.50 -99999.99
+&gt; -177.50   89.50 -99999.99
+&gt; -176.50   89.50 -99999.99
+&gt; -175.50   89.50 -99999.99
+&gt; ...       ...   ...
+&gt;   175.50  -89.50      0.12
+&gt;   176.50  -89.50      0.12
+&gt;   177.50  -89.50      0.12
+&gt;   178.50  -89.50      0.12
+&gt;   179.50  -89.50      0.12
+&gt; 
+&gt; I have made a script in Ferret to read those values (in order to save 
+&gt; them into a NetCDF file). Here is &quot;easy-readable&quot; version of it :
+&gt; 
+&gt; !spatial and temporal grid
+&gt; 
+&gt; define axis/X=179.5W:179.5E:1/units=longitude  x_axis
+&gt; define axis/Y=89.5N:89.5S:1/units=latidude     y_axis
+&gt; define 
+&gt; axis/CALENDAR=360_DAY/t=&quot;30-SEP-1993&quot;:&quot;30-SEP-1993&quot;:30/units=days  
+&gt; t_axis
+&gt; 
+&gt; define grid/x=x_axis/y=y_axis/t=t_axis g_grid
+&gt; 
+&gt; !read variable(s) in ASCII file
+&gt; 
+&gt; file/grid=g_grid/skip=7/var=&quot;lon,lat,PP&quot;   
+&gt; &quot;../ascii/GPCC-pre-199309.txt&quot;
+&gt; 
+&gt; show data
+&gt; 
+&gt; list PP[j=1,i=355:360]
+&gt; list PP[j=180,i=1:5]
+&gt; 
+&gt; exit
+&gt; 
+&gt; Here is what Ferret tells me when executing my script :
+&gt; 
+&gt; yes? go gpcc2nc
+&gt; 
+&gt; !spatial and temporal grid
+&gt; 
+&gt; define axis/X=179.5W:179.5E:1/units=longitude  x_axis
+&gt; define axis/Y=89.5N:89.5S:1/units=latidude     y_axis
+&gt; define 
+&gt; axis/CALENDAR=360_DAY/t=&quot;30-sep-1993&quot;:&quot;30-sep-1993&quot;:30/units=days  
+&gt; t_axis
+&gt; 
+&gt; define grid/x=x_axis/y=y_axis/t=t_axis g_grid
+&gt; 
+&gt; !read variable(s) in ASCII file
+&gt; 
+&gt; file/grid=g_grid/skip=7/var=&quot;lon,lat,PP&quot;   
+&gt; &quot;../ascii/GPCC-pre-199309.txt&quot;
+&gt;   !-&gt; SET DATA/EZ/grid=g_grid/skip=7/var=&quot;lon,lat,PP&quot;   
+&gt; &quot;../ascii/GPCC-pre-199309.txt&quot;
+&gt; 
+&gt; show data
+&gt;       currently SET data sets:
+&gt;      1&gt; ../ascii/GPCC-pre-199309.txt  (default)
+&gt;   name     title                             I         J         K       
+&gt;    L
+&gt;   LON      LON                              1:360     1:180     ...      
+&gt;   1:1
+&gt;   LAT      LAT                              1:360     1:180     ...      
+&gt;   1:1
+&gt;   PP       PP                               1:360     1:180     ...      
+&gt;   1:1
+&gt; 
+&gt; 
+&gt; list PP[j=1,i=355:360]
+&gt;               VARIABLE : PP
+&gt;               FILENAME : GPCC-pre-199309.txt
+&gt;               SUBSET   : 6 points (LONGITUDE)
+&gt;               LATITUDE : 89.5S
+&gt;               TIME     : 30-SEP-1993 00:00
+&gt;                     89.5S
+&gt;                      1
+&gt;   174.5E  / 355: -100000.
+&gt;   175.5E  / 356: -100000.
+&gt;   176.5E  / 357: -100000.
+&gt;   177.5E  / 358: -100000.
+&gt;   178.5E  / 359: -100000.
+&gt;   179.5E  / 360: -100000.
+&gt; list PP[j=180,i=1:5]
+&gt;               VARIABLE : PP
+&gt;               FILENAME : GPCC-pre-199309.txt
+&gt;               SUBSET   : 5 points (LONGITUDE)
+&gt;               LATITUDE : 89.5N
+&gt;               TIME     : 30-SEP-1993 00:00
+&gt;                 89.5N
+&gt;                 180
+&gt;   179.5W / 1:  0.1600
+&gt;   178.5W / 2:  0.1200
+&gt;   177.5W / 3:  0.1200
+&gt;   176.5W / 4:  0.1200
+&gt;   175.5W / 5:  0.1200
+&gt; 
+&gt; exit
+&gt; yes?
+&gt; 
+&gt; So, values of North Pole shifted to South Pole and ones of South Pole 
+&gt; to North Pole! (And I don't know where the 0.1600 does come from.)
+&gt; I assume I'm wrong somewhere, but where? It's not the first time that I 
+&gt; get that problem. I tried to inverse the definition of the x-axis, to 
+&gt; use the /order instruction when reading the data, it does not work. The 
+&gt; fact that the longitude axis (1st column) varies more rapidly that the 
+&gt; latitude one (2nd column) might be a (the) problem?
+&gt; 
+&gt; Does anyone have any idea?
+&gt; 
+&gt; Thanks in advance for any answer!
+&gt; 
+&gt; Emilie
+&gt; 
+&gt; 
+&gt; ____________________________________________________________
+&gt; Emilie VANVYVE
+&gt; Physicist, PhD student
+&gt; 
+&gt; Université catholique de Louvain (UCL)
+&gt; Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+&gt; Chemin du Cyclotron, 2
+&gt; 1348 Louvain-la-Neuve (Belgium)
+&gt; Phone : +32-(0)10-473300
+&gt; Fax : +32-(0)10-474722
+&gt; E-mail : vanvyve@astr.ucl.ac.be
+&gt; Web : www.astr.ucl.ac.be
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00515" href="msg00515.html">Latitude axis read from a ASCII file</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00515.html">Latitude axis read from a ASCII file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00517.html">segmentation fault</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00515.html">Thread Prev</a>][<a href="msg00517.html">Thread Next</a>][<A HREF="threads.html#00516">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

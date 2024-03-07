@@ -1,0 +1,219 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: RE: SAVE in EOF analysis -->
+<!--X-From-R13: Prpxref Xrna&#45;[nevr <X[.PrpxrefNhyt.np.or> -->
+<!--X-Date: Sun, 28 Sep 2003 17:26:26 &#45;0700 -->
+<!--X-Message-Id: 1115.139.165.31.114.1064795172.squirrel@mail2.ulg.ac.be -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200309281934.h8SJYZn17900@pontus.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>RE: SAVE in EOF analysis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00704.html">Thread Prev</a>][<a href="msg00786.html">Thread Next</a>][<A HREF="threads.html#00705">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: SAVE in EOF analysis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>RE: SAVE in EOF analysis</strong></li>
+<li><strong>From</strong>: <strong>Beckers Jean-Marie &lt;<a href="mailto:JM.Beckers@DOMAIN.HIDDEN">JM.Beckers@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 29 Sep 2003 02:26:12 +0200 (CEST)</li>
+<li>Cc: <a href="mailto:byh@DOMAIN.HIDDEN">byh@xxxxxxxxx</a>, <a href="mailto:arv@DOMAIN.HIDDEN">arv@xxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="msg00701.html">200309281934.h8SJYZn17900@pontus.pmel.noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00701.html">200309281934.h8SJYZn17900@pontus.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>&gt;
+
+You might search for the paper of Tomazou in Monthly Weather Review.
+He shows how using a Lanczos iterative method (Krylov subspace) allows to
+extract the leading eigenvalues (and EOFs) using a Fortran ARPACK library.
+Best regards
+
+(I'm on the road and do not have access to my data base but can send you the
+exact reference when I'm back)
+
+&gt; As several people have pointed out, inverting large
+&gt; matrices is an extremely cpu-intensive task. More
+&gt; sophisticated techniques try to find (guess) the
+&gt; largest eigenvalues first, avoiding the task of
+&gt; finding all 3825 eigenvalues, at least 99% of which
+&gt; will be of no interest and probably noise. Perhaps
+&gt; someone on the list knows a way to do this in fortran,
+&gt; in which case it could be incorporated into Ferret.
+&gt; Another possibility is that such techniques may be
+&gt; available in Matlab, which is very good with this
+&gt; kind of thing. Much as I value Ferret, there are some
+&gt; calculations, especially matrix manipulation, for which
+&gt; Matlab is inherently better. The routines in the Ferret
+&gt; EOF implementation are based on very old techniques, and
+&gt; are definitely not the most efficient. Perhaps the way
+&gt; to go would be to do the EOFs in Matlab and just use
+&gt; Ferret's superior plotting ability to plot the results.
+&gt;
+&gt; A quick and dirty way to improve the situation would
+&gt; be to decimate the data, say by regridding to a coarser
+&gt; grid, before finding EOFs on a large region. For example
+&gt; when Boyin wants EOFs over 120E-70W/40S-50N, there is
+&gt; probably no need to use the complete 2x2 degree resolution
+&gt; of the original data to recover the large-spatial-scale
+&gt; EOFs that are of interest. If you are pretty sure the
+&gt; same patterns would be seen in a 4x4 grid, then regridding
+&gt; before doing the EOFs would cut the CPU time down by a
+&gt; factor of 64 (1/4 the number of grid cells, and the cube
+&gt; root of the number of iterations to do the inversion).
+&gt; Even just cutting down the zonal resolution would make
+&gt; a large difference in the needed CPU.
+&gt;
+&gt; The reason that the slowdown is seen in the SAVE command
+&gt; (in Boyin's example) is that the definition command
+&gt;
+&gt; LET eof_xyfcn = eof_space(sst, 0.5)
+&gt;
+&gt; does nothing except to specify the definition of the
+&gt; variable eof_xyfcn. No actual computation is done until
+&gt; this variable is needed (for example a PLOT or SAVE).
+&gt; Therefore, doing a SAVE immediately is a very good idea,
+&gt; ensuring that the computation is done only once.
+&gt;
+&gt; Given that most of the EOFs will be useless, there is
+&gt; no reason to SAVE all 3825 of them. It will just make
+&gt; a large file of mostly junk. In this case, for example:
+&gt;
+&gt; SAVE/file=eof_xyfcn25.cdf eof_xyfcn[l=1:25]   ! first 25 EOFs
+&gt;
+&gt; This will not save any CPU time, unfortunately, but it will
+&gt; make a much smaller file. Then:
+&gt;
+&gt; CAN VAR eof_xyfcn	! be sure not to compute this again
+&gt; USE eof_xyfcn25.cdf	! bring in the premade file
+&gt; FILL eof_xyfcn[l=1]	! or other plots as wanted
+&gt;
+&gt; Billy K
+&gt; ------------------------------------------------------------
+&gt;&gt; From: Boyin Huang &lt;huang_boyin@yahoo.com&gt;
+&gt;&gt; Date: Thu, 25 Sep 2003 13:40:16 -0700 (PDT)
+&gt;&gt; Subject: SAVE in EOF analysis
+&gt;&gt;
+&gt;&gt; Hi, ferreters:
+&gt;&gt;
+&gt;&gt; Is the ferret so slow in doing EOF analysis?
+&gt;&gt;
+&gt;&gt; Using the demo file for eof analysis:
+&gt;&gt;
+&gt;&gt; -------------------------------------------------------
+&gt;&gt; SET REGION/X=67w:1w/Y=11S:11N
+&gt;&gt; USE coads_climatology
+&gt;&gt; LET eof_xyfcn = eof_space(sst, 0.5)
+&gt;&gt; SAVE/CLOBBER/FILE=sst_clim_eof_space.cdf eof_xyfcn
+&gt;&gt;
+&gt;&gt; USE sst_clim_eof_space.cdf
+&gt;&gt; SET VIEW ul; fill/l=1/TITLE=&quot;eof 1&quot; eof_xyfcn; go land
+&gt;&gt; -------------------------------------------------------
+&gt;&gt;
+&gt;&gt; Which works fine to me. Now I wish to have EOF in a
+&gt;&gt; larger domain, say 120E-70W and 40S-50N.
+&gt;&gt;
+&gt;&gt; I replaced set region by
+&gt;&gt; SET REGION/X=120e:70w/Y=40S:50N
+&gt;&gt; and added
+&gt;&gt; SET MEMORY/SIZE=260.(my computer memory is 1.5gb).
+&gt;&gt;
+&gt;&gt; I found that the ferret runs for ever (how long should
+&gt;&gt; I wait for?).
+&gt;&gt;
+&gt;&gt; I tried to diagnose the problem by typing these
+&gt;&gt; command lines interactively line by line, and found
+&gt;&gt; the problem is that the program was stuck by SAVE
+&gt;&gt; command.
+&gt;&gt;
+&gt;&gt; I then tried NOT to use the save command, but ferret
+&gt;&gt; says that the variable was not found.
+&gt;&gt;
+&gt;&gt; So, do we have to save EOF first, and the read and
+&gt;&gt; plot?
+&gt;&gt;
+&gt;&gt; How can I do the EOF analysis within a larger space
+&gt;&gt; domain and long time series? Say, simulated global SST
+&gt;&gt; with 200x100 grids for 1200 month, sst(200,100,1200).
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; =====
+&gt;&gt; Boyin Huang
+&gt;&gt; The Center for Research on the Changing Earth System (CRCES)
+&gt;&gt; 10211 Wincopin Circle, Suite 240
+&gt;&gt; Columbia, Maryland 21044
+&gt;&gt; Tel. 410-992-5300/819 (O), 410-737-4557(H)
+&gt;&gt; Fax. 410-992-5944, Email. byh@crces.org
+&gt;&gt; <a  href="http://byh.crces.org">http://byh.crces.org</a>
+&gt;&gt;
+&gt;&gt; __________________________________
+&gt;&gt; Do you Yahoo!?
+&gt;&gt; The New Yahoo! Shopping - with improved product search
+&gt;&gt; <a  href="http://shopping.yahoo.com">http://shopping.yahoo.com</a>
+&gt;&gt;
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00701" href="msg00701.html">RE: SAVE in EOF analysis</a></strong>
+<ul><li><em>From:</em> Billy Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00704.html">EOF's can be done in Octave as well RE: SAVE in EOF analysis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00786.html">Re: SAVE in EOF analysis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00704.html">Thread Prev</a>][<a href="msg00786.html">Thread Next</a>][<A HREF="threads.html#00705">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

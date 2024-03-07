@@ -1,0 +1,199 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] How to read grads binary -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sat, 6 Aug 2005 07:39:10 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0508062006120.16075@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1123320606.5573.20.camel@localhost -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] How to read grads binary</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00749.html">Thread Prev</a>][<a href="msg00753.html">Thread Next</a>][<A HREF="threads.html#00750">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to read grads binary</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to read grads binary</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 6 Aug 2005 20:09:17 +0530 (IST)</li>
+<li>Cc: wilfran &lt;<a href="mailto:wilfran65@DOMAIN.HIDDEN">wilfran65@xxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00749.html">1123320606.5573.20.camel@localhost</a>&gt;</li>
+<li>References: &lt;<a href="msg00749.html">1123320606.5573.20.camel@localhost</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Wilfran,
+            Ferret deocumentation explains that /SKIP qualifier : &quot;Specifies
+the number of records to skip at the start of a data set before beginning
+to read the data. By default, no records are skipped&quot;. Hence if your
+binary data doesn't contain any header or flag informations at the
+begining, there is no need to use the SKIP qualifier with a value &gt; 0.
+This may be the reason why Ferret complaints &quot;Size of file ./grd.n10
+doesn't match size specified by variables/grid&quot;. So remove
+/SKIP=`120*36*289` from your FILE command.
+
+             Your time axis have &quot;294&quot; points instead of intented &quot;289&quot;
+(all other axes have correct number of points according to the details
+given). Hence you are trying to read more data than the file contains.
+Hence even if you remove the skip qualifier, the grid defenition is wrong
+and in this case also you will get the same error message. See the details
+below.
+
+
+    define axis/x=20.5:139.5:1/unit=degrees            longitude
+    define axis/y=35.5:70.5:1/unit=degrees             latitude
+    define axis/z=1000:1000:1/units=mbars              zax
+    define axis/t=29-DEC-1977:29-DEC-1985:10/unit=days tax
+
+    ! define a variable on the above axes(ie grid)
+
+    let dummy = x[gx=longitude]*0 + y[gy=latitude]*0 + z[gz=zax]*0 + t[gt=tax]*0
+    show grid dummy
+    GRID (G001)
+ name       axis              # pts   start                end
+ LONGITUDE LONGITUDE          120mr   20.5E                139.5E
+ LATITUDE  LATITUDE            36 r   35.5N                70.5N
+ ZAX       Z (MBARS)            1 r   1000                 1000
+ TAX       TIME               294 r   29-DEC-1977 00:00    06-JAN-1986 00:00
+
+As you can see, tax contains 294 points and the end time is not 29-DEC-1985
+but 06-JAN-1986 (this is because according to the delta of 10days, the 293rd
+point is on 27-DEC-1985 but the end time point requested is after that..so
+it will take one more time point spaced by 10 days from the 293rd. ). There are
+4 possibilities (please check all....with respect to your ctl file or grads
+gs script or binary file size)
+
+       1. starting date is not 29-DEC-1977
+       2. ending   date is not 29-DEC-1985
+       3. delta for time axis is not 10days and is not uniform
+
+ Say the case is 1, tstart is 09-FEB-1978. Then define time axis as
+
+    yes? define axis/t=09-FEB-1978:29-DEC-1985:10/unit=days tax
+    yes? say `t[gt=tax],r=lend`
+     !-&gt; MESSAGE/CONTINUE 289
+    289
+    yes?
+
+ Say the case is 2, tend   is 17-NOV-1985. Then define time axis as
+
+    yes? define axis/t=29-DEC-1977:17-NOV-1985:10/unit=days tax
+
+ Say the case is 3, then define time axis as
+
+    yes? define axis/t=29-DEC-1977:29-DEC-1985/NPOINTS=289/units=days tax
+
+
+ hope this helps......please let me know if you have any difficulties...
+
+ With Regards
+
+ Jaison
+
+On Sat, 6 Aug 2005, wilfran wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Dear Ferret users,
+
+Does someone know how Ferret is reading a binary produced by Grads and
+in particular how to specify the parameter /SKIP= ?
+
+Basically, I have a grads binary which representes gridded data  of
+Xsize = 120,  Ysize = 36,  Zsize = 1,  Tsize = 289
+
+When trying to read these data with Ferret command lines  I have the
+following error message:
+
+       NOAA/PMEL TMAP
+       FERRET v5.80
+       Linux(g77) 2.4.18 - 01/03/05
+        6-Aug-05 11:18
+
+yes? define axis/x=20.5:139.5:1/unit=degrees     longitude ! 120
+yes? define axis/y=35.5:70.5:1/unit=degrees      latitude  ! 36
+yes? define axis/z=1000:1000:1/units=mbars zax
+yes? define axis/t=29-DEC-1977:29-DEC-1985:10/unit=days tax  ! 289
+yes? define grid/X=longitude/Y=latitude/Z=zax/T=tax ugrid2d
+yes? !! describe the soil moisture  variable in the file
+yes? FILE/VAR=n10/SKIP=`120*36*289`/GRID=ugrid2d/FORMAT=stream   grd.n10
+!-&gt; SET DATA/EZ/VAR=n10/SKIP=1248480/GRID=ugrid2d/FORMAT=stream
+grd.n10
+yes? !!more information about variable &quot;n10&quot;
+yes? set variable/TITLE=&quot;soil moisture in the top 10 cm&quot;/UNITS=&quot;cm&quot; n10
+yes? !!Save the data to a NetCDF file
+yes? save/FILE=grd.n10.cdf/TITLE=&quot;Observed top 10 cm soil moisture  in
+1978-1985&quot; n10
+**ERROR: Size of file ./grd.n10 doesn't match size specified by
+variables/grid
+yes?
+
+Regards,
+
+Wilfran Moufouma-Okia
+Regional climate modeler
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00753" href="msg00753.html">[ferret_users] How to  use barb with Ferret</a></strong>
+<ul><li><em>From:</em> Ashraf Zakey</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00749" href="msg00749.html">[ferret_users] How to read grads binary</a></strong>
+<ul><li><em>From:</em> wilfran</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00749.html">[ferret_users] How to read grads binary</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00753.html">[ferret_users] How to  use barb with Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00749.html">Thread Prev</a>][<a href="msg00753.html">Thread Next</a>][<A HREF="threads.html#00750">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

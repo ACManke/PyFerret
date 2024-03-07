@@ -1,0 +1,279 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Gaps and @AVE regridding transform -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Mon, 13 Jan 2003 10:28:54 &#45;0800 (PST) -->
+<!--X-Message-Id: 3E2305BB.4412FE27@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: D6339A2D5F4D0143BD5C887F24751A57C7828A@cirrus.shore.mbari.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Gaps and @AVE regridding transform</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00025.html">Thread Prev</a>][<a href="msg00011.html">Thread Next</a>][<A HREF="threads.html#00026">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Gaps and @AVE regridding transform</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;McCann, Mike&quot; &lt;<a href="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Gaps and @AVE regridding transform</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Jan 2003 10:30:20 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00025.html">D6339A2D5F4D0143BD5C887F24751A57C7828A@cirrus.shore.mbari.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Mike,
+<br>I'm glad to hear that was the solution you needed.&nbsp; Note that
+you could
+<br>use the grave accent syntax to put the value you need into the axis
+definition:
+<br>instead of usingi the spawn command and writing a file:
+<br><br>
+LET dinc = TBOX[G=AIR_TEMPERATURE,L=1]
+<br><br>
+DEFINE AXIS/T=($DMIN):($DMAX):`dinc`/T0="01-JAN-1970 00:00:00"/UNITS=seconds&nbsp;&nbsp;&nbsp;
+($TORG)<br>
+<BR>
+<br>&nbsp;
+<p>"McCann, Mike" wrote:
+<blockquote TYPE=CITE>&nbsp;<span class=570273117-13012003><font color="#0000FF">Ansley,</font></span><span class=570273117-13012003></span><span class=570273117-13012003><font color="#0000FF">Thanks
+for the explanation.&nbsp; It makes perfect sense.&nbsp; I've modified
+my processing program to first regrid using @LIN using the original sample
+interval. I use the tricky spawn go file mechanism to have DINC available
+as a symbol:</font></span>
+<pre><span class=570273117-13012003>!
+! Get time increment of original data to construct regular "original" axis
+!
+LIST/CLOBBER/NOHEAD/L=1/FILE=dinc.txt TBOX[G=AIR_TEMPERATURE]
+SPAWN echo DEFINE SYMBOL DINC \"\`cat dinc.txt\`\" > dinc_output.jnl
+GO dinc_output.jnl
+SPAWN rm dinc_output.jnl
+SPAWN rm dinc.txt</span></pre>
+<span class=570273117-13012003><font color="#0000FF">Then setting up the
+regular axis and gridding to that before doing the @AVE:</font></span>
+<pre><span class=570273117-13012003>DEFINE SYMBOL TORG = TIME_ORG
+DEFINE AXIS/T=($DMIN):($DMAX):($DINC)/T0="01-JAN-1970 00:00:00"/UNITS=seconds ($TORG)
+!
+! Regrid WIND_SPEED to regular original DINC axis then to hourly time grid
+!
+LET WIND_SPEED_ORG = WIND_SPEED_2[gt=($TORG),gy=($YOUT),gx=($XOUT)]
+LET WIND_SPEED_HR = WIND_SPEED_ORG[gt=($TOUT)@AVE,gy=($YOUT),gx=($XOUT)]</span></pre>
+<span class=570273117-13012003><font color="#0000FF">Works great. Thanks
+again,</font></span><span class=570273117-13012003><font color="#0000FF">Mike</font></span>
+<blockquote dir=ltr 
+>
+<div class="OutlookMessageHeader" lang="en-us" dir="ltr"><font face="Tahoma"><font size=-1>-----Original
+Message-----</font></font>
+<br><font face="Tahoma"><font size=-1><b>From:</b> Ansley Manke [<A HREF="">mailto:ansley@pmel.noaa.gov</A>]</font></font>
+<br><font face="Tahoma"><font size=-1><b>Sent:</b> Friday, January 10,
+2003 11:08 AM</font></font>
+<br><font face="Tahoma"><font size=-1><b>To:</b> McCann, Mike</font></font>
+<br><font face="Tahoma"><font size=-1><b>Cc:</b> ferret_users@ferret.wrc.noaa.gov</font></font>
+<br><font face="Tahoma"><font size=-1><b>Subject:</b> Re: Gaps and @AVE
+regridding transform</font></font>
+<br>&nbsp;</div>
+Hi Mike,
+<br>This is happening because of the irregular time axis on the
+<br>input data.&nbsp; If you list the variable you're regridding, you'll
+<br>see that in general the data is at 10-minute intervals, but
+<br>where this gap appears, there is a time-axis gap of several
+<br>hours.&nbsp; The Pseudo-variable TBOX shows this well. List
+<br>wind_speed_2 and tbox[gt=wind_speed_2] together:
+<p><tt>yes?list/t="22-sep-1997:16:00":"23-sep-1997:01:00" wind_speed_2,
+tbox[gt=wind_speed_2]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DATA SET: ./w2.nc</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+TIME: 22-SEP-1997 16:00 to 23-SEP-1997 01:00</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LONGITUDE: 122W(-122)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LATITUDE: 36.8N</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DEPTH (m): 3.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: WIND_SPEED_2 is WIND_SPEED * WIND_SPEED_1F</tt>
+<br><tt>&nbsp;Column&nbsp; 2: TBOX is TBOX (axis TIME)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+WIND_SPE&nbsp;&nbsp;&nbsp; TBOX</tt>
+<br><tt>22-SEP-1997 16:06:52 / 6761:&nbsp;&nbsp; 3.025&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>22-SEP-1997 16:16:52 / 6762:&nbsp;&nbsp; 2.435&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>22-SEP-1997 16:26:52 / 6763:&nbsp;&nbsp; 1.850&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>22-SEP-1997 16:36:52 / 6764:&nbsp;&nbsp; 2.044&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>22-SEP-1997 16:46:52 / 6765:&nbsp;&nbsp; 2.362&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>22-SEP-1997 16:56:52 / 6766:&nbsp;&nbsp; 1.813&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>22-SEP-1997 17:06:52 / 6767:&nbsp;&nbsp; 2.975&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>22-SEP-1997 17:16:52 / 6768:&nbsp;&nbsp; 3.196&nbsp; 12994.</tt>
+<br><tt>23-SEP-1997 00:19:59 / 6769:&nbsp;&nbsp;&nbsp; ....&nbsp; 12994.</tt>
+<br><tt>23-SEP-1997 00:29:59 / 6770:&nbsp;&nbsp; 6.215&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>23-SEP-1997 00:39:59 / 6771:&nbsp;&nbsp; 5.449&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>23-SEP-1997 00:49:59 / 6772:&nbsp;&nbsp; 6.268&nbsp;&nbsp;&nbsp;
+600.</tt>
+<br><tt>23-SEP-1997 00:59:59 / 6773:&nbsp;&nbsp; 5.573&nbsp;&nbsp;&nbsp;
+600.</tt>
+<p>The @AVE regridding will use the portion of grid cell on the
+<br>original axis which overlaps each grid cell on the output axis.
+<br>The input axis here has a large grid box with data value 3.196
+<br>at the location in question, so the value 3.196 is the result for
+<br>the output hourly axis at all the hours corresponding to any part
+<br>of that cell.&nbsp; List WIND_SPEED_AVG and WIND_SPEED_LIN
+<br>to see this.
+<p><tt>yes?list/t="22-sep-1997:16:00":"23-sep-1997:01:00" wind_speed_avg,
+wind_speed_lin</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DATA SET: ./w2.nc</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+TIME: 22-SEP-1997 16:00 to 23-SEP-1997 01:00</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LONGITUDE: 122W(-122)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LATITUDE: 36.8N</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DEPTH (m): 3.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: WIND_SPEED_AVG is WIND_SPEED_2[GT=TIME_HR@AVE]</tt>
+<br><tt>&nbsp;Column&nbsp; 2: WIND_SPEED_LIN is WIND_SPEED_2[GT=TIME_HR@LIN]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+WIND_SPEWIND_SPE</tt>
+<br><tt>22-SEP-1997 16:00 / 1271:&nbsp;&nbsp; 2.237&nbsp;&nbsp; 2.218</tt>
+<br><tt>22-SEP-1997 17:00 / 1272:&nbsp;&nbsp; 2.578&nbsp;&nbsp; 2.177</tt>
+<br><tt>22-SEP-1997 18:00 / 1273:&nbsp;&nbsp; 3.196&nbsp;&nbsp;&nbsp; ....</tt>
+<br><tt>22-SEP-1997 19:00 / 1274:&nbsp;&nbsp; 3.196&nbsp;&nbsp;&nbsp; ....</tt>
+<br><tt>22-SEP-1997 20:00 / 1275:&nbsp;&nbsp; 3.196&nbsp;&nbsp;&nbsp; ....</tt>
+<br><tt>22-SEP-1997 21:00 / 1276:&nbsp;&nbsp; 3.196&nbsp;&nbsp;&nbsp; ....</tt>
+<br><tt>22-SEP-1997 22:00 / 1277:&nbsp;&nbsp;&nbsp; ....&nbsp;&nbsp;&nbsp;
+....</tt>
+<br><tt>22-SEP-1997 23:00 / 1278:&nbsp;&nbsp;&nbsp; ....&nbsp;&nbsp;&nbsp;
+....</tt>
+<br><tt>23-SEP-1997 00:00 / 1279:&nbsp;&nbsp; 6.215&nbsp;&nbsp;&nbsp; ....</tt>
+<br><tt>23-SEP-1997 01:00 / 1280:&nbsp;&nbsp; 5.909&nbsp;&nbsp; 5.573</tt>
+<p>A solution might be to regrid the input data to a regular grid,
+<br>where the missing data would be represented on many 10-minute
+<br>grid cells, and then the @AVE regridding would use only data from
+<br>the same hour as the output grid.
+<p>Ansley Manke
+<p>"McCann, Mike" wrote:
+<blockquote TYPE="CITE">Hello ferret users,
+<p>I've encountered a little problem in re-gridding a 10-minute gappy time
+series to a 1-hour axis using the @AVE transform.&nbsp; Here's a ferret
+script that shows the problem:
+<p>USE "<a href="">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/deployments/m1/199705/m1/netcdf/m1_metsys_19970731.nc</a>"
+<br>DEFINE SYMBOL DMIN = "31-JUL-1997 18:00"
+<br>DEFINE SYMBOL DMAX = "24-SEP-1998 21:00"
+<br>LET BAR = y[gy=LATITUDE]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! Scalar for below
+<br>LET FOO = x[gx=LONGITUDE]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! Scalar
+for below
+<br>DEFINE SYMBOL TOUT = TIME_HR
+<br>DEFINE SYMBOL YOUT = LATITUDE_MET_HR
+<br>DEFINE SYMBOL XOUT = LONGITUDE_MET_HR
+<br>DEFINE AXIS/T=($DMIN):($DMAX):3600/T0="01-JAN-1970 00:00:00"/UNITS=seconds
+($TOUT)
+<br>DEFINE AXIS/Y/UNITS=deg ($YOUT)=BAR
+<br>DEFINE AXIS/X/UNITS=deg ($XOUT)=`FOO+360`
+<br>SET AXIS/MODULO LONGITUDE LONGITUDE[L=1]
+<p>! Change missing data flag so that it's not 1
+<br>LET WIND_SPEED_1 = missing(WIND_SPEED_FLAG, -9999)
+<p>!
+<br>! Catch all flags.&nbsp; Good data set to 1
+<br>!
+<br>LET WIND_SPEED_1F = IF WIND_SPEED_1 EQ 0 THEN 1
+<br>LET WIND_SPEED_2 = WIND_SPEED * WIND_SPEED_1F
+<p>!
+<br>! Regrid WIND_SPEED to new time grid
+<br>!
+<br>LET WIND_SPEED_AVG = WIND_SPEED_2[gt=($TOUT)@AVE,gy=($YOUT),gx=($XOUT)]
+<p>LET WIND_SPEED_LIN = WIND_SPEED_2[gt=($TOUT)@LIN,gy=($YOUT),gx=($XOUT)]
+<p>SET REGION/T=22-sep-1997:24-sep-1997
+<br>PLOT WIND_SPEED_2
+<br>PLOT/OV WIND_SPEED_AVG, WIND_SPEED_LIN
+<p>WIND_SPEED_AVG has a value of 120.7 after the 7 hour gap that begins
+at 1800 on Sep 22.&nbsp; There also appears to be "invented" values at
+the beginning of the gap.&nbsp; Perhaps I don't understand the use of the
+@AVE transform for doing this re-gridding.&nbsp; Is there something better
+I should be using?
+<p>Thanks in advance for any help.
+<p>-Mike
+<p>--
+<br>Mike McCann (mccann@mbari.org)
+<br>Monterey Bay Aquarium Research Institute
+<br>7700 Sandholdt Road
+<br>Moss Landing, CA 95039-9644
+<br>Voice: (831) 775-1769 Fax: (831) 775-1646 <a href="">http://www.mbari.org/rd/iag.htm</a></blockquote>
+--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;</blockquote>
+</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00025" href="msg00025.html">RE: Gaps and @AVE regridding transform</a></strong>
+<ul><li><em>From:</em> McCann, Mike</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00025.html">RE: Gaps and @AVE regridding transform</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00011.html">Daily data to monthly climatology...</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00025.html">Thread Prev</a>][<a href="msg00011.html">Thread Next</a>][<A HREF="threads.html#00026">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

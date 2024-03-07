@@ -1,0 +1,151 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: MOM4p0 [ferret_users] reading netcdf&#45;files, prepared with ferret -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 8 Dec 2005 09:14:28 &#45;0800 -->
+<!--X-Message-Id: 439869F3.6080605@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200512081547.jB8FllG30410@phy&#45;33.io&#45;warnemuende.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01074.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#01075">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Martin Schmidt &lt;<a href="mailto:mschmidt@DOMAIN.HIDDEN">mschmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 08 Dec 2005 09:14:27 -0800</li>
+<li>Cc: <a href="mailto:oar.gfdl.mom4p0@DOMAIN.HIDDEN">oar.gfdl.mom4p0@xxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>,       <a href="mailto:V.Balaji@DOMAIN.HIDDEN">V.Balaji@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg01074.html">200512081547.jB8FllG30410@phy-33.io-warnemuende.de</a>&gt;</li>
+<li>References: &lt;<a href="msg01074.html">200512081547.jB8FllG30410@phy-33.io-warnemuende.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Martin,<br>
+As we read the CF standard, nv, the number of vertices in a 
+multi-dimensioned coordinate variable, is a dimension but not a 
+coordinate variable, so this is how Ferret has implemented it. Ferret 
+calls this bnds rather than nv.  The number of vertices is determined by 
+the header of the netcdf file, where the dimension length is listed as 
+2.  Here's the CF standard, for reference<br>
+<a  href="http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html">http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html</a><br>
+<br>
+We are certainly willing to coordinate with the MOM4 developers to solve 
+this incompatibility.<br>
+<br>
+Ansley<br>
+<br>
+Martin Schmidt wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+<br>
+I send this mail to the mom4 and ferret list, because there<br>
+is a possible incompatibility in the understanding<br>
+of netcdf in ferret and mom4 (fms).<br>
+<br>
+Trying to read netcdf-files through the data_override utility I<br>
+have found the following:<br>
+<br>
+- ferret is a useful tool to process netcdf-files. Recent<br>
+versions add bounds, if axes are non equidistant. This is a nice<br>
+feature as far as information on data is kept accurate.<br>
+<br>
+Ferret adds a dimension bnds to the netcdf-file and defines a<br>
+double variable like in the example 
+       LON = 44 ;<br>
+       LAT = 38 ;<br>
+       bnds = 2 ;<br>
+       TAX = UNLIMITED ; // (1714 currently)<br>
+       double LAT(LAT) ;<br>
+              LAT:units = &quot;degrees_north&quot; ;<br>
+              LAT:point_spacing = &quot;uneven&quot; ;<br>
+              LAT:axis = &quot;Y&quot; ;<br>
+              LAT:bounds = &quot;LAT_bnds&quot; ;<br>
+       double LAT_bnds(LAT, bnds) ;<br>
+<br>
+There is no axis named bnds!<br>
+<br>
+- mom4 tries to read bounds too. However, it expects a complete<br>
+axis. In mpp_read_meta the number of dimensions is read and then<br>
+axes are allocated:<br>
+<br>
+       allocate(Axis(ndim))<br>
+       
+However, the axis corresponding to the dimension bnds is not<br>
+there and remains unknown. Later in get_axis_bounds, mom4<br>
+gets confused. It finds bounds in the attribute<br>
+list of one axis and tries to extract the values from a<br>
+data structure, which has the type of axis. However,<br>
+there is no axis but a field. Mom4 falls back to the default axis<br>
+(nothing), gets the axis length -1 which gives an error stop.<br>
+<br>
+Hence, two important codes, Ferret and MOM4 (FMS) make different assumptions<br>
+on the &quot;correct&quot; structure of a netcdf File. Please note,<br>
+also LAS 6.4 fails with netcdf-files with bounds<br>
+from ferret. 
+<br>
+I put this on the two list to draw developers attention to this problem. 
+<br>
+Kind regards,<br>
+Martin Schmidt<br>
+       
+ 
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01074" href="msg01074.html">MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01074.html">MOM4p0 [ferret_users] reading netcdf-files, prepared with ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01074.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#01075">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

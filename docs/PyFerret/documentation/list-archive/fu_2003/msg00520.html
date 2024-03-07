@@ -1,0 +1,217 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: mp_stereographic -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Thu, 24 Jul 2003 10:37:26 &#45;0700 -->
+<!--X-Message-Id: 3F201972.928350@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.33.0307241605200.20628&#45;100000@bcw006.knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: mp_stereographic</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00517.html">Thread Prev</a>][<a href="msg00519.html">Thread Next</a>][<A HREF="threads.html#00520">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: mp_stereographic</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>John Donners &lt;<a href="mailto:donners@DOMAIN.HIDDEN">donners@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: mp_stereographic</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 24 Jul 2003 10:37:55 -0700</li>
+<li>Cc: Gabriel Clauzet &lt;<a href="mailto:gclauzet@DOMAIN.HIDDEN">gclauzet@xxxxxx</a>&gt;,  Jonathan Callahan &lt;<a href="mailto:Jonathan.S.Callahan@DOMAIN.HIDDEN">Jonathan.S.Callahan@xxxxxxxx</a>&gt;,  <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00517.html">Pine.LNX.4.33.0307241605200.20628-100000@bcw006.knmi.nl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi John,
+Thanks for the answer.  I'd just like to add that if you want to change
+the sign you  can run the mp_stereographic.jnl script as is, and then use
+the opposite sign when you draw the plot
+
+shade  var, -1* x_page, -1* y_page
+
+Ansley Manke
+
+
+John Donners wrote:
+
+&gt; Hi Gabriel,
+&gt;
+&gt; I had a quick look at the script mp_stereographic_south.jnl, and if
+&gt; you change the two following lines, I think you get the representation
+&gt; as
+&gt; you would like it to be:
+&gt;
+&gt; let/quiet x_page = (-1.0) * mp_rho * sin(mp_lambda-mp_lambda0) ! eqn
+&gt; (108)
+&gt; let/quiet y_page = (-1.0) * mp_rho * cos(mp_lambda-mp_lambda0) ! eqn
+&gt; (109)
+&gt;
+&gt; into
+&gt;
+&gt; let/quiet x_page = mp_rho * sin(mp_lambda-mp_lambda0) ! eqn (108)
+&gt; let/quiet y_page = mp_rho * cos(mp_lambda-mp_lambda0) ! eqn (109)
+&gt;
+&gt; With regards,
+&gt;
+&gt; John
+&gt;
+&gt; On Thu, 24 Jul 2003, Gabriel Clauzet wrote:
+&gt;
+&gt; &gt; Dear Jon and Ferreters,
+&gt; &gt;
+&gt; &gt; I condenced my script using the ETOPO dataset, the script run well but
+&gt; I can't invert the projection, to have the Antarctica at the bottom of
+&gt; the figure and the equator at the top. If any one have an idea to help
+&gt; me please tell me.
+&gt; &gt;
+&gt; &gt; Best Regards
+&gt; &gt; Gabriel
+&gt; &gt;
+&gt; &gt; !!!!!!!!!!!!! PLOT SOUTH ATLANTIC OCEAN !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+&gt; &gt;
+&gt; &gt; SET WINDOW/SIZE=0.6
+&gt; &gt; USE etopo40
+&gt; &gt; SET GRID rose
+&gt; &gt;
+&gt; &gt; ! Define a region in the southern hemisphere.(80w:0e/10s:80s)
+&gt; &gt; LET xmin = 280; LET xmax = 360
+&gt; &gt; LET ymin = -80; LET ymax = -10
+&gt; &gt; LET xdel = 10; LET ydel = 10
+&gt; &gt;
+&gt; &gt; LET mid_lon = `xmin+(xmax-xmin)/2`
+&gt; &gt; LET mid_lat = `ymin+(ymax-ymin)/2`
+&gt; &gt; SET REGION/X=`xmin`:`xmax`/Y=`ymin`:`ymax`
+&gt; &gt;
+&gt; &gt; GO mp_stereographic_south `mid_lon` `mid_lat`
+&gt; &gt; LET masked_rose = rose * mp_mask
+&gt; &gt; GO mp_aspect
+&gt; &gt;
+&gt; &gt; FILL/NOAXES/NOLAB/PALETTE=land_sea/SET_UP masked_rose, x_page, y_page
+&gt; &gt; PPL SHAKEY 1, 0, 0.1, 2, , , 2.5, 8.5, 7.5, 8.2
+&gt; &gt; PPL FILL
+&gt; &gt;
+&gt; &gt; GO mp_land
+&gt; &gt;
+&gt; &gt; GO mp_graticule `xmin` `xmax` `xdel` `ymin` `ymax` `ydel`
+&gt; &gt;
+&gt; &gt; REPEAT/K=`xmin`:`xmax`:`xdel` (GO mp_label `k` `ymax+2` 0 `mid_lon-k`
+&gt; 0.12 &quot;@CR`k`&quot;)
+&gt; &gt; REPEAT/K=`-1*(ymin+ydel)`:`-1*(ymax-ydel)`:`2*ydel` (GO mp_label
+&gt; `xmin-2` `-1*k` -1 `mid_lon-xmin` 0.12 &quot;@CR`-1*k`&quot;)
+&gt; &gt; REPEAT/K=`-1*(ymin+ydel)`:`-1*(ymax-ydel)`:`2*ydel` (GO mp_label
+&gt; `xmax+2` `-1*k`  1 `mid_lon-xmax` 0.12 &quot;@CR`-1*k`&quot;)
+&gt; &gt;
+&gt; &gt; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    END
+&gt; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+&gt; &gt;
+&gt; &gt;   ----- Original Message -----
+&gt; &gt;   From: Jonathan Callahan
+&gt; &gt;   To: Gabriel Clauzet
+&gt; &gt;   Cc: ferret_users@ferret.wrc.noaa.gov
+&gt; &gt;   Sent: Wednesday, July 23, 2003 7:32 PM
+&gt; &gt;   Subject: Re: mp_stereographic
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;   Gabriel,
+&gt; &gt;
+&gt; &gt;   If you could condense your script to as few lines as possible and
+&gt; have it use the default 'coads_climatology' dataset it'll be much easier
+&gt; for us to see what's going wrong.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;   -- Jon
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;   Gabriel Clauzet wrote:
+&gt; &gt;
+&gt; &gt;     Dear Ferreters:
+&gt; &gt;     I am trying to do contour plot on polar stereographic projection
+&gt; using go mp_stereographic_south.jnl. I can put the Antarctica in the
+&gt; bottom of the figure and the equator in the upper part of the figure.
+&gt; Ferret always plot the figure in a North Hemispheric view.
+&gt; &gt;
+&gt; &gt;     Does any one have an idea to help me ?
+&gt; &gt;
+&gt; &gt;     Thanks
+&gt; &gt;
+&gt; &gt;     Gabriel
+&gt; &gt;
+&gt;
+&gt; ------------------------------------------
+&gt; John Donners
+&gt; Royal Netherlands Meteorological Institute
+&gt; Dept. Oceanographic Research
+&gt;
+&gt; P.O. Box 201
+&gt; Wilheminalaan 10
+&gt; 3730 AE  De Bilt
+&gt; tel. nr. : ++31 30 2206701
+&gt; fax. nr. : ++31 30 2202570
+&gt; e-mail   : donners@knmi.nl
+&gt; --------------------------------------------------------------
+&gt; Zie ook/see also: <a  href="http://www.knmi.nl/maildisclaimer.html">http://www.knmi.nl/maildisclaimer.html</a>
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00517" href="msg00517.html">Re: mp_stereographic</a></strong>
+<ul><li><em>From:</em> John Donners</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00517.html">Re: mp_stereographic</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00519.html">Fw: mp_stereographic</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00517.html">Thread Prev</a>][<a href="msg00519.html">Thread Next</a>][<A HREF="threads.html#00520">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

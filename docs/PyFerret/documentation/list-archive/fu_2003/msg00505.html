@@ -1,0 +1,287 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: ferret auto stats -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Thu, 17 Jul 2003 17:52:12 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0307171622540.2857&#45;200001@heron.pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 3F12FA49.AABD35A0@noaa.gov -->
+<!--X-Derived: gif00006.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: ferret auto stats</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00498.html">Thread Prev</a>][<a href="msg00499.html">Thread Next</a>][<A HREF="threads.html#00505">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: ferret auto stats</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Joe McLean &lt;<a href="mailto:joe.mclean@DOMAIN.HIDDEN">joe.mclean@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: ferret auto stats</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 17 Jul 2003 17:52:08 -0700 (PDT)</li>
+<li>Cc: &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;,  Cyndy Chandler &lt;<a href="mailto:cchandler@DOMAIN.HIDDEN">cchandler@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00498.html">3F12FA49.AABD35A0@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Cyndy and Joe,
+	I started to answer this a few days ago but got side-tracked onto
+something else.  Here is something that may still be timely and/or may
+be of use to others in the group.
+
+The hardest part of the problem is I think the automatic generation of a
+histogram of a field that may be 1,2,3, or 4D, so at first put aside the
+problem of 60 or more variables that you face. Using the script
+autohist.jnl below the histogram of a chosen variable can be generated as
+in the following demo
+
+use coads_climatology
+sho data
+     currently SET data sets:
+1&gt; /opt/local/ferret/fer_dsets/descr/coads_climatology.des  (default)
+ name     title                             I         J         K        L
+SST      SEA SURFACE TEMPERATURE          1:180     1:90      ...       1:12
+...
+! pick SST and generate its histogram over all locations and months
+let vhist=sst ; go autohist
+
+
+After chugging along for a while (but not, I suspect, as long as some of
+the other histogram tools which may involve a sort, or may not have 4D
+capability) this produces a plot such as the attached GIF.
+
+One could then pick another variable
+   let vhist=sst ; go autohist
+and repeat the process.
+
+There may be a way I'm not seeing for automating a grab of all of the
+variables present in a file, but a clunky way to make histograms that
+would not be too labor intensive would be to cut and paste the results
+of a &quot;sho data&quot; request to a file (say allvars.d) then do something
+like
+   awk '{print &quot;let vhist=&quot;$1,&quot; ; go autohist&quot;}' allvars.d &gt; allvars.jnl
+which in the case of the coads climatology would look like
+let vhist=SST  ; go autohist
+let vhist=AIRT  ; go autohist
+let vhist=SPEH  ; go autohist
+let vhist=WSPD  ; go autohist
+let vhist=UWND  ; go autohist
+let vhist=VWND  ; go autohist
+let vhist=SLP  ; go autohist
+
+Then a ferret session like
+	use coads_climatology
+	go allvars.jnl
+would crunch away while you went bike-riding, lunch-eating, whatever ...
+
+The autohist.jnl script is as follows, and its also attached.  Its not
+fully ready for primetime - for example at present it assumes right now
+that there is just one dataset loaded and is hardwired to bin the data
+into about 20 classes.
+
+The example shown is an unweighted histogram, with all the SST values
+tossed into the hopper without regard to the area (or volume) each one
+represents. It would not be too hard to modify autohist to produce a
+weighted histogram I'd guess. Still, even as it stands, I think it may
+be of use in the situation you described.
+
+Good luck,
+Mick
+
+!-----------------------------------------------------------------------------
+! autohist : automatically generates a histogram for a selected variable
+!            over the current region in 4-d, without the need for sorting.
+!
+! usage : let vhist = selected variable
+!         go autohist
+!
+def sym datafile `vhist,return=dset`
+def sym histname `vhist,return=title`
+!
+let vhistn = vhist[i=@min,j=@min,k=@min,l=@min]
+let vhistx = vhist[i=@max,j=@max,k=@max,l=@max]
+let nvhpts = vhist[i=@ngd,j=@ngd,k=@ngd,l=@ngd]
+!
+! form ABOUT 20 evenly spaced histogram bins
+!
+ppl %range `vhistn` `vhistx` 20
+!
+! whose range and increment are given by the ppl symbol values
+!     ($ppl$range_low),($ppl$range_high),($ppl$range_inc)
+! the number of bins is given by
+!
+let nhistb = int((($ppl$range_high)-($ppl$range_low))/($ppl$range_inc))
+!
+! and an integer bin variable is
+!
+let binvar = int((vhist-($ppl$range_low))/($ppl$range_inc))+1
+let binfreq = binsel[i=@ngd,j=@ngd,k=@ngd,l=@ngd]/nvhpts
+let bin0 = ($ppl$range_low)-($ppl$range_inc)/2 ; let bind = ($ppl$range_inc)
+! prepare polygon vertices
+let boxx=ysequence({-0.5,0.5,0.5,-0.5}) ; let boxy=ysequence({0,0,1,1})
+!
+! write the bin frequencies to a temporary file ...
+!
+sp \/usr/bin/rm -f dohist.jnl ; sp touch dohist.jnl
+sp \/usr/bin/rm -f histfile.tmp ; sp touch histfile.tmp
+sp \/usr/bin/rm -f doit.tmpl
+sp echo 'let binsel=if(binvar eq INDEX)then 1' &gt; doit.tmpl
+sp echo 'let bincent=bind*INDEX+bin0' &gt;&gt; doit.tmpl
+sp echo 'list/nohead/app/form=(2e13.5)/file=histfile.tmp bincent,binfreq' &gt;&gt; doit.tmpl
+repeat/i=1:`nhistb` (sp sed &quot;s/INDEX/`i`/&quot; doit.tmpl &gt;&gt; dohist.jnl)
+go dohist
+!
+! ... then read them back ...
+!
+file/form=free/var=xhist,yhist histfile.tmp
+!
+! ... and plot them as a black polygon
+!
+plot/vs/sym=5/nolab/set xhist,yhist
+ppl xaxis,($ppl$range_low),($ppl$range_high),($ppl$range_inc) ; ppl plot
+polygon/nolab/pal=black/nokey/o boxx*bind+xhist,boxy*yhist
+can data histfile.tmp
+label/nouser 0 `($ppl$ylen)+0.3` -1 0 0.15 Histogram for ($histname)
+label/nouser `($ppl$xlen)` `($ppl$ylen)+0.3` 1 0 0.15 Dataset: ($datafile)
+label/nouser -0.7 `($ppl$ylen)/2` 0 90 0.15 Frequency
+! show data extremes along the bottom axis
+label/nouser 0 -0.5 -1 0 0.15 @sr`vhistn`
+label/nouser `($ppl$xlen)` -0.5 1 0 0.15 @sr`vhistx`
+!
+! make a gif of the result
+!
+frame/file=($datafile)($histname).gif
+
+
+
+|____Mick.Spillane@noaa.gov____|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+</pre>
+<p><strong>Attachment:
+<a href="gif00006.gif" ><tt>coads_climatologySST.gif</tt></a></strong><br>
+<em>Description:</em> coads_climatologySST.gif</p>
+<pre>! autohist : automatically generates a histogram for a selected variable
+!            over the current region in 4-d, without the need for sorting.  
+!
+! usage : let vhist = selected variable
+!         go autohist
+!
+def sym datafile `vhist,return=dset`
+def sym histname `vhist,return=title`
+!
+let vhistn = vhist[i=@min,j=@min,k=@min,l=@min]
+let vhistx = vhist[i=@max,j=@max,k=@max,l=@max]
+let nvhpts = vhist[i=@ngd,j=@ngd,k=@ngd,l=@ngd]
+!
+! form ABOUT 20 evenly spaced histogram bins
+!
+ppl %range `vhistn` `vhistx` 20
+!
+! whose range and increment are given by the ppl symbol values
+!     ($ppl$range_low),($ppl$range_high),($ppl$range_inc)
+! the number of bins is given by
+!
+let nhistb = int((($ppl$range_high)-($ppl$range_low))/($ppl$range_inc))
+!
+! and an integer bin variable is 
+!
+let binvar = int((vhist-($ppl$range_low))/($ppl$range_inc))+1
+let binfreq = binsel[i=@ngd,j=@ngd,k=@ngd,l=@ngd]/nvhpts
+let bin0 = ($ppl$range_low)-($ppl$range_inc)/2 ; let bind = ($ppl$range_inc)
+! prepare polygon vertices
+let boxx=ysequence({-0.5,0.5,0.5,-0.5}) ; let boxy=ysequence({0,0,1,1})
+! 
+! write the bin frequencies to a temporary file ...
+!
+sp \/usr/bin/rm -f dohist.jnl ; sp touch dohist.jnl
+sp \/usr/bin/rm -f histfile.tmp ; sp touch histfile.tmp
+sp \/usr/bin/rm -f doit.tmpl
+sp echo 'let binsel=if(binvar eq INDEX)then 1' &gt; doit.tmpl
+sp echo 'let bincent=bind*INDEX+bin0' &gt;&gt; doit.tmpl
+sp echo 'list/nohead/app/form=(2e13.5)/file=histfile.tmp bincent,binfreq' &gt;&gt; doit.tmpl
+repeat/i=1:`nhistb` (sp sed &quot;s/INDEX/`i`/&quot; doit.tmpl &gt;&gt; dohist.jnl)
+go dohist
+!
+! ... then read them back ...
+!
+file/form=free/var=xhist,yhist histfile.tmp
+!
+! ... and plot them as a black polygon
+!
+plot/vs/sym=5/nolab/set xhist,yhist
+ppl xaxis,($ppl$range_low),($ppl$range_high),($ppl$range_inc) ; ppl plot
+polygon/nolab/pal=black/nokey/o boxx*bind+xhist,boxy*yhist
+can data histfile.tmp
+label/nouser 0 `($ppl$ylen)+0.3` -1 0 0.15 Histogram for ($histname)
+label/nouser `($ppl$xlen)` `($ppl$ylen)+0.3` 1 0 0.15 Dataset: ($datafile)
+label/nouser -0.7 `($ppl$ylen)/2` 0 90 0.15 Frequency
+! show data extremes along the bottom axis
+label/nouser 0 -0.5 -1 0 0.15 @sr`vhistn`
+label/nouser `($ppl$xlen)` -0.5 1 0 0.15 @sr`vhistx`
+!
+! make a gif of the result
+!
+frame/file=($datafile)($histname).gif
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00498" href="msg00498.html">ferret auto stats</a></strong>
+<ul><li><em>From:</em> Joe McLean</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00498.html">ferret auto stats</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00499.html">how to select the highest values in a 3d file?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00498.html">Thread Prev</a>][<a href="msg00499.html">Thread Next</a>][<A HREF="threads.html#00505">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: regridding data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 23 Jan 2004 09:24:52 &#45;0800 -->
+<!--X-Message-Id: 40115964.7000201@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3FDF4AF7.2030800@noaa.gov -->
+<!--X-Reference: 134.178.4.151.1074833860.4021@my.monash.edu.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: regridding data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00034.html">Thread Prev</a>][<a href="msg00039.html">Thread Next</a>][<A HREF="threads.html#00037">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: regridding data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>R Prabowo &lt;<a href="mailto:rmpra2@DOMAIN.HIDDEN">rmpra2@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: regridding data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 23 Jan 2004 09:27:00 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;134.178.4.151.1074833860.4021@my.monash.edu.au&gt;</li>
+<li>References: &lt;3FDF4AF7.2030800@noaa.gov&gt;&lt;134.178.4.151.1074833860.4021@my.monash.edu.au&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Mulyono,<br>
+Yes, you can easily do this.  There is no need to add a variable &quot;zero&quot;;<br>
+that method is used when we want to put a variable onto a grid that has<br>
+more dimensions than the original variable.<br>
+<br>
+You just need to define the new axes as you have done, and define<br>
+your new variable on the desired grid as follows:<br>
+<br>
+  use/regulart monthly.globe.nc<br>
+  DEFINE AXIS/X=5e:355e:5 ax_x<br>
+  DEFINE AXIS/Y=35s:35n:5 ax_y<br>
+  DEFINE GRID/like=monthly/x=ax_x/y=ax_y grd<br>
+  LET monthly5deg = monthly[g=grd]<br>
+<br>
+This will use linear interpolation to put the data on the 
+new grid.  Linear regridding is the default method.  If you 
+like, you can specify another method of regridding with a 
+transformation like @asn or @ave<br>
+<br>
+  LET monthly5deg = monthly[g=grd@ave]<br>
+<br>
+Please see Chapter 4, section 2.4 in the Users Guide (in the index, look 
+up the<br>
+topic &quot;regridding, syntax and examples&quot;) for more discussion of regridding.<br>
+<br>
+Ansley Manke<br>
+<br>
+R Prabowo wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi ferreters,<br>
+<br>
+Is there any way that i can regrid data into smaller or grater x and y axis?<br>
+I have been trying to regrid data[x=0:375.5:2.5, y=40s:40n:2.5] into data'[x=5e:355e:5, y=35s:35n:5] using<br>
+<br>
+use/regulart monthly.globe.nc<br>
+show data<br>
+DEFINE AXIS/X=5e:355e:5 ax_x<br>
+DEFINE AXIS/Y=35s:35n:5 ax_y<br>
+DEFINE GRID/like=monthly/x=ax_x/y=ax_y grd<br>
+LET zero = 0*x[g=grd]+0*y[g=grd]+0*t[g=grd]<br>
+LET monthly5deg = monthly + zero                          !    ***<br>
+save/clobber/file=monthly5deg.globe.nc monthly5deg  !    ***<br>
+<br>
+This script gave error warning as:<br>
+<br>
+*** NOTE: Ambiguous coordinates on X axis: MONTHLY5DEG + ZERO<br>
+**ERROR: inconsistent sizes of data regions: X axis<br>
+         ZERO has 73 points (I=00:72)<br>
+         expression has 144 points (I=001:144)<br>
+LIST/FORMAT=CDF/clobber/file=monthly5deg.globe.nc MONTHLY5DEG<br>
+Command file, command group, or REPEAT execution aborted<br>
+<br>
+When I changed line ***s into:<br>
+LET monthly5deg = monthly[g=grd@asn] + zero<br>
+save/clobber/file=monthly5deg.globe.nc monthly5deg<br>
+<br>
+the script worked, but the values of monthly5deg[i=1:73,j=1:17] in monthly5deg.globe.nc will be exactly the values of monthly[i=1:73,j=1:17] in monthly.globe.nc 
+<br>
+Any one can give me clues? Thank you very much.<br>
+cheers..<br>
+<br>
+<br>
+Mulyono<br>
+ 
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00034.html">Creating an animantion</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00039.html">integral in the reverse direction</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00034.html">Thread Prev</a>][<a href="msg00039.html">Thread Next</a>][<A HREF="threads.html#00037">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

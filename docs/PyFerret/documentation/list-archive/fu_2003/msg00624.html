@@ -1,0 +1,179 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Concatenating netcdf files along time dim -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Tue, 9 Sep 2003 09:27:42 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0309090906280.12444&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3F5D9BCB.3BB91FF@nus.edu.sg -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Concatenating netcdf files along time dim</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00628.html">Thread Prev</a>][<a href="msg00626.html">Thread Next</a>][<A HREF="threads.html#00624">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Concatenating netcdf files along time dim</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Concatenating netcdf files along time dim</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 09 Sep 2003 09:27:40 -0700 (PDT)</li>
+<li>Cc: &quot;Ferret User's group&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00620.html">3F5D9BCB.3BB91FF@nus.edu.sg</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Kek,
+	Here is a demo for what I think is your situation - a series
+of files with common x,y,z axes but with a single time step in each
+file with a different time origin for each.  I've simulated the
+situation with a set of 9 daily files - evenly spaced to make it
+clear what is going on, but with an alternate definition of the time
+axis (perhaps involving a dummy file defining the time axis) it should
+be possible to make the idea work for unevenly spaced times too.
+Hope the demo helps,
+Mick
+
+PS: I've attached the CDL file of one of the daily files at the end.
+
+PPS: I think your wish is to make a single file to hold all the data.
+If it were the case that you just wanted access to data from multiple
+individual files I bet you could do that with the multi-netcdf file
+arrangement described in the user guide which involves a descriptor
+file rather than a big combined data file.
+
+!---------------------------------------------------------
+! Combining daily netcdf files into a single netcdf file
+! Example:
+!       Here there are 9 files sharing the same x,y,z axes
+!       and each containing a single time step
+!         test001.cdf : time=1-jan-2003 , t0=1-jan-2003
+!         test002.cdf : time=2-jan-2003 , t0=2-jan-2003
+!         ...
+!         test009.cdf : time=9-jan-2003 , t0=9-jan-2003
+!       So the time value in each file is 0 but the time
+!       origin changes.
+!
+! Step 1: Read in the first file
+use test001.cdf
+
+! Step 2: Form a new grid with the same x,y,z axes but a new
+!         time axis that steps through all of the times
+def axis/t0=1-jan-2003/t=1-jan-2003:9-jan-2003:1/units=days tall
+def grid/like=v[d=1]/t=tall gall
+
+! Step 3: Redefine the variable on this grid
+let/title=&quot;Combined Variable&quot; vall=v[g=gall]
+
+! Step 4: Save the first time step
+save/file=combo.cdf/t=1-jan-2003 vall
+
+! Step 5: Append the remaining time steps
+can data/all ; use test002 ; save/file=combo.cdf/app/t=2-jan-2003 vall
+can data/all ; use test003 ; save/file=combo.cdf/app/t=3-jan-2003 vall
+can data/all ; use test004 ; save/file=combo.cdf/app/t=4-jan-2003 vall
+can data/all ; use test005 ; save/file=combo.cdf/app/t=5-jan-2003 vall
+can data/all ; use test006 ; save/file=combo.cdf/app/t=6-jan-2003 vall
+can data/all ; use test007 ; save/file=combo.cdf/app/t=7-jan-2003 vall
+can data/all ; use test008 ; save/file=combo.cdf/app/t=8-jan-2003 vall
+can data/all ; use test009 ; save/file=combo.cdf/app/t=9-jan-2003 vall
+
+!------------------------------------------------------
+
+One of the CDL files
+netcdf test001 {
+dimensions:
+        XAX = 4 ;
+        YAX = 3 ;
+        ZAX = 2 ;
+        TAX = UNLIMITED ; // (1 currently)
+variables:
+        double XAX(XAX) ;
+                XAX:point_spacing = &quot;even&quot; ;
+        double YAX(YAX) ;
+                YAX:point_spacing = &quot;even&quot; ;
+        double ZAX(ZAX) ;
+                ZAX:point_spacing = &quot;even&quot; ;
+        double TAX(TAX) ;
+                TAX:units = &quot;DAYS since 2003-01-01 00:00:00&quot; ;
+                TAX:time_origin = &quot;1-JAN-2003&quot; ;
+        float V(TAX, ZAX, YAX, XAX) ;
+                V:long_name = &quot;Test Variable&quot; ;
+data:
+ XAX = 1, 2, 3, 4 ;
+ YAX = 1, 2, 3 ;
+ ZAX = 1, 2 ;
+ TAX = 0 ;
+ V =
+  1111, 1112, 1113, 1114,
+  1121, 1122, 1123, 1124,
+  1131, 1132, 1133, 1134,
+  1211, 1212, 1213, 1214,
+  1221, 1222, 1223, 1224,
+  1231, 1232, 1233, 1234 ;
+}
+
+|____Mick.Spillane@noaa.gov____|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00620" href="msg00620.html">Concatenating netcdf files along time dim</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00628.html">Re: Concatenating netcdf files along time dim</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00626.html">Re: Concatenating netcdf files along time dim</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00628.html">Thread Prev</a>][<a href="msg00626.html">Thread Next</a>][<A HREF="threads.html#00624">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

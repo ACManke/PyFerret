@@ -1,0 +1,151 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: RE: Error writing CDF file -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Tue, 22 Jul 2003 11:38:59 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0307221121050.2857&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: JFEBJMPKAJGKKODBMKMJIEBICKAA.bruce@fordville.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>RE: Error writing CDF file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00510.html">Thread Prev</a>][<a href="msg00513.html">Thread Next</a>][<A HREF="threads.html#00512">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: Error writing CDF file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Bruce W. Ford&quot; &lt;<a href="mailto:bruce@DOMAIN.HIDDEN">bruce@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>RE: Error writing CDF file</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 22 Jul 2003 11:38:57 -0700 (PDT)</li>
+<li>Cc: Ferret_Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00510.html">JFEBJMPKAJGKKODBMKMJIEBICKAA.bruce@fordville.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Bruce,
+	It would seem that you need to restore the time information that
+the time averaging transformation removes.  Here is a demo that may help:
+
+-----------------------------------------------------------------------
+Ferret Session 1:
+Make test files of monthly data for jan,...,jun for 4 years
+
+def axis/x=1:4:1 xax ; def axis/y=1:3:1 yax ; def axis/z=1:2:1 zax
+def axis/t=15-jan-1991:15-jun-1991/npoints=6 tax
+def grid/x=xax/y=yax/z=zax/t=tax grd
+
+let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+910000
+save/file=test1991.nc v
+
+def axis/t=15-jan-1992:15-dec-1992/npoints=12 tax
+let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+920000
+save/file=test1992.nc v
+
+def axis/t=15-jan-1993:15-dec-1993/npoints=12 tax
+let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+930000
+save/file=test1993.nc v
+
+def axis/t=15-jan-1994:15-dec-1994/npoints=12 tax
+let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+940000
+save/file=test1994.nc v
+quit
+------------------------------------------------------------
+Ferret Session 2:
+Read each of these file in turn, compute the Feb-Apr average,
+and store it in a new file with an appropriate date, based here
+on the date of the variable &quot;v&quot;
+
+! define a time variable to assist in adding time dimension
+let time=t[g=v]
+! ... and associate the Feb-Apr average with the March date
+let/title=&quot;Feb-Apr Average&quot; fma=v[l=2:4@ave]+0*time[l=3]
+
+! access the 1991 data (monthly values jan-jun)
+use test1991.nc ; save/file=fma.nc fma
+
+! add the 1992 average
+use test1992.nc ; save/file=fma.nc/app fma
+
+! add the 1993 average
+use test1993.nc ; save/file=fma.nc/app fma
+
+! add the 1994 average
+use test1994.nc ; save/file=fma.nc/app fma
+quit
+----------------------------------------------------------------
+Ferret Session 3:
+Validate the content of the file &quot;fma.nc&quot;
+
+use fma.nc
+sho grid/all fma
+plot/i=1/j=1/k=1/sym=20 fma
+----------------------------------------------------------------
+
+Good luck,
+Mick
+
+|____Mick.Spillane@noaa.gov____|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00510" href="msg00510.html">RE: Error writing CDF file</a></strong>
+<ul><li><em>From:</em> Bruce W. Ford</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00510.html">RE: Error writing CDF file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00513.html">re: Error writing CDF file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00510.html">Thread Prev</a>][<a href="msg00513.html">Thread Next</a>][<A HREF="threads.html#00512">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

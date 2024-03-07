@@ -1,0 +1,223 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: frequency_histogram.jnl -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 26 Jan 2005 13:45:06 &#45;0800 -->
+<!--X-Message-Id: 41F80F75.4060403@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 1106664670.21327.23.camel@hades.uqar.qc.ca -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: frequency_histogram.jnl</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00077.html">Thread Prev</a>][<a href="msg00078.html">Thread Next</a>][<A HREF="threads.html#00091">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: frequency_histogram.jnl</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Vincent Le Fouest &lt;<a href="mailto:vincent_lefouest@DOMAIN.HIDDEN">vincent_lefouest@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: frequency_histogram.jnl</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 26 Jan 2005 13:45:25 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00077.html">1106664670.21327.23.camel@hades.uqar.qc.ca</a>&gt;</li>
+<li>References: &lt;<a href="msg00077.html">1106664670.21327.23.camel@hades.uqar.qc.ca</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Vincent,<br>
+This more recent version of  frequency_histogram.jnl (attached) does make<br>
+bars, unfilled or filled. It runs with version 5.41.<br>
+<br>
+ yes? SET DATA levitus_climatology<br>
+ yes? GO  frequency_histogram temp[X=0:360,Y=0:45N,Z=0] 0 32 0.5<br>
+ yes? GO  frequency_histogram temp[X=0:360,Y=0:45N,Z=0] 0 32 0.5 &quot; &quot; y 1<br>
+<br>
+Even if you don't update to a newer Ferret executable, you can get all 
+the updated<br>
+scripts from the Ferret Downloads page.<br>
+<a  href="http://www.ferret.noaa.gov/Ferret/Downloads/ferret_downloads.html">http://www.ferret.noaa.gov/Ferret/Downloads/ferret_downloads.html</a><br>
+<br>
+Towards the bottom there is a link to obtain all the Up-to-date script 
+files, which are available<br>
+via ftp. (Or you could download a Ferret Environment tar file from one 
+of the linux or<br>
+Solaris downloads pages; the scripts are contained in those tar files 
+and are the same for<br>
+all operating systems).   Except in a few rare cases, the newer scripts 
+will run with older<br>
+executables and some have significant improvements.<br>
+<br>
+Ansley<br>
+<br>
+Vincent Le Fouest wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">dear ferret users,<br>
+<br>
+I am using frequency_histogram.jnl on the Ferret version 5.41. It plots<br>
+crosses but I would like to have bars (filled or empty). Is there a way<br>
+to do it?<br>
+<br>
+Thanks,<br>
+ 
+<br>
+</blockquote><pre>\cancel mode verify
+!!
+! frequency_histogram.jnl - *sh* 8/94
+! *acm* Add argument to choose hollow or filled bars. Also fix
+!       the call to bar_chart2.jnl which should use plot/line
+!
+! Description: produce a 1D frequency histogram
+
+! Usage:  
+!    yes? GO frequency_histogram expression lo hi del [weight] [axis]  [style]
+
+! Note: this procedure (actually the bar_chart2 routine) uses the Y axis
+!	internally so it may not work properly if the Y axis has a region
+! 	set (it may even crash).  In this case either include the Y limits
+!	in the expression (i.e. &quot;temp[y=0]&quot; instead of &quot;temp&quot; with Y=0 in the
+!       region) or specify a free axis in the optional [AXIS] parameter
+
+! Note: If this script fails due to a large amount of input data, use 
+!       frequency_histogram2.jnl which does not call Unix sort and awk
+!       tools, but instead uses Ferret functions to compile the bins.
+
+! arguments:
+!    expression  - expression (values) from which histogram is to be computed
+!    lo, hi, del - the range of values for which a histogram is desired
+!    [weight]    - optional expression with weight for each value
+!    [axis]      - a free axis that the procedure can use (if Y isn't free)
+!    [style]     - 0 for hollow bars, 1 for filled.
+
+! Defaults:  weight - &quot;1&quot; (&quot;weight&quot; can be a variable name)
+!            axis - &quot;Y&quot;
+!            style - &quot;0&quot; hollow
+
+! Sample usage:
+!	yes? SET DATA levitus_climatology
+!	yes? GO  frequency_histogram temp[X=0:360,Y=0:45N,Z=0] 0 32 0.5
+!
+!	yes? GO  frequency_histogram temp[X=0:360,Y=0:45N,Z=0] 0 32 0.5 &quot; &quot; y 1
+
+
+! The optional &quot;weight&quot; parameter multiplies each grid cell by the variable
+! supplied.  In the surface temperature example above this might be the
+! area of each grid cell as follows:
+!let r=6370		! radius of earth
+!let pi=atan(1.)*4.
+!let deg2rad=pi/180.
+!let deg2km=2*pi*r/360.
+!let area=xbox[g=TEMP]*ybox[g=TEMP]*cos(y[g=TEMP]*deg2rad)*deg2km*deg2km*1e-6
+!SET VARIABLE/TITLE=&quot;Area of grid cells&quot;/Unit=&quot;km^22 x 10^-6&quot; area
+!GO frequency_histogram TEMP 0 32 .5 area
+
+query/ignore $1&quot;&lt;Usage: GO frequency_histogram expression lo hi del [weight]&quot;
+query/ignore $2&quot;&lt;Usage: GO frequency_histogram expression lo hi del [weight]&quot;
+query/ignore $3&quot;&lt;Usage: GO frequency_histogram expression lo hi del [weight]&quot;
+query/ignore $4&quot;&lt;Usage: GO frequency_histogram expression lo hi del [weight]&quot;
+let style = $7&quot;0&quot;
+
+! cleanup from previous
+set data/save
+cancel data/noerror frequency_h.dat
+
+! compute an index that numbers the histogram boxes on the desired output plot
+! also cope with missing values (&quot;MISSING()&quot;) and data below the minimums
+! (&quot;MAX()&quot;).  Data above the max is simply not read in the final commands
+! because it lies beyond the number of points in the grid gindex
+LET/QUIET vmin = $2
+LET/QUIET vmax = $3
+LET/QUIET vdelta = $4
+LET/QUIET vn = INT((vmax-vmin)/vdelta + 0.5) + 1
+LET/QUIET vindex = MISSING(INT(($1-vmin)/vdelta + 0.5) + 1, 0) ! 1 to vn
+LET/QUIET index = MAX(0, vindex) 
+
+! weight function for each grid cell
+LET/QUIET wt_index = $5&quot;1&quot;
+
+! create an output file with all TS grid boxes represented in order
+sp rm -f frequency_h.raw frequency_h.dat
+list/nohead/form=(F10.0,1PG14.7)/file=frequency_h.raw index, wt_index
+list/nohead/form=(F10.0,1PG14.7)/file=frequency_h.raw/append vn+1,0  ! MAX index + 1
+sp sort -n frequency_h.raw | awk -f $FER_DIR/go/frequency.awk &gt; frequency_h.dat
+
+define axis/$6&quot;y|X|Y|Z|T&quot;=$2:$3:$4 yax
+define grid/$6&quot;y|X|Y|Z|T&quot;=yax gindex
+set data/save
+file/grid=gindex/var=&quot;-,wt_count&quot; frequency_h.dat
+set variable/title=&quot;Sum of Weights&quot; wt_count
+set data/restore
+
+! clean up
+set data/restore
+
+! do a hollow or filled plot
+IF `style EQ 0` THEN
+  message/cont You may want to replot with color qualifiers on PLOT and Ymin specified:
+  message/cont &gt;&gt;&gt;  go bar_chart2 plot/line wt_count[d=frequency_h.dat] $6&quot;y|X|Y|Z|T&quot; clear [Ymin]
+  go bar_chart2 plot/line wt_count[d=frequency_h.dat] $6&quot;y|X|Y|Z|T&quot;
+ELSE
+  message/cont You may want to replot with /HLIM /PALETTE or other qualifiers on PLOT:
+  message/cont &gt;&gt;&gt;  go bar_chart3 poly/line/nolabel/fill wt_count [color] [base]
+  go bar_chart3 poly/line/nolabel/fill wt_count[d=frequency_h.dat] 
+ENDIF
+
+set mode/last verify
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00077" href="msg00077.html">frequency_histogram.jnl</a></strong>
+<ul><li><em>From:</em> Vincent Le Fouest</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00077.html">frequency_histogram.jnl</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00078.html">appending netcdf.Is there limit in number of files.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00077.html">Thread Prev</a>][<a href="msg00078.html">Thread Next</a>][<A HREF="threads.html#00091">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

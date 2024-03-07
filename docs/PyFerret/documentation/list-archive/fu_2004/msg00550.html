@@ -1,0 +1,197 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Geostrophic velocity -->
+<!--X-From-R13: [vpx Ecvyynar <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Fri, 6 Aug 2004 10:07:50 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0408060900470.760&#45;200000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 41115CD0.639C45BF@darya.nio.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Geostrophic velocity</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00549.html">Thread Prev</a>][<a href="msg00547.html">Thread Next</a>][<A HREF="threads.html#00550">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Geostrophic velocity</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Mohammed Al Saafani &lt;<a href="mailto:alsafany@DOMAIN.HIDDEN">alsafany@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Geostrophic velocity</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 6 Aug 2004 10:07:49 -0700 (PDT)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00544.html">41115CD0.639C45BF@darya.nio.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello again Mohammed,
+	I had a chance to look some more at your problem while waiting
+for a long job to run.  The result is attached as a script geovelsect.jnl
+which computes basically the same variables as does dynamic_height.jnl
+but for an arbitrary &quot;section&quot; defined by a set of locations, i=1,2,...
+The user provides the latitude and longitude values for each &quot;station&quot; on
+the section in addition to identifying the temperature, salinity and
+pressure variables.
+	I've tested the results by extracting zonal and meridional
+sections from the ocean_atlas_annual dataset and running them through
+geovelsect.jnl and dynamic_height.jnl . The minor differences in the
+results are I suspect due to my substitution of a great circle distance
+calculation as a replacement for the @ddc (my 111.11 factor for km/deg
+may differ from the equivalent in ferrets representation of global
+distances). I haven't looked at the match of geovelz, or tested it with
+datafiles containing multiple sections or representing the southern
+hemisphere. I did test it with a rudimentary skewed section and it
+worked fine.  If I made the change suggested in (3) below I could compare
+the result with those of the EPIC oceanographic package we also use at
+PMEL.
+	A couple of points to note:
+1) geovelsect.jnl provides only &quot;geovel&quot; (and geovelz) - the geostrophic
+   velocity at right angles to the section - rather than the geo_u and
+   geo_v components that dynamic_height.jnl can provide when a grid
+   has both x and y extent.                   ^
+2) to interpret the sign of geovel           / \   A positive
+   refer to the cartoon ---&gt;                /_ _\  geovel value
+   A positive value of geovel occurs   1-----|2|------3-----4--
+   for flow from right to left through       |_|
+   the section when looking toward
+   increasing values of the station
+   index. If the section is from west to east this corresponds to the
+   usual positive northward convention.  But if the section is south to
+   north, a positive geovel implies a westward flow, different from the
+   oceanographic interpretation of U.  I didn't test for southern
+   hemisphere sections where I suppose the opposite would apply.
+3) To get values for easy comparison with dynamic_height.jnl I followed
+   its use of centered differences in computing the geostrophic velocity.
+   Inherent in this is an assumption that the grid points are evenly
+   spaced! The usual oceanographic practice is to take each adjacent
+   station pair and compute the geostrophic velocity mid-way between them.
+   If I were planning to use geovelsect myself I would modify it to
+   mimic a forward difference rather than the centered difference and
+   add lonout,latout variables to hold the positions at which the geovel
+   values apply.
+
+Hope this stuff is of some use to you and others,
+Regards,
+Mick
+
+|!!! Mick.Spillane@noaa.gov !!!|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+</pre>
+<pre>
+! geostropic velocity calculation for section data. Mick Spillane 5-Aug-04     
+cancel mode verify
+!
+! adapted from the original dynamic_height.jnl
+!
+! For a set of temperature-salinity data on an x-z grid, this routine
+! computes the geostrophic velocity at right angles to the &quot;section&quot;.
+! The x-axis is just an index for the &quot;stations&quot; in the section, so
+! it does not need to have any particular units. Position on the
+! earth is given by latitude-longitude variables.
+!
+say &quot; &quot;
+say &quot;GEOVELSECT (Version 1.0):&quot;
+say &quot; Computes geostrophic velocity at right angles to a section&quot;
+say &quot; of temperature/salinity station profiles. A positive geovel&quot;
+say &quot; (in the northern hemisphere)        ^&quot;
+say &quot; is associated with flow from       / \   A positive&quot;
+say &quot; right to left through the         /_ _\  geovel value&quot;
+say &quot; section when looking toward  1-----|2|------3-----4--&quot;
+say &quot; increasing station number.         |_|&quot;
+say &quot; This version uses the equivalent of the centered difference&quot;
+say &quot; used in dynamic_height.jnl. This assumes equal spacing of&quot;
+say &quot; the stations and a better approach would probably be to&quot;
+say &quot; compute geovel midway between each station pair.&quot;
+say &quot; &quot; 
+say &quot;INSTRUCTIONS:&quot;
+say &quot; The following variables should be defined by the user&quot;
+say &quot;       my_temp : temperature on the x-z grid (degC)&quot;
+say &quot;       my_salt : salinity on the x-z grid (psu or ppt)&quot;
+say &quot;       my_lat  : latitudes for the section (degrees)&quot;
+say &quot;       my_lon  : longitudes for the section (degrees)&quot;
+say &quot;       my_pres : pressure in dbar (or depth in meters)&quot;
+say &quot; &quot;
+say &quot; then the following are computed&quot;
+say &quot;       coriolis : the coriolis parameter at each station&quot;
+say &quot;       deltax   : distance (in km) for centered difference&quot;
+say &quot;       svanom   : the specific volume anomaly&quot;
+say &quot;       dynht    : the dynamic height&quot;
+say &quot;       dynhtz   :    (see the original dynamic_height.jnl)&quot;
+say &quot;       geovel   : geostrophic velocity normal to section&quot;
+say &quot;       geovelz  :    (depth dependent version)&quot;
+say &quot; &quot;
+
+let SVanom = 1/rho_UN(my_salt,my_temp,my_pres) - 1/rho_UN(35,0,my_pres)
+let/title=&quot;Dynamic Height(dyn-cm)&quot; DYNHT  = 1E5 * SVanom[z=@din]
+let/title=&quot;Dynamic Height(dyn-cm)&quot; DYNHTz = 1E5 * (SVanom[z=@din]-SVanom[z=@iin])
+
+let d2r=atan(1.)/45
+let coriolis=d2r*SIN(d2r*my_lat)/120
+let lat_1=d2r*my_lat[i=@shf:1] ; let lat_2=d2r*my_lat[i=@shf:-1]
+let lon_1=d2r*my_lon[i=@shf:1] ; let lon_2=d2r*my_lon[i=@shf:-1]
+let deltax=111.11*acos(sin(lat_1)*sin(lat_2)+cos(lat_1)*cos(lat_2)*cos(lon_2-lon_1))/d2r
+
+let/title=&quot;Geostrophic Velocity (cm/s)&quot; geovel=(dynHT[i=@shf:1]-dynHT[i=@shf:-1])/(100*coriolis*deltax)
+let/title=&quot;Geostrophic Velocity (cm/s)&quot; geovelz=(dynHTZ[i=@shf:1]-dynHTZ)/(100*coriolis*deltax)
+
+set mode/last verify
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00544" href="msg00544.html">Geostrophic velocity</a></strong>
+<ul><li><em>From:</em> Mohammed Al Saafani</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00549.html">Re: Geostrophic velocity</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00547.html">Re: Fw: RDB data access error when I updated to LAS6.4???</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00549.html">Thread Prev</a>][<a href="msg00547.html">Thread Next</a>][<A HREF="threads.html#00550">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

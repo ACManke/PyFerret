@@ -1,0 +1,219 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Ferret gksm2ps -->
+<!--X-From-R13: Vrva Lryyr <urvaNvppr.eht.ay> -->
+<!--X-Date: Thu, 24 Nov 2005 01:22:22 &#45;0800 -->
+<!--X-Message-Id: 20051124092213.GB6839@goes.argoss.nl -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 437A029A.60108@palmod.uni&#45;bremen.de -->
+<!--X-Reference: AE7BF569&#45;3B70&#45;454F&#45;A36C&#45;66737B21C8F1@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Ferret gksm2ps</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01001.html">Thread Prev</a>][<a href="msg01003.html">Thread Next</a>][<A HREF="threads.html#01031">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Ferret gksm2ps</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Ferret gksm2ps</strong></li>
+<li><strong>From</strong>: <strong>Hein Zelle &lt;<a href="mailto:hein@DOMAIN.HIDDEN">hein@xxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 24 Nov 2005 10:22:13 +0100</li>
+<li>In-reply-to: &lt;<a href="msg01001.html">AE7BF569-3B70-454F-A36C-66737B21C8F1@noaa.gov</a>&gt;</li>
+<li>Mail-followup-to: Ferret &lt;ferret_users@noaa.gov&gt;</li>
+<li>References: &lt;<a href="msg01000.html">437A029A.60108@palmod.uni-bremen.de</a>&gt; &lt;<a href="msg01001.html">AE7BF569-3B70-454F-A36C-66737B21C8F1@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: mutt-ng/devel-20050823 (Linux)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>william s. kessler wrote:
+
+&gt; I have the same problem and also don't know how to get rid of these
+&gt; lines. It is very unfortunate, and I think it is deeply embedded in
+&gt; the way Ferret does color-filled plots. A klugey workaround is to
+&gt; make a gif plot at very large size. That is often sharp enough that
+&gt; it can be reduced to normal size and still appear crisp. But it is
+&gt; not a very good solution.
+
+This problem is due to antialiasing in your viewing/converting program
+that displays postscript on screen or writes it to a bitmap file. I
+can reproduce the lines by opening a Ferret-generated postscript file
+with 'gv' in linux. If I turn antialiasing on, it will show the
+stripes. If I turn it off, the fonts appear 'pixelated' on screen, but
+the graphics look fine.  The postscript file will print fine no matter
+what option I use - this is only relevant for bitmapped images.
+
+I convert my Ferret postscript to .eps and .png with the following
+commands:
+
+ps2epsi ferret_output.ps ferret_output.eps
+convert +antialias -density 300x300 ferret_output.eps ferret_output.png
+
+If I remove the +antialias option, I get the stripes in the output png
+as well. Attached is my 'fprint' script which automates everything -
+just do the following from inside ferret:
+
+set mode metafile
+! make plot here
+cancel mode metafile
+spawn fprint my_plot.eps       ! produces both .eps and .png
+
+If you rename or symlink the script so it's called &quot;rfprint&quot; it will
+automatically remove the the metafile.plt files that are left behind.
+Rename or link the script to &quot;bwprint&quot; and &quot;rbwprint&quot; to achieve the
+same for black/white plots, e.g.:
+
+spawn rfprint my_plot.eps      ! also removes metafile.plt
+
+
+I hope that solves your problem.
+Cheers,
+
+     Hein Zelle
+
+--
+
+ Unix is user friendly. It's just very particular about who 
+ it's friends are.
+
+ Hein Zelle                     hein@icce.rug.nl
+	                        <a  href="http://www.icce.rug.nl/~hein">http://www.icce.rug.nl/~hein</a>
+
+</pre>
+<pre>#!/bin/tcsh
+
+set inputfn=&quot;metafile.plt&quot;
+set outputfn=&quot;output.ps&quot;
+set myname=`basename $0`
+set convert=ps2epsi
+set makepng=&quot;convert +antialias -density 300x300&quot;
+
+if ($1 == &quot;-h&quot; || $1 == &quot;--help&quot;) then
+	echo &quot;&quot;
+	echo &quot;Usage: $myname [input.plt] &lt;output.[e]ps&gt;&quot;
+        echo &quot;    Input is optional, 'metafile.plt' assumed by default.&quot;
+        echo &quot;    If no arguments are given, values are requested interactively.&quot;
+	echo &quot;&quot;
+	echo &quot;Converts a Ferret metafile to (encapsulated) postscript, and&quot;
+        echo &quot;sets a proper boundingbox.&quot;
+
+	if ($myname == &quot;rfprint&quot;) then
+		echo &quot;Input file is removed after processing.&quot;
+	endif
+
+	echo &quot;&quot;
+	exit 0
+endif
+
+if ($1 == &quot;&quot;) then
+	# no arguments, ask interactively
+	echo -n &quot;enter input filename [metafile.plt] ? &quot;
+	set tmpin = $&lt;
+	if ($tmpin != &quot;&quot;) set inputfn = $tmpin
+
+	echo -n &quot;enter output filename [output.eps] ? &quot;
+	set tmpout = $&lt;
+	if ($tmpout != &quot;&quot;) set outputfn = $tmpout
+else
+	if ($2 == &quot;&quot;) then
+		# one argument
+		set outputfn = $1
+	else
+		# two arguments (or more)
+		set inputfn = $1
+		set outputfn = $2
+	endif
+endif
+
+if ($myname == &quot;bwprint&quot; || $myname == &quot;rbwprint&quot;) then
+    echo -n &quot;Fprint -l ps -R -o $outputfn $inputfn ... &quot;
+    Fprint -l ps -R -o $outputfn $inputfn
+else
+    echo -n &quot;Fprint -l cps -R -o $outputfn $inputfn ... &quot;
+    Fprint -l cps -R -o $outputfn $inputfn
+endif
+
+echo &quot;done.&quot;
+
+#echo &quot;psfixbb $outputfn ... &quot;
+#psfixbb $outputfn
+#echo &quot;done.&quot;
+
+# set epsfile=`basename $outputfn .ps`.eps
+set epsfile=${outputfn}.tmp
+set pngfile=`dirname $outputfn`/`basename $outputfn .eps`.png
+#echo -n &quot;$convert $outputfn EPS:$epsfile ... &quot;
+#$convert $outputfn EPS:$epsfile
+echo -n &quot;$convert $outputfn $epsfile ... &quot;
+$convert $outputfn $epsfile
+mv $epsfile $outputfn
+echo -n &quot;$makepng $outputfn $pngfile ... &quot;
+$makepng $outputfn $pngfile
+echo &quot;done.&quot;
+
+
+if ($myname == &quot;rfprint&quot; || $myname == &quot;rbwprint&quot;) then
+	echo -n &quot;rm $inputfn ... &quot;
+	rm $inputfn
+	echo &quot;done.&quot;
+endif
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01000" href="msg01000.html">[ferret_users] Ferret gksm2ps</a></strong>
+<ul><li><em>From:</em> Joerg Franke</li></ul></li>
+<li><strong><a name="01001" href="msg01001.html">Re: [ferret_users] Ferret gksm2ps</a></strong>
+<ul><li><em>From:</em> william s. kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01001.html">Re: [ferret_users] Ferret gksm2ps</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg01003.html">[ferret_users] [FERRET]memory issues in ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01001.html">Thread Prev</a>][<a href="msg01003.html">Thread Next</a>][<A HREF="threads.html#01031">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: SAVE in EOF analysis -->
+<!--X-From-R13: Evz Znexva <ynexvaNsf.srq.hf> -->
+<!--X-Date: Thu, 25 Sep 2003 15:07:40 &#45;0700 -->
+<!--X-Message-Id: OF13468F36.B9FA206C&#45;ON88256DAC.00782FE8@notes.fs.fed.us -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: SAVE in EOF analysis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00783.html">Thread Prev</a>][<a href="msg00701.html">Thread Next</a>][<A HREF="threads.html#00698">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: SAVE in EOF analysis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:byh@DOMAIN.HIDDEN">byh@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: SAVE in EOF analysis</strong></li>
+<li><strong>From</strong>: <strong>Sim Larkin &lt;<a href="mailto:larkin@DOMAIN.HIDDEN">larkin@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 25 Sep 2003 15:09:02 -0700</li>
+<li>Apparently-to: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>Apparently-to: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>Apparently-to: <a href="mailto:byh@DOMAIN.HIDDEN">byh@xxxxxxxxx</a></li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>, <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+
+
+Boyin -
+
+Your 120E:70W / 40s:50n domain contains
+~85 points in the X dimension
+~45 points in the Y dimension
+for a total of 85*45 = 3825 grid cells
+
+This means the EOF routine has to diagonalize a 3825 x 3825 square matrix
+containing &gt;14 million cells.
+
+Most exact diagonalization routines (such as used by FERRET) perform order
+(matrix dimension)^3 number of iterations to solve.
+In your example, your computer has to do order(55 billion) matrix
+operations to solve it (each matrix operation = many computer cycles and
+generally uses random memory access also slowing things down).
+
+I would be surprised if such calculations able to be done in a reasonable
+time.
+
+Many large matrix diagonalization calculations in the past have used
+inexact approximations that greatly limit the number of iterations
+required.
+I don't know of any coded routines for this, but perhaps some other Ferret
+User does.
+
+- Sim
+
+
+
+-------------------------------------------------------------------------------------------------
+
+Sim Larkin
+Research Physical Climatologist, AirFIRE Team
+USDA Forest Service Pacific Wildland Fire Sciences Laboratory
+400 N. 34th St Suite#201, Seattle, WA 98103
+Email: larkin@fs.fed.us
+206.732.7849
+-------------------------------------------------------------------------------------------------
+
+
+|---------+---------------------------------------&gt;
+|         |           Boyin Huang                 |
+|         |           &lt;huang_boyin@yahoo.com&gt;     |
+|         |           Sent by:                    |
+|         |           owner-ferret_users@ferret.pm|
+|         |           el.noaa.gov                 |
+|         |                                       |
+|         |                                       |
+|         |           09/25/2003 01:40 PM         |
+|         |           Please respond to byh       |
+|         |                                       |
+|---------+---------------------------------------&gt;
+  &gt;--------------------------------------------------------------------------------------------------------------------------------------------------|
+  |                                                                                                                                                  |
+  |        To:      ferret_users@ferret.wrc.noaa.gov                                                                                                 |
+  |        cc:                                                                                                                                       |
+  |        Subject: SAVE in EOF analysis                                                                                                             |
+  &gt;--------------------------------------------------------------------------------------------------------------------------------------------------|
+
+
+
+
+Hi, ferreters:
+
+Is the ferret so slow in doing EOF analysis?
+
+Using the demo file for eof analysis:
+
+-------------------------------------------------------
+SET REGION/X=67w:1w/Y=11S:11N
+USE coads_climatology
+LET eof_xyfcn = eof_space(sst, 0.5)
+SAVE/CLOBBER/FILE=sst_clim_eof_space.cdf eof_xyfcn
+
+USE sst_clim_eof_space.cdf
+SET VIEW ul; fill/l=1/TITLE=&quot;eof 1&quot; eof_xyfcn; go land
+-------------------------------------------------------
+
+Which works fine to me. Now I wish to have EOF in a
+larger domain, say 120E-70W and 40S-50N.
+
+I replaced set region by
+SET REGION/X=120e:70w/Y=40S:50N
+and added
+SET MEMORY/SIZE=260.(my computer memory is 1.5gb).
+
+I found that the ferret runs for ever (how long should
+I wait for?).
+
+I tried to diagnose the problem by typing these
+command lines interactively line by line, and found
+the problem is that the program was stuck by SAVE
+command.
+
+I then tried NOT to use the save command, but ferret
+says that the variable was not found.
+
+So, do we have to save EOF first, and the read and
+plot?
+
+How can I do the EOF analysis within a larger space
+domain and long time series? Say, simulated global SST
+with 200x100 grids for 1200 month, sst(200,100,1200).
+
+
+
+=====
+Boyin Huang
+The Center for Research on the Changing Earth System (CRCES)
+10211 Wincopin Circle, Suite 240
+Columbia, Maryland 21044
+Tel. 410-992-5300/819 (O), 410-737-4557(H)
+Fax. 410-992-5944, Email. byh@crces.org
+<a  href="http://byh.crces.org">http://byh.crces.org</a>
+
+__________________________________
+Do you Yahoo!?
+The New Yahoo! Shopping - with improved product search
+<a  href="http://shopping.yahoo.com">http://shopping.yahoo.com</a>
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00783.html">Re: SAVE in EOF analysis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00701.html">RE: SAVE in EOF analysis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00783.html">Thread Prev</a>][<a href="msg00701.html">Thread Next</a>][<A HREF="threads.html#00698">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

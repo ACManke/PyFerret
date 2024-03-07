@@ -1,0 +1,192 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Concatenating netcdf files along time dim -->
+<!--X-From-R13: uratxrxNahf.rqh.ft -->
+<!--X-Date: Wed, 10 Sep 2003 21:10:51 &#45;0700 -->
+<!--X-Message-Id: 3F5FF5C1.1606F0B9@nus.edu.sg -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3F5D9BCB.3BB91FF@nus.edu.sg -->
+<!--X-Reference: 3F5DF4F5.6E838FAE@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Concatenating netcdf files along time dim</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00623.html">Thread Prev</a>][<a href="msg00624.html">Thread Next</a>][<A HREF="threads.html#00628">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Concatenating netcdf files along time dim</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Ferret User's group&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Concatenating netcdf files along time dim</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></strong></li>
+<li>Date: Thu, 11 Sep 2003 12:10:41 +0800</li>
+<li>References: &lt;<a href="msg00620.html">3F5D9BCB.3BB91FF@nus.edu.sg</a>&gt; &lt;<a href="msg00623.html">3F5DF4F5.6E838FAE@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Thanks to Arindam C, Rost Parsons, Ansley M, and Mick Spillane for their
+helpful responses.
+
+Although somewhat unrelated to Ferret, I've decided that the most
+straightforward solution for my situation is to use NCO (netcdf
+operators, by Charlie Zender).  I cannot use 'ncrcat' directly as it
+currently doesn't interpret the time variable when concatenating files
+with different time origins.  I therefore will first have to use 'ncap'
+to modify the time values to be consistent with one time origin.  For
+example:
+
+ncap -s &quot;time=time+31&quot; feb.nc feb-new.nc
+ncap -s &quot;time=time+59&quot; mar.nc mar-new.nc
+ncrcat  jan.nc feb-new.nc mar-new.nc jan_feb_mar.nc
+
+where
+jan.nc has time units as &quot;days since 2003-01-01 00:00:00 +00:00&quot;
+feb.nc has time units as &quot;days since 2003-02-01 00:00:00 +00:00&quot;
+mar.nc has time units as &quot;days since 2003-03-01 00:00:00 +00:00&quot;
+
+Thanks again for all your educational responses.
+
+-Kek
+Physical Oceanography
+Singapore
+
+-------- Original Message --------
+Subject: Re: Concatenating netcdf files along time dim
+Date: Tue, 09 Sep 2003 08:42:45 -0700
+From: Ansley Manke &lt;Ansley.B.Manke@noaa.gov&gt;
+To: hengkek@nus.edu.sg
+CC: Ferret User's group &lt;ferret_users@ferret.wrc.noaa.gov&gt;
+References: &lt;<a href="msg00620.html">3F5D9BCB.3BB91FF@nus.edu.sg</a>&gt;
+
+Hi Kek,
+Another method is to use a multi-file cdf data set with a descriptor
+file,
+see &quot;descriptor file&quot; in the Users Guide.  This way you do not need to
+create a new NetCDF file, but only the descriptor.  The files can be
+associated into a multi-file dataset regardless of how their internal
+time
+dimensions are defined (if you are running Ferret v5.33 or later).  An
+example is given in the responses to this question from the Ferret email
+list archives:
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2002/msg00010.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2002/msg00010.html</a>
+
+Or, to write a new NetCDF file, please see &quot;append, time step to
+NetCDF file&quot; in the Ferret Users Guide for an example of how to do
+this in Ferret.  When your input files are NetCDF files themselves, you
+would define the time axes as in the example and regrid in time to the
+new time axis using the @ASN regridding transformation, then append
+the time step to your output NetCDF file.
+
+Ansley Manke
+
+hengkek@nus.edu.sg wrote:
+
+&gt; Hello people
+&gt;
+&gt; I'm trying my luck here to see if anyone has successfully used ferret to
+&gt; concatenate a series of netcdf files with the following properties:
+&gt;
+&gt; 1- Record variable is 'time'
+&gt; 2- One record per file
+&gt; 3- Value of &quot;time&quot; variable is '0.0' for each file.
+&gt; 4- Each file's origin for the time variable is different.
+&gt;
+&gt; I'd be most grateful for some tips or pointers to docs.  I was getting
+&gt; the error below.  I was hoping Ferret would magically recalculate all
+&gt; the time values to values relative to one single arbitrary origin.
+&gt;
+&gt; Thanks.
+&gt;
+&gt; -Kek
+&gt; Physical Oceanography
+&gt; Singapore
+&gt;
+&gt; -------------
+&gt; use x1.nc
+&gt; save/file=z.nc/append eee
+&gt;  LISTing to file z.nc
+&gt; use x2.nc
+&gt; save/file=z.nc/append eee
+&gt;  LISTing to file z.nc
+&gt;  **TMAP ERR: error in line definition
+&gt;              disordered output coordinate value: 2.08333E-03 Axis: TIME
+&gt; LIST/FORMAT=CDF/file=z.nc/append eee
+&gt; Command file, command group, or REPEAT execution aborted
+&gt; -------------
+&gt;
+&gt; x1.nc and x2.nc have different time origins.
+&gt;
+&gt; The netcdf file structure is as follows:
+&gt;
+&gt; dimensions:
+&gt;         z = 20 ;
+&gt;         lat = 199 ;
+&gt;         lon = 133 ;
+&gt;         time = UNLIMITED ; // (1 currently)
+&gt; ...
+&gt;         float time(time) ;
+&gt;                 time:long_name = &quot;time&quot; ;
+&gt;                 time:units = &quot;days since 2003-01-01 00:00:00 +00:00&quot; ;
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00620" href="msg00620.html">Concatenating netcdf files along time dim</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+<li><strong><a name="00623" href="msg00623.html">Re: Concatenating netcdf files along time dim</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00623.html">Re: Concatenating netcdf files along time dim</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00624.html">Re: Concatenating netcdf files along time dim</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00623.html">Thread Prev</a>][<a href="msg00624.html">Thread Next</a>][<A HREF="threads.html#00628">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

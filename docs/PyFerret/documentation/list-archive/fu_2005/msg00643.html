@@ -1,0 +1,269 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to compress NetCDF float variables to 2&#45;byte integer usingFerret 5.80? -->
+<!--X-From-R13: Uhf Qbeern <thfNyqrb.pbyhzovn.rqh> -->
+<!--X-Date: Thu, 23 Jun 2005 09:16:20 &#45;0700 -->
+<!--X-Message-Id: 42BAE04E.2040800@ldeo.columbia.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 42B9A9C0.5090901@ldeo.columbia.edu -->
+<!--X-Reference: 42B9BF37.6080905@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to compress NetCDF float variables to 2-byte integer usingFerret 5.80?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00641.html">Thread Prev</a>][<a href="msg00644.html">Thread Next</a>][<A HREF="threads.html#00643">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to compress NetCDF float variables to 2-byte integer usingFerret 5.80?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to compress NetCDF float variables to 2-byte integer usingFerret 5.80?</strong></li>
+<li><strong>From</strong>: <strong>Gus Correa &lt;<a href="mailto:gus@DOMAIN.HIDDEN">gus@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 23 Jun 2005 12:16:14 -0400</li>
+<li>In-reply-to: &lt;<a href="msg00641.html">42B9BF37.6080905@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00638.html">42B9A9C0.5090901@ldeo.columbia.edu</a>&gt; &lt;<a href="msg00641.html">42B9BF37.6080905@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050603 Fedora/1.7.8-1.1.1.legacy</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hello Ansley Manke and Ferret users list<br>
+<br>
+Thank you, Ansley, for your help.<br>
+Your clarification on the concept and use of the &quot;immediate mode&quot; of a 
+variable (the value stored on a variable),<br>
+by contrast to the variable itself (a reference or pointer to a 
+structure perhaps?),<br>
+was very insightful, and helped me understand how Ferret works.<br>
+<br>
+It looks like that I can't use Ferret for the 2-byte integer compression 
+of NetCDF files, as I intended to do.<br>
+I'll have to get around with some scripting using NCO tools,<br>
+or the hard way, writing a Fortran or C program using the NetCDF 
+libraries directly.<br>
+<br>
+I was trying to minimize the number of programs I need to use to 
+post-process climate model output.<br>
+Since I need to use Ferret to do more complicated things (e.g. convert 
+from sigma level to pressure coordinates),<br>
+I thought it might be possible to use it to do the compression as well.<br>
+Ferret has all the right ingredients for this, particularly the easy way 
+to find the global max and min of a dataset.<br>
+The only missing feature is the possibility to output NetCDF data in 
+different numeric formats.<br>
+<br>
+Would it be appropriate to request this feature for a future release of 
+Ferret?<br>
+(I.e, flexible numeric output format of NetCDF files, allowing floats, 
+double, short, etc).<br>
+Or is it far from the goals of Ferret?<br>
+<br>
+Thanks again.<br>
+Gus Correa<br>
+<br>
+Ansley Manke wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Gus,<br>
+Welcome to Ferret. (just a note that when you send questions about 
+using Ferret they should go just to ferret_users; contact_ferret is 
+more for system-related things, installation questions, or reporting 
+crashes or bugs and so on). You've written a great question, showing 
+what you're trying to do, what happens when you try and what you need 
+to know.  It makes it much easier to answer!<br>
+<br>
+First off, Ferret writes data to netCDF files only in the float 
+datatype, so  I'm not sure this whole exercise will save you much on 
+the size of the output file.<br>
+<br>
+The apparent discrepancy you see in the documentation between SET 
+VAR/SCALE and SET VAR/SCALEFAC is due to the fact that Ferret commands 
+and qualifiers can always be abbreviated to  4 characters (or fewer), 
+so these two specifications are the same. See &quot;commands, command 
+syntax&quot; in the Users Guide index for a list of notes about commands 
+syntax.<br>
+<br>
+SET VAR/SCALE and SET VAR/OFFSET are only for changing the scale 
+and/or offset values which will be used when Ferret reads data from a 
+netCDF file. Ferret does not write the scale factor or add_offset 
+attributes  when it writes a netCDF File; it writes the variable after 
+applying all scaling. The RETURN keywords nc_offset and nc_scale are 
+ways to access the values of these attributes as they appear in a file 
+that you are reading, and RETURN keywords user_offset and user_scale 
+are ways to get the value of any settings the user has made.  These 
+keywords are not things you can set, but just names for things you can 
+get back from Ferret.<br>
+<br>
+The syntax errors you're getting are because you want to use the 
+variable my_scale as a scalar in the SET VAR/SCALE command. When the 
+command is being parsed, Ferret does not generally evaluate the value 
+of expressions. To ensure that the value is viewed as a scalar when 
+the command is being parsed, enclose it in grave accent marks which 
+forces the expression my_scale to be evaluated.  This point is called 
+&quot;immediate mode&quot; expressions. (We can add an example to the Users 
+Guide to show this).<br>
+<br>
+yes? let my_scale = intrange/(my_max - my_min)<br>
+yes? set var/scale=`my_scale` my_new_var<br>
+<br>
+<br>
+-Ansley<br>
+<br>
+Gus Correa wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hello Ferret support person and users<br>
+<br>
+I am a new Ferret user.<br>
+I would like to use Ferret 5.80 to achieve a (modest) compression of 
+NetCDF files,<br>
+by doing this pretty standard procedure:<br>
+<br>
+(1) Read the floating point or double precision variables from NetCDF 
+files;<br>
+(2)  scale them (i.e. apply the appropriate scale and offset factors) 
+to fit the range of two-byte integers;<br>
+(3) convert them to two-byte integer variables, and<br>
+(4) write them to (hopefully smaller sized) NetCDF files.<br>
+<br>
+Step (1) is just the Ferret command &quot;use&quot;.<br>
+Step (2) goes more or less like this:<br>
+<br>
+let my_max=my_var{x=@max,y=@max,z=@max,t=@max]<br>
+let my_min=my_var{x=@min,y=@min,z=@min,t=@min]<br>
+let intrange=65534.0<br>
+let new_missing_value=-32768<br>
+let my_scale=intrange/(my_max - my_min)<br>
+let my_off=(my_max + my_min) / 2.0<br>
+let my_new_var = my_scale * (my_var - my_off)<br>
+let my_new_var2=missing(my_new_var, my_new_missing)<br>
+<br>
+<br>
+Regarding steps (3) and (4) I've got really confused and stuck.<br>
+<br>
+The Ferret 5.80 manual suggests using:<br>
+<br>
+set var/scale=my_scale my_new_var<br>
+<br>
+to set the scale attribute of the scaled variable, and similar for 
+the offset.<br>
+<br>
+However, show commands contains a different syntax:<br>
+<br>
+show commands set/variable<br>
+...<br>
+SET VARIABLE/TITLE/UNIT/GRID/BAD/DATASET/NAME/SCALEFAC/OFFSET<br>
+<br>
+<br>
+(Note the &quot;SCALEFAC&quot; spelling.)<br>
+<br>
+Moreover, when I try, no matter which syntax I use, all I get are 
+errors:<br>
+<br>
+yes? set var/scalefac=myscale my_new_var<br>
+**ERROR: command syntax: scalefac=myscale<br>
+yes? set var/scale=myscale my_new_var<br>
+**ERROR: command syntax: scale=myscale<br>
+yes? set var/user_scale=myscale my_new_var<br>
+**ERROR: unknown command qualifier: user_scale=myscale<br>
+yes? set var/nc_scale=myscale my_new_var<br>
+**ERROR: unknown command qualifier: nc_scale=myscale<br>
+<br>
+<br>
+Whereas, the SAY command with RETURN clause seems to work,<br>
+with yet different keywords:<br>
+<br>
+yes? say `my_new_var,return=nc_scale`<br>
+!-&gt; MESSAGE/CONTINUE 1<br>
+1<br>
+yes? say `my_new_var,return=user_scale`<br>
+!-&gt; MESSAGE/CONTINUE 1<br>
+1<br>
+yes? say `my_new_var,return=nc_offset`<br>
+!-&gt; MESSAGE/CONTINUE 0<br>
+0<br>
+yes? say `my_new_var,return=user_offset`<br>
+!-&gt; MESSAGE/CONTINUE 0<br>
+0<br>
+<br>
+<br>
+Questions:<br>
+<br>
+1. How can I set the scale and offset of the new (scaled) variable?<br>
+2. How can I convert it from floating point or double to 2-byte 
+integers?<br>
+3. Is this really implemented in Ferret 5.80, i.e. there a way to do 
+what I want using Ferret 5.80?<br>
+4. Is there any special function to convert a variable from float to 
+two-byte integer?<br>
+5. Is there an example script of how to do all of this?<br>
+6. Would it be possible to clarify the meaning, purpose, and 
+differences of all these scale/offset keywords?<br>
+(SCALE, SCALEFAC, NC_SCALE, USER_SCALE, and similar for offset)<br>
+<br>
+Thank you.<br>
+<br>
+Gus Correa<br>
+<br>
+</blockquote></blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00644" href="msg00644.html">Re: How to compress NetCDF float variables to 2-byte integer usingFerret 5.80?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00638" href="msg00638.html">How to compress NetCDF float variables to 2-byte integer using Ferret5.80?</a></strong>
+<ul><li><em>From:</em> Gus Correa</li></ul></li>
+<li><strong><a name="00641" href="msg00641.html">Re: How to compress NetCDF float variables to 2-byte integer usingFerret 5.80?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00641.html">Re: How to compress NetCDF float variables to 2-byte integer usingFerret 5.80?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00644.html">Re: How to compress NetCDF float variables to 2-byte integer usingFerret 5.80?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00641.html">Thread Prev</a>][<a href="msg00644.html">Thread Next</a>][<A HREF="threads.html#00643">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

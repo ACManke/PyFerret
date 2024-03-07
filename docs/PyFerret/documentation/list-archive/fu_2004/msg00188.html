@@ -1,0 +1,230 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Distribution of annual data across months -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 17 Mar 2004 09:28:45 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.21.0403172251010.1706&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.4.33.0403161417430.11394&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Distribution of annual data across months</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00177.html">Thread Prev</a>][<a href="msg00178.html">Thread Next</a>][<A HREF="threads.html#00188">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Distribution of annual data across months</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Distribution of annual data across months</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 17 Mar 2004 22:59:04 +0530 (IST)</li>
+<li>Cc: Barry Baker &lt;<a href="mailto:bbaker@DOMAIN.HIDDEN">bbaker@xxxxxxx</a>&gt;, Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00177.html">Pine.GSO.4.33.0403161417430.11394-100000@heron.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+     This is an add up to Mick's mail. I modified his script ( his 
+sampling idea was great)  to include the second variable - that repeats 12
+monthly values for each year.   
+
+
+!  define grid for three years annual data
+
+	def axis/t=1-jul-2001:1-jul-2003/npoints=3 t_3year
+	def grid/t=t_3year g_3year
+
+! and load it with sample data {3,1,2}
+
+	let ann_var=tsequence({3,1,2})
+	let yr_var=ann_var[g=g_3year,gt=@asn]
+        list yr_var
+
+! define grid for 12 months monthly data 
+
+	def axis/t=15-jan-0001:15-dec-0001/npoints=12 t_12mon
+	def grid/t=t_12mon g_12mon
+
+! and load it with sample data 
+
+	let mon_var=tsequence({1,2,3,4,5,6,7,8,9,10,11,12})
+	let mn_var=mon_var[g=g_12mon,gt=@asn]
+        list mn_var
+
+! now define grid (3yr*12mon ==&gt; 36 months) for the final output data
+
+	def axis/t=15-jan-2001:15-dec-2003/npoints=36 t_36mon
+	def grid/t=t_36mon g_36mon
+
+! now we need a &quot;sample&quot; function with 36 values: 12x1, 12x2, 12x3
+
+	let yr_samp = int((l[g=g_36mon]-1)/12) + 1 ! to sample yearly
+values
+        let mon_samp = l[g=g_36mon] - int((l[g=g_36mon]-1)/12)*12
+! to sample monthly values
+ 	list yr_samp, mon_samp
+
+! those two with the SAMPLEL function gives us monthly and yearly data in 
+! same grid hence can be multiplied to get the final answer        
+
+        let yr_t36_dummy   = samplel(yr_var,yr_samp)  
+        let mon_t36_dummy  = samplel(mn_var,mon_samp)
+
+	let yr_t36  = yr_t36_dummy[g=g_36mon,gt=@asn]
+        let mon_t36 = mon_t36_dummy[g=g_36mon,gt=@asn]
+
+        let final_var = yr_t36 * mon_t36
+
+	list yr_t36, mon_t36, final_var
+
+Hope this helps
+
+With Regards 
+
+Jaison
+
+
+
+
+On Tue, 16 Mar 2004 Mick.Spillane@noaa.gov wrote:
+
+&gt; Hi Barry,
+&gt; 	I think the SAMPLEL function may be of help in creating
+&gt; the first variable - that repeats each annual value 12 times.
+&gt; Here is a demo of what I have in mind (but for 3 years rather
+&gt; than 100 so the listings are shorter).
+&gt; 
+&gt; ! define grid for three years annual data
+&gt; def axis/t=1-jul-2001:1-jul-2003/npoints=3 tyear
+&gt; def grid/t=tyear gyear
+&gt; 
+&gt; ! and load it with sample data {2,3,1}
+&gt; let vsample=tsequence({2,3,1})
+&gt; let vyear=vsample[g=gyear,gt=@asn]
+&gt; list vyear
+&gt;  JUL-2001 / 1:  2.000
+&gt;  JUL-2002 / 2:  3.000
+&gt;  JUL-2003 / 3:  1.000
+&gt; 
+&gt; ! now define grid for the monthly data
+&gt; def axis/t=15-jan-2001:15-dec-2003/npoints=36 tmonth
+&gt; def grid/t=tmonth gmonth
+&gt; 
+&gt; ! now we need a &quot;sample&quot; function with 36 values: 12x1, 12x2, 12x3
+&gt; let lsamp = int((l[g=gmonth]-1)/12) + 1
+&gt; 
+&gt; ! which used with the SAMPLEL gives us what we need
+&gt; let vm=samplel(vyear,lsamp)     ! this has the values right but
+&gt;                                 ! lacks the calendar axis
+&gt; let vmonth=vm[g=gmonth,gt=@asn]
+&gt; list vmonth
+&gt;  15-JAN-2001 /  1:  2.000
+&gt;  14-FEB-2001 /  2:  2.000
+&gt;  16-MAR-2001 /  3:  2.000
+&gt;  16-APR-2001 /  4:  2.000
+&gt;  16-MAY-2001 /  5:  2.000
+&gt;  16-JUN-2001 /  6:  2.000
+&gt;  16-JUL-2001 /  7:  2.000
+&gt;  15-AUG-2001 /  8:  2.000
+&gt;  15-SEP-2001 /  9:  2.000
+&gt;  15-OCT-2001 / 10:  2.000
+&gt;  15-NOV-2001 / 11:  2.000
+&gt;  15-DEC-2001 / 12:  2.000
+&gt;  14-JAN-2002 / 13:  3.000
+&gt;  14-FEB-2002 / 14:  3.000
+&gt;  16-MAR-2002 / 15:  3.000
+&gt;  16-APR-2002 / 16:  3.000
+&gt;  16-MAY-2002 / 17:  3.000
+&gt;  15-JUN-2002 / 18:  3.000
+&gt;  16-JUL-2002 / 19:  3.000
+&gt;  15-AUG-2002 / 20:  3.000
+&gt;  15-SEP-2002 / 21:  3.000
+&gt;  15-OCT-2002 / 22:  3.000
+&gt;  14-NOV-2002 / 23:  3.000
+&gt;  15-DEC-2002 / 24:  3.000
+&gt;  14-JAN-2003 / 25:  1.000
+&gt;  14-FEB-2003 / 26:  1.000
+&gt;  16-MAR-2003 / 27:  1.000
+&gt;  15-APR-2003 / 28:  1.000
+&gt;  16-MAY-2003 / 29:  1.000
+&gt;  15-JUN-2003 / 30:  1.000
+&gt;  16-JUL-2003 / 31:  1.000
+&gt;  15-AUG-2003 / 32:  1.000
+&gt;  14-SEP-2003 / 33:  1.000
+&gt;  15-OCT-2003 / 34:  1.000
+&gt;  14-NOV-2003 / 35:  1.000
+&gt;  15-DEC-2003 / 36:  1.000
+&gt; 
+&gt; Your data seems to be ASCII so you are free to define your axes in
+&gt; a way similar to the above, but I think the scheme would work
+&gt; if &quot;gyear&quot;, &quot;gmonth&quot; came from input netcdf files.
+&gt; 
+&gt; Hope this helps,
+&gt; Mick
+&gt; 
+&gt; |Please note NEW E-Mail Address|
+&gt; |!!! Mick.Spillane@noaa.gov !!!|
+&gt; |__Room 2070 Bldg#3 NOAA/PMEL__|
+&gt; |____Phone_:_(206)526-6780_____|
+&gt; 
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00177" href="msg00177.html">Re: Distribution of annual data across months</a></strong>
+<ul><li><em>From:</em> Mick.Spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00177.html">Re: Distribution of annual data across months</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00178.html">Re: Distribution of annual data across months</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00177.html">Thread Prev</a>][<a href="msg00178.html">Thread Next</a>][<A HREF="threads.html#00188">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

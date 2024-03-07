@@ -1,0 +1,169 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Appending Slabs to netCDF files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 15 Jun 2005 10:02:43 &#45;0700 -->
+<!--X-Message-Id: 42B05F32.5090504@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.SGI.4.51.0506131944090.165972@www.coaps.fsu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Appending Slabs to netCDF files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00600.html">Thread Prev</a>][<a href="msg00601.html">Thread Next</a>][<A HREF="threads.html#00617">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Appending Slabs to netCDF files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Guimond &lt;<a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Appending Slabs to netCDF files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 15 Jun 2005 10:02:42 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00600.html">Pine.SGI.4.51.0506131944090.165972@www.coaps.fsu.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00600.html">Pine.SGI.4.51.0506131944090.165972@www.coaps.fsu.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Steve,<br>
+You don't say what commands you tried to use to create and append to the 
+netcdf file, but I expect the trouble is that you are doing the @WEQ and 
+@SUM on the existing Z axis, and you need to write the data on another Z 
+axis.  The @SUM creates a variable with no z variation, so you need to 
+put the variable onto the output axis, z level.  You also need to name 
+the variable with the same name when writing to the file at each level.  
+Try this example using the levitus_climatology dataset that's part of 
+the Ferret distribution, and see if it gives yo the ideas you need. (I 
+don't give any physical meaning to the calculations, they're just handy 
+variables in the dataset.)<br>
+<br>
+  use levitus_climatology<br>
+ 
+  ! define a variable using @WEQ, list it at one location as a check<br>
+  let w = temp[z=@weq:20]<br>
+  list/x=180/y=0 w<br>
+ 
+  ! Define a variable and integrate in Z<br>
+  let sw = salt*w<br>
+  let swsum = sw[z=@sum]<br>
+  shade  sw[z=@sum]  ! a var in x and y; look at it with SHADE command<br>
+ 
+  ! define an output axis; here we are using temperature at 20, 18, 16, 
+... so<br>
+  !  I use /DEPTH for the layer axis.<br>
+  ! Put the output variable onto that axis by adding 0*z[gz=zlayers]<br>
+<br>
+  def axis/z=1:5:1/depth zlayers<br>
+  let sw_out =  sw[z=0:5000@sum] + 0*z[gz=zlayers]<br>
+ 
+  save/clobber/file=layers.nc/klimits=1:5/k=1 sw_out<br>
+ 
+  ! Append the variable for more layers (other values of the 
+integrating kernal).<br>
+  ! Changing the definition of variable w changes the contents of sw_out<br>
+ 
+  let w = temp[z=@weq:18]<br>
+  save/append/file=layers.nc/k=2 sw_out<br>
+  let w = temp[z=@weq:16]<br>
+  save/append/file=layers.nc/k=3 sw_out<br>
+  let w = temp[z=@weq:14]<br>
+  save/append/file=layers.nc/k=4 sw_out<br>
+  let w = temp[z=@weq:12]<br>
+  save/append/file=layers.nc/k=5 sw_out<br>
+ 
+  ! check out the result.<br>
+  can data/all<br>
+  can var/all<br>
+ 
+  use layers.nc<br>
+  shade/y=0 sw_out<br>
+  shade/x=180 sw_out<br>
+  shade/l=3 sw_out<br>
+ 
+<br>
+Steve Guimond wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hello Ferreters:<br>
+  The section in the documentation for appending slabs to netCDF files is<br>
+a bit unclear to me.  I have created a variable using the &quot;let&quot; command<br>
+at a certain level and want to save each new level that I calculate as the<br>
+appropriate level in a new netCDF file.  The documentation says to define<br>
+two grids, one grid to read the data in one level at a time and the other<br>
+grid that will contain all levels in the new file.  Since I am not reading<br>
+in data, I tried to regrid my new variable on the grid used to read data<br>
+in, but this did not work ( **ERROR: invalid command: attempt to regrid on<br>
+a compressed axis).  My variable is created using the @weq transformation:<br>
+<br>
+let pvwght320 = pv*theta[z=@weq:320]<br>
+let pv320 = pvwght320[z=@sum]<br>
+<br>
+Can anyone clear up the documentation for me?  As you can see I want to<br>
+save &quot;pv320&quot; as level 1, &quot;pv325&quot; as level 2, etc. where z axis<br>
+goes from 320:345:5.<br>
+<br>
+Thanks.<br>
+<br>
+Steve Guimond<br>
+Research Assistant<br>
+The Center for Ocean-Atmospheric Prediction Studies<br>
+ 
+<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00600" href="msg00600.html">Appending Slabs to netCDF files</a></strong>
+<ul><li><em>From:</em> Steve Guimond</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00600.html">Appending Slabs to netCDF files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00601.html">Ferret: A question about recognizing dimentions.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00600.html">Thread Prev</a>][<a href="msg00601.html">Thread Next</a>][<A HREF="threads.html#00617">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: title of variable -->
+<!--X-From-R13: Vveblhxv Fbzvgn <gbzvgnNzrephel.bv.h&#45;gbxnv.np.wc> -->
+<!--X-Date: Sat, 25 Sep 2004 03:58:05 &#45;0700 -->
+<!--X-Message-Id: C60FB424&#45;0EE1&#45;11D9&#45;AB5E&#45;0003935AA05C@mercury.oi.u&#45;tokai.ac.jp -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: E448C92B&#45;0D16&#45;11D9&#45;835B&#45;0003935AA05C@mercury.oi.u&#45;tokai.ac.jp -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: title of variable</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00659.html">Thread Prev</a>][<a href="msg00670.html">Thread Next</a>][<A HREF="threads.html#00667">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: title of variable</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: title of variable</strong></li>
+<li><strong>From</strong>: <strong>Hiroyuki Tomita &lt;<a href="mailto:tomita@DOMAIN.HIDDEN">tomita@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 25 Sep 2004 19:58:03 +0900</li>
+<li>In-reply-to: &lt;<a href="msg00656.html">E448C92B-0D16-11D9-835B-0003935AA05C@mercury.oi.u-tokai.ac.jp</a>&gt;</li>
+<li>References: &lt;<a href="msg00656.html">E448C92B-0D16-11D9-835B-0003935AA05C@mercury.oi.u-tokai.ac.jp</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Dear Ferret users,<br>
+<br>
+<br>
+<br>
+I'm sorry for my late reply and I want to thank you for your helps!<br>
+My problem was solved.<br>
+<br>
+I summarize the problem and its answers here.<br>
+<br>
+<br>
+The additional string &quot;(T=31-DEC-1991 12:00:31-DEC-1992 12:00)&quot; was<br>
+in my NetCDF file as following<br>
+<br>
+yes? sho data<br>
+     currently SET data sets:<br>
+    1&gt; ./NRA1_WND_6HR_DAILY_1992-2000.nc  (default)<br>
+ name     title                             I         J         K       
+  L<br>
+ WND      NRA1 Wind Speed                  1:192     1:94      ...      
+ 1:3288<br>
+       (T=31-DEC-1991 12:00:31-DEC-1992 12:00)<br>
+<br>
+I want to erase this string.<br>
+<br>
+This comes from that when we &quot;regrid&quot; a data or append some NetCDF 
+files.<br>
+<br>
+Using command ncdump -h in Unix command line,<br>
+I confirmed this string is stored in the attribute &quot;long_name_mod&quot;.<br>
+We can not edit this attribute in Ferret.<br>
+<br>
+To avoid this problem, three methods are suggested by ferret users.<br>
+  1. Using Ferret<br>
+  2. Using command ncatted in NCO<br>
+  3. Using command ncdump and ncgen<br>
+<br>
+1. Using Ferret<br>
+  Define new variable with new title<br>
+ (then &quot;long_name_mod&quot; is not inherited to new variable) as following<br>
+<br>
+  let/title=&quot;NRA1 Wind Speed&quot; new_var = var_with_unconvenient_title<br>
+  save/file=new_file.nc/clobber new_var<br>
+<br>
+This method is very easy but a changing variable name is required.<br>
+<br>
+<br>
+ 2. Using command ncatted in NCO<br>
+  ncatted can edit any attriibute in NetCDF.<br>
+To erase the strings stored in attribute &quot;long_name_mod&quot;,<br>
+<br>
+ncatted -a long_name_mod,WND,d,c,&quot;&quot; NRA1_WND_6HR_DAILY_1992-2000.nc 
+test.cdf<br>
+<br>
+This method is very smart.  But we must install NCO in a system.<br>
+<br>
+<br>
+3. Using command ncdump and ncgen<br>
+  If the file is small (some MB), we can also use ncdump and ncgen<br>
+  ncdump your_file.nc &gt; your_file.dta<br>
+<br>
+Use a good ASCII-editor (nothing like word) to<br>
+change the header as you like.<br>
+<br>
+ncgen -b -o your_new_file.nc your_file.dta<br>
+<br>
+<br>
+<br>
+Thank you.<br>
+<br>
+Sincerely,<br>
+<br>
+<br>
+Hiroyuki Tomita<br>
+<br>
+On 2004/09/23, at 13:13, Hiroyuki Tomita wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ferret Users,<br>
+<br>
+<br>
+I have a small question for ferret.<br>
+<br>
+I read a NetCDF file created by ferret<br>
+and then the command &quot;show data&quot; gives following result.<br>
+<br>
+yes? sho data<br>
+     currently SET data sets:<br>
+    1&gt; ./NRA1_WND_6HR_DAILY_1992-2000.nc  (default)<br>
+ name     title                             I         J         K      
+   L<br>
+ WND      NRA1 Wind Speed                  1:192     1:94      ...     
+  1:3288<br>
+       (T=31-DEC-1991 12:00:31-DEC-1992 12:00)<br>
+<br>
+yes?<br>
+<br>
+I want to erace the string &quot;(T=31-DEC-1991 12:00:31-DEC-1992 12:00)&quot;<br>
+because this string does not make sense in my NetCDF file.<br>
+How can I do it?<br>
+<br>
+I guessed this string is title of variable,<br>
+so I tried to re-title using follwing command<br>
+set var/title=&quot;NRA1 Wind Speed&quot; WND<br>
+But the string was not erased.<br>
+<br>
+<br>
+Best,<br>
+<br>
+Hiroyuki Tomita<br>
+<br>
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00670" href="msg00670.html">Re: title of variable</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00656" href="msg00656.html">title of variable</a></strong>
+<ul><li><em>From:</em> Hiroyuki Tomita</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00659.html">Re: title of variable</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00670.html">Re: title of variable</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00659.html">Thread Prev</a>][<a href="msg00670.html">Thread Next</a>][<A HREF="threads.html#00667">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

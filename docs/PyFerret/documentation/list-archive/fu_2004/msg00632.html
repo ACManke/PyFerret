@@ -1,0 +1,132 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Vectorize a XYT box or, convert a 3D var to 1D -->
+<!--X-From-R13: Oaqerj Ivggraoret <Oaqerj.IvggraoretNabnn.tbi> -->
+<!--X-Date: Fri, 17 Sep 2004 07:58:38 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409170947100.1663&#45;100000@atw -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 414ADC3E.4DA146BC@ipimar.pt -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Vectorize a XYT box or, convert a 3D var to 1D</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00631.html">Thread Prev</a>][<a href="msg00633.html">Thread Next</a>][<A HREF="threads.html#00632">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Vectorize a XYT box or, convert a 3D var to 1D</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Vectorize a XYT box or, convert a 3D var to 1D</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 17 Sep 2004 10:58:36 -0400 (EDT)</li>
+<li>Cc: Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00631.html">414ADC3E.4DA146BC@ipimar.pt</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Fri, 17 Sep 2004, Paulo B. Oliveira wrote:
+&gt; I need to compute some simple statistics (median, quantiles) on a XYT
+&gt; box which depend on sorting data values. Currently, I'm saving the box
+&gt; values on an ascii file, read them on a single axis variable then, using
+&gt; sortk, I compute the values I need. However this process is very slow.
+&gt; Is there another way to create a 1D variable from a 3D XYT box ?
+
+Hi Paulo,
+
+The ZSEQUENCE function does what you need.  Here's an example showing how
+to compute quartiles (and more generally, quantiles/percentiles) from some
+2-dimensional data:
+
+use coads_climatology
+set mode interp
+
+! unwrap January tropical Pacific SSTs into a 1-dimensional array
+let a = zsequence(sst[l=1,y=30s:30n,x=120e:80w])
+
+! define a quantile axis
+let ngood = `a[k=@ngd]`
+def ax/z=0:1/np=`ngood` z_q
+
+! sort the data (missing values will be last)
+let a_z = samplek(a,sortk(a))
+ 
+! place the sorted valid data onto the quantile axis
+let/title=&quot;quantiles of `sst,r=title`&quot;/unit=&quot;`sst,r=unit`&quot; a_q = a_z[gz=z_q@asn]
+
+! plot the quantile function (inverse cumulative distribution function)
+plot/trans a_q
+
+! list the min, 1st quartile, median, 3rd quartile, and max 
+list a_q[z=0],a_q[z=.25],a_q[z=.5],a_q[z=.75],a_q[z=1]
+
+Apparently these SST data are skewed cold, i.e. the coldest temperatures
+are more extreme (farther from the median) than the warmest temperatures.
+
+Cheers,
+
+Andrew
+
+--
+Dr. Andrew T. Wittenberg
+Physical Scientist
+GFDL/NOAA, Princeton, NJ
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00631" href="msg00631.html">Vectorize a XYT box or, convert a 3D var to 1D</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00631.html">Vectorize a XYT box or, convert a 3D var to 1D</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00633.html">Re: Vectorize a XYT box or, convert a 3D var to 1D</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00631.html">Thread Prev</a>][<a href="msg00633.html">Thread Next</a>][<A HREF="threads.html#00632">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

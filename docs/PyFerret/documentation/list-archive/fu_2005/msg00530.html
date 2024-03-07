@@ -1,0 +1,141 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: SCAT2GRIDGAUSS_YZ -->
+<!--X-From-R13: Pvyyl Yrffyre <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 1 Jun 2005 11:51:31 &#45;0700 -->
+<!--X-Message-Id: 200506011851.j51IpUMg008270@ferret.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: SCAT2GRIDGAUSS_YZ</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00541.html">Thread Prev</a>][<a href="msg00527.html">Thread Next</a>][<A HREF="threads.html#00530">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: SCAT2GRIDGAUSS_YZ</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>, <a href="mailto:Sophie.Cravatte@DOMAIN.HIDDEN">Sophie.Cravatte@xxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: SCAT2GRIDGAUSS_YZ</strong></li>
+<li><strong>From</strong>: <strong>Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 1 Jun 2005 11:51:30 -0700 (PDT)</li>
+<li>Reply-to: Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Sophie -
+
+First of all, it's probably not a good idea to use the scat2grid algorithm in depth to make a 
+section (y-z or x-z). Picture such a section with scattered data like this:
+
+  y-&gt;
+z    * *    *     *
+|    *      * 
+v    *            *
+     * *    *     *
+     *      *     *
+     * *    *     *   
+     
+Consider the second profile, which has a long interval with no values. The scat2grid (either gauss 
+or laplace) algorithm is going to use values from the neighboring profiles to fill those points, 
+which could easily result in large and unphysical inversions. This would be more obvious with 
+temperature than with salinity, but for example consider the situation spanning the equator in the 
+Pacific, where there is an intrusion of high-salinity water from the south at thermocline level. If 
+you have missing points in a profile at, say, 2N, scat2grid will be influenced by southern values 
+and portray the tongue extending much too far north. A much more physically reasonable way to do 
+this would be to define a common z-axis (every 5m or it might be stretched). Then interpolate the 
+salinity for each profile individually using z=@fln. Then define the regular y-axis that you want, 
+and use y=@fln on the filled profiles.
+
+The best use of scat2grid is where interpolation in both directions makes sense, and I don't think 
+mixing horizontal and vertical directions in the ocean does. I have used scat2gridgauss many times 
+on 3-d ocean data, but only in x-y. I first linearly interpolated each profile to be complete and 
+regular in z, then used scat2gridgauss_xy at *each depth separately* to complete the gridding 
+process.
+
+Billy K
+
+&gt; Subject: SCAT2GRIDGAUSS_YZ
+&gt; From: Sophie Cravatte &lt;Sophie.Cravatte@notos.cst.cnes.fr&gt;
+&gt; To: ferret_users@noaa.gov
+&gt; Date: Wed, 01 Jun 2005 20:23:06 +0200
+&gt; 
+&gt; Dear Ferret users,
+&gt; 
+&gt; I can't figure out how to use the function SCAT2GRIDGAUSS_YZ to grid
+&gt; scattered data to a YZ grid.
+&gt; Here is my script:
+&gt; 
+&gt; define axis/y=20S:5S:1/units=degrees yaxs
+&gt; define axis/z=0:500:1/units=meters/depth zaxs
+&gt; SET DATA/EZ/var=&quot;lat,depth,temp,salt,o1,o2,dens&quot; r165e.dat
+&gt; 
+&gt; let salinite
+&gt; =SCAT2GRIDGAUSS_YZ(lat,depth,salt,y[gy=yaxs],z[gz=zaxs],2,2,2,2)
+&gt; 
+&gt; And instead of having a 2-D YZ field for salinite, I got a 3-D i,Y,Z
+&gt; field, and of course with stupid values.
+&gt; What's wrong in my script? What didn't I understand?
+&gt; 
+&gt; Thanks a lot for your help,
+&gt; 
+&gt; Sophie
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Sophie Cravatte
+&gt; LEGOS--14 av. Ed. Belin--31400 TOULOUSE
+&gt; tel: 05 61 33 30 05
+&gt; 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00541.html">Re: SCAT2GRIDGAUSS_YZ</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00527.html">Satellite Gridding Problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00541.html">Thread Prev</a>][<a href="msg00527.html">Thread Next</a>][<A HREF="threads.html#00530">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

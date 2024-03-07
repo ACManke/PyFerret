@@ -1,0 +1,270 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Making multiple subplots &#38; save the graphics o/p -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 17 Sep 2004 10:21:09 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409172249500.27239&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 414A45AC.29FB0BB4@umassd.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Making multiple subplots &amp; save the graphics o/p</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00630.html">Thread Prev</a>][<a href="msg00637.html">Thread Next</a>][<A HREF="threads.html#00636">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Making multiple subplots &amp; save the graphics o/p</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Making multiple subplots &amp; save the graphics o/p</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 17 Sep 2004 22:53:17 +0530 (IST)</li>
+<li>Cc: <a href="mailto:cshaji@DOMAIN.HIDDEN">cshaji@xxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00630.html">414A45AC.29FB0BB4@umassd.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Shaji,
+
+ Before answaring your questions....you can get a nice feel of ferret
+ by running the demo scripts provided with the ferret distribution..
+
+      yes? go vector_demo
+      yes? viewports_demo
+
+1) How can I make multiple subplots (6 or more) in a plot window.
+   I understand the following will give 4 subplots. How do we go 
+   for more than 4 plots?
+ 
+   Have a look at user manual : Ref Sec4.7. DEFINE VIEWPORT
+
+   example : define viewport/xlim=0:1/ylim=0:1 vmain
+   
+    you can define different viewports with different xlim, ylim
+    and names. /TEXT quifier can be used to control  the 
+    shrinkage/expansion
+
+2) How can I save the above graphics as postscript/pdf or better clarity
+    o/p ?
+ 
+   in User Manual : Ch9 Sec4. HARD COPY AND METAFILE TRANSLATION
+
+   example :  &quot;spawn&quot; command executes a Unix system command
+
+            spawn rm -f metafile*plt*    ! remove previous metafiles 
+            set mode meta                ! to generate meta file 
+
+            set data levitus_climatology 
+
+            fill/k=1 temp                ! make the plot
+
+            cancel mode meta             ! if we are transfoming the metafile
+            ppl clsplt                   !    to &quot;ps&quot; file without exitig the 
+                                         !    current ferret session we need to 
+                                         !    tell ferret: &quot;the curret metafile
+                                         !    can be closed&quot;
+            ! Fprint ==&gt; command to make ps file from metafile
+            ! -l cps ==&gt; color postscript
+            ! -o test.ps ==&gt; output &quot;ps&quot; file name
+            ! -R     ==&gt; to keep the metafile name &quot;metafile.plt&quot; unchanged
+
+            spawn Fprint -l cps -o test.ps -R metafile.plt
+            spawn ps2pdf test.ps 
+            spawn rm -f  test.ps metafile.plt  ! if you don't want these files
+
+3)Finally, when I plot the above current vectots, I always get the arrow
+   scale at the place where the xlabel is supposed to come. How can I move
+   the arrow scale to any of my desired place?
+
+  User Manual : Appendix B Sec9.83 VECKEY/qualifier,x,y,ipos,format
+
+    x    =  x position of vector key
+    y    =  y position of vector key  (default is no key at all)
+    ipos = relative position of key  (not implemented)
+    format = format to draw the numeric part of the key  default = (1pg10.3)
+
+   Note that it is a &quot;ppl&quot; command ..so it should be given between 
+          VEC/SETUP &amp; PPL VECTOR. 
+   Remember that xskip &amp; yskip should  be given with PPL VECTOR in the
+          case of VEC/SETUP (see the example below)
+      
+   Example : 
+              set data monthly_navy_winds
+              vec/l=10/len=3/set_up uwnd,vwnd
+              ppl veckey,30,-102,,(f3.0,&quot; m s^-^1&quot;)
+              ppl vector,4,4
+4) Also how can I shade the land areas in the plot?
+
+     Look at your ferret/go directory  for 
+                  fland.jnl &amp; land.jnl  
+
+     after making fill/shade/vector plot 
+
+          go fland   ! to get a filled land
+          go land    ! to get land boundaries
+
+    Look in fland.jnl &amp; land.jnl for options &amp; see the example below.
+
+
+Hope this helps
+
+With Regards 
+
+Jaison
+
+!-------------------Example.jnl----------------
+
+  set data monthly_navy_winds
+
+  set reg/x=30:120/y=-20:20
+
+  define view/xlim=0.0:0.5/ylim=0.6:1.0 vul ! 3 viewports on the left half of
+  define view/xlim=0.0:0.5/ylim=0.3:0.7 vml !   the window..similarly you can
+  define view/xlim=0.0:0.5/ylim=0.0:0.4 vll ! get on the right half by changing
+                                            ! the xlim
+
+  set view vul 
+  vec/l=10/len=3/set_up uwnd,vwnd
+  ppl veckey,30,-29,,(f3.0,&quot; m s^-^1&quot;)  ! ppl command..so with /set_up
+  ppl vector,4,4    ! in this case xskip &amp; yskip should be given with 
+  go land 2         !        ppl vector
+
+  set view vml 
+  vec/l=20/len=3/xskip=4/yskip=4/nolab uwnd,vwnd
+  go fland 20 black        ! land filled with black color using etopo20
+
+  set view vll
+  vec/l=30/len=3/xskip=4/yskip=4/nolab uwnd,vwnd
+  go fland 5 ! land filled with default color using etopo5
+
+!-----------End of Example.jnl------------------------
+
+
+
+
+
+
+On Thu, 16 Sep 2004 cshaji@UMassD.Edu wrote:
+
+&gt; Dear Ferret Users,
+&gt; 
+&gt;  I am new to using Ferret. I have a few doubts to clear.
+&gt; 
+&gt; 1) How can I make multiple subplots (6 or more) in a plot window.
+&gt; I understand the following will give 4 subplots. How do we go for more
+&gt; than 4 plots?
+&gt; 
+&gt; set view ul !upper left
+&gt; vector/overlay/l=5/leng=1./xskip=3/yskip=3 u,v
+&gt; 
+&gt; set view ur !upper right
+&gt; vector/overlay/l=5/leng=1./xskip=3/yskip=3 u,v
+&gt; 
+&gt; set view ll !lower left
+&gt; vector/overlay/l=5/leng=1./xskip=3/yskip=3 u,v
+&gt; 
+&gt; set view lr !lower right
+&gt; vector/overlay/l=5/leng=1./xskip=3/yskip=3 u,v
+&gt; 
+&gt; 2) How can I save the above graphics as postscript/pdf or better clarity
+&gt; o/p ?
+&gt; I used the command &quot;frame/file=fig01.gif&quot;
+&gt; But the plot is not so good. I want to get a ps/higher quality plot.
+&gt; What is the
+&gt; command in Ferret for this?
+&gt; 
+&gt; 3)Finally, when I plot the above current vectots, I always get the arrow
+&gt; scale at the place where
+&gt; the xlabel is supposed to come. How can I move the arrow scale to any of
+&gt; my desired place?
+&gt; 
+&gt; Also how can I shade the land areas in the plot?
+&gt; 
+&gt; I would be glad if someone can give some useful hints.
+&gt; 
+&gt; Thanks
+&gt; 
+&gt; C. Shaji
+&gt; 
+&gt; =====================================================================
+&gt; Dr. C. Shaji
+&gt; School of Marine Science and Technology
+&gt; University of Massachusetts Dartmouth
+&gt; 706 South Rodney French Blvd.
+&gt; New Bedford, MA 02744-1221.
+&gt; Phone: 508-910-6348 (O); 508-998-7347 (R),Fax: 508-910-6371.
+&gt; 
+&gt; To state the limitation of science is not to belittle it-M.K. Gndhi.
+&gt; =====================================================================
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00630" href="msg00630.html">Making multiple subplots &amp; save the graphics o/p</a></strong>
+<ul><li><em>From:</em> cshaji</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00630.html">Making multiple subplots &amp; save the graphics o/p</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00637.html">Re: Making multiple subplots &amp; save the graphics o/p</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00630.html">Thread Prev</a>][<a href="msg00637.html">Thread Next</a>][<A HREF="threads.html#00636">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

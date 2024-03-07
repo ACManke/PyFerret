@@ -1,0 +1,218 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Ascii file: switching X Y data -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sun, 22 Aug 2004 05:51:19 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0408221831300.2863&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4126BF5B.5DEA2065@nus.edu.sg -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Ascii file: switching X Y data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00567.html">Thread Prev</a>][<a href="msg00591.html">Thread Next</a>][<A HREF="threads.html#00568">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Ascii file: switching X Y data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Ascii file: switching X Y data</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 22 Aug 2004 18:38:45 +0530 (IST)</li>
+<li>Cc: <a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00567.html">4126BF5B.5DEA2065@nus.edu.sg</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Kek,
+ The problems associated with the format of your ascii data are
+
+     1. Due to the prescence of &quot;Time/Depth&quot; &amp; &quot;08:00:00&quot; fields in the 
+             first column we need to use the qualifiers 
+             FORMAT=DELIMITED/DELIMITER=&quot; &quot; along with the file command.
+             In this case  /COLUMNS won't be effective to read along a row
+             instead of the default columnwise reading.
+     2. It is not possible to skip first column and read the remaining
+             data block along rows using /COLUMNS qualifier to a single 
+             variable. 
+
+ Here is one way to tackle this (ofcourse not a 'neat' one). I took a case
+ with 8 depth points and 5 time points exactly like the format you specified.
+
+-----datafile.dat------------------------------------------
+Time/Depth  2.0   4.0   9.0   15     25    40    75    100
+08:00:00   33.3   32.2  31.4  31.0   30.3  30.0  29.6  29.4
+09:00:00   35.3   31.2  30.4  29.5   29.0  28.4  28.2  27.4
+10:00:00   39.3   37.2  37.4  36.3   35.2  34.4  33.2  32.4
+15:00:00   32.3   35.2  33.4  32.3   31.2  30.4  29.4  29.0
+17:00:00   31.3   31.2  31.4  31.0   30.5  30.0  29.6  29.0
+----end of datafile.dat------------------------------------
+
+!----example.jnl--------------    
+!
+! Read only the depth values from 1st row and then convert this 
+!   values to a 1D array. Then use this values to define a depth
+!   axis
+     
+   define symbol com = FORMAT=DELIMITED/DELIMITER=&quot; &quot; ! to make command lines 
+                                                      !    shorter
+   define axis/x=1:1:1 xax
+   define grid/x=xax grd
+   file/grid=grd/($com)/var=&quot;-,d1,d2,d3,d4,d5,d6,d7,d8&quot; datafile.dat
+   let dep = ZSEQUENCE({`d1`,`d2`,`d3`,`d4`,`d5`,`d6`,`d7`,`d8`})
+   define axis/z/units=&quot;meters&quot;/DEPTH/from_data zdep=dep        
+
+! Read time from second row onwards and define a time axis.
+!   it is assumed that the data is for 01-JAN-2003.
+
+   file/skip=1/($com)/type=time/var=tim datafile.dat
+   define axis/t/units=hours/T0=&quot;01-JAN-2003&quot;/from_data thr=tim
+
+! Read the data values of the variable('-' is to skip the time data)
+! and write it to a dummy file. Then read it back onto a grid defined by
+! those depth and time axes from the dummy file
+
+  file/skip=1/($com)/var=&quot;-,v1,v2,v3,v4,v5,v6,v7,v8&quot;
+  sp rm -f dummy.dat ! initial clean-up
+  list/nohead/quiet/file=dummy.dat/format=(8(f5.2,2x))/append v1,v2,v3,v4,v5,v6,v7,v8
+  define grid/z=zdep/t=thr vgrd
+  file/grid=vgrd/columns=8/var=myvar dummy.dat
+  set var/title=&quot;My Variable&quot;/units=&quot;my units&quot; myvar
+
+! Now the data is on proper grid; do the plotting/calculation steps.
+! I would strongly recommend you to save this data to a netCDF file using
+! &quot;SAVE&quot; commad for later use.
+
+  plot/l=1 myvar
+  ! save/file=myvar.nc/append myvar
+
+! Remove the dummy file
+
+  sp rm -f dummy.dat
+
+!--------------end of example.jnl--------------
+
+
+ Hope this Helps 
+
+ With Regards 
+
+ Jaison
+
+
+
+
+
+On Sat, 21 Aug 2004 hengkek@nus.edu.sg wrote:
+
+&gt; Greetings all
+&gt; 
+&gt; I have the following ascii file.  
+&gt; 
+&gt; ---------- start file -----------
+&gt; Time/Depth  2.0   4.0   9.0 ...
+&gt; 08:00:00   33.3   32.2  31.4 ...
+&gt; 09:00:00   35.3   31.2  30.4 ...
+&gt; 10:00:00   39.3   37.2  37.4 ...
+&gt; 15:00:00   32.3   35.2  33.4 ...
+&gt; 17:00:00   31.3   31.2  31.4 ...
+&gt; ...
+&gt; ---------- end file -----------
+&gt; File Description:
+&gt; 1st col: time  values
+&gt; 1st row: depth values
+&gt; Other vals: measurements at the given time and depth
+&gt; 
+&gt; I'm able to plot the timeseries at each depth.  My difficulty now is in
+&gt; plotting the measurements against depth without transposing the ascii
+&gt; file.  I.e. Y axis to be &quot;depth&quot; and X axis to be &quot;measurement&quot;.
+&gt; 
+&gt; I did the following for the timeseries.  How do I proceed to plot
+&gt; against depth?  I know I must now not skip the 1st row to get the depth
+&gt; values.  Thanks in advance for any pointers or leads.
+&gt; -----
+&gt; columns/skip=1/type=time,numeric,numeric,numeric,numeric,numeric,\
+&gt; 	numeric,numeric,numeric,numeric,numeric,numeric,numeric, \
+&gt; 	numeric,numeric,numeric,numeric,numeric,numeric,numeric, \
+&gt; 	numeric,numeric,numeric,numeric,numeric,numeric,numeric, \
+&gt; 	numeric,numeric,numeric,numeric,numeric,numeric,numeric, \
+&gt; 	numeric,numeric,numeric,numeric  EW_010804.txt
+&gt; plot/vs/line v1,v2,v3,v4,v5,v6,v7,v8
+&gt; -----
+&gt; 
+&gt; Regards
+&gt; -Kek
+&gt; Tropical Marine Science Institute
+&gt; Singapore
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00567" href="msg00567.html">Ascii file: switching X Y data</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00567.html">Ascii file: switching X Y data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00591.html">anomalies</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00567.html">Thread Prev</a>][<a href="msg00591.html">Thread Next</a>][<A HREF="threads.html#00568">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

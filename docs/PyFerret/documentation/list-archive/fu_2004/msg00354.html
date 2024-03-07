@@ -1,0 +1,189 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Relative day on Time axis -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 30 Apr 2004 16:54:58 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0405010504020.12303&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1083356538.14740.19.camel@emilyana -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Relative day on Time axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00353.html">Thread Prev</a>][<a href="msg00355.html">Thread Next</a>][<A HREF="threads.html#00354">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Relative day on Time axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Relative day on Time axis</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 01 May 2004 05:25:26 +0530 (IST)</li>
+<li>Cc: Le Clainche Yvonnick &lt;<a href="mailto:yvonnick.leclainche@DOMAIN.HIDDEN">yvonnick.leclainche@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00353.html">1083356538.14740.19.camel@emilyana</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+      You can do it by defining a new axis and regridding to that
+axis as the following example shows. But the method used here does have a 
+drawback, you have to use normal ppl axis commands like axlsze, axlint 
+etc. for the new time axis instead of the corresponding time-axis specific 
+commands like txlsze, txlint etc. 
+
+Hope this helps 
+
+with Regards
+
+Jaison 
+
+!--------------------------------------------
+\ cancel mode verify
+  set window/clear
+
+! get a time axis and some data (var1)
+    define axis/t=&quot;10-jul-2002:00:00&quot;:&quot;30-jul-2002:00:00&quot;/t0=&quot;10-jul-2002:00:00&quot;/np=21/units=hours tax
+    let var1 = sin(T[GT=tax])
+    set view upper ; plot var1
+
+    let l_start = `var1,return=lstart`     ! to get the points (here days)
+    let l_end  = `var1,return=lend`        ! on time axis
+    let l_points= `l_end` - `l_start` + 1  ! 
+    list l_start, l_end, l_points
+
+    define axis/t=1:`l_points`:1/units=days tday ! new axis
+    let var2 = var1[GT=tday@asn]                 ! regridding with @asn
+    set view lower ;  plot var2
+
+! now if you want to modify the &quot;time axis&quot; only...since here 
+! the new time axis behaves like other axes...little care
+! should be taken. We will define two viewports and will 
+! use one for getting y-axis labels in the default way and 
+! the second one for getting the desired plot with desired
+! labelling features
+
+   set window/clear
+
+   define view/xlim=0:1/ylim=0.1:0.6  v1 ! for Y-axis  
+   define view/xlim=0:1/ylim=0.1:0.6  v2 ! for T-axis &amp; plot  
+   
+   set view v1
+   ppl axset 0 0 1 1    ! only Y-axes                       
+   plot/vlim=-1:1:0.2/nolab/color=white var1 ! no plot
+ 
+   set view v2
+   ppl axlsze 0.14      ! new T-axis label size
+   ppl axlint, 1,2      ! new T-axis label interval
+   ppl axnmtc, 1,2      ! small tics between large tics 
+   ppl axset 1 1 0 0    ! skipping Y-axes
+   plot/vlim=-1:1:0.2 var2 ! note vlim used in here and
+                           ! in above plot command; 
+! storing back the defaults
+   ppl axlsze 0.1   ! restore for X axis (rather t axis here !!)
+   ppl axlint, 2,2
+   ppl axnmtc, 0,0
+
+--------------------------------------------------------
+
+
+
+On Fri, 30 Apr 2004, Le Clainche Yvonnick wrote:
+
+&gt; Hello,
+&gt; 
+&gt; I have  got a 1D data in a NetCDF file where :
+&gt;         time = UNLIMITED ; // (499 currently)
+&gt; and
+&gt;         time:units = &quot;hours since 2002-07-10 00:00:00&quot; ;
+&gt; 
+&gt; Instead of date on the TAXIS (10 11 12 13 ...), I would like to have
+&gt; only relative days. That means 1 for 10 JUL, 2 for 11 JUL, etc... on the
+&gt; TAXIS (1 2 3 ...)
+&gt; I tried different regridding  approach, but  I cannot do it.
+&gt; Do you know if there is a simple way to do that? 
+&gt; Thank you in advance.
+&gt; 
+&gt; Yvonnick Le Clainche
+&gt; ----------------------------------------------------------------------------------
+&gt; Québec-Océan
+&gt; Université Laval, Pavillon Alexandre-Vachon
+&gt; Québec, QC, G1K 7P4, Canada
+&gt; Tél. (1) 418-656-5917 #6274
+&gt; Fax (1) 418-656-2339
+&gt; -----------------------------------------------------------------------------------
+&gt; &quot;Peu importe le voyage, pourvu que l'horizon soit vaste.&quot;
+&gt; -----------------------------------------------------------------------------------
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00353" href="msg00353.html">Relative day on Time axis</a></strong>
+<ul><li><em>From:</em> Le Clainche Yvonnick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00353.html">Relative day on Time axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00355.html">manipulate postscript output from -batch</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00353.html">Thread Prev</a>][<a href="msg00355.html">Thread Next</a>][<A HREF="threads.html#00354">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

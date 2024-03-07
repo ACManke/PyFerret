@@ -1,0 +1,205 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] TMAP ERR: limit on storage for coordinates -->
+<!--X-From-R13: uratxrxNahf.rqh.ft -->
+<!--X-Date: Tue, 18 Oct 2005 19:53:46 &#45;0700 -->
+<!--X-Message-Id: 4355B503.4030202@nus.edu.sg -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4354D834.5070207@nus.edu.sg -->
+<!--X-Reference: 43552C9C.7020306@noaa.gov -->
+<!--X-Reference: 435533E8.6030607@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] TMAP ERR: limit on storage for coordinates</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00949.html">Thread Prev</a>][<a href="msg00951.html">Thread Next</a>][<A HREF="threads.html#00950">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] TMAP ERR: limit on storage for coordinates</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] TMAP ERR: limit on storage for coordinates</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></strong></li>
+<li>Date: Wed, 19 Oct 2005 10:52:51 +0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00949.html">435533E8.6030607@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00943.html">4354D834.5070207@nus.edu.sg</a>&gt; &lt;<a href="msg00948.html">43552C9C.7020306@noaa.gov</a>&gt; &lt;<a href="msg00949.html">435533E8.6030607@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Thanks, Ansley for your response.<br>
+<br>
+&gt; If you open just one of the files, and<br>
+&gt; do a SHOW DATA command, do you see the variables LONGITUDE  and<br>
+&gt; LATITUDE listed with (invalid coordinate axis)?<br>
+<br>
+No, I don't see the LONGITUDE and LATITUDE variables listed at all (when 
+I start a new ferret session and open one file and do SHOW DATA).<br>
+<br>
+Upon closer examination, yes, the LATITUDE coordinates in the dataset 
+indeed are unevenly spaced.  I guess I'll have to use Ansley's 
+suggestion of separate Ferret sessions.<br>
+<br>
+Thanks.<br>
+<br>
+-Kek<br>
+<br>
+-------- Original Message --------<br>
+Subject: Re: [ferret_users] TMAP ERR: limit on storage for coordinates<br>
+Date: Tue, 18 Oct 2005 10:42:00 -0700<br>
+From: Ansley Manke<br>
+<br>
+Hi all,<br>
+A more general discussion of this issue:  Ferret stores<br>
+irregularly-spaced axes, including the axis coordinates plus the<br>
+location of the bounds of the grid cells, in a fixed-length piece of<br>
+storage.  When the dataset is canceled, the axis and grid pointers are<br>
+reset, but the pointer into the coordinate storage is not, so that this<br>
+coordinate storage is not re-used. CANCEL AXIS/ALL does not have any<br>
+effect on this: if you do it after the dataset has been canceled, the<br>
+axis no longer is defined, so the axis is not on the list to be<br>
+canceled, and if you did a CANCEL AXIS/ALL before canceling the dataset,<br>
+it would not be removed as the axis is still marked as &quot;in use&quot;. The way<br>
+to fix this would be for us to use dynamic storage for the irregular<br>
+coordinates, but as things stand now there is not a way around this.<br>
+<br>
+A workaround for Kek might be to use separate Ferret sessions, perhaps<br>
+controlled by a unix script. This script could call Ferret with the<br>
+&quot;ferret -script&quot; startup mode, passing the filename to each session.<br>
+<br>
+Ansley<br>
+<br>
+Ansley Manke wrote:<br>
+<br>
+&gt; Hi Kek,<br>
+&gt; You show a SHOW DATA output, which looks as if there is something in<br>
+&gt; the grid that is non-standard.  If you open just one of the files, and<br>
+&gt; do a SHOW DATA command, do you see the variables LONGITUDE  and<br>
+&gt; LATITUDE listed with (invalid coordinate axis)?  Solving that might<br>
+&gt; help you to be able to look at all of your data.  Is the data in fact<br>
+&gt; on an irregular grid, or should it be regularly-spaced?<br>
+&gt;<br>
+&gt; Ansley<br>
+&gt;<br>
+&gt;<br>
+&gt; kek@xxxxxxxxx wrote:<br>
+&gt;<br>
+&gt;&gt; Greetings<br>
+&gt;&gt;<br>
+&gt;&gt; I'm trying to plot 300 files in succession in using a jnl script, but<br>
+&gt;&gt; am running into the following errors after it processes several<br>
+&gt;&gt; files. Each file is identical in dimensions and variable, but has no<br>
+&gt;&gt; record dimension.  Is there any CANCEL command (or equivalent) I can<br>
+&gt;&gt; use to avoid this error?  e.g. something to reset after each plot?<br>
+&gt;&gt; I've tried all sorts of CANCELs to no avail (see below).<br>
+&gt;&gt;<br>
+&gt;&gt; Thanks for any answers.<br>
+&gt;&gt;<br>
+&gt;&gt; -Kek<br>
+&gt;&gt;         NOAA/PMEL TMAP<br>
+&gt;&gt;         FERRET v5.70<br>
+&gt;&gt;         Linux(g77) 2.4.18 - 06/30/04<br>
+&gt;&gt;         18-Oct-05 19:07<br>
+&gt;&gt;<br>
+&gt;&gt; -----------------------------------<br>
+&gt;&gt; ...<br>
+&gt;&gt; ...<br>
+&gt;&gt; use file101.nc<br>
+&gt;&gt; shade/x=99:121/y=0:25 ssh<br>
+&gt;&gt; can dat/all<br>
+&gt;&gt; can axis/all<br>
+&gt;&gt; can mem/all<br>
+&gt;&gt; can var/all<br>
+&gt;&gt; set mem/siz=100<br>
+&gt;&gt; use file102.nc<br>
+&gt;&gt;  **TMAP ERR: limit on storage for coordinates has been reached<br>
+&gt;&gt;              MAX= 250000<br>
+&gt;&gt;  **TMAP ERR: limit on storage for coordinates has been reached<br>
+&gt;&gt;              MAX= 250000<br>
+&gt;&gt; shade/x=99:121/y=0:25 ssh<br>
+&gt;&gt; can dat/all<br>
+&gt;&gt; can axis/all<br>
+&gt;&gt; can mem/all<br>
+&gt;&gt; can var/all<br>
+&gt;&gt; set mem/siz=100<br>
+&gt;&gt; use file103.nc<br>
+&gt;&gt;  **TMAP ERR: limit on storage for coordinates has been reached<br>
+&gt;&gt;              MAX= 250000<br>
+&gt;&gt;  **TMAP ERR: limit on storage for coordinates has been reached<br>
+&gt;&gt;              MAX= 250000<br>
+&gt;&gt; shade/x=99:121/y=0:25 ssh<br>
+&gt;&gt;<br>
+&gt;&gt; yes? show dat<br>
+&gt;&gt;      currently SET data sets:<br>
+&gt;&gt;     1&gt; ./file103.nc  (default)<br>
+&gt;&gt;  name     title                       I         J         K         L<br>
+&gt;&gt;  LONGITUDE                           1:2294    ...       ...       ...<br>
+&gt;&gt;        (invalid coordinate axis)<br>
+&gt;&gt;  LATITUDE                            1:1362    ...       ...       ...<br>
+&gt;&gt;        (invalid coordinate axis)<br>
+&gt;&gt;  SSH      sea_surface_elevation      1:2294    1:1362    ...       ...<br>
+&gt;&gt;<br>
+&gt;&gt; ------------------------------<br>
+&gt;<br>
+&gt;<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00943" href="msg00943.html">[ferret_users] TMAP ERR: limit on storage for coordinates</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+<li><strong><a name="00948" href="msg00948.html">Re: [ferret_users] TMAP ERR: limit on storage for coordinates</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00949" href="msg00949.html">Re: [ferret_users] TMAP ERR: limit on storage for coordinates</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00949.html">Re: [ferret_users] TMAP ERR: limit on storage for coordinates</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00951.html">[ferret_users] Plotting Satellite Wind Vectors</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00949.html">Thread Prev</a>][<a href="msg00951.html">Thread Next</a>][<A HREF="threads.html#00950">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

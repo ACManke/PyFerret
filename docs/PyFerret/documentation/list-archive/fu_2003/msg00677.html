@@ -1,0 +1,145 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: how to create netcdf from ascii files -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Mon, 22 Sep 2003 09:08:47 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0309220825460.899&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 7BA1DDC610C19F4FA92E33478C92CE284FEA3E@mail2.chesapeakebay.net -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how to create netcdf from ascii files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00676.html">Thread Prev</a>][<a href="msg00678.html">Thread Next</a>][<A HREF="threads.html#00677">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how to create netcdf from ascii files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Enils Bashi &lt;<a href="mailto:EBashi@DOMAIN.HIDDEN">EBashi@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how to create netcdf from ascii files</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 22 Sep 2003 09:08:44 -0700 (PDT)</li>
+<li>Cc: &quot;ferret (E-mail)&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00676.html">7BA1DDC610C19F4FA92E33478C92CE284FEA3E@mail2.chesapeakebay.net</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Enils,
+	To let Ferret do it for you you should
+1) define your grid x,y,x,t
+2) read in the ascii data making sure that the order is correct
+3) use ferret's list/file=... command to write the data to netcdf
+
+1) Define your grid
+I'll assume the data is at the surface z=0, was collected on 1-jan-2003
+and has 1 degree spacing in latitude and longitude. Ferret's normal order
+is longitude increasing from west to east and longitude from south to
+north so the data in your file does not need to be reversed.
+
+def axis/x=80w:72w:1/units=longitude xax
+def axis/y=36n:40n:1/units=latitude yax
+def axis/z=0:0:1/units=meters zax
+def axis/t=&quot;1-jan-2003:00:00&quot;:&quot;1-jan-2003:00:00&quot;:1/units=days tax
+def grid/x=xax/y=yax/z=zax/t=tax grd
+
+The z and t axes are optional for this dataset it would appear but it
+does not hurt to add them if appropriate to document the file. But if
+you really don't want them you would use
+def grid/x=xax/y=yax grd
+
+2) Read in the data from file data.ascii . I'll assume that the data
+order is Longitude varying fastest, then Latitude with NO HEADER RECORDS
+and with free formatted data with one record for each grid point
+	temp, salinity, dop, doc, ph, turbidity, chlorophyll
+Another assumption is that data records for the ENTIRE GRID are present.
+If there were missing points in the grid (for example points over land)
+there would need to be &quot;missing value&quot; records in the appropriate
+places in the data file.  Suppose there were and you had used 999.9 as
+the missing value code for all locations. Then read in the data using
+
+file/form=free/var=temp,sal,dop,doc,ph,turb,chl/g=grd/ord=xyzt data.ascii
+set var/title=&quot;Temperature&quot;/bad=999.9 temp
+set var/title=&quot;Salinity&quot;/bad=999.9 sal
+...
+set var/title=&quot;Chlorophyll&quot;/bad=999.9 chl
+
+Notice that &quot;short names&quot; have been assigned to all variables.  These
+are the ones that you would use to access the data if you were to reread
+the netCDF file we will create back into ferret.  The &quot;long names&quot;
+supplied in the title=&quot;...&quot; are the names you would like to appear along
+the axis in graphics.  Also note the &quot;/g=grd&quot; option.  This and the
+&quot;/order=...&quot; are key to reading in the data in the correct order into
+the grid that was defined in step 2. (If the data file were arranged with
+latitude varying fastest you would use /ord=yx...)
+
+3) save the data in the netcdf file data.nc as follows
+
+save/file=data.nc temp,sal,dop,doc,ph,turb,chl
+
+Hope this helps,
+Good luck,
+Mick
+PS I just tested the above commands on part of your data example. All
+went well but one thing to point out is that the netCDF file stored
+the longitudes in the east-longitude convention.
+ XAX = 280, 281, 282 ;
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00676" href="msg00676.html">how to create netcdf from ascii files</a></strong>
+<ul><li><em>From:</em> Enils Bashi</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00676.html">how to create netcdf from ascii files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00678.html">Re: how to create netcdf from ascii files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00676.html">Thread Prev</a>][<a href="msg00678.html">Thread Next</a>][<A HREF="threads.html#00677">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

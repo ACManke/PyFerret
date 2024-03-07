@@ -1,0 +1,310 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: climatology and leap year -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 23 Jan 2004 10:13:21 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.21.0401232331190.25966&#45;200000@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: p05111b1ebc33164e0ba6@[10.0.1.2] -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>climatology and leap year</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00035.html">Thread Next</a>][<A HREF="threads.html#00038">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>climatology and leap year</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret user_group &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>climatology and leap year</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 23 Jan 2004 23:47:59 +0530 (IST)</li>
+<li>In-reply-to: &lt;<a href="msg00036.html">p05111b1ebc33164e0ba6@[10.0.1.2]</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Dear Ferreters,
+
+          Again there is a question regarding climatology. There are very
+few mails in the archive regarding climatology and those are not helpfull
+for my problem(?).
+
+      1. How to define the time axis to find the 'exact' climatology
+            for
+            a. daily data with one or more leap year in the data range
+
+            b. hourly data (say 6 hr) data with and without leap year 
+
+        Regridding to non-leap time axis is an answer to above two
+            question. But in that case we will be forced to define a
+            new variable and use some kind of regridding utilities like
+            @ASN. In this case data for Feb-29 th of the leap year will
+            be assigned to Mar-01 st, which i don't like. The idea is that
+            data for feb-28th of all year should be averaged for getting
+            climatology for the day feb-28, and should be like that for 
+            all days in the year (skipping feb-29 th of all leap years from 
+            calculation)
+
+        If you are interested in this question please have a trial with
+            the attached jnl file.
+
+      2. Suppose we want to find the climatology explicitly. We can find
+             the average within a repeat loop but how to save this value
+             to an array (1d array of time) so that i can use it outside 
+             the repeat loop ?
+
+             For example consider two year case and suppose we can skip
+             Feb-29th of every leap year from averaging;
+
+               repeat/k=1:365 ( ;\
+                   ;\ 
+                   let  mean = (var[t=`day`-`month`-`year_1`] + 
+                      var[t=`day`-`month`-`year_2`])/2 ;\
+                   )
+ 
+        in this case, out side the repeat loop if we are listing 'mean' 
+        we will get only one value for the DEC-31st. Definig a 
+        climatological time axis and assigning that time-grid to the
+        variable( before repeat loop) will not help. Ofcourse we can write
+        'mean' to a file inside the repeat loop. Does there is any other 
+        easy way ?
+
+
+ with regards 
+
+ Jaison Kurian
+</pre>
+<pre>! climatology and leap year
+! -------------------------
+
+
+! let us find the daily climatology for some dummy data
+
+! defining daily time axis for 1991-1992 (with leap year 1992) and creating
+!           dummy data 
+
+       define axis/t=&quot;01-jan-1991&quot;:&quot;31-dec-1992&quot;:1/unit=days tdly
+
+       let u_dly = COS(t[gt=tdly]/100) * SIN(t[gt=tdly]/100)+10
+
+       message
+
+     DEFINE AXIS/T=0:365.2425/EDGES/NPOINTS=365/T0=&quot;1-JAN-0001&quot;/UNITS=DAYS/MODULO tdly_clim
+
+       let u_dly_clim = u_dly[gt=tdly_clim@MOD]
+
+       !  Let us calculate the climatology by regridding to tdly_clim and 
+
+       !     compare it with explicitly calculated value
+
+       message
+
+       !  Here it is seen that there is a shift in the climatology by one day, i.e.
+
+       !     ( u_dly[t=02-jan-1991] +  u_dly[t=02-jan-1992] )/2 = 
+       !                             u_dly_clim[t=01-jan-0001]           
+
+       ! Let us see the Error in the climatology calculated by regridding.
+
+       ! NOTE:  average of 02-jan-1991 &amp; 02-jan-1992 will be compared with
+       !        01-jan-0001 and so on
+
+       !        WITH FEB-29  :  data of Feb-29th-1991 will be averaged with march-01-1992 
+
+       !        WITHOUT FEB-29 : averaging is for same month same day's data only 
+
+       !  listing is as follows: 
+
+! &quot;CLIM_DAY&quot;   ERROR           ERROR
+!              (WITH FEB-29)  (WITHOUT FEB-29)   
+
+       message  
+
+\       cancel mode verify
+       repeat/k=1:364 ( ;\
+             let l_with_feb29 = `k+365` ;\
+             let l_no_feb29 = if `k+365 GE 425` then `k+366` else  `k+365` ;\
+             let mean_with_f29 = ( u_dly[l=`k+1`] + u_dly[l=`l_with_feb29+1`] ) /2 ; \
+             let mean_no_f29 = ( u_dly[l=`k+1`] + u_dly[l=`l_no_feb29+1`] ) /2 ; \
+             let error_with_f29 = mean_with_f29 - u_dly_clim[l=`k`] ; \
+             let error_no_f29 = mean_no_f29 - u_dly_clim[l=`k`] ; \
+             if `k EQ 61 OR k EQ 277` then message ERROR &gt; 0 ;\
+             list/nohead/format=(f9.4,3x,2f11.4)/quiet `k`, error_with_f29, error_no_f29 ;\
+             )
+       message   
+\       set mode  verify
+
+       !  without Feb-29  :  Error is not zero from clim_day 60 to 275....!!!!
+
+       !  with Feb-29     :  Error is not zero from clim_day 275 onwards....!!!!
+       
+       !  what causes the shift by one day ?
+
+       message
+
+! Let us use a different definition for climatological axis 
+
+      DEFINE AXIS/T=&quot;1-JAN-0001&quot;:&quot;31-DEC-0001&quot;:1/UNITS=days/MODULO tdly_clim
+ 
+      let u_dly_clim = u_dly[gt=tdly_clim@MOD]
+ 
+      ! in this case there is no systematic shift as in previous case
+
+       !  listing is as follows: 
+
+! CLIM_DAY    ERROR           ERROR
+!             (WITH FEB-29)  (WITHOUT FEB-29)   
+
+     message
+
+\       cancel mode verify
+       repeat/k=1:364 ( ;\
+             let l_with_feb29 = `k+365` ;\
+             let l_no_feb29 = if `k+365 GE 425` then `k+366` else  `k+365` ;\
+             let mean_with_f29 = ( u_dly[l=`k`] + u_dly[l=`l_with_feb29`] ) /2 ; \
+             let mean_no_f29 = ( u_dly[l=`k`] + u_dly[l=`l_no_feb29`] ) /2 ; \
+             let error_with_f29 = mean_with_f29 - u_dly_clim[l=`k`] ; \
+             let error_no_f29 = mean_no_f29 - u_dly_clim[l=`k`] ; \
+             list/nohead/format=(f9.4,3x,2f11.4)/quiet `k`, error_with_f29, error_no_f29 ;\
+             )
+        message
+\       set mode  verify
+     
+        ! in this case Error &gt; 0 for all days and for both cases
+
+  message
+
+
+! Let us do the same exercise for HOURLY data
+
+
+       define axis/t=&quot;01-jan-1991:00:00&quot;:&quot;31-dec-1992:18:00&quot;:6/unit=hours t6hr
+
+       let u_6hr = COS(t[gt=t6hr]/100) * SIN(t[gt=t6hr]/100)  + 10
+
+
+       message
+
+       ! defining climatological axis
+
+       DEFINE AXIS/T=0:`365.2425*24`/EDGES/NPOINTS=`365*4`/T0=&quot;1-JAN-0001:00:00&quot;/UNITS=hours/MODULO t6hr_clim
+ 
+       let u_6hr_clim = u_6hr[GT=t6hr_clim@MOD]    
+
+       ! no systematic shift is observed in this case   
+
+       !  listing (for the first 300 points only) is as follows: 
+
+! CLIM_DAY    ERROR           ERROR
+!             (WITH FEB-29)  (WITHOUT FEB-29)   
+
+\       cancel mode verify
+        
+       message 
+       repeat/k=1:300 ( ;\
+             let l_with_feb29 = `k+1460` ;\
+             let l_no_feb29 = if `k+1460 GE 1697` then `k+1464` else  `k+1460` ;\
+             let mean_with_f29 = ( u_6hr[l=`k`] + u_6hr[l=`l_with_feb29`] ) /2 ; \
+             let mean_no_f29 = ( u_6hr[l=`k`] + u_6hr[l=`l_no_feb29`] ) /2 ; \
+             let error_with_f29 = mean_with_f29 - u_6hr_clim[l=`k`] ; \
+             let error_no_f29 = mean_no_f29 - u_6hr_clim[l=`k`] ; \
+             list/nohead/format=(f9.4,3x,2f11.4)/quiet `k`, error_with_f29, error_no_f29 ;\
+             )
+        message
+\       set mode  verify
+
+        
+        ! in this case Error &gt; 0 for all days and for both cases
+
+! Let us use a different definition for climatological axis 
+
+        DEFINE AXIS/T=&quot;1-JAN-0001:00:00&quot;:&quot;31-DEC-0001:18:00&quot;:6/UNITS=hours/MODULO t6hr_clim
+
+        let u_6hr_clim = u_6hr[GT=t6hr_clim@MOD]    
+
+        ! no systematic shift is observed in this case   
+
+        !  listing (for the first 300 points only) is as follows: 
+
+! CLIM_DAY    ERROR           ERROR
+!             (WITH FEB-29)  (WITHOUT FEB-29)   
+
+\       cancel mode verify
+        
+       message 
+       repeat/k=1:300 ( ;\
+             let l_with_feb29 = `k+1460` ;\
+             let l_no_feb29 = if `k+1460 GE 1697` then `k+1464` else  `k+1460` ;\
+             let mean_with_f29 = ( u_6hr[l=`k`] + u_6hr[l=`l_with_feb29`] ) /2 ; \
+             let mean_no_f29 = ( u_6hr[l=`k`] + u_6hr[l=`l_no_feb29`] ) /2 ; \
+             let error_with_f29 = mean_with_f29 - u_6hr_clim[l=`k`] ; \
+             let error_no_f29 = mean_no_f29 - u_6hr_clim[l=`k`] ; \
+             list/nohead/format=(f9.4,3x,2f11.4)/quiet `k`, error_with_f29, error_no_f29 ;\
+             )
+        message
+\       set mode  verify
+
+        ! in this case also Error &gt; 0 for all days and for both cases
+
+
+        ! So  ... how to handle leap year for getting accurate climatology ? ????
+ 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00036" href="msg00036.html">Re: Creating an animantion</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00036.html">Re: Creating an animantion</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00035.html">Re: Creating an animantion</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00035.html">Thread Next</a>][<A HREF="threads.html#00038">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

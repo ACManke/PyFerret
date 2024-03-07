@@ -1,0 +1,150 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] boundary condition for smoothing (@SPZ and friends) -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Fri, 2 Sep 2005 11:54:10 &#45;0700 -->
+<!--X-Message-Id: 20050902.085406.28781759.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] boundary condition for smoothing (@SPZ and friends)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00836.html">Thread Prev</a>][<a href="msg00841.html">Thread Next</a>][<A HREF="threads.html#00840">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] boundary condition for smoothing (@SPZ and friends)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] boundary condition for smoothing (@SPZ and friends)</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 02 Sep 2005 08:54:06 -1000 (HST)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Ferret users,
+
+I noticed that smoothing transformations (@SPZ and friends) leave
+endpoints undefined. For example,
+
+  yes? let pi = 4 * atan(1)
+  yes? let func sin(pi*x[x=-1:1:0.2])
+  yes? plot/line/symbol/hlimits=-1.2:1.2    func
+  yes? plot/line/symbol/hlimits=-1.2:1.2/ov func[x=@spz]
+
+Even though func has datapoints at the edges (x = -1 and x = 1),
+func[x=@spz] has missing values there.  I'm wondering if
+those transformations can be &quot;improved&quot;, at least in simple cases.
+
+Let me take @SPZ as an example.  @SPZ is a 1-2-1 weighted moving
+average:
+
+    g(i) = [f(i-1) + 2 f(i) + f(i+1)] / 4
+
+where f is defined for i = 1, 2, . . ., N.  What to do with g(1)
+and g(N), for which f(0) and f(N+1) would be required?
+
+One solution is to define g(1) == f(1) and g(N) == f(N).
+But, I think a better solution is to make the smoothing behave
+like diffusion with a no-flux boundary condition(*).  That is,
+we define extra gridpoints at i = 0 and i = N + 1 and
+define the values of f(i) there as f(0) == f(1) and f(N+1) == f(N).
+And then we compute g(1) and g(N) using the formula above:
+
+    g(1) = [f(0) + 2 f(1) + f(2)] / 4
+         = [f(1) + 2 f(1) + f(2)] / 4
+         = [       3 f(1) + f(2)] / 4
+
+and likewise for g(N).
+
+We could apply the same no-flux condition around &quot;interior&quot;
+missing datapoints, too.
+
+Advantages of this approach are that averages are conserved:
+g[i=1:N@sum] == f[i=1:N@sum]  (This property corresponds to
+the conservation of heat in the diffusion equation with no-flux
+boundary condition.), and that it matches our intuitive
+understanding of &quot;mixing&quot; neighboring values.
+
+I haven't given a serious thought to other lowpass filters; the above
+consideration may or may not apply to them.
+
+A practical reason for proposing this is that I don't like losing
+vectors or shading near the boundaries when smoothing is applied.
+
+Regards,
+Ryo
+======================================
+(*)In fact, the 1-2-1 moving average can be cast into the diffusion
+equation:
+
+g(i) = [f(i-1) + 2 f(i) + f(i+1)] / 4
+&lt;--&gt;
+g(i) - f(i) = [f(i-1) - 2 f(i) + f(i+1)] / 4
+&lt;--&gt;
+[g(i) - f(i)] / delta_t = kappa [f(i-1) - 2 f(i) + f(i+1)] / (delta_x)^2
+
+with a suitable choice of delta_t, kappa, and delta_x.
+This is a finite-difference form of the diffusion equation
+with g(i) being the value of the next timestep.
+
+I think the 1-4-6-4-1 smoothing can be likewise cast into
+a diffusion equation with biharmonic diffusion.
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00852" href="msg00852.html">Re: [ferret_users] boundary condition for smoothing (@SPZ and friends)</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00841" href="msg00841.html">Re: [ferret_users] boundary condition for smoothing (@SPZ and friends)</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00836.html">[ferret_users] Error message with New Ferret Static Version</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00841.html">Re: [ferret_users] boundary condition for smoothing (@SPZ and friends)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00836.html">Thread Prev</a>][<a href="msg00841.html">Thread Next</a>][<A HREF="threads.html#00840">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] pick up SST of the round area. -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 5 Dec 2005 12:30:53 &#45;0800 -->
+<!--X-Message-Id: 4394A377.60105@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 20051205144553.56653.qmail@web3509.mail.bbt.yahoo.co.jp -->
+<!--X-Derived: gif00065.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] pick up SST of the round area.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01064.html">Thread Prev</a>][<a href="msg01066.html">Thread Next</a>][<A HREF="threads.html#01065">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] pick up SST of the round area.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Namba Takaya &lt;<a href="mailto:takayanamba7@DOMAIN.HIDDEN">takayanamba7@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] pick up SST of the round area.</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 05 Dec 2005 12:30:47 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg01061.html">20051205144553.56653.qmail@web3509.mail.bbt.yahoo.co.jp</a>&gt;</li>
+<li>References: &lt;<a href="msg01061.html">20051205144553.56653.qmail@web3509.mail.bbt.yahoo.co.jp</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi - <br>
+You can do this by defining a mask. The idea is described in the FAQ on
+averaging or integrating over an irregular region :<br>
+<a class="moz-txt-link-freetext"
+ href="">http://www.ferret.noaa.gov/Ferret/FAQ/analysis/avg_integ_irreg.html</a><b><br>
+<br>
+</b>For a circle of radius r centered at (x1,y1) the equation is<br>
+<br>
+&nbsp; r*r = (x-x1)*(x-x1) + (y-y1)*(y-y1)<br>
+<br>
+If we solve this for y as a function of x <br>
+<br>
+<pre>
+&nbsp; y = y1 + (r*r - (x-x1)*(x-x1))^0.5&nbsp;&nbsp; ! Upper half of the circle</pre>
+<pre>&nbsp; y = y1 - (r*r - (x-x1)*(x-x1))^0.5&nbsp;&nbsp;&nbsp; ! Lower half of the circle</pre>
+<br>
+( in Ferret the square root is done as a power of one half.&nbsp; In some
+email tools, this may make the 0.5 become a superscript, but it is the
+upper
+carat character before the 0.5)<br>
+<br>
+Here is a quick example using a topography data set on a fine grid:<br>
+<br>
+<pre>use <a class="moz-txt-link-rfc2396E" href="">"http://www.ferret.noaa.gov/cgi-bin/nph-dods/data/PMEL/smith_sandwell_topo_v8_2.nc"</a>
+
+! A circle around Hawaii</pre>
+<pre>let r = 5
+let x1 = 203
+let y1 = 21
+
+let xpts = x[gx=rose]
+let ypts = y[gy=rose]
+
+!&nbsp; upper and lower halves of the circle
+
+let upc = y1 + (r*r - (xpts-x1)*(xpts-x1))^0.5
+let lpc = y1 - (r*r - (xpts-x1)*(xpts-x1))^0.5
+
+!&nbsp; Define a mask: points with y less than the upper 
+!&nbsp; half and greater than the lower half of the circle</pre>
+<pre>
+let mask1 = if ypts lt upc then 1
+let mask2 = if ypts gt lpc then 1
+let mask = mask1 * mask2
+let masked_rose = mask * rose</pre>
+<pre>
+! Define a region around the circle to plot
+
+let xmin = x1-r-2
+let xmax = x1+r+2
+let ymin = y1-r-2
+let ymax = y1+r+2
+set region/x=`xmin`:`xmax`/y=`ymin`:`ymax`</pre>
+<pre>
+set win/asp=1/siz=0.4
+shade/pal=dark_land_sea/lev=(-inf)(-4000,4000,500)(inf) masked_rose
+frame/file=circlemask.gif</pre>
+&nbsp;&nbsp; <br>
+You could do other computations on the variable masked_rose or in your
+case masked_sst. Of course the resolution of the circle is only as fine
+as the grid of the variable.<br>
+<br>
+Ansley<br>
+<br>
+Namba Takaya wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">Dear users
+
+I like to get the SST of the round or eclipse area on the
+map, not rectangle area.
+
+Could you tell me how to do it?
+
+Best Regards,
+
+Takaya Namba
+
+--------------------------------------
+STOP HIV/AIDS.
+Yahoo! JAPAN Redribbon Campaign 2005
+<a class="moz-txt-link-freetext"
+ href="">http://pr.mail.yahoo.co.jp/redribbon/</a>
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table><p><a href="gif00065.gif" ><img src="gif00065.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01061" href="msg01061.html">[ferret_users] pick up SST of the round area.</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01064.html">Re: [ferret_users] pick up SST of the round area.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg01066.html">[ferret_users] ASCII data ploting problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01064.html">Thread Prev</a>][<a href="msg01066.html">Thread Next</a>][<A HREF="threads.html#01065">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

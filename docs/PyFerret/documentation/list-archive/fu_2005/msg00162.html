@@ -1,0 +1,201 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: problem in regridig of data -->
+<!--X-From-R13: "Kbtrfu Y. Fvjnev" <xgvjnevNotp&#45;wran.zct.qr> -->
+<!--X-Date: Fri, 18 Feb 2005 06:04:51 &#45;0800 -->
+<!--X-Message-Id: 4215F5F4.1020802@bgc&#45;jena.mpg.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>problem in regridig of data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00159.html">Thread Prev</a>][<a href="msg00166.html">Thread Next</a>][<A HREF="threads.html#00162">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>problem in regridig of data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>problem in regridig of data</strong></li>
+<li><strong>From</strong>: <strong>&quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Feb 2005 15:04:36 +0100</li>
+<li>Organization: Max-Planck Institute for Biogeochemistry, Jena, Germany</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.2) Gecko/20040906</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hello Ferret Users,<br>
+<br>
+I caaled a script in ferret which counts the 
+number of observations and then regrids the data<br>
+<br>
+The problem is if I shade the data or try to save 
+it ,it gets hanged for hours and hours.<br>
+<br>
+Some times few data works and sometime another 
+file contains same of data dosen't works.<br>
+<br>
+Currently the file which I am using and got hanged 
+has 40 mb data size.<br>
+<br>
+If any person can help me, if the ferret hangs 
+without giving any error then what may be the 
+problem and how we can decide the check points.<br>
+<br>
+I called script like that :<br>
+<br>
+*********************************<br>
+<br>
+yes? set data ecmwf_co2_jan2003.nc  !<br>
+<br>
+ File name is ./ecmwf_co2_jan2003.nc<br>
+<br>
+yes? set data tm3airs_new_January_2003.nc<br>
+<br>
+ File name is ./tm3airs_new_January_2003.nc<br>
+<br>
+yes?sh dat<br>
+     currently SET data sets:<br>
+    1&gt; ./ecmwf_co2_jan2003.nc<br>
+ name       I         J         K         L<br>
+ LON       1:360     ...       ...       ...<br>
+ LAT       1:180     ...       ...       ...<br>
+ CO2_T     1:360     1:180     ...       ...<br>
+<br>
+<br>
+    2&gt; ./tm3airs_new_January_2003.nc  (default)<br>
+ name       I         J         K         L<br>
+<br>
+ LON       ...       ...       ...       1:119641<br>
+ LAT       ...       ...       ...       1:119641<br>
+ TM3CO2    ...       ...       ...       1:119641<br>
+<br>
+<br>
+<br>
+yes? ! define destination axes from lat and lon in 
+ecmwf_co2_jan2003<br>
+<br>
+<br>
+yes?      define axis/x/units=longitudes/from_data 
+xlon=lon[d=1]<br>
+<br>
+yes?      define axis/y/units=latitudes/from_data 
+ ylat=lat[d=1]<br>
+<br>
+yes?      define grid/x=xlon/y=ylat gcom<br>
+<br>
+yes?      define symbol radius = 0.25<br>
+<br>
+yes?      define symbol cutoff = 2.0<br>
+<br>
+yes?      let lon_1D   = XSEQUENCE(lon[d=2])<br>
+yes?      let lat_1D   = XSEQUENCE(lat[d=2])<br>
+yes?      let co2_1D   = XSEQUENCE(tm3co2[d=2])<br>
+<br>
+yes?      let obs_count = 
+scatgrid_nobs_xy(lon_1D,lat_1D,x[gx=gcom],y[gy=gcom])<br>
+<br>
+<br>
+yes? !griding CO2 using the mask if there is 
+atleast 10 observations in one grid<br>
+<br>
+yes?      let co2_point = IF obs_count GE 10 THEN\<br>
+...? 
+scat2gridgauss_xy(lon_1D,lat_1D,co2_1D,\<br>
+...? 
+x[gx=gcom],y[gy=gcom],($radius),($radius),($cutoff),($cutoff))\<br>
+...?                      ELSE 1e35<br>
+ !-&gt; DEFINE VARIABLE co2_point = IF obs_count GE 
+10 THEN 
+scat2gridgauss_xy(lon_1D,lat_1D,co2_1D, 
+<br>
+x[gx=gcom],y[gy=gcom],0.25,0.25,2.0,2.0) 
+           ELSE 1e35<br>
+<br>
+<br>
+yes? shade co2_point<br>
+ File name is ./default.spk<br>
+ File name is /pool/ia64/ferret/v5.70/ppl/default.spk<br>
+<br>
+*************************************************************<br>
+<br>
+The ferret dosen't comes out from here after 
+waiting of three-four hours.<br>
+<br>
+Many thanks in advance for help,<br>
+<br>
+Regards,<br>
+Yogesh<br>
+<br>
+--<br>
+<br>
+===========================================<br>
+Yogesh K. Tiwari,<br>
+Max-Planck Institute for Biogeochemistry,<br>
+Beutenberg Campus, Hans-Knoell-Strasse 10,<br>
+D-07745 Jena,<br>
+Germany<br>
+<br>
+Office   : 0049 3641 576 376<br>
+Home     : 0049 3641 223 163<br>
+Fax      : 0049 3641 577 300<br>
+Cell     : 0049 1520 4591 008<br>
+e-mail   : yogesh.tiwari@bgc-jena.mpg.de<br>
+===========================================<br>
+<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00166" href="msg00166.html">Re: problem in regridig of data</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00159.html">Re: some comments</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00166.html">Re: problem in regridig of data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00159.html">Thread Prev</a>][<a href="msg00166.html">Thread Next</a>][<A HREF="threads.html#00162">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

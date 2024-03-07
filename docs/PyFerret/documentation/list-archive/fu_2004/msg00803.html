@@ -1,0 +1,184 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Custom line colors -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Fri, 12 Nov 2004 12:28:28 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0411121129130.624&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 66B7E6BA&#45;3411&#45;11D9&#45;B39A&#45;000A957B1CE6@pfeg.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Custom line colors</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00798.html">Thread Prev</a>][<a href="msg00804.html">Thread Next</a>][<A HREF="threads.html#00803">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Custom line colors</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Lynn deWitt &lt;<a href="mailto:ldewitt@DOMAIN.HIDDEN">ldewitt@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Custom line colors</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 12 Nov 2004 12:28:27 -0800 (PST)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00798.html">66B7E6BA-3411-11D9-B39A-000A957B1CE6@pfeg.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Lynn,
+	I found a way to go a little further without overwriting colors
+but there is still a limit of 6 different colors in my way.  Following
+that however is an alternate way using polygon that removes the limitation
+on the number of colors but at the cost of a &quot;boxier&quot; rendition.
+
+*******************************
+Another way to define the lines
+*******************************
+	I think the problem may be something to do with the way ferret
+deals with lines.  I modified your script to use /line= rather than
+/color= as follows
+
+! test_colors2.jnl
+plot/i=1:100/over/line=$2/set/nolabel sin(3.14*i/100)-$1/100
+ppl color,$2,$3,$4,$5 ; ppl plot/over
+
+and used it as follows
+
+plot/i=1:100/color=1/line/nolabel sin(3.14*i/100)
+repeat/j=1:5   go test_colors2 `j` 1 100 0 0
+repeat/j=6:10  go test_colors2 `j` 2 100 50 0
+repeat/j=11:15 go test_colors2 `j` 3 100 100 0
+repeat/j=16:20 go test_colors2 `j` 4 0 40 0
+repeat/j=21:25 go test_colors2 `j` 5 0 0 100
+repeat/j=26:30 go test_colors2 `j` 6 80 0 100
+repeat/j=31:35 go test_colors2 `j` 7 80 60 100
+
+The first 6 sets of colors showed up fine, but the 7th (/line=7)
+used the same color (red) as line=1 is set to but with the doubled
+thickness.  So test_colors2 seems to limit one to having still
+only 6 separate colors, though different from the default 6.
+
+*******************************
+Alternate method using polygons
+*******************************
+Another idea, if someone else doesn't have a better understanding
+of how to have more than 6 colors, would be to use polygon with
+a set of customized palettes to render the lines. Maybe one would
+need to linearly interpolate the lines to a finer grid to avoid having the
+thing look as &quot;boxy&quot; as the demo below.
+
+! making the palettes
+The single color palettes like /opt/local/ferret/ferret/ppl/black.spk
+are structured like this
+0 0 0 0
+100 0 0 0
+where the first column is the color bar percent limits, and columns
+2,3,4 are the R,G,B values as percentages.
+So make customized palettes for your color choices
+echo '  0 100   0   0' &gt;  my-color1.spk
+echo '100 100   0   0' &gt;&gt; my-color1.spk
+echo '  0 100  50   0' &gt;  my-color2.spk
+echo '100 100  50   0' &gt;&gt; my-color2.spk
+echo '  0 100 100   0' &gt;  my-color3.spk
+echo '100 100 100   0' &gt;&gt; my-color3.spk
+echo '  0   0  40   0' &gt;  my-color4.spk
+echo '100   0  40   0' &gt;&gt; my-color4.spk
+echo '  0   0   0 100' &gt;  my-color5.spk
+echo '100   0   0 100' &gt;&gt; my-color5.spk
+echo '  0  40  60  60' &gt;  my-color6.spk
+echo '100  40  60  60' &gt;&gt; my-color6.spk
+echo '  0  80   0 100' &gt;  my-color7.spk
+echo '100  80   0 100' &gt;&gt; my-color7.spk
+echo '  0  80  60 100' &gt;  my-color8.spk
+echo '100  80  60 100' &gt;&gt; my-color8.spk
+...
+and render the &quot;lines&quot; using the following commands in a ferret session
+
+! rendering lines as a series of polygons
+let bx=ysequence({-0.5,0.5,0.5,-0.5})         !+/- dx/2 for polygon
+let by=ysequence({-0.005,-0.005,0.005,0.005}) !+/- dy/2 for polygon
+! draw black line
+plot/i=1:100/color=1/line/nolabel sin(3.14*i/100)
+repeat/k=1:5   (poly/over/nolab/i=1:100/pal=my-color1/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+repeat/k=6:10  (poly/over/nolab/i=1:100/pal=my-color2/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+repeat/k=11:15 (poly/over/nolab/i=1:100/pal=my-color3/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+repeat/k=16:20 (poly/over/nolab/i=1:100/pal=my-color4/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+repeat/k=21:25 (poly/over/nolab/i=1:100/pal=my-color5/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+repeat/k=26:30 (poly/over/nolab/i=1:100/pal=my-color6/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+repeat/k=31:35 (poly/over/nolab/i=1:100/pal=my-color7/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+repeat/k=36:40 (poly/over/nolab/i=1:100/pal=my-color8/coord_ax=y \
+                     bx+i,by+sin(3.14*i/100)-`k`/100)
+
+Hope this is of help,
+Mick
+
+|!!! Mick.Spillane@noaa.gov !!!|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00798" href="msg00798.html">Custom line colors</a></strong>
+<ul><li><em>From:</em> Lynn deWitt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00798.html">Custom line colors</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00804.html">Re: Custom line colors</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00798.html">Thread Prev</a>][<a href="msg00804.html">Thread Next</a>][<A HREF="threads.html#00803">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

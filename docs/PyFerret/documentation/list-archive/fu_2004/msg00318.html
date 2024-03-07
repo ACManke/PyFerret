@@ -1,0 +1,160 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: extracting non&#45;uniform pressure levels -->
+<!--X-From-R13: Egrir Vnaxva <Egrira.Q.VnaxvaNabnn.tbi> -->
+<!--X-Date: Mon, 19 Apr 2004 19:02:24 &#45;0700 -->
+<!--X-Message-Id: 408484B6.87F3279F@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 40847B0E.9020709@llnl.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: extracting non-uniform pressure levels</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00317.html">Thread Prev</a>][<a href="msg00319.html">Thread Next</a>][<A HREF="threads.html#00318">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: extracting non-uniform pressure levels</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Mike Fiorino &lt;<a href="mailto:fiorino@DOMAIN.HIDDEN">fiorino@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: extracting non-uniform pressure levels</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 Apr 2004 19:02:30 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00317.html">40847B0E.9020709@llnl.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Mike,
+
+Your diagnosis is correct.  When you say
+    yes? save/file=&quot;/tmp/t.nc&quot;/clobber tmp[z=1000,l=1]
+you are instructing Ferret to create a Z axis with only a single point on
+it.  Owing to the design of netCDF there is no way to change the size of
+this axis after it has been created.
+
+If you want to create a file that has room for the whole Z axis, even though
+you are saving only a single Z point you can use /KLIMITS=1:26 (or whatever)
+
+    yes? save/file=&quot;/tmp/t.nc&quot;/clobber/KLIMITS=1:26 tmp[z=1000,l=1]
+Then the SAVE/APPEND that you subsequently give will work.
+
+If you want to save ONLY the Z=500 and the Z=1000 levels and not waste any
+space, then you can use
+    let tmp500 = tmp[z=500]
+    let tmp1000 = tmp[z=1000]
+    save/file=&quot;/tmp/t.nc&quot;/clobber/l=1 tmp1000, tmp500
+
+You can also go netCDF-crazy and create a file which has a 2-point Z axis,
+in order to preserve the just-right relationships without wasting space ...
+but maybe that's a bit over the top.
+
+    good luck - steve
+
+===================================
+
+Mike Fiorino wrote:
+
+&gt; Dear Ferreteers,
+&gt;
+&gt; I'm a ferret newbie using the opendap feature to pull individual
+&gt; pressure levels and times from an ncep nomads server of global forecast
+&gt; system (atmosphere) model runs, e.g.,
+&gt;
+&gt; yes?  ! NOAA/PMEL TMAP
+&gt; yes?  ! FERRET v5.60
+&gt; yes?  ! Linux(g77) 2.4.18 - 04/09/04
+&gt; yes?  ! 19-Apr-04 17:03
+&gt; yes? use
+&gt; &quot;<a  href="http://nomad2.ncep.noaa.gov:9090/dods/gfs/archive/gfs20040228/gfs_00z&quot">http://nomad2.ncep.noaa.gov:9090/dods/gfs/archive/gfs20040228/gfs_00z&quot</a>;
+&gt; yes? contour/lev=(240,300,5) tmp[z=1000,l=1]
+&gt; yes? contour tmp[z=500,l=1]
+&gt; yes? list/file=&quot;/tmp/t.nc&quot;/form=&quot;cdf&quot;/clobber tmp[z=1000,l=1]
+&gt;  LISTing to file /tmp/t.nc
+&gt; yes? list/file=&quot;/tmp/t.nc&quot;/form=&quot;cdf&quot;/append tmp[z=500,l=1]
+&gt;  LISTing to file /tmp/t.nc
+&gt;  **TMAP ERR: Requested data range is outside of data set limits
+&gt;              Expected: TMP[K= 14 : 14 ] Found: TMP[K= 26 : 26 ]
+&gt; yes? list/file=&quot;/tmp/t.nc&quot;/form=&quot;cdf&quot;/append tmp[z=1000,l=2]
+&gt;  LISTing to file /tmp/t.nc
+&gt;
+&gt; I can plot the 1000 (z=1000) and 500 (z=500) mb temperatures
+&gt; (variable='tmp') at the first time (l=1) and dump the 1000 mb to
+&gt; /tmp/t.nc, but not  500.  I can dump the next time (l=2) and ncdump
+&gt; shows that two times have been written.  I can open the file in in both
+&gt; ferret and GrADS and make identical plots so the data are OK.
+&gt;
+&gt; I know this is related to the z axis and how time is the only
+&gt; &quot;unlimited&quot; dimension, the question is how to define an axis of
+&gt; arbitrary pressure levels that decrease with k.  After searching the
+&gt; mail archive and the docs, I tried defining the levels in a text file,
+&gt; reading in and setting a z axis, but ferret complained about the levels
+&gt; being non monotonic which is true, but what I want.  I also tried
+&gt; dumping as &quot;stream&quot; but ferret doesn't allow append for binary output...
+&gt;
+&gt; Thanks in advance for any help. /R Mike
+
+--
+
+Steve Hankin, NOAA/PMEL -- Steven.C.Hankin@noaa.gov
+7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080, FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00317" href="msg00317.html">extracting non-uniform pressure levels</a></strong>
+<ul><li><em>From:</em> Mike Fiorino</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00317.html">extracting non-uniform pressure levels</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00319.html">line styles</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00317.html">Thread Prev</a>][<a href="msg00319.html">Thread Next</a>][<A HREF="threads.html#00318">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

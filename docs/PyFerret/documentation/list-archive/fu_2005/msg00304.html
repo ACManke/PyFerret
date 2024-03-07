@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to calculate the annual average -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 1 Apr 2005 09:49:33 &#45;0800 -->
+<!--X-Message-Id: 424D89AB.4080402@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.4.44+UNC.0504010944560.17404&#45;100000@dali.gphys.unc.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to calculate the annual average</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00301.html">Thread Prev</a>][<a href="msg00305.html">Thread Next</a>][<A HREF="threads.html#00304">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to calculate the annual average</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ming Yang &lt;<a href="mailto:myang@DOMAIN.HIDDEN">myang@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to calculate the annual average</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 01 Apr 2005 09:49:31 -0800</li>
+<li>Cc: Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;Pine.GSO.4.44+UNC.0504010944560.17404-100000@dali.gphys.unc.edu&gt;</li>
+<li>References: &lt;Pine.GSO.4.44+UNC.0504010944560.17404-100000@dali.gphys.unc.edu&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Ming,<br>
+When the time series is done in terms of index value, you caon compute 
+the annual averages like this:<br>
+<br>
+ define axis/t=6:4800:12  yearaxis<br>
+ let sst_year = sst[gt=yearaxis@ave]<br>
+<br>
+The output axis is in the same units (which is just the index value, but 
+you can think of it as months).  I start with 6 so that the averages are 
+taken over the first 12 points, then 13 through 24, and so on.  To test 
+what this is doing, here is an example where I make up some data, where 
+the variable has the value of the index.<br>
+<br>
+  yes? def axis/t=1:4800:1 tmonth<br>
+  yes? def axis/t=6:4800:12 tyear<br>
+<br>
+  yes? let tt =  t[gt=tmonth]<br>
+  yes? let ttyear = tt[gt=tyear@ave]<br>
+<br>
+  yes? list/l=1:5 ttyear<br>
+            VARIABLE : TT[GT=TYEAR@AVE]<br>
+            SUBSET   : 5 points (T)<br>
+   6    / 1:   6.26<br>
+   18   / 2:  18.00<br>
+   30   / 3:  30.00<br>
+   42   / 4:  42.00<br>
+   54   / 5:  54.00<br>
+<br>
+The first value is different from the expected 6 because the first 
+averaging interval in T (t=1 to 12)  is taken from the start of the time 
+axis, 0.5,  to 12, so the weighting factor is 11.5. The start of the 
+axis is t=0.5 not 0. The second interval (t=12 to 24) takes the average 
+from 12 to 24, so the weighting is 12.<br>
+<br>
+We can also see this if we compute unweighted average computed by taking 
+the transformation @SUM and dividing by the number of good data, @NGD:<br>
+ 
+  yes? let ttsum = tt[gt=tyear@sum]<br>
+  yes? let ttcount = tt[gt=tyear@ngd]<br>
+  yes? let ttyear = ttsum/ttcount<br>
+  yes? list/l=1:5 ttsum, ttcount, ttyear<br>
+               T: 0 to 60<br>
+   Column  1: TTSUM is TT[GT=TYEAR@SUM]<br>
+   Column  2: TTCOUNT is TT[GT=TYEAR@NGD]<br>
+   Column  3: TTYEAR is TTSUM/TTCOUNT<br>
+            TTSUM TTCOUNT TTYEAR<br>
+  6    / 1:   72.0   11.50   6.26<br>
+  18   / 2:  216.0   12.00  18.00<br>
+  30   / 3:  360.0   12.00  30.00<br>
+  42   / 4:  504.0   12.00  42.00<br>
+  54   / 5:  648.0   12.00  54.00<br>
+<br>
+<br>
+<br>
+Ming Yang wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi, Ansley<br>
+  After I reading the FAQ, I still cannot figure out how to compute the<br>
+annual average. It is probably because my data set is different from the<br>
+example listed in the FAQ. Here is the basical information of my dataset<br>
+yes? use cresum001710.sst.nc<br>
+yes? show data<br>
+    currently SET data sets:<br>
+   1&gt; ./cresum001710.sst.nc  (default)<br>
+name     title                       I         J         K      L<br>
+SST      Sea surface temperature    1:144     1:72      ...   1:4800<br>
+<br>
+  I think the difference is that in my dataset the grid is defines as<br>
+IJKL instead of XYZT. And also the L axis is not based on any calendars.<br>
+Basically what I want to do is to calculate the average values for every<br>
+12 Ls so that to the transformed data has 400 points in L axis. Do you<br>
+know what is the best way for me to do so? Thank you for your help.<br>
+<br>
+<br>
+Ming<br>
+<br>
+ 
+<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00305" href="msg00305.html">Re: How to calculate the annual average</a></strong>
+<ul><li><em>From:</em> Ming Yang</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00301.html">plot on a large region</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00305.html">Re: How to calculate the annual average</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00301.html">Thread Prev</a>][<a href="msg00305.html">Thread Next</a>][<A HREF="threads.html#00304">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Concatenating netcdf files along time dim -->
+<!--X-From-R13: Oevaqnz Qunxenobegl <nepuNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 9 Sep 2003 04:44:03 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.21.0309091656290.27102&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3F5D9BCB.3BB91FF@nus.edu.sg -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Concatenating netcdf files along time dim</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00620.html">Thread Prev</a>][<a href="msg00622.html">Thread Next</a>][<A HREF="threads.html#00621">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Concatenating netcdf files along time dim</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Concatenating netcdf files along time dim</strong></li>
+<li><strong>From</strong>: <strong>Arindam Chakraborty &lt;<a href="mailto:arch@DOMAIN.HIDDEN">arch@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 09 Sep 2003 17:13:13 +0530 (IST)</li>
+<li>Cc: Ferret Users List &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00620.html">3F5D9BCB.3BB91FF@nus.edu.sg</a>&gt;</li>
+<li>Reply-to: Ferret Users List &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>hello,
+	there must be a better way to do this. Here I'm just pointing
+out one way which is working for me. I'm copying the .jnl file first:
+
+!==============================================================
+! Concatenate 5 files with single time point and different time
+!  origin.
+ can dat/all
+
+! open all the 5 files
+ use grex01.nc
+ use grex02.nc
+ use grex03.nc
+ use grex04.nc
+ use grex05.nc
+
+! define a time axis for the new concatenated variable. In this case
+!  time increment is daily and there are 5 days of data.
+ def axis/t=&quot;01-jan-2003:12:00&quot;:&quot;05-jan-2003:12:00&quot;:1/units=days tax
+
+! define a series of variables. var1 is the final 'concatenated'
+!  variable. (If you have many many days, it may be possible to write
+!  these series of variable definitions in a single repeat loop).
+ let var1 = if (l eq 1) then var[d=1,gx=var,gy=var,gt=tax] else var2
+ let var2 = if (l eq 2) then var[d=2,gx=var,gy=var,gt=tax] else var3
+ let var3 = if (l eq 3) then var[d=3,gx=var,gy=var,gt=tax] else var4
+ let var4 = if (l eq 4) then var[d=4,gx=var,gy=var,gt=tax] else var5
+ let var5 = if (l eq 5) then var[d=5,gx=var,gy=var,gt=tax]
+
+ list var1
+
+ contour var1[l=@ave]
+ go land
+
+ save/clo/file=grex01-05.nc var1
+! end of .jnl file =============
+
+
+Here I'm including the ncdump-ed output of one of my .nc files:
+netcdf grex01 {
+dimensions:
+        lon = 6 ;
+        lat = 3 ;
+        time = UNLIMITED ; // (1 currently)
+variables:
+        float lon(lon) ;
+                lon:units = &quot;degrees_east&quot; ;
+                lon:long_name = &quot;Longitude&quot; ;
+                lon:actual_range = 3.082857e-44f, 2.009861f ;
+        float lat(lat) ;
+                lat:units = &quot;degrees_north&quot; ;
+                lat:long_name = &quot;Latitude&quot; ;
+                lat:actual_range = 32.12643f, 3.041262e-23f ;
+        double time(time) ;
+                time:units = &quot;days since 2003-01-01 12:00:00&quot; ;
+                time:long_name = &quot;Time&quot; ;
+                time:valid_min = 0. ;
+        float var(time, lat, lon) ;
+                var:units = &quot;put_the_unit&quot; ;
+                var:long_name = &quot;This is long name of the variable&quot; ;
+                var:missing_value = -999.9f ;
+
+// global attributes:
+                :var_desc = &quot;You can have a global attribute here&quot; ;
+
+
+ Hope this helps,
+
+~ Arindam C
+
+On Tue, 9 Sep 2003 hengkek@nus.edu.sg wrote:
+
+&gt; Hello people
+&gt; 
+&gt; I'm trying my luck here to see if anyone has successfully used ferret to
+&gt; concatenate a series of netcdf files with the following properties:
+&gt; 
+&gt; 1- Record variable is 'time'
+&gt; 2- One record per file
+&gt; 3- Value of &quot;time&quot; variable is '0.0' for each file.
+&gt; 4- Each file's origin for the time variable is different.
+&gt; 
+&gt; I'd be most grateful for some tips or pointers to docs.  I was getting
+&gt; the error below.  I was hoping Ferret would magically recalculate all
+&gt; the time values to values relative to one single arbitrary origin.
+&gt; 
+&gt; Thanks.
+&gt; 
+&gt; -Kek
+&gt; Physical Oceanography
+&gt; Singapore
+&gt; 
+&gt; -------------
+&gt; use x1.nc
+&gt; save/file=z.nc/append eee
+&gt;  LISTing to file z.nc
+&gt; use x2.nc
+&gt; save/file=z.nc/append eee
+&gt;  LISTing to file z.nc
+&gt;  **TMAP ERR: error in line definition
+&gt;              disordered output coordinate value: 2.08333E-03 Axis: TIME
+&gt; LIST/FORMAT=CDF/file=z.nc/append eee
+&gt; Command file, command group, or REPEAT execution aborted
+&gt; -------------
+&gt; 
+&gt; x1.nc and x2.nc have different time origins.
+&gt; 
+&gt; The netcdf file structure is as follows:
+&gt; 
+&gt; dimensions:
+&gt;         z = 20 ;
+&gt;         lat = 199 ;
+&gt;         lon = 133 ;
+&gt;         time = UNLIMITED ; // (1 currently)
+&gt; ...
+&gt;         float time(time) ;
+&gt;                 time:long_name = &quot;time&quot; ;
+&gt;                 time:units = &quot;days since 2003-01-01 00:00:00 +00:00&quot; ;
+&gt; 
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00622" href="msg00622.html">RE: Concatenating netcdf files along time dim</a></strong>
+<ul><li><em>From:</em> Rost Parsons</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00620" href="msg00620.html">Concatenating netcdf files along time dim</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00620.html">Concatenating netcdf files along time dim</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00622.html">RE: Concatenating netcdf files along time dim</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00620.html">Thread Prev</a>][<a href="msg00622.html">Thread Next</a>][<A HREF="threads.html#00621">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

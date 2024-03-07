@@ -1,0 +1,189 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: custom axis -->
+<!--X-From-R13: [vpx Ecvyynar <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Tue, 15 Jun 2004 08:50:49 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0406150812200.22213&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 40CEFF80.9D2A1AE0@ifremer.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: custom axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00450.html">Thread Prev</a>][<a href="msg00453.html">Thread Next</a>][<A HREF="threads.html#00451">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: custom axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Matthieu JOUAN &lt;<a href="mailto:Matthieu.Jouan@DOMAIN.HIDDEN">Matthieu.Jouan@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: custom axis</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 15 Jun 2004 08:50:48 -0700 (PDT)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00450.html">40CEFF80.9D2A1AE0@ifremer.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Tue, 15 Jun 2004, Matthieu JOUAN wrote:
+
+&gt; how can i define my own (Y in my case) axis
+&gt; with &quot;variable&quot; range, that means non regular.
+&gt; For example: 1-50, then 51-400, 401-2000, etc...
+
+Hi Matthieu,
+	I think the simplest way may be define three (or more)
+viewports - one for each segment of the y-range.  Then do a plot in
+each section using &quot;ppl axset&quot; to eliminate unwanted x-axes.
+	The first step is in creating the viewports. I use a script
+called &quot;viewdef&quot; to help design these and have included it at the end
+of this message. In the case where there are three strips of equal
+width, the three viewports are defined by
+
+! vbot.jnl
+ppl size 10 8 ; ppl axlen 8 2 ; ppl origin 1 1
+def view/size=1/orig=0,0/clip=1,0.5 vbot
+
+! vmid.jnl
+ppl size 10 8 ; ppl axlen 8 2 ; ppl origin 1 1
+def view/size=1/orig=0,0.25/clip=1,0.75 vmid
+
+! vbot.jnl
+ppl size 10 8 ; ppl axlen 8 2 ; ppl origin 1 1
+def view/size=1/orig=0,0/clip=1,0.5 vbot
+
+Make these three files then use the following demo where the function
+v = i^3.3 which varies from 1 to 1995 for i=1,...,10 is plotted
+
+! plotting a function in three strips, each with a linear y-range
+region/i=1:10 ; let v=i^3.3
+go vbot
+plot/nolab/set v
+ppl yaxis,0,50,10 ; ppl axlint,1,1 ; ppl yfor,(i2)
+ppl axset,0,1,1,1 ; ppl plot ! bottom third has only a bottom x-axis
+go vmid
+ppl yaxis,50.1,400,50 ; ppl axlint,1,1 ; ppl yfor,(i3)
+ppl axset,0,0,1,1 ; ppl plot ! middle third has no x-axes
+go vtop
+ppl yaxis,400.1,2000,400 ; ppl axlint,1,1 ; ppl yfor,(i4)
+ppl axset,1,0,1,1 ; ppl plot ! top third has only a top x-axis
+!----------------------------------------------------------------
+
+The viewdef script below is something I wrote and have been using for
+years. It is not the only way to define the viewports you need. Once
+you have &quot;chmod +x&quot;-ed it and put it somewhere handy, the command
+viewdef (or sp viewdef from within ferret) prints the cheat-sheet. I
+used
+	viewdef 10 8 8 2 1 1 1 1 vbot
+	viewdef 10 8 8 2 1 3 1 1 vmid
+	viewdef 10 8 8 2 1 5 1 1 vtop
+to make the three viewports used in the demo.
+Hope it helps,
+Mick
+
+
+#---------------------------------------------------------------
+# viewdef - script to produce a ferret viewport definition with
+#           the ferret lines needed written to &quot;name&quot;.jnl
+#
+# usage: viewdef px py ax ay ox oy fx fy name
+#                                  ___________________________
+# where px = page width            |&lt;----------px-----------&gt;| ^
+#       py = page height           |     ....................| |
+#       ax = x-axis length         |     .  ferret margin   .| |
+#       ay = y-axis length         |     .   ____________   .| |
+#       ox = x-component of origin |     &lt;fx&gt;|  plot    | ^ .| |
+#       oy = y-component of origin |     .   | region   | ay.| py
+#       fx = ferret margin in x    |(ox,oy)-&gt;!__________| v .| |
+#       fy = ferret margin in y    |     .             ^    .| |
+# all values in inches and         |     .             fy   .| |
+#     name = name for viewport     |     ..............v.....| |
+#                                  |       overall page      | |
+# go name    will invoke viewport  |_________________________| v
+
+# viewdef (or spawn viewdef in ferret) without arguments will
+# display the usage and definition text above
+
+#!/bin/csh -f
+
+if ( $#argv &lt; 9 ) then
+   head -19 $home/bin/viewdef
+else
+   set jnl = $9:r.jnl
+
+   echo $1 $2 $3 $4 $5 $6 $7 $8 $9  | awk '{           \
+   origx = ($5-$7)/$1    ; origy = ($6-$8)/$2        ; \
+   clipx = ($5+$3+$7)/$1 ; clipy = ($6+$4+$8)/$2     ; \
+   str1  = &quot;def view/size=1/orig=&quot; ; str2 = &quot;/clip=&quot; ; \
+   print &quot;ppl size&quot;,$1,$2 ; print &quot;ppl axlen&quot;,$3,$4  ; \
+   print &quot;ppl origin&quot;,$7,$8                          ; \
+   print str1 origx&quot;,&quot;origy str2 clipx&quot;,&quot;clipy,$9    ; \
+   print &quot;set view&quot;,$9 }' &gt;! $jnl
+endif
+
+# end of script
+
+
+|!!! Mick.Spillane@noaa.gov !!!|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00450" href="msg00450.html">custom axis</a></strong>
+<ul><li><em>From:</em> Matthieu JOUAN</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00450.html">custom axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00453.html">data problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00450.html">Thread Prev</a>][<a href="msg00453.html">Thread Next</a>][<A HREF="threads.html#00451">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

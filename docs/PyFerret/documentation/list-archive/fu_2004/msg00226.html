@@ -1,0 +1,140 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: what is wrong with my script -->
+<!--X-From-R13: [vpx.EcvyynarNabnn.tbi -->
+<!--X-Date: Fri, 2 Apr 2004 08:56:22 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0404020827060.22031&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY14&#45;F59Hprp5yLZ86000147e2@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: what is wrong with my script</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00218.html">Thread Prev</a>][<a href="msg00219.html">Thread Next</a>][<A HREF="threads.html#00226">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: what is wrong with my script</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>du hui &lt;<a href="mailto:bjduhui@DOMAIN.HIDDEN">bjduhui@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: what is wrong with my script</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a></strong></li>
+<li>Date: Fri, 02 Apr 2004 08:56:12 -0800 (PST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00218.html">BAY14-F59Hprp5yLZ86000147e2@hotmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Fri, 2 Apr 2004, du hui wrote:
+
+&gt; Could anyone point out where the trouble is?
+&gt;
+&gt; USE mm5_lon180.ctrl.nc
+&gt; DEFINE AXIS/X=47.5E:177.5E:2.5 xnew
+&gt; DEFINE AXIS/Y=22.5N:22.5S:2.5 ynew
+&gt;
+&gt; FILL/x=xnew/y=ynew/z=200/l=1 unew
+&gt;  **ERROR: command syntax: xnew
+&gt; CONTOUR/FILL/x=xnew/y=ynew/z=200/l=1 unew
+&gt; Command file, command group, or REPEAT execution aborted
+&gt;
+
+hi du hui,
+	/x=xnew/y=ynew are not valid arguments for the &quot;fill&quot; or
+&quot;contour&quot; commands. If unew is a regridded version of data in
+the input file then you need to define that regridding, as
+perhaps in this demo
+
+! define an original lat-lon variable on a grid &quot;grd&quot;
+def axis/x=160E:200E:1/units=longitude xax
+def axis/y=5S:5N:1/units=latitude yax
+def grid/x=xax/y=yax grd
+let u=x[g=grd]+y[g=grd]
+! and fill it
+fill u
+
+! now define another grid (same number of points but half spacing)
+def axis/x=170E:190E:0.5/units=longitude xax2
+def axis/y=2.5S:2.5N:0.5/units=latitude yax2
+def grid/x=xax2/y=yax2 grd2
+! ... and squeeze the same data into the new grid with &quot;@asn&quot;
+let u2=u[g=grd2,gxy=@asn]
+! ... then overlay the new variable
+fill/o u2
+
+One other thing that might be an issue for you is the data order.
+You define the y-axis from north to south, whereas the &quot;usual&quot;
+ferret order is (or was) from south to north.
+A quick test of the above demo suggests that if I use
+
+! now introduce a reversed order y-axis
+def axis/y=2.5N:2.5S:0.5/units=latitude yax3
+def grid/x=xax2/y=yax3 grd3
+let u3=u[g=grd3,gxy=@asn]
+! and overlay the new variable
+contour/o u3
+
+It overlays exactly, where I might have expected it to be inverted.
+Maybe I'm not thinking it out right, but I would suggest that if
+you use &quot;reversed&quot; axes you confirm that you get what you expect.
+
+Good luck,
+Mick
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00218" href="msg00218.html">what is wrong with my script</a></strong>
+<ul><li><em>From:</em> du hui</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00218.html">what is wrong with my script</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00219.html">about fill_between</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00218.html">Thread Prev</a>][<a href="msg00219.html">Thread Next</a>][<A HREF="threads.html#00226">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

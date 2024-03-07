@@ -1,0 +1,133 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Spatial 2points averaging -->
+<!--X-From-R13: [vpx Ecvyynar <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Mon, 5 Jul 2004 10:55:14 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0407051032030.8548&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1089020735.26627.70.camel@viento.fis.ucm.es -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Spatial 2points averaging</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00492.html">Thread Prev</a>][<a href="msg00495.html">Thread Next</a>][<A HREF="threads.html#00494">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Spatial 2points averaging</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Enrique Sanchez &lt;<a href="mailto:esanchez@DOMAIN.HIDDEN">esanchez@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Spatial 2points averaging</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 5 Jul 2004 10:55:13 -0700 (PDT)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00492.html">1089020735.26627.70.camel@viento.fis.ucm.es</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Mon, 5 Jul 2004, Enrique Sanchez wrote:
+&gt; I have a field in a XY plane, of let's say 80x72 points. But I want to
+&gt; average it to a 40x36 domain, just averaging every 2 points in both
+&gt; dimensions. How can I do this?
+
+Hi Enrique,
+	Try defining a new grid of points centered in the 2x2 blocks of
+the original grid.  Then regrid the old data to the new grid. Here is an
+example for an original 8x6 region that we want to reduce to 4x3.
+Good luck,
+Mick
+!-----------------------------------------------------------------
+def axis/x=1:8:1 xax ; def axis/y=1:6:1 yax
+def grid/x=xax/y=yax grd   ! the original grid ...
+let v=int(10*randu(x[g=grd]+y[g=grd]))
+list v
+             VARIABLE : INT(10*RANDU(X[G=GRD]+Y[G=GRD]))
+             SUBSET   : 8 by 6 points (X-Y)
+             1      2      3      4      5      6      7      8
+             1      2      3      4      5      6      7      8
+ 1   / 1:  9.000  5.000  0.000  1.000  7.000  1.000  8.000  4.000
+ 2   / 2:  4.000  8.000  3.000  9.000  9.000  5.000  7.000  9.000
+ 3   / 3:  4.000  0.000  0.000  6.000  7.000  7.000  8.000  1.000
+ 4   / 4:  1.000  3.000  8.000  4.000  1.000  2.000  7.000  1.000
+ 5   / 5:  5.000  6.000  1.000  7.000  5.000  8.000  9.000  3.000
+ 6   / 6:  6.000  3.000  5.000  0.000  8.000  5.000  1.000  7.000
+
+def axis/x=1.5:7.5:2 xax2 ; def axis/y=1.5:5.5:2 yax2
+def grid/x=xax2/y=yax2 grd2 ! the new grid, centered in each 2x2 group
+let v2=v[g=grd2]            ! regrid data to the new grid
+list v2
+             VARIABLE : V[G=GRD2]
+             SUBSET   : 4 by 3 points (X-Y)
+             1.5    3.5    5.5    7.5
+             1      2      3      4
+ 1.5 / 1:  6.500  3.250  5.500  7.000
+ 3.5 / 2:  2.000  4.500  4.250  4.250
+ 5.5 / 3:  5.000  3.250  6.500  5.000
+
+! it seems to work ...
+! (9+5+4+8)/4=6.5 ; (0+1+3+9)/4=3.25 ; (7+1+9+5)/4=5.5 ; (8+4+7+9)/4=7
+! (4+0+1+3)/4=2.0 ; ...              ; ...             ; (8+1+7+1)/4=4.25
+! (5+6+6+3)/4=5.0 ; ...              ; ...             ; (9+3+1+7)/4=5
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00495" href="msg00495.html">Re: Spatial 2points averaging</a></strong>
+<ul><li><em>From:</em> Enrique Sanchez</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00492" href="msg00492.html">Spatial 2points averaging</a></strong>
+<ul><li><em>From:</em> Enrique Sanchez</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00492.html">Spatial 2points averaging</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00495.html">Re: Spatial 2points averaging</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00492.html">Thread Prev</a>][<a href="msg00495.html">Thread Next</a>][<A HREF="threads.html#00494">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: working with JJAS time period of different years -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 24 Aug 2004 02:34:44 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0408241442530.25084&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1093238821.5257.62.camel@mithila.ees.hokudai.ac.jp -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: working with JJAS time period of different years</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00571.html">Thread Prev</a>][<a href="msg00570.html">Thread Next</a>][<A HREF="threads.html#00575">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: working with JJAS time period of different years</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: working with JJAS time period of different years</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 24 Aug 2004 15:22:09 +0530 (IST)</li>
+<li>Cc: Roxy Mathew &lt;<a href="mailto:rocksea@DOMAIN.HIDDEN">rocksea@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00569.html">1093238821.5257.62.camel@mithila.ees.hokudai.ac.jp</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Roxy,
+         The FAQ suggested by Ansley explains the basic method to get
+seasonal data. I just want to add an easy way to pick the &quot;L&quot; or &quot;T&quot; for 
+the desired(here JJAS)  season of each year and create new variables : one 
+with only JJAS data (no information about other months) and other one with 
+missing values for rest of the months.
+
+ From your mail....
+&gt;       var=precip[t=01-jun-1998:30-sep-1998]
+&gt;       save/file=precip_jjas.cdf var
+
+     To precip_jjas.cdf you can't add data(var) for jun-sep1999. For 
+doing this you must have opened precip_jjas.cdf with proper &quot;LLIMITS&quot;
+so that you can add &quot;var&quot; for other time periods to this file. If you 
+want more information please refer user manual Ch10 Sec2 &amp; this mail
+in the archive
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00282.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00282.html</a>  
+          
+!----------extract_jjas.jnl-------------
+
+! let us make some dummy data (pentad)
+
+    define axis/t=&quot;01-JAN-1998&quot;:&quot;31-DEC-2002&quot;:5/unit=days tpent
+    let myvar = sin(t[gt=tpent]/250)
+    set var/title=&quot;Pentad Rainfall data 1998-2002&quot;/units=&quot;mm/day&quot; myvar
+
+! get T0 &amp; time units of the variable for later use
+ 
+    define symbol tzero  = `myvar,return=T0`
+    define symbol tunits = `myvar,return=TUNIT`
+
+! get the &quot;time values&quot; of JJAS from 1998 to 2002 in a text file
+
+    sp rm -f dummy.dat
+    REPEAT/L=1998:2002 ( ;\
+         set reg/t=&quot;01-JUN-`L`&quot;:&quot;30-SEP-`L`&quot; ;\
+         let tim = t[gt=myvar] ;\
+         list/nohead/quiet/file=dummy.dat/format=(2x,f8.2)/append tim ;\
+       )
+! read the time values from dummy.dat and do the &quot;exact&quot; regridding
+
+    cancel reg/all ; cancel var tim
+    file/var=tim dummy.dat   
+    define axis/t/T0=($tzero)/units=($tunits)/from_data tax=tim
+   
+    let var_jjas = myvar[gt=tax@xact]   
+
+       ! above variable doesn't have any information about months other 
+       ! than JJAS...hence while plotting Ferret will linearly interpolate
+       ! the values for those missing months
+
+    let rain = var_jjas[gt=myvar@xact]  
+
+       ! above variable will have the information &quot;missing_value&quot; for 
+       ! months other than JJAS..hence Ferret will not perform any 
+       ! interpolation  
+
+    set var/title=&quot;Seasonal(JJAS) Rainfall&quot;/units=&quot;mm/day&quot; rain
+
+! cross-checking
+
+    plot/line=4/dash myvar
+    plot/ov rain        
+    
+! save to a netCDF file
+
+    ! save/file=rain_JJAS.nc/append rain
+
+! remove the dummy file
+
+    sp rm -f dummy.dat
+
+!-------end of extract_jjas.jnl----------------------
+
+Hope This Helps
+
+With Regards
+
+Jaison 
+
+
+
+On 23 Aug 2004, Roxy Mathew wrote:
+
+&gt; Hi Ferreters, I have a netcdf file with precipitation
+&gt; from Jan 1998 to Dec 2002 (pentad values).
+&gt; I want but to work with the JJAS time period only.
+&gt; Is there any way I can extract the JJAS time period
+&gt; of all the years to a new netcdf file?
+&gt; Or is there another way I can process the JJAS months
+&gt; together?
+&gt; I tried with the following method but it is not working:
+&gt; 
+&gt; 	var=precip[t=01-jun-1998:30-sep-1998]
+&gt; 	save/file=precip_jjas.cdf var
+&gt; 	var=precip[t=01-jun-1999:30-sep-1999]
+&gt; 	save/append/file=precip_jjas.cdf var
+&gt; 
+&gt; Thanks for any help :) Cheers, Roxy
+&gt; 
+&gt; EES, Hokkaido University
+&gt; Sapporo, Japan
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00569" href="msg00569.html">working with JJAS time period of different years</a></strong>
+<ul><li><em>From:</em> Roxy Mathew</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00571.html">Re: working with JJAS time period of different years</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00570.html">vis5d files from ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00571.html">Thread Prev</a>][<a href="msg00570.html">Thread Next</a>][<A HREF="threads.html#00575">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: reading binary data -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 6 May 2004 13:18:17 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0405070128440.8713&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 01L98TCCQMAA8WX25M@RHO.PMEL.NOAA.GOV -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: reading binary data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00329.html">Thread Prev</a>][<a href="msg00330.html">Thread Next</a>][<A HREF="threads.html#00372">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: reading binary data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: reading binary data</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 7 May 2004 01:50:45 +0530 (IST)</li>
+<li>Cc: LZG &lt;<a href="mailto:peter_lai@DOMAIN.HIDDEN">peter_lai@xxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00329.html">01L98TCCQMAA8WX25M@RHO.PMEL.NOAA.GOV</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Peter,
+            Have a look at Ch2 Sec4. BINARY DATA in Ferret user manual.
+There you can see details and usage for all the options used for reading 
+binary data. Following two examples will explain you the very basic 
+method.
+
+   In your case you have to make corrections in your fortran script
+
+      1. check variable declarion- declare &quot;arcc1&quot; as 4 dimensional
+                                           variable.
+      2. correct your file &quot;open&quot; and &quot;write&quot; statements as described 
+                        in any of the examples given here.
+           
+   and in ferret script
+           
+      3. correct set data (file/format....) statement according to
+                      wether the data is &quot;sequential&quot; or &quot;stream&quot;
+              for /ORDER see 
+                       Ch2 Sec5.1. Reading ASCII files ; Example 7
+              /COLUMNS...tells Ferret the number of data values per record.
+                this is an optional argument and required only if the number
+                of data values per record is greater than the number of 
+                variables being read. So in your case it is not needed.
+                see 
+                   Ch2 Sec5.1. Reading ASCII files ; Example 1(b)
+
+ Comments : It will be convenient for later use if you are converting the 
+            binary to netcdf. After reding in the binary data properly in a 
+            ferret session issue the following command to save the variables 
+            to a netcdf file;
+                save/file=&quot;./outputfile.nc&quot;/append var1, var2, var3        
+
+                For details see Ref Sec29. SAVE in user manual.
+                 
+            Try to give some meaningfull &quot;Subject&quot; to your e-mails to the
+                       mailing list ...so that it will not go unnoticed.
+
+Hope this helps...
+
+With Regards 
+
+Jaison 
+
+------------------------------------------------------------------------
+Examples
+.........               
+
+&quot;sequential&quot; binary data
+=========================
+
+fortran script : 
+---------------
+         IMPLICIT NONE
+         INTEGER  i,j,k,l,ni,nj,nk,nt
+         PARAMETER  (ni=10,nj=10,nk=10,nt=10)
+         REAL      pi, conc(ni,nj,nk,nt)
+
+         pi = 22/7
+         open(unit=20,form=&quot;unformatted&quot;,access='sequential',
+     #        file='seq_binary.dat')
+         DO i = 1, ni
+              DO j = 1, nj
+                   DO k = 1, nk
+                        DO l = 1, nt
+                            conc(i,j,k,l) = sin (i*j*k*l*pi/180)
+                            write(20) conc(i,j,k,l) ! note that &quot;write&quot; 
+                                                    ! does have only file
+                                                    ! unit
+                        END DO
+                   END DO
+              END DO
+         END DO
+
+         END 
+
+ferret script to read seq_binary.dat:
+------------------------------------
+	define axis/x=1:10:1 xax
+  	define axis/y=1:10:1 yax
+	define axis/z=1:10:1 zax
+	define axis/t=1:10:1 tax
+	define grid/x=xax/y=yax/z=zax/t=tax mygrid
+
+	file/format=unf/var=conc/grid=mygrid  &quot;seq_binary.dat&quot;
+
+	list/x=10/y=10/k=10 conc
+
+&quot;stream&quot; binary data
+====================
+
+fortran script :
+---------------
+	 IMPLICIT NONE
+         INTEGER  i,j,k,l,ni,nj,nk,nt
+         PARAMETER  (ni=10,nj=10,nk=10,nt=10)
+         REAL      pi, conc(ni,nj,nk,nt)
+
+         pi = 22/7
+         open(unit=20,file='stream_binary.dat',form='unformatted',
+     #        access='direct',recl=ni*nj*nk*4)
+         DO i = 1, ni
+              DO j = 1, nj
+                   DO k = 1, nk
+                        DO l = 1, nt
+                            conc(i,j,k,l) = sin (i*j*k*l*pi/180)
+                        END DO
+                   END DO
+              END DO
+         END DO
+         DO l = 1,nt
+              write(20,rec=l)(((conc(i,j,k,l),i=1,ni),j=1,nj),k=1,nk)
+         END DO
+
+         END
+
+ferret script to read stream_binary.dat
+---------------------------------------
+  	define axis/x=1:10:1 xax
+	define axis/y=1:10:1 yax
+	define axis/z=1:10:1 zax
+	define axis/t=1:10:1 tax
+	define grid/x=xax/y=yax/z=zax/t=tax mygrid
+
+	file/format=stream/var=conc/grid=mygrid  &quot;stream_binary.dat&quot;
+
+	list/x=10/y=10/k=10 conc
+
+---------------------------------------------------------------------
+
+On Fri, 23 Apr 2004, LZG wrote:
+
+&gt; Hi Kessler,
+&gt;
+&gt; Do you still remember me? I ever asked you about how to read in a binary
+&gt; file of 3 dimensional model output using ferret. Then, the problem was
+&gt; solved by the method you provided. But when I extend the method to a
+&gt; 4-dimensional variable, it can't get through again.
+&gt; 
+&gt; The problem is:
+&gt; 
+&gt; I have a binary model output &quot;Myfile&quot; in which stored a 3 dimensional
+&gt; variable named as conc(300, 166, 8).  There are total of 10 conc( ) in the
+&gt; &quot;myfile&quot; respective for 10 times of model output. 
+&gt; 
+&gt; In FORTRAN, I write the model output
+&gt; 
+&gt; Do t=1, 10
+&gt; 
+&gt; ...... 
+&gt; 
+&gt;      Write (1121) (((arcc1(i,j,k),i=1,300),j=1,166),k=1,8)
+&gt; 
+&gt; ......
+&gt; 
+&gt; Enddo
+&gt; 
+&gt; Then in ferret, I read in the binary file &quot;Myfile&quot;
+&gt; 
+&gt;   define axis/x=1:300:1 xax
+&gt; 
+&gt;   define axis/y=1:166:1 yax
+&gt; 
+&gt;   define axis/z=1:8:1   zax
+&gt; 
+&gt;   define axis/t=1:10:1  tax
+&gt; 
+&gt;   define grid/x=xax/y=yax/z=zax/t=tax mygrid
+&gt; 
+&gt;   file/format=unf/var=conc/grid=mygrid/col=`300*166*8*10`/ord=xyzt  &quot;Myfile&quot;
+&gt; 
+&gt;   list/x=150/y=114/t=1 conc
+&gt; 
+&gt; The result is: Every time, when I execute the program, then ferret will run
+&gt; to the step of &quot;file/format......   &quot;, and then quit out of ferret directly.
+&gt; 
+&gt; What's the problem? How to solve it?
+&gt; 
+&gt; Peter           
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00329" href="msg00329.html">[no subject]</a></strong>
+<ul><li><em>From:</em> LZG</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00329.html">[no subject]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00330.html">ascii files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00329.html">Thread Prev</a>][<a href="msg00330.html">Thread Next</a>][<A HREF="threads.html#00372">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

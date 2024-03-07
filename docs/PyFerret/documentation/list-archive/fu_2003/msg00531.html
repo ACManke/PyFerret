@@ -1,0 +1,228 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Puzzling **ERROR: inconsistent sizes of data regions -->
+<!--X-From-R13: uratxrxNahf.rqh.ft -->
+<!--X-Date: Wed, 30 Jul 2003 21:32:02 &#45;0700 -->
+<!--X-Message-Id: 3F289BB9.B2326ADB@nus.edu.sg -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3EA55EE2.2020905@mercator&#45;ocean.fr -->
+<!--X-Reference: 3EA5B145.4040901@noaa.gov -->
+<!--X-Reference: 3F27A285.E2EC5F08@nus.edu.sg -->
+<!--X-Reference: 3F27E169.C719E638@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Puzzling **ERROR: inconsistent sizes of data regions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00527.html">Thread Prev</a>][<a href="msg00314.html">Thread Next</a>][<A HREF="threads.html#00531">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Puzzling **ERROR: inconsistent sizes of data regions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Puzzling **ERROR: inconsistent sizes of data regions</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></strong></li>
+<li>Date: Thu, 31 Jul 2003 12:31:53 +0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00312.html">3EA55EE2.2020905@mercator-ocean.fr</a>&gt; &lt;<a href="msg00313.html">3EA5B145.4040901@noaa.gov</a>&gt;&lt;<a href="msg00525.html">3F27A285.E2EC5F08@nus.edu.sg</a>&gt; &lt;<a href="msg00527.html">3F27E169.C719E638@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Thanks to Ansley and Vinu (who provided a similar solution).
+
+	let var_diff=ev[d=1,i=1:133]-ev[d=2,i=1:133]
+
+The above line did take care of it.
+Based on the 'show grid' cmd as appended below, I conclude that the
+problem was that the 1st dataset's axes were considered irregular, while
+the 2nd, regular.
+
+I.e. the 2nd dataset had the &quot;point_spacing=even&quot; netcdf attribute for
+the axes while the 1st didn't.  After I inserted the said attribute in
+the 2nd dataset, all was well again.  I presume the problem will also be
+solved if I removed the said attribute from the 1st dataset.
+
+Thanks for all the tips.
+
+regards
+-chk
+
+-----------------------------------
+yes? show grid ev[d=1]
+    GRID GPR4
+ name       axis              # pts   start                end
+ LON       LONGITUDE          133mr   99E                  121E
+ LAT       LATITUDE           199 r   9S                   24N
+ normal    Z
+ TIME      TIME                21 r   01-MAY-2001 00:00    06-MAY-2001
+00:00
+yes? show grid ev[d=2]
+    GRID GKU4
+ name       axis              # pts   start                end
+ LON1      LONGITUDE          133mi   99E                  121E
+ LAT1      LATITUDE           199 i   9S                   24N
+ normal    Z
+ TIME      TIME                21 r   01-MAY-2001 00:00    06-MAY-2001
+00:00
+-----------------------------------
+
+
+-------- Original Message --------
+Subject: Re: Puzzling **ERROR: inconsistent sizes of data regions
+Date: Wed, 30 Jul 2003 08:16:57 -0700
+From: Ansley Manke &lt;Ansley.B.Manke@noaa.gov&gt;
+To: hengkek@nus.edu.sg
+CC: ferret_users@ferret.wrc.noaa.gov
+
+Hello,
+This command might take care of it,
+
+let var_diff=ev[d=1,i=1:133]-ev[d=2,i=1:133]
+
+but you may still want to investigate why there seems to
+be a discrepancy. Here are a few more commands that may
+help you find out what is happening.  If you do determine the
+cause, let us know.
+
+  yes? show grid aaa
+  yes? show grid bbb
+
+The above commands will give you the names of the axes
+in question.  Then use SHOW AXIS, naming the X axis of
+each variable, or with /X or /I to list some of the coordinate
+values.
+
+  yes? show axis axisname
+
+Are there any differences in the listings for your two
+X axes?  The SHOW AXIS section in the Users Guide
+lists the meaning of the output of this comand.  For instance,
+is one of the axes a modulo axis, and the other not?  You
+can make a more detailed comparison with the command
+
+yes? show axis/x axisname   ! lists the X coordinates
+
+You might also try this command at the start of your script
+
+  yes? set mode diagnostic
+
+There is an FAQ which discusses the output of this mode,
+and it may help you see what is happening with your
+variables.  The FAQ can be found at
+<a  href="http://www.ferret.noaa.gov/Ferret/FAQ/other/mode_diagnostic.html">http://www.ferret.noaa.gov/Ferret/FAQ/other/mode_diagnostic.html</a>
+
+Ansley Manke
+
+hengkek@nus.edu.sg wrote:
+
+&gt; Greetings
+&gt;
+&gt; I'm getting a puzzling error:
+&gt;
+&gt;  *** NOTE: Ambiguous coordinates on X axis: EV[D=1]-EV[D=2]
+&gt;  **ERROR: inconsistent sizes of data regions: X axis
+&gt;           EV[D=2] has 134 points (I=000:133)
+&gt;           expression has 133 points (I=001:133)
+&gt;
+&gt; Both my datasets have 133 points and are identical in terms of grid and
+&gt; axes, but I'm puzzled as to how it becomes 134 in the 2nd data set as
+&gt; reported by the error above.
+&gt;
+&gt; Any clues how to correct this?
+&gt;
+&gt; My paraphrased session is appended.
+&gt; Thanks for any answers.
+&gt;
+&gt; -chk
+&gt; Physical Oceanography
+&gt; Singapore
+&gt;
+&gt; -------- Start my session ------------------
+&gt;  ! NOAA/PMEL TMAP
+&gt;  ! FERRET v5.51
+&gt;  ! Solaris 5.8 - 02/28/03
+&gt;  ! 30-Jul-03 16:25
+&gt; yes? use &quot;aaa.nc&quot;
+&gt; yes? use &quot;bbb.nc&quot;
+&gt; yes? let var_diff=ev[d=1]-ev[d=2]
+&gt;  !-&gt; DEFINE VARIABLE var_diff=ev[d=1]-ev[d=2]
+&gt; yes? fill/l=2 var_diff
+&gt;  *** NOTE: Ambiguous coordinates on X axis: EV[D=1]-EV[D=2]
+&gt;  **ERROR: inconsistent sizes of data regions: X axis
+&gt;           EV[D=2] has 134 points (I=000:133)
+&gt;           expression has 133 points (I=001:133)
+&gt; yes? show dat
+&gt;      currently SET data sets:
+&gt;     1&gt; aaa.nc
+&gt;  name     title                       I         J         K        L
+&gt; ...[deleted]...
+&gt;  EV      surface elevation          1:133     1:199     ...       1:21
+&gt;
+&gt;     2&gt; bbb.nc  (default)
+&gt;  name     title                       I         J         K        L
+&gt; ...[deleted]...
+&gt;  EV      surface elevation          1:133     1:199     ...      1:21
+&gt; -------- end my session ------------------
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00312" href="msg00312.html">Record too long for input buffer</a></strong>
+<ul><li><em>From:</em> Nicolas Ferry</li></ul></li>
+<li><strong><a name="00313" href="msg00313.html">Re: Record too long for input buffer</a></strong>
+<ul><li><em>From:</em> Kevin O'Brien</li></ul></li>
+<li><strong><a name="00525" href="msg00525.html">Puzzling **ERROR: inconsistent sizes of data regions</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+<li><strong><a name="00527" href="msg00527.html">Re: Puzzling **ERROR: inconsistent sizes of data regions</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00527.html">Re: Puzzling **ERROR: inconsistent sizes of data regions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00314.html">go land</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00527.html">Thread Prev</a>][<a href="msg00314.html">Thread Next</a>][<A HREF="threads.html#00531">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] problems in generating post scrip file plot -->
+<!--X-From-R13: Ivyyvnz E Yrffyre <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Thu, 4 Aug 2005 06:22:26 &#45;0700 -->
+<!--X-Message-Id: 1240ed349.d3491240e@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] problems in generating post scrip file plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00741.html">Thread Prev</a>][<a href="msg00744.html">Thread Next</a>][<A HREF="threads.html#00743">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] problems in generating post scrip file plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] problems in generating post scrip file plot</strong></li>
+<li><strong>From</strong>: <strong>William S Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 04 Aug 2005 06:22:26 -0700</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;,       ferret_users&lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>The problem is that you have a negative value for the 3rd argument to
+SHAKEY. The 3rd argument is the label size and must be positive. ALso
+note that the last 4 arguments, which give the bottom left and top right
+corners of the key box, are all relative to the lower left corner of the
+*page*, not of any of the plot boxes. Therefore they must also be
+positive. I can't think of any reason why any of the SHAKEY arguments
+should ever be negative.
+
+The syntax of SHAKEY is:
+
+shakey  [0=nokey,1=key] [0=hor,1=vert] lab-size lab-inc lab-digit
+lab-length xlo xhi ylo yhi
+
+A typical use of SHAKEY to make a single key for a set of 4 vertically
+stacked plots might be:
+
+shakey 1 1 .12 0 3 9 `1.2+($ppl$xlen)+.4` `1.2+($ppl$xlen)+.7` 1.4
+`1.4+4*($ppl$ylen)+0.8`
+
+The &quot;0 3 9&quot; are the defaults, and the last 4 arguments say that the key
+extends from 0.4 to 0.7 units to the right of the plot stack, and from
+the bottom of the lowest plot to 4 times the plot height +0.8.
+
+Note that the lower left corner of the lowest plot box is at (1.2,1.4).
+
+The only problem I see with SHAKEY is that the distance between the
+plots is dependent on the aspect ratio of the window. Therefore it is
+impossible to know how tall the key should be to extend over the entire
+height of the (in the case 4) plot boxes without experimentation.
+
+Billy K
+
+
+----- Original Message -----
+From: &quot;Yogesh K. Tiwari&quot; &lt;ktiwari@bgc-jena.mpg.de&gt;
+Date: Thursday, August 4, 2005 1:24 am
+Subject: Re: [ferret_users] problems in generating post scrip file plot
+
+&gt; Helo Ansley,
+&gt; 
+&gt; Thanks for reply.
+&gt; 
+&gt; I tried the shakey option as you suggested 
+&gt; (ppl shakey 1,0,-0.1,2,,,5,9,5.5,6) but the 
+&gt; key is not appearing on the plot. I played 
+&gt; with the shakey numbers and  I could get the 
+&gt; key  on the plot.
+&gt; 
+&gt; ppl shakey 1,0,-0.14, 4, 4, 8
+&gt; 
+&gt; Now, how to inlarge this key so it should 
+&gt; look comfortable for 9 view plots in a window.
+&gt; 
+&gt; I tried many option with many numbers in 
+&gt; shakey command but could not get success.
+&gt; 
+&gt; Also I want the key in horizontal in bottom, 
+&gt; not in vertical.
+&gt; 
+&gt; One more problem I am facing.
+&gt; 
+&gt; How to decrease the spacing of each row. 
+&gt; There are total three rows and there is much 
+&gt; space between each row.
+&gt; 
+&gt; Many thanks,
+&gt; 
+&gt; Regards,
+&gt; Yogesh
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt;  Manke wrote:
+&gt; &gt; Hi Yogesh,
+&gt; &gt; I am just back from a vacation and I see this was never answered. 
+&gt; To 
+&gt; &gt; use SHAKEY you need to call the SHADE command with the /SET_UP 
+&gt; option:&gt; 
+&gt; &gt;   shade/set  v1
+&gt; &gt;   ppl shakey 1,,0.26, 4, 4, 8
+&gt; &gt;   ppl shade
+&gt; &gt; 
+&gt; &gt; Also, in general when using many plots in a window with the same 
+&gt; &gt; colorbar, it is a good idea to put just one colorbar somewhere on 
+&gt; the 
+&gt; &gt; page rather than one for each plot.  The shade key is located 
+&gt; relative 
+&gt; &gt; to the current viewport, but it can be drawn on the page outside 
+&gt; the 
+&gt; &gt; viewport.  So with 9 viewports you might draw one shade key 
+&gt; across the 
+&gt; &gt; top, or down one side of the page, and remove it from all the 
+&gt; other 
+&gt; &gt; plots.  For example to draw it across the top.  Note that using 
+&gt; /LEV 
+&gt; &gt; without any levels settings will use the levels from the previous 
+&gt; plot.&gt; 
+&gt; &gt;   go portraitNxN 3 3
+&gt; &gt; 
+&gt; &gt;   SET VIEW 1
+&gt; &gt;   shade/nolab/lev=(374,382.5,.5)/set v1
+&gt; &gt;    ppl shakey 1,0,-0.1,2,,,5,9,5.5,6
+&gt; &gt;    ppl shade
+&gt; &gt; 
+&gt; &gt;   SET VIEW 2
+&gt; &gt;   shade/nolab/lev/set v2
+&gt; &gt;   ppl shakey 0
+&gt; &gt;   ppl shade
+&gt; &gt; 
+&gt; &gt;   SET VIEW 3
+&gt; &gt;   shade/nolab/lev/set v3
+&gt; &gt;   ppl shakey 0
+&gt; &gt;   ppl shade
+&gt; &gt; 
+&gt; &gt;   set view 4
+&gt; &gt;   shade/nolab/set v4
+&gt; &gt;   ppl shakey 0
+&gt; &gt;   ppl shade
+&gt; &gt; 
+&gt; &gt;   set view 5
+&gt; &gt; 
+&gt; &gt; ...
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Yogesh K. Tiwari wrote:
+&gt; &gt; 
+&gt; &gt;&gt; Hello Ferret Users,
+&gt; &gt;&gt;
+&gt; &gt;&gt; I want to generate nine plots in a single window and want to 
+&gt; save as  
+&gt; &gt;&gt; '.ps' file. To do this I am using my attched script.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Some of the ppl commands are not fully worked in the script, for 
+&gt; &gt;&gt; example the 'ppl shakey' to control color bar.
+&gt; &gt;&gt;
+&gt; &gt;&gt; The generated plot color bar looks crowded with data.
+&gt; &gt;&gt;
+&gt; &gt;&gt; I know I am making mistake in issuing commands in my script.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Kindly suggest.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Many thanks,
+&gt; &gt;&gt;
+&gt; &gt;&gt; Regards,
+&gt; &gt;&gt;
+&gt; &gt;&gt; Yogesh
+&gt; &gt;&gt;
+&gt; &gt;&gt;------------------------------------------------------------------
+&gt; ------
+&gt; &gt;&gt;
+&gt; &gt;&gt;set data file1.cdf
+&gt; &gt;&gt;
+&gt; &gt;&gt;set data file2.cdf
+&gt; &gt;&gt;
+&gt; &gt;&gt;set data file3.cdf
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;set mode metafile del.plt
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;set window/size=0.7
+&gt; &gt;&gt;
+&gt; &gt;&gt;set windo&gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;go portraitNxN 3 3
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl dfltfnt,@tr
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl axlsze 0.14 0.14
+&gt; &gt;&gt;
+&gt; &gt;&gt;go margins  &quot; &quot;   &quot; &quot;   1.6 2.3
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;!*****************Jan03-Feb03*****************************
+&gt; &gt;&gt;SET VIEW 1
+&gt; &gt;&gt;
+&gt; &gt;&gt;shade/nolab/lev=(374,382.5,.5) v1[l=1:2@ave,y=-40:40]+16.4
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl shakey 1,,0.26, 4, 4, 8
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl shade
+&gt; &gt;&gt;
+&gt; &gt;&gt;go land 7
+&gt; &gt;&gt;
+&gt; &gt;&gt;label ,,-1,90,.13 &quot;LATITUDE&quot;
+&gt; &gt;&gt;label &quot;LONGITUDE&quot;
+&gt; &gt;&gt;label &quot;Jan03-Feb03,[TM3]&quot;
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 2
+&gt; &gt;&gt;
+&gt; &gt;&gt;shade/nolab/lev=(374,382.5,.5) v2[l=1:2@ave,y=-40:40]-23.9
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl shakey 1,,0.26, 4, 4, 8
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl shade
+&gt; &gt;&gt;
+&gt; &gt;&gt;go land 7
+&gt; &gt;&gt;
+&gt; &gt;&gt;label ,,-1,90,.13 &quot;LATITUDE&quot;
+&gt; &gt;&gt;label &quot;LONGITUDE&quot;
+&gt; &gt;&gt;label &quot;Jan03-Feb03,[LMDZ]&quot;
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 3
+&gt; &gt;&gt;
+&gt; &gt;&gt;shade/nolab/lev=(374,382.5,.5) v3[l=1:2@ave,y=-40:40]
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl shakey 1,,0.26, 4, 4, 8
+&gt; &gt;&gt;
+&gt; &gt;&gt;ppl shade
+&gt; &gt;&gt;
+&gt; &gt;&gt;go land 7
+&gt; &gt;&gt;
+&gt; &gt;&gt;label ,,-1,90,.13 &quot;LATITUDE&quot;
+&gt; &gt;&gt;label &quot;LONGITUDE&quot;
+&gt; &gt;&gt;label &quot;Jan03-Feb03,[AIRS]&quot;
+&gt; &gt;&gt;!****************************************
+&gt; &gt;&gt;
+&gt; &gt;&gt;!Similarly the following set view in next time steps.
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 4
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 5
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 6
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 7
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 8
+&gt; &gt;&gt;
+&gt; &gt;&gt;SET VIEW 9
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;cancel mode metafile
+&gt; &gt;&gt;spawn Fprint -l cps -p portrait -R -o test.ps del.plt
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;cancel dat&gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;  
+&gt; &gt;&gt;
+&gt; 
+&gt; 
+&gt; -- 
+&gt; 
+&gt; ===========================================
+&gt; Yogesh Tiwari,
+&gt; Max-Planck Institute for Biogeochemistry,
+&gt; Hans-Knoell Strasse 10,
+&gt; D-07745 Jena,
+&gt; Germany
+&gt; 
+&gt; Office   : 0049 3641 576 376
+&gt; Home     : 0049 3641 223 163
+&gt; Fax      : 0049 3641 577 300
+&gt; Cell     : 0049 1520 4591 008
+&gt; e-mail   : yogesh.tiwari@bgc-jena.mpg.de
+&gt; ===========================================
+&gt; 
+&gt; 
+&gt; 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00744" href="msg00744.html">Re: [ferret_users] problems in generating post scrip file plot</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00741.html">Re: [ferret_users] problems in generating post scrip file plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00744.html">Re: [ferret_users] problems in generating post scrip file plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00741.html">Thread Prev</a>][<a href="msg00744.html">Thread Next</a>][<A HREF="threads.html#00743">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

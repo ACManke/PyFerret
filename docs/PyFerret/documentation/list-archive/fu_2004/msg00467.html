@@ -1,0 +1,257 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: ferret how to: -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 25 Jun 2004 10:55:46 &#45;0700 -->
+<!--X-Message-Id: 40DC6737.4080605@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: BAY22&#45;F30kjQp7JPfAo000fcb5a@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: ferret how to:</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00466.html">Thread Prev</a>][<a href="msg00468.html">Thread Next</a>][<A HREF="threads.html#00467">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: ferret how to:</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Miguel Gonzales &lt;<a href="mailto:mig02x@DOMAIN.HIDDEN">mig02x@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: ferret how to:</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 25 Jun 2004 10:56:07 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00466.html">BAY22-F30kjQp7JPfAo000fcb5a@hotmail.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00466.html">BAY22-F30kjQp7JPfAo000fcb5a@hotmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+Miguel was asking for some explanation of this script, and just so the<br>
+question does not remain unanswered, I'll quote here the answer that
+one <br>
+of our colleagues put togehter for him:<br>
+<pre wrap="">
+Hola Miguel,
+	Here are my guesses for what the script does:
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>use pisces_pac_5d_1992_JAN_grid_T.nc
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	The file pisces_pac_5d_1992_JAN_grid_T.nc is in netCDF format and
+	from what follows, contains data about temperature (votemper).
+	This data is on a grid where the x, y, z, and t-axes
+	usually represent longitude, latitude, depth, and time. The
+	i,j,k,l are indices that count along the x,y,z,t axes. So the
+        sea surface temperature SST is votemper[k=1], and
+	votemper[k=1,l=2] is the SST at the second time.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>let msk=if votemper[k=1] then 1 else 0*sossheig
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Part of the latitude-longitude grid lies over the land so the
+	data file must contain "missing values" where there cannot be
+        ocean temperatures. Then "msk" is set to 1 where there is water
+        and 0 where there is land
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>let mask=msk[l=@ave]-msk[i=@shf:1,l=@ave]
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Looking down on the surface of the region and following along a
+        row so that "i" changes, the values of "msk" change from 0 to 1
+        or 1 to 0 when you cross a coastline. "mask" computes the
+        difference between "msk" at a point and its value at the next
+        point in the "i" direction.  "mask" will be ZERO everywhere
+        except at the closest grid points to the land.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>set vi left
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	This tells ferret to draw the next plot in the left part of
+        the page.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>fill votemper[k=1,l=2]
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	What is drawn is a color contour map of the surface temperature
+        at the second time step.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>let sst_alongcoast=mask*votemper[k=1]
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	This is the surface temperature, but set to ZERO everywhere
+        except at that set of gridpoints closest to shore.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>set vi right
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Make the next plot at the right of the page
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>fill/l=2 sst_alongcoast
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Again for the second timestep, color contour the surface
+	temperature, but only for the strip of points along the coast.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>list/l=2/j=2 sst_alongcoast
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	List "sst_alongcoast" along the second line of latitude. This
+        should be ZERO everywhere except the point closest to shore. So
+        this is a bit of a waste - ignore all the zeros but read the
+        only non-zero value.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>let csst=sst_alongcoast[i=@sum]
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Add up all the values of "sst_alongcoast" along a line of
+        latitude. Since all the values are zero except the value at
+        the coast, "csst" will be the SST at the coast.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>fill csst
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Make a new color contour plot.  This will show coastal SST as
+        a function of latitude and time. The plot will replace the
+        earlier one drawn at the right of the page.
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>sp rm mask_coast_pisces00.nc
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Remove any previous copy of the file named mask_coast_pisces00.nc
+</pre>
+<blockquote type="cite">
+  <pre wrap=""><span class="moz-txt-citetags">&gt; </span>save/file=mask_coast_pisces00.nc mask
+  </pre>
+</blockquote>
+<pre wrap=""><!---->	Make a new file (in netCDF format) and load it with the "mask"
+        variable, which describes where the nearest-to-shore grid points
+        are located. This file can be read in for use in other jobs.
+
+</pre>
+<br>
+<br>
+Miguel Gonzales wrote:<br>
+<blockquote type="cite"
+ cite="">hello steve:
+  <br>
+I need aid in the script description which has like result a "mask",
+for which its function I do not know it clearly, but it is necessary
+for the type of plottings that handling,&nbsp; script is the following:
+  <br>
+  <br>
+! title of the <a class="moz-txt-link-freetext" href="">script::</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; create_mask.jnl
+  <br>
+! tipe :: oceanographic plot
+  <br>
+!
+  <br>
+use pisces_pac_5d_1992_JAN_grid_T.nc
+  <br>
+let msk=if votemper[k=1] then 1 else 0*sossheig
+  <br>
+!
+  <br>
+let mask=msk[l=@ave]-msk[i=@shf:1,l=@ave]
+  <br>
+set vi left
+  <br>
+fill votemper[k=1,l=2]
+  <br>
+let sst_alongcoast=mask*votemper[k=1]
+  <br>
+set vi right
+  <br>
+fill/l=2 sst_alongcoast
+  <br>
+list/l=2/j=2 sst_alongcoast
+  <br>
+let csst=sst_alongcoast[i=@sum]
+  <br>
+fill csst
+  <br>
+sp rm mask_coast_pisces00.nc
+  <br>
+save/file=mask_coast_pisces00.nc mask
+  <br>
+  <br>
+_________________________________________________________________
+  <br>
+MSN Amor: busca tu &frac12; naranja <a class="moz-txt-link-freetext" href="">http://latam.msn.com/amor/</a>
+  <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00466" href="msg00466.html">ferret how to:</a></strong>
+<ul><li><em>From:</em> Miguel Gonzales</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00466.html">ferret how to:</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00468.html">ferret how to:</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00466.html">Thread Prev</a>][<a href="msg00468.html">Thread Next</a>][<A HREF="threads.html#00467">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

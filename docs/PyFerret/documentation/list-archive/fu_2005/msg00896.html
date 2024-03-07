@@ -1,0 +1,193 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Saturation max and color palette -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Fri, 23 Sep 2005 06:14:09 &#45;0700 -->
+<!--X-Message-Id: f85174e4863fc18d8aca797d7c13c6cb@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4333D461.4020608@cls.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Saturation max and color palette</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00895.html">Thread Prev</a>][<a href="msg00897.html">Thread Next</a>][<A HREF="threads.html#00896">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Saturation max and color palette</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Tony Jolibois &lt;<a href="mailto:tjolibois@DOMAIN.HIDDEN">tjolibois@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Saturation max and color palette</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 23 Sep 2005 06:14:07 -0700</li>
+<li>Cc: ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00895.html">4333D461.4020608@cls.fr</a>&gt;</li>
+<li>References: &lt;<a href="msg00895.html">4333D461.4020608@cls.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+I'm not sure if this is the problem, but sometimes FILL omits some  
+areas of the plot. The first thing I would do if I found FILL not  
+working perfectly would be to use SHADE. (You can always  
+FILL/OVER/NOLAB afterwards and it usually looks ok).<br>
+<br>
+Another small bug is that Ferret sometimes seems to have what might be  
+a small rounding or precision error (?) in choosing the highest level.  
+To avoid this, try choosing a value very close to 0.3:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre> yes? fill/levels=(-0.1,0.3,0.01) min(intensite,0.2999)
+</pre>
+</blockquote><pre>
+or
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre> yes? fill/levels=(-0.1,0.3001,0.01) min(intensite,0.3)
+</pre>
+</blockquote>
+However, another idea for masking high or low values would be to SHADE  
+or FILL the mask over the original plot:<br>
+<br>
+FILL temperature   ! use normal levels or choose them as desired<br>
+LET high_temp = if temperature ge 24 then temperature<br>
+FILL/OVER/PAL=lightgray high_temp   ! mask the high temperatures with a  
+neutral color<br>
+<br>
+Billy K<br>
+<br>
+On Sep 23, 2005, at 3:09 AM, Tony Jolibois wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">        Hi all,<br>
+<br>
+ I have problem with saturation in color palette : I want ferret to  
+put the last color palette for saturation max instead of white.<br>
+ For that I use the command : fill/levels=($min,$max,$step)  
+min(variable, $max)<br>
+ This command works well for one variable and not for another (see  
+plots attached).<br>
+ Do you have an idea ?<br>
+ Thanks,<br>
+ Tony<br>
+<br>
+ This script works for saturation max :<br>
+<br>
+[mercator@rdp3-jaune temp]$ ferret -nojnl -gif<br>
+         NOAA/PMEL TMAP<br>
+         FERRET v5.81<br>
+         Linux(g77) 2.4.21-32 - 07/13/05<br>
+         23-Sep-05 10:01<br>
+  <br>
+ yes? use  
+&quot;<a  href="http://opendap.mercator-ocean.fr/thredds/dodsC/">http://opendap.mercator-ocean.fr/thredds/dodsC/</a> 
+mercatorPsy2v1R1v_med_mean_best_estimate&quot;<br>
+ yes? set region/x=6W:36.5E/y=30.023N:45.964N/z=0/t=20-SEP-2005<br>
+ yes? go mp_plate_caree<br>
+ yes? set grid temperature<br>
+ yes? go mp_aspect<br>
+ yes? fill/levels=(20,24,0.1) min(temperature,24)<br>
+ yes? frame/file=temperature_med.gif<br>
+ yes? exit<br>
+<br>
+this one doesn't work :<br>
+<br>
+[mercator@rdp3-jaune temp]$ ferret -nojnl -gif<br>
+         NOAA/PMEL TMAP<br>
+         FERRET v5.81<br>
+         Linux(g77) 2.4.21-32 - 07/13/05<br>
+         23-Sep-05 10:03<br>
+  <br>
+ yes? use  
+&quot;<a  href="http://opendap.mercator-ocean.fr/thredds/dodsC/">http://opendap.mercator-ocean.fr/thredds/dodsC/</a> 
+mercatorPsy2v1R1v_med_mean_best_estimate&quot;<br>
+ yes? yes? set region/x=6W:36.5E/y=30.023N:45.964N/z=0/t=20-SEP-2005<br>
+ yes? yes? go mp_plate_caree<br>
+ yes? yes? set grid temperature<br>
+ yes? yes? go mp_aspect<br>
+ yes? let intensite=(u^2 + v^2)^.5<br>
+ yes? fill/levels=(-0.1,0.3,0.01) min(intensite,0.3)<br>
+ yes? frame/file=med.gif<br>
+ yes? exit<br>
+<br>
+--<br>
+Tony Jolibois<br>
+<br>
+CLS - Direction Océanographie Spatiale<br>
+8-10 rue hermès - 31520 Ramonville Saint-Agne<br>
+tjolibois@cls.fr<br>
+<br>
+Tél : +33 (0) 561 393 797<br>
+Fax : +33 (0) 561 393 782<br>
+<br>
+&lt;med.gif&gt;&lt;temperature_med.gif&gt;<br>
+</blockquote><pre>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/~kessler">http://www.pmel.noaa.gov/~kessler</a>
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00897" href="msg00897.html">Re: [ferret_users] Saturation max and color palette</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00895" href="msg00895.html">[ferret_users] Saturation max and color palette</a></strong>
+<ul><li><em>From:</em> Tony Jolibois</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00895.html">[ferret_users] Saturation max and color palette</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00897.html">Re: [ferret_users] Saturation max and color palette</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00895.html">Thread Prev</a>][<a href="msg00897.html">Thread Next</a>][<A HREF="threads.html#00896">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

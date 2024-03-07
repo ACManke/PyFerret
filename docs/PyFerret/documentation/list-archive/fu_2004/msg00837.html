@@ -1,0 +1,202 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: your mail : extracting data at given points -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 23 Nov 2004 07:57:02 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0411232128210.20538&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY10&#45;F3575424D98DFC3CA4F227889C70@phx.gbl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: your mail : extracting data at given points</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00835.html">Thread Prev</a>][<a href="msg00839.html">Thread Next</a>][<A HREF="threads.html#00837">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: your mail : extracting data at given points</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: your mail : extracting data at given points</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 23 Nov 2004 21:34:58 +0530 (IST)</li>
+<li>Cc: Sudheer Joseph &lt;<a href="mailto:sjo_cma@DOMAIN.HIDDEN">sjo_cma@xxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00835.html">BAY10-F3575424D98DFC3CA4F227889C70@phx.gbl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Sudheer,
+            You can use SAMPLEXY function to sample a variable 
+at desired lat-lon locations. From the usermanual 
+(Ch3 Sec2.3.34.  SAMPLEXY )
+
+   SAMPLEXY(DAT_TO_SAMPLE,XPTS,YPTS) Returns data sampled at a 
+   set of (X,Y) points, using linear interpolation. 
+  
+   SAMPLEXY is a &quot;grid-changing&quot; function; its output grid is 
+   different from the input arguments.  Therefore it is best 
+   to use explicit limits on the first argument rather than a 
+   SET REGION command.
+
+ I think SAMPLEXY works well only for regular (equaly spaced)
+X &amp; Y axis (especially if the LONGITUDE axis is flagged as 
+MODULO). Anyway if you are planning to use Levitus Climatology
+you don't have to worry about this. 
+
+ Please have a look at the example given below.
+
+ Hope this helps
+
+ With Regards 
+
+ Jaison
+
+...........samplexy_lev.dat...........
+LAT   LON
+===   ===
+ 9.0  68.4
+10.2  72.6
+ 8.5  70.2
+ 7.2  65.5
+...............................
+!---------samplexy_lev.jnl-----------
+
+! open climatology dataset
+
+      set data levitus_climatology
+
+! open ascii file containing lat-lon points
+!    use &quot;/SKIP&quot; to skip header lines if any
+
+      file/skip=2/var=&quot;lat,lon&quot;  samplexy_lev.dat
+
+! do the sampling using SAMPLEXY function
+
+      let temp_lev = SAMPLEXY(temp[d=1], lon[d=2], lat[d=2])
+
+      list/k=1:5 temp_lev
+
+! assign proper title and units if you are saving this to a file
+
+      set var/title=&quot;Temperature Extracted from Levitus Climatology&quot;/\
+               units=&quot;^oC&quot;  temp_lev
+      set var/title=&quot;Latitude  of data points&quot;/units=latitudes  lat
+      set var/title=&quot;Longitude of data points&quot;/units=longitudes lon
+ 
+      sp rm -f samplexy_lev.nc
+      save/file=samplexy_lev.nc/append temp_lev
+      save/file=samplexy_lev.nc/append lon,lat
+
+!-----------------------------------------------
+
+
+
+On Tue, 23 Nov 2004, Sudheer Joseph wrote:
+
+&gt; Dear Users ,
+&gt;                  Is there any way to extract data from a netcdf file at 
+&gt; specicifed( irregular) lat lon positions read from a file,
+&gt; essentially I needed the following
+&gt; file/var= lat,lon      ll.dat
+&gt; get temperature data from levitus data.cdf @  lat log
+&gt; 
+&gt; is there a method to get this data form the specified lat  lon
+&gt; thanks,
+&gt; sudheer
+&gt; 
+&gt; ***************************************
+&gt; Dr. Sudheer Joseph
+&gt; Indian National Centre for Ocean Information Services
+&gt; Gajularamaram B.O., IDA Jeedeemetla S.O.
+&gt; Via Pragathi Nagar, Kukatpally, Hyderabad
+&gt; Pin:5000 55
+&gt; Tel:+91-40-23044600(R)
+&gt; Tel:+91-40-9440832534(Mobile)
+&gt; Tel:+91-40-25503595(O)
+&gt; Fax:+91-40-25503596(O)
+&gt; E-mail:sjo@rediffmail.com;
+&gt; callsjo@yahoo.com;
+&gt; sjo@incois.gov.in.
+&gt; Web- <a  href="http://oppamthadathil.tripod.com">http://oppamthadathil.tripod.com</a>
+&gt; ***************************************
+&gt; 
+&gt; _________________________________________________________________
+&gt; NRIs - Free money transfer to India. Fly to India for free!  
+&gt; <a  href="http://acm.bridgeovertw.com/hdfc/qr/landingpage/sep04/index.htm?sitecode=610">http://acm.bridgeovertw.com/hdfc/qr/landingpage/sep04/index.htm?sitecode=610</a>|394 
+&gt; Apply Now.
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00839" href="msg00839.html">Re: your mail : extracting data at given points</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00835" href="msg00835.html">[no subject]</a></strong>
+<ul><li><em>From:</em> Sudheer Joseph</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00835.html">[no subject]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00839.html">Re: your mail : extracting data at given points</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00835.html">Thread Prev</a>][<a href="msg00839.html">Thread Next</a>][<A HREF="threads.html#00837">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Sigma to pressure level -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 24 Sep 2004 11:11:35 &#45;0700 -->
+<!--X-Message-Id: 41546397.9070901@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20040918082118.43445.qmail@web41706.mail.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Sigma to pressure level</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00645.html">Thread Prev</a>][<a href="msg00672.html">Thread Next</a>][<A HREF="threads.html#00665">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Sigma to pressure level</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jagadish karmacharya &lt;<a href="mailto:j_karmacharya@DOMAIN.HIDDEN">j_karmacharya@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Sigma to pressure level</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 24 Sep 2004 11:12:39 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00645.html">20040918082118.43445.qmail@web41706.mail.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00645.html">20040918082118.43445.qmail@web41706.mail.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi <font face="Times New Roman">Jagadish</font>,<br>
+Welcome to Ferret!<br>
+Your commands for ZAXREPLACE&nbsp; look correct.&nbsp; I have just a few <br>
+comments:<br>
+<br>
+In the DEFINE AXIS command we normally use /Z=lo:hi:delta<br>
+The /DEPTH qualifier is the element of the command that tells Ferret<br>
+that the axis is positive downwards.&nbsp; Ferret will take the arguments<br>
+/Z=1000:0:25 and use them as if you had said /Z=0:1000:25.<br>
+<br>
+The expression tk*0.0 is a variable with the same grid as tk but <br>
+with value 0.&nbsp; So adding the term tk*0.0 in the definition of variable<br>
+pk forces pk to have the same shape and size as tk.&nbsp; This topic is<br>
+discussed in the Users Guide in Chapter 3, section 2.2
+"Multi-dimensional<br>
+Expressions"&nbsp; which you can find by looking up "conformability" in the<br>
+index.<br>
+<br>
+I don't know quite what you mean in your question about the averaging.<br>
+Do you want to take a collection of x-y locations and find the average
+of a<br>
+variable at those points? (If so then the term would be points rather
+than <br>
+grids.)&nbsp; You can use the SAMPLEXY function to find the value of a
+variable <br>
+at a set of points:<br>
+<br>
+!&nbsp;&nbsp; First define the x and y locations as lists of values (constant
+arrays)<br>
+!&nbsp;&nbsp; Variable xpts is all of the x coordinates, ypts is the y coordinates<br>
+<br>
+yes? let xpts = {37, 37, 38, 38}<br>
+yes? let ypts = {36, 37, 35, 36}<br>
+<br>
+!&nbsp; SAMPLEXY the variable "var" at the locations defined by xpts and ypts<br>
+!&nbsp; The output of SAMPLEXY is a list on an abstract X axis, one for <br>
+!&nbsp; each element of xpts and ypts.&nbsp; You can average this result in X to <br>
+!&nbsp; get the average over the list of points.<br>
+<br>
+yes? let&nbsp; varpts = SAMPLEXY(var, xpts, ypts)<br>
+yes? let var_avg = varpts[x=@ave]<br>
+<br>
+var_avg will have the same grid in Z and T as the input variable var.<br>
+<br>
+Ansley Manke<br>
+<br>
+jagadish karmacharya wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <div><font size="2"></font>
+  <p><font size="2">Dear ferret users,</font></p>
+  <p><font size="2">I have started using ferret recently. I am facing
+couple of problem in using the software.</font></p>
+  <p><font size="2">1) I have data is sigma coordiante with the
+variables in listed below. I</font><font face="Times New Roman"><font
+ size="3"> want to present my result (varaibles) in pressure level. for
+that purpose i have used following command </font></font></p>
+  <p><font face="Times New Roman">yes? use ATMpentd_91AVG.CDF</font></p>
+  <p><font face="Times New Roman">yes? define
+axis/Z=1000:0:25/unit=millibar/depth plev <br>
+&gt; yes? let ptop=100 ! as my model top is 100mb <br>
+&gt; yes? let pk=tk*0.0+z*(ps-ptop)+ptop ! i don't know why one has to
+put tk*0.0 in the equation because it's value is zero anyway; there is
+blank display if i omit tk*0.0 in the equation <br>
+&gt; yes? let h_on_p =ZAXREPLACE(hgt,pk,z[gz=plev]) <br>
+&gt; yes? shade/l=1 h_on_p[z=500] ! gives the hgt( geo. pot. ht.) for
+500 mb level<br>
+&gt; yes? let rh_on_p =ZAXREPLACE(rh,pk,z[gz=plev]) ! similarly for
+other variable say rh <br>
+&gt; yes? list/l=1 rh_on_p[z=850] ! list the rh( rel. humidity) for 500
+mb level<br>
+  <br>
+The output with this set of commands seems to be ok but i am not
+certain. can somebod verify if this is the correct set of command to
+get output in pressure levels with original file in sigma coordiante.</font></p>
+  <p><font face="Times New Roman">2 Next I want to get arial average of
+a number of neighbouring grids (however they don't form a rectangle)
+for example say grids having (I,J) values
+(37,36),(37,37),(38,35),(38,36). what will be the best method?</font></p>
+  <p><font face="Times New Roman">thanking in advance for your help</font></p>
+  <p><font face="Times New Roman">jagadish</font></p>
+  <p><font face="Times New Roman">_____________________________________________________</font></p>
+  <p><font face="Times New Roman">yes? show data</font></p>
+  <p><font face="Times New Roman">currently SET data sets:</font></p>
+  <p><font face="Times New Roman">1&gt; ./ATMpentd_91AVG.CDF (default)</font></p>
+  <p><font face="Times New Roman">name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L </font></p>
+  <p><font face="Times New Roman">TK&nbsp;&nbsp; Temperature&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:63&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1:66&nbsp;&nbsp; 1:23&nbsp;&nbsp;&nbsp;&nbsp; 1:30</font></p>
+  <p><font face="Times New Roman">RH&nbsp;&nbsp; Relative Humidity&nbsp;&nbsp;&nbsp;&nbsp;
+1:63&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:66&nbsp;&nbsp; 1:23&nbsp;&nbsp;&nbsp;&nbsp; 1:30</font></p>
+  <p><font face="Times New Roman">HGT Geopotentail Height 1:63&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:66&nbsp;&nbsp;&nbsp; 1:23&nbsp;&nbsp;&nbsp;&nbsp;1:30</font></p>
+  <p><font face="Times New Roman">.......etc</font></p>
+  <font size="2">
+  <p>&nbsp;</p>
+  </font></div>
+  <p> </p>
+  <hr size="1">Do you Yahoo!?<br>
+Read only the mail you want - <a
+ href="">Yahoo!
+Mail SpamGuard</a>.
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00672" href="msg00672.html">Re: Sigma to pressure level</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00645" href="msg00645.html">Sigma to pressure level</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00645.html">Sigma to pressure level</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00672.html">Re: Sigma to pressure level</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00645.html">Thread Prev</a>][<a href="msg00672.html">Thread Next</a>][<A HREF="threads.html#00665">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

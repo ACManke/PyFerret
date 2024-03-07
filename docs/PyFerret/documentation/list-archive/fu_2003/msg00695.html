@@ -1,0 +1,174 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: missing_data handling in ferret -->
+<!--X-From-R13: Xbr Ivrytbfm <wbrjNpbyn.vtrf.bet> -->
+<!--X-Date: Thu, 25 Sep 2003 08:57:52 &#45;0700 -->
+<!--X-Message-Id: FFEBCD58&#45;EF70&#45;11D7&#45;9076&#45;000393C443F0@cola.iges.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3F70BB4F.43E446FE@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: missing_data handling in ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00691.html">Thread Prev</a>][<a href="msg00692.html">Thread Next</a>][<A HREF="threads.html#00695">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: missing_data handling in ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: missing_data handling in ferret</strong></li>
+<li><strong>From</strong>: <strong>Joe Wielgosz &lt;<a href="mailto:joew@DOMAIN.HIDDEN">joew@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 25 Sep 2003 11:57:43 -0400</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>, Brian Doty &lt;<a href="mailto:doty@DOMAIN.HIDDEN">doty@xxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00691.html">3F70BB4F.43E446FE@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi,<br>
+<br>
+In that case, I should ask if you are aware of a quirk of the 
+OPeNDAP/DODS-netCDF interface...<br>
+<br>
+In the OPeNDAP protocol, the missing value is encoded as ASCII text, 
+while the data values are transmitted as binary values.  Unfortunately, 
+as far as I can find, there is no precise standard for representing 
+binary floating point values as base-10 ASCII character strings. 
+Therefore, there is always a possibility that client and server 
+machines may use different algorithms to perform the conversion.<br>
+<br>
+The result if this is the case, is that the binary value of the 
+missing_data attribute that is read by the DODS-netCDF client may not 
+be bitwise identical to the original binary value on the server. Thus, 
+a strict equality comparison may not always correctly detect missing 
+values in a DODS-netCDF data variable.<br>
+<br>
+We got bitten by this because GrADS, which dates from a time when the C 
+standard routine strtod() was not available on all systems, has its own 
+ASCII &lt;==&gt; float conversion algorithm that in a few cases produces very 
+slightly different results.<br>
+<br>
+One way we plan to remedy this situation is to have GrADS use strtod() 
+when possible, which hopefully will eliminate many of the 
+discrepancies. However, in general AFAIK, there is no guarantee that 
+strtod() and printf(&quot;%f&quot;) will produce exactly interchangeable and 
+reversible results on all combinations of client and server platforms. 
+So it seems the only really safe solution is to implement &quot;fuzzy&quot; 
+missing_data checking for DODS data  (something GrADS already does for 
+local binary datasets), using inequalities and a delta.<br>
+<br>
+Just thought you might want to be aware of this and consider 
+implementing a similar &quot;fuzzy&quot; check in Ferret, particularly since this 
+is issue likely to show up when setting up LAS in front of GDS.<br>
+<br>
+I'm cc'ing this to dods-tech as well, to bring it to the attention of 
+the OPeNDAP folks if it hasn't been already...<br>
+<br>
+- Joe<br>
+<br>
+<br>
+On Tuesday, September 23, 2003, at 05:29 PM, Ansley Manke wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi Joe,
+Within Ferret it's generally a strict comparison of the two floating
+point numbers, data-value and missing-flag, a Fortran equality test
+using .EQ.
+
+Ansley Manke
+
+
+Joe Wielgosz wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi folks,<br>
+<br>
+I am working on this missing_data-not-recognized problem, which seems<br>
+to affect both LAS/Ferret and GrADS clients accessing the GDS.<br>
+<br>
+I was just wondering, what algorithm does Ferret use to check for<br>
+missing data when plotting? Does it expect strict binary equality<br>
+between the netCDF missing data value and the variable data, or is it 
+a<br>
+&quot;fuzzy&quot; test with inequalities?<br>
+<br>
+Thanks,<br>
+<br>
+Joe<br>
+<br>
+Joe Wielgosz / joew@cola.iges.org<br>
+---------------------------------------------------<br>
+Center for Ocean-Land-Atmosphere Studies (COLA)<br>
+Institute for Global Environment and Society (IGES)<br>
+<a  href="http://www.iges.org">http://www.iges.org</a><br>
+</blockquote><pre>
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+
+
+
+
+</pre>
+</blockquote><pre>
+Joe Wielgosz / joew@cola.iges.org
+---------------------------------------------------
+Center for Ocean-Land-Atmosphere Studies (COLA)
+Institute for Global Environment and Society (IGES)
+<a  href="http://www.iges.org">http://www.iges.org</a>
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00691" href="msg00691.html">Re: missing_data handling in ferret</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00691.html">Re: missing_data handling in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00692.html">Re: Re: how does ferret deal with vertical vector distribution atfixed station.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00691.html">Thread Prev</a>][<a href="msg00692.html">Thread Next</a>][<A HREF="threads.html#00695">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

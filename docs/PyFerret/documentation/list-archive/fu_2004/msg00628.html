@@ -1,0 +1,193 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Descriptor Files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 15 Sep 2004 10:47:20 &#45;0700 -->
+<!--X-Message-Id: 4148805C.302@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4147223B.50707@igpp.ucla.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Descriptor Files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00623.html">Thread Prev</a>][<a href="msg00629.html">Thread Next</a>][<A HREF="threads.html#00628">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Descriptor Files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:plattner@DOMAIN.HIDDEN">plattner@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Descriptor Files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 15 Sep 2004 10:48:12 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00623.html">4147223B.50707@igpp.ucla.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00623.html">4147223B.50707@igpp.ucla.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Kasper,<br>
+This seems to be a bug in how Ferret handles time-independent variables
+in <br>
+descriptor files.&nbsp; We'll look into fixing it, but in the meantime I
+think I've found<br>
+a way to work around it.&nbsp; Load the non-time-dependent data from the
+first<br>
+set before the "set data" command for the second set.<br>
+<br>
+&nbsp;&nbsp; set data&nbsp; model_1.des<br>
+&nbsp;&nbsp; load mask[d=1]<br>
+<br>
+&nbsp;&nbsp; set data model_2.des<br>
+&nbsp;&nbsp; list mask[d=2]<br>
+&nbsp;&nbsp; list mask[d=1]<br>
+<br>
+In the example I cooked up, the two mask variables are correct when
+loaded<br>
+in this way.<br>
+<br>
+Ansley Manke<br>
+<br>
+Gian-Kasper Plattner wrote:<br>
+<blockquote type="cite" cite="">Hi all,
+  <br>
+  <br>
+I have problems using descriptor files in ferret. I would like to
+compare model output from two different versions of our ocean model,
+which are run on different grids (e.g. 15km and 5km horizontal
+resolution), in order to analyse the resolution-dependence of the
+results. The netcdf files for the two model versions have the exactly
+same output variables (names etc), some of which are time-independent
+(masks, lon, lat etc.) and most are time-dependent. To calculate
+climatological averages over several years, I have created separate
+descriptor files for both model versions. That works fine and I can
+load the files with "set data *.des" and use them in ferret as dataset
+1 and 2. However, it seems as if all the variables that are
+time-independent are overwritten each time I read a new descriptor file
+into ferret. Therefore when I read the 15km file first [d=1] and then
+the 5km file [d=2], the values of all the time-independent variables in
+dataset 1are set to the values from dataset 2!
+  <br>
+  <br>
+Did anyone encounter similar problems while using descriptor files? Do
+I have to adapt my descriptor files?
+  <br>
+  <br>
+Thanks for your help,
+  <br>
+  <br>
+Best regards, Kasper
+  <br>
+  <br>
+  <pre wrap="">
+<hr width="90%" size="4">
+
+&amp;FORMAT_RECORD
+D_TYPE        = '  MC',
+D_FORMAT      = '  1A',
+D_SOURCE_CLASS       = 'MODEL OUTPUT',
+/
+&amp;BACKGROUND_RECORD
+D_EXPNUM      = '0001',
+D_MODNUM      = '  AA',
+D_TITLE       = '2 year simulation with 15 km grid',
+D_T0TIME      = '01-JAN-2000:12:00:00',
+D_TIME_UNIT   = 1.0,
+D_TIME_MODULO = .FALSE.,
+D_CALTYPE     = '360_DAY',
+/
+&amp;MESSAGE_RECORD
+D_MESSAGE     = ' ',
+D_ALERT_ON_OPEN      = F,
+D_ALERT_ON_OUTPUT    = F,
+/
+&amp;EXTRA_RECORD
+/
+&amp;STEPFILE_RECORD
+s_filename    = 'usw15_5_flux_euph_avg_Y1.nc.AVG_EUPH_LAYER',
+S_AUX_SET_NUM = 0,
+S_START       = 3.117324e+08,
+S_END  =        3.415404e+08,
+S_DELTA       = 1296000.0,
+S_REGVARFLAG  = ' ',
+/
+&amp;STEPFILE_RECORD
+S_FILENAME    = 'usw15_5_flux_euph_avg_Y2.nc.AVG_EUPH_LAYER',
+S_AUX_SET_NUM = 0,
+S_START       = 3.428364e+08,
+S_END         = 3.726444e+08,
+S_DELTA       = 1296000.0,
+S_REGVARFLAG  = ' ',
+/
+&amp;STEPFILE_RECORD
+      s_filename    = '**END OF STEPFILES**'
+/
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00629" href="msg00629.html">Re: Descriptor Files</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00623" href="msg00623.html">Descriptor Files</a></strong>
+<ul><li><em>From:</em> Gian-Kasper Plattner</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00623.html">Descriptor Files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00629.html">Re: Descriptor Files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00623.html">Thread Prev</a>][<a href="msg00629.html">Thread Next</a>][<A HREF="threads.html#00628">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

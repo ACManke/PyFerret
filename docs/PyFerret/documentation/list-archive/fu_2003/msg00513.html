@@ -1,0 +1,202 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: re: Error writing CDF file -->
+<!--X-From-R13: "Pehpr I. Tbeq" <oehprNsbeqivyyr.bet> -->
+<!--X-Date: Wed, 23 Jul 2003 06:08:37 &#45;0700 -->
+<!--X-Message-Id: JFEBJMPKAJGKKODBMKMJCEDOCKAA.bruce@fordville.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>re: Error writing CDF file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00512.html">Thread Prev</a>][<a href="msg00511.html">Thread Next</a>][<A HREF="threads.html#00513">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>re: Error writing CDF file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Lynn deWitt &lt;<a href="mailto:ldewitt@DOMAIN.HIDDEN">ldewitt@xxxxxxxxxxxxx</a>&gt;,  Ferret_Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>re: Error writing CDF file</strong></li>
+<li><strong>From</strong>: <strong>&quot;Bruce W. Ford&quot; &lt;<a href="mailto:bruce@DOMAIN.HIDDEN">bruce@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 23 Jul 2003 09:08:18 -0400</li>
+<li>Cc: &quot;Tom Murphree (NPS)&quot; &lt;<a href="mailto:murphree@DOMAIN.HIDDEN">murphree@xxxxxxxxxxxx</a>&gt;</li>
+<li>Importance: Normal</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Mick, Lynn and others:
+
+Here's what worked for me:
+
+Session 1 (created and ran the following code for each year 1950-2001
+using Perl to do the file writing and ferret running X 51 years):
+SET DATA &quot;/research/NDJFM/wod01_100m.nc&quot;
+def axis/t=15-nov-1950:15-mar-1951/npoints=5 tax
+def grid/t=tax grd
+let t100_ndjfm1 = t100[l=11:15]
+let t100_ndjfm = t100_ndjfm1[g=grd]
+save/title=&quot;T100 NDJFM for
+1950-1951&quot;/file=&quot;/research/NDJFM/NetCDF/nov50-mar51-ndjfm-t100.nc&quot;/clobber
+t100_ndjfm
+
+Session 2:
+(used another Perl script to create the following long script:
+
+let time=t[g=t100_ndjfm]
+let/title=&quot;Feb-Apr Average&quot; t100=t100_ndjfm[l=1:5@ave]+0*time[l=1]
+use nov50-mar51-ndjfm-t100.nc
+SAVE/clobber/title=&quot;T100 NDFFM for
+1950-2000&quot;/file=nov-mar-ltm-1950-2000-t100.nc t100
+CANCEL DATA nov50-mar51-ndjfm-t100
+!*********************************
+use nov51-mar52-ndjfm-t100.nc
+SAVE/append/title=&quot;T100 NDFFM for
+1950-2000&quot;/file=nov-mar-ltm-1950-2000-t100.nc t100
+CANCEL DATA nov51-mar52-ndjfm-t100
+!*********************************
+use nov52-mar53-ndjfm-t100.nc
+SAVE/append/title=&quot;T100 NDFFM for
+1950-2000&quot;/file=nov-mar-ltm-1950-2000-t100.nc t100
+CANCEL DATA nov52-mar53-ndjfm-t100
+
+....and so on
+
+Then I ran the above script to have one NetCDF file with multiple time steps
+of a NDJFN composite (each time step a different year).  I appreciate it the
+nudge in the right direction!
+
+Bruce
+
+&gt;-----Original Message-----
+&gt;From: owner-ferret_users@ferret.pmel.noaa.gov
+&gt;[<a  href="mailto:owner-ferret_users@ferret.pmel.noaa.gov]On">mailto:owner-ferret_users@ferret.pmel.noaa.gov]On</a> Behalf Of Mick
+&gt;Spillane
+&gt;Sent: Tuesday, July 22, 2003 1:39 PM
+&gt;To: Bruce W. Ford
+&gt;Cc: Ferret_Users
+&gt;Subject: RE: Error writing CDF file
+&gt;
+&gt;
+&gt;Hi Bruce,
+&gt;	It would seem that you need to restore the time information that
+&gt;the time averaging transformation removes.  Here is a demo that may help:
+&gt;
+&gt;-----------------------------------------------------------------------
+&gt;Ferret Session 1:
+&gt;Make test files of monthly data for jan,...,jun for 4 years
+&gt;
+&gt;def axis/x=1:4:1 xax ; def axis/y=1:3:1 yax ; def axis/z=1:2:1 zax
+&gt;def axis/t=15-jan-1991:15-jun-1991/npoints=6 tax
+&gt;def grid/x=xax/y=yax/z=zax/t=tax grd
+&gt;
+&gt;let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+910000
+&gt;save/file=test1991.nc v
+&gt;
+&gt;def axis/t=15-jan-1992:15-dec-1992/npoints=12 tax
+&gt;let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+920000
+&gt;save/file=test1992.nc v
+&gt;
+&gt;def axis/t=15-jan-1993:15-dec-1993/npoints=12 tax
+&gt;let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+930000
+&gt;save/file=test1993.nc v
+&gt;
+&gt;def axis/t=15-jan-1994:15-dec-1994/npoints=12 tax
+&gt;let v=1000*l[g=grd]+100*k[g=grd]+10*j[g=grd]+i[g=grd]+940000
+&gt;save/file=test1994.nc v
+&gt;quit
+&gt;------------------------------------------------------------
+&gt;Ferret Session 2:
+&gt;Read each of these file in turn, compute the Feb-Apr average,
+&gt;and store it in a new file with an appropriate date, based here
+&gt;on the date of the variable &quot;v&quot;
+&gt;
+&gt;! define a time variable to assist in adding time dimension
+&gt;let time=t[g=v]
+&gt;! ... and associate the Feb-Apr average with the March date
+&gt;let/title=&quot;Feb-Apr Average&quot; fma=v[l=2:4@ave]+0*time[l=3]
+&gt;
+&gt;! access the 1991 data (monthly values jan-jun)
+&gt;use test1991.nc ; save/file=fma.nc fma
+&gt;
+&gt;! add the 1992 average
+&gt;use test1992.nc ; save/file=fma.nc/app fma
+&gt;
+&gt;! add the 1993 average
+&gt;use test1993.nc ; save/file=fma.nc/app fma
+&gt;
+&gt;! add the 1994 average
+&gt;use test1994.nc ; save/file=fma.nc/app fma
+&gt;quit
+&gt;----------------------------------------------------------------
+&gt;Ferret Session 3:
+&gt;Validate the content of the file &quot;fma.nc&quot;
+&gt;
+&gt;use fma.nc
+&gt;sho grid/all fma
+&gt;plot/i=1/j=1/k=1/sym=20 fma
+&gt;----------------------------------------------------------------
+&gt;
+&gt;Good luck,
+&gt;Mick
+&gt;
+&gt;|____Mick.Spillane@noaa.gov____|
+&gt;|__Room 2070 Bldg#3 NOAA/PMEL__|
+&gt;|____Phone_:_(206)526-6780_____|
+&gt;
+&gt;
+&gt;
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00512.html">RE: Error writing CDF file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00511.html">mp_stereographic</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00512.html">Thread Prev</a>][<a href="msg00511.html">Thread Next</a>][<A HREF="threads.html#00513">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

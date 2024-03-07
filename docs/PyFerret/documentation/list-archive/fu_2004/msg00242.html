@@ -1,0 +1,195 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: fill_between : comments -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 5 Apr 2004 09:46:39 &#45;0700 -->
+<!--X-Message-Id: 40718D74.4020706@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.44.0404030455230.27748&#45;100000@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: fill_between : comments</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00231.html">Thread Prev</a>][<a href="msg00221.html">Thread Next</a>][<A HREF="threads.html#00242">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: fill_between : comments</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: fill_between : comments</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 05 Apr 2004 09:46:44 -0700</li>
+<li>Cc: Patrick Brockmann &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;, <a href="mailto:toni.mira@DOMAIN.HIDDEN">toni.mira@xxxxxx</a>,  <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00231.html">Pine.LNX.4.44.0404030455230.27748-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00231.html">Pine.LNX.4.44.0404030455230.27748-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jaison,<br>
+Yes, as you say, this is due to the bug Patrick reported about the polygon<br>
+command, that  the POLY/LINE and filled polygons are inconsistent with<br>
+each other regarding the sign of the coordinates of the polygons.  For the<br>
+moment this is on our list as a &quot;known bug&quot;.  Here is a script which works<br>
+around this by doing it both ways - it just overlays a plot with the 
+vertices<br>
+having the opposite sign when we have a Z axis.<br>
+<br>
+<br>
+\cancel mode verify<br>
+! fill_between.jnl<br>
+! 6/99 *sh*<br>
+! From Weimin Wang/Steve Hankin emails  July 2000<br>
+! cleanup Ansley Manke 10/2000<br>
+! Bug fix: 3/2004 for depth axis polygon overlay was not drawn.<br>
+<br>
+! Description: Fill between two curves or a curve and a constant value<br>
+<br>
+! Usage:                   $1         $2   $3    $4<br>
+! yes?  GO fill_between polygon_command data axis [base]<br>
+! $1 - the polygon command with qualifiers (eg POLYGON/OVER/PALETTE=GREEN<br>
+! $2 - a variable -- as if it were being plotted<br>
+! $3 - the axis name for variable &quot;data&quot;<br>
+! $4 - base curve or offset value.  If omitted, shade between &quot;data&quot; and 0.<br>
+<br>
+! example 1<br>
+!  define axis/t=1-jan-1990:1-mar-1990:1/unit=days tday<br>
+!  let a = SIN(T[gt=tday]/10)<br>
+!  let b = 0.4*cos(T[gt=tday]/4) - 2<br>
+!  plot a, b<br>
+!  go fill_between poly/over/palette=red/line a tday b<br>
+!  go fill_between poly/over/palette=yellow a tday 1.<br>
+!  go fill_between poly/over/palette=green b tday -3<br>
+<br>
+! example 2 with a depth axis<br>
+!  use levitus_climatology<br>
+!  let a = temp[y=0,x=180]<br>
+!  let b = temp[y=60,x=180]<br>
+!  plot a,b<br>
+!  go fill_between poly/over/palette=green/line/nolab a zaxlevitr b<br>
+<br>
+! argument check<br>
+QUERY/IGNORE $1&quot;&lt;usage: yes? GO  fill_between polygon_command data axis 
+[base]&quot;<br>
+QUERY/IGNORE $2&quot;&lt;usage: yes? GO  fill_between polygon_command data axis 
+[base]&quot;<br>
+QUERY/IGNORE $3&quot;&lt;usage: yes? GO  fill_between polygon_command data axis 
+[base]&quot;<br>
+<br>
+! save the input expressions into simple variable definitions<br>
+LET/QUIET FBy = $2<br>
+LET/QUIET FBbase = $4&quot;0&quot;<br>
+<br>
+! determine the orientation of the data (and check that it is 1D)<br>
+DEFINE SYMBOL FBax `FBy,return=shape`<br>
+DEFINE SYMBOL FBiax ($FBax&quot;|X&gt;i|Y&gt;j|Z&gt;k|T&gt;l|&lt;error: data is not a line&quot;)<br>
+DEFINE SYMBOL FBbar_ax ($FBax&quot;|X&gt;Z|Y&gt;Z|Z&gt;Y|T&gt;Z|&lt;error: data is not a line&quot;)<br>
+<br>
+DEFINE SYMBOL FBbase_ax `FBbase,return=shape`<br>
+DEFINE SYMBOL FBbase_iax ($FBbase_ax&quot;|X&gt;i|Y&gt;j|Z&gt;k|T&gt;l|POINT&gt;i|&lt;error: 
+base is not a line&quot;)<br>
+DEFINE SYMBOL FBbase_bar_ax ($FBbase_ax&quot;|X&gt;Z|Y&gt;Z|Z&gt;Z|T&gt;Z|POINT&gt;Z|&lt;error: 
+base is not a line&quot;)<br>
+<br>
+! get the independent axis out as a separate variable<br>
+DEFINE SYMBOL FBilo `FBy,return=($FBiax)start`<br>
+DEFINE SYMBOL FBihi `FBy,return=($FBiax)end`<br>
+<br>
+! Define a new non-depth axis in case of a depth axis: the poly overlay<br>
+! with /transpose is incorrect on a depth axis.<br>
+<br>
+define axis/($FBax) FBaxis=($FBax)[G($FBax)=$3]<br>
+LET/QUIET FBx = ($FBax)[G($FBax)=FBaxis,($FBiax)=($FBilo):($FBihi)]   
+!FBx=X[GX=ax,i=lo:hi]<br>
+LET/QUIET FBx = ($FBax)[G($FBax)=$3,($FBiax)=($FBilo):($FBihi)]   
+!FBx=X[GX=ax,i=lo:hi]<br>
+can mode ver<br>
+! assemble the vertices above and below<br>
+LET/QUIET FBxup  = FBx<br>
+LET/QUIET FByup  = FBy<br>
+LET/QUIET FBxdn  = FBx<br>
+LET FBydn  = 0.*FBy + FBbase<br>
+<br>
+<br>
+LET/QUIET FBpindex = ($FBbar_ax)[($FBbar_ax)=1:4]<br>
+<br>
+LET/QUIET FBx4_0 = IF FBpindex EQ 1 OR FBpindex EQ 4 then FBxdn ELSE FBxup<br>
+LET/QUIET FBy4_0 = IF FBpindex EQ 1 OR FBpindex EQ 4 then FBydn ELSE FByup<br>
+LET/QUIET FBx4_1 = IF FBpindex LE 2 then FBx4_0 ELSE FBx4_0[($FBax)=@shf:-1]<br>
+LET/QUIET FBy4_1 = IF FBpindex LE 2 then FBy4_0 ELSE FBy4_0[($FBax)=@shf:-1]<br>
+<br>
+! for Z -axis plot, transpose the overlay<br>
+! if it is a depth axis, need to also multiply by -1.<br>
+DEFINE SYMBOL FB_orient ($FBax&quot;|X&gt;fill|Y&gt;fill|T&gt;fill|Z&gt;transpose|&quot;)<br>
+DEFINE SYMBOL FB_mult ($FBax&quot;|X&gt;1|Y&gt;1|T&gt;1|Z&gt;-1|&quot;)<br>
+<br>
+$1/($FB_orient)/coord_ax=($FBbar_ax) FBx4_1, FBy4_1<br>
+<br>
+IF `($FB_mult) LT 0` THEN $1/nolab/($FB_orient)/coord_ax=($FBbar_ax)  
+($FB_mult)*FBx4_1, ($FB_mult)*FBy4_1<br>
+! In case of a POLY/LINE command, also overlay with the opposite sign.<br>
+IF `($FB_mult) LT 0` THEN 
+$1/over/nolab/($FB_orient)/coord_ax=($FBbar_ax)  FBx4_1, ($FB_mult)*FBy4_1<br>
+<br>
+cancel symbol FB*<br>
+cancel variable FB*<br>
+set mode/last verify<br>
+<br>
+<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00231" href="msg00231.html">Re: fill_between : comments</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00231.html">Re: fill_between : comments</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00221.html">polygon lines</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00231.html">Thread Prev</a>][<a href="msg00221.html">Thread Next</a>][<A HREF="threads.html#00242">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Trouble Displaying Curvilinear Data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 19 Sep 2005 13:30:52 &#45;0700 -->
+<!--X-Message-Id: 432F1FFB.3000601@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 432F1554.60509@noaa.gov -->
+<!--X-Derived: gif00052.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Trouble Displaying Curvilinear Data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00882.html">Thread Prev</a>][<a href="msg00885.html">Thread Next</a>][<A HREF="threads.html#00883">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Trouble Displaying Curvilinear Data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>John Schattel &lt;<a href="mailto:john.schattel@DOMAIN.HIDDEN">john.schattel@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Trouble Displaying Curvilinear Data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 Sep 2005 13:30:51 -0700</li>
+<li>Cc: ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00881.html">432F1554.60509@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00881.html">432F1554.60509@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Jonn,<br>
+Bill's right, but the data's much wierder than that.<br>
+<br>
+A good way to start diagnosing anything with curvilienar data is to look 
+at the longitude and latitude fields separately, and the data without 
+trying to use the curvilinear coordinates.  The STAT command works well 
+to get at what's in the coordinates and data fields.<br>
+<br>
+  set data &quot;<a  href="http://205.156.4.56/cgi-bin/nph-dods/st_johns/efdcgrid01.nc&quot">http://205.156.4.56/cgi-bin/nph-dods/st_johns/efdcgrid01.nc&quot</a>;<br>
+  shade lon<br>
+  shade lat<br>
+  shade temp[k=1]<br>
+<br>
+It looks like the data has a flag of 0 for all of the fields, except 
+where there are grid locations where the idealized river is. (plot 
+attached below, with first just SHADE LON and then with some levels 
+specified so we can see what the values are)<br>
+<br>
+The zero's are what is throwning off the curvilinear plotting algorithm. 
+I'm not sure how we could get the method we have of visualizing 
+curvilinear data to work at all with this sort of grid.  We can't for 
+instance just set the missing-value flags to zero, because the 
+curvilinear method requires the longitude and latitude data to have no 
+missing data.<br>
+<br>
+Ferret would expect that the longitude and latitude fields be completely 
+specified, and the data fields to have a flag where the data does not 
+exist.  I can't think of a way around this right off (but it's sure nice 
+to have the data available via DODS so we can check out what's happening!)<br>
+<br>
+Here is the script I used to get the plot below:<br>
+<br>
+<br>
+  yes? set data 
+&quot;<a  href="http://205.156.4.56/cgi-bin/nph-dods/st_johns/efdcgrid01.nc&quot">http://205.156.4.56/cgi-bin/nph-dods/st_johns/efdcgrid01.nc&quot</a>;<br>
+  yes? cancel mode logo<br>
+<br>
+  yes? set view ul<br>
+  yes? shade lon<br>
+  yes? set view ur<br>
+  yes? shade/lev=(-82,-81,0.1) lon<br>
+<br>
+  yes? set view ll<br>
+  yes? shade lat<br>
+  yes? set view lr<br>
+  yes? shade/lev=(29,31,0.2) lat<br>
+<br>
+<br>
+John Schattel wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi All,<br>
+<br>
+I am trying to display some curvilinear model data and I am getting 
+some unexpected results.  You can see the results of a 
+shade/title=&quot;Surface Currents&quot; u,lon,lat command in the attached gif 
+file (st_johns_river.gif).  The data should have been for a stretch of 
+the Eastern coast of Florida ( 
+<a  href="http://www.csc.noaa.gov/csp/images/fl_region.gif">http://www.csc.noaa.gov/csp/images/fl_region.gif</a> ).  Does anyone have 
+a suggestion on what might be going wrong or how to diagnose this 
+problem.  If you would like to see the netCDF data, it is available 
+via the following DODS URL or I could e-mail it to you offline.<br>
+<br>
+<a  href="http://205.156.4.56/cgi-bin/nph-dods/st_johns/efdcgrid01.nc.info">http://205.156.4.56/cgi-bin/nph-dods/st_johns/efdcgrid01.nc.info</a><br>
+<br>
+In advance, thanks for any help you might provide.<br>
+<br>
+John<br>
+<br>
+</blockquote><p><a href="gif00052.gif" ><img src="gif00052.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00885" href="msg00885.html">Re: [ferret_users] Trouble Displaying Curvilinear Data</a></strong>
+<ul><li><em>From:</em> John Schattel</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00881" href="msg00881.html">[ferret_users] Trouble Displaying Curvilinear Data</a></strong>
+<ul><li><em>From:</em> John Schattel</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00882.html">Re: [ferret_users] Trouble Displaying Curvilinear Data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00885.html">Re: [ferret_users] Trouble Displaying Curvilinear Data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00882.html">Thread Prev</a>][<a href="msg00885.html">Thread Next</a>][<A HREF="threads.html#00883">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

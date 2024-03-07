@@ -1,0 +1,267 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: with Descriptor file:  ** unknown netCDF error code: &#45;31 -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 14 May 2004 12:00:48 &#45;0700 -->
+<!--X-Message-Id: 40A5175F.20004@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.10.10405141417420.6224&#45;100000@limpet.umeoce.maine.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: with Descriptor file:  ** unknown netCDF error code: -31</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00379.html">Thread Prev</a>][<a href="msg00381.html">Thread Next</a>][<A HREF="threads.html#00380">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: with Descriptor file:  ** unknown netCDF error code: -31</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: with Descriptor file:  ** unknown netCDF error code: -31</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 14 May 2004 12:00:47 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00379.html">Pine.LNX.4.10.10405141417420.6224-100000@limpet.umeoce.maine.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00379.html">Pine.LNX.4.10.10405141417420.6224-100000@limpet.umeoce.maine.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Steve,<br>
+You're right, of course.&nbsp; The time axis is indeed computed using <br>
+<br>
+(S_END - S_START+1)/S_DELTA<br>
+<br>
+But the point is that the descriptor file wants the first and last
+step, in your <br>
+case 1 and 240 for a total of 20 years of 12 months each.&nbsp; The user
+does <br>
+not have to worry about the +1; that is taken care of internally.&nbsp; You
+have<br>
+240 time steps (middle-of-the-month values)&nbsp; and you were thinking of <br>
+the boundaries between time steps (end-of-the-month).<br>
+<br>
+Simple example -- if we had 10 days's data; s_start = 1, s_end = 10, <br>
+s_delta = 1.&nbsp; There are 10 = (10-1+1)/1 steps, and you would give<br>
+the descriptor file S_START=1, S_END =10, S_DELTA=1.<br>
+<br>
+Anyway, we got you off and going.<br>
+<br>
+Ansley<br>
+<br>
+Steve Cousins wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <pre wrap="">On Fri, 14 May 2004, Ansley Manke wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Your time unit of 2629746 corresponds to monthly data.  (1/12 of 365.2425
+days).  You have
+
+ S_START =   1,
+ S_END   =   239,
+ S_DELTA =   1,
+
+I assume this corresponds to 20 years of data.  But the time axis is 
+computed
+using (S_END-S_START-1)/S_DELTA = (239-1)  months.  This is less than
+20 years; and that looks to me like it's why you're seeing the error 
+message,
+
+ WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE
+ INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY
+
+Following the suggestion of using a DEFINE AXIS command
+to make the axis that you want, and using its steps to
+define your axis, if you want:
+
+yes? def
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->axis/t=15-jan-1980:15-dec-1999:1/units=months/t0="15-dec-1979:00:00" tax
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">yes? list t[gt=tax]
+
+Then this suggests thatyou want S_END to be 240.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+
+Hi Ansley, 
+
+I gave it a try using 240 and it works!  It is a bit non-intuitive (for me
+anyway) though.  Rather than using (S_END-S_START-1)/S_DELTA I would have
+thought it would be (S_END-S_START+1)/S_DELTA.  I have 239 time slices so
+I would (and did) guess that S_END would be 1 and S_END would be 239.
+At least it works and it is a very easy fix.
+
+Thanks very much,
+
+Steve
+
+
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Ansley Manke
+
+
+Steve Cousins wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">I have a series of 20 netCDF files, each with 12 time slices (except the
+last file only has 11 time slices). I have a descriptor file to connect
+these:
+
+&amp;FORMAT_RECORD
+D_TYPE	= '  MC',
+D_FORMAT	= '  1C',
+/
+&amp;BACKGROUND_RECORD
+D_TITLE	= 'BIOLOGY',
+D_T0TIME	= '15-dec-1979 00:00:00',
+D_TIME_UNIT	= 2629746.0,
+D_TIME_MODULO	= .false.,
+/
+&amp;MESSAGE_RECORD
+D_MESSAGE     = ' ',
+D_ALERT_ON_OPEN      = F,
+D_ALERT_ON_OUTPUT    = F,
+/
+&amp;EXTRA_RECORD
+/
+&amp;STEPFILE_RECORD
+S_FILENAME    = '/neptune/usr2/pacific-g-46-99/bio.cdf.001',
+S_AUX_SET_NUM   =           0,
+S_START =   1,
+S_END   =   239,
+S_DELTA =   1,
+S_NUM_OF_FILES  =           20,
+S_REGVARFLAG    = '     ',
+S_INDEX = '                       '
+/ 
+&amp;STEPFILE_RECORD
+ S_FILENAME    = '**END OF STEPFILES**'
+/
+
+In ferret I periodically (every 12 slices) get:
+
+	** unknown netCDF error code: -31
+
+Here is an example:
+
+[ferret@rocky server]# ferret
+	NOAA/PMEL TMAP
+	FERRET v5.53  
+	Linux(g77) 2.4.x - 09/26/03
+	14-May-04 13:02     
+
+yes?  set data "/usr2/fer_dsets/descr/bio-g-80-99.des"
+WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE
+INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY
+yes?  shade/L=1/Z=5/levels=30 co2flx
+yes?  shade/L=12/Z=5/levels=30 co2flx
+** unknown netCDF error code: -31
+yes?  shade/L=13/Z=5/levels=30 co2flx
+yes?  shade/L=11/Z=5/levels=30 co2flx
+yes?  shade/L=24/Z=5/levels=30 co2flx
+** unknown netCDF error code: -31
+yes?  shade/L=36/Z=5/levels=30 co2flx
+** unknown netCDF error code: -31
+yes?  shade/L=48/Z=5/levels=30 co2flx
+** unknown netCDF error code: -31
+yes?  shade/L=47/Z=5/levels=30 co2flx
+yes?  shade/L=49/Z=5/levels=30 co2flx
+
+
+If I access the file directly (not using the Descriptor file) that
+corresponds to slice 13 I can plot that slice fine.
+
+I can't find what error -31 is.  Anybody have any ideas?
+
+Thanks,
+
+Steve
+
+______________________________________________________________________
+Steve Cousins, Ocean Modeling Group    Email: <a class="moz-txt-link-abbreviated" href="">cousins@umit.maine.edu</a>
+Marine Sciences, 208 Libby Hall        <a class="moz-txt-link-freetext" href="">http://rocky.umeoce.maine.edu</a>
+Univ. of Maine, Orono, ME 04469        Phone: (207) 581-4302
+
+
+ 
+
+        </pre>
+      </blockquote>
+      <pre wrap="">
+      </pre>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!---->
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00379" href="msg00379.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+<ul><li><em>From:</em> Steve Cousins</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00379.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00381.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00379.html">Thread Prev</a>][<a href="msg00381.html">Thread Next</a>][<A HREF="threads.html#00380">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

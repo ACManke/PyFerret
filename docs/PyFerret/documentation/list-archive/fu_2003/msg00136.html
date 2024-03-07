@@ -1,0 +1,199 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: "Irregular T axis box limits cannot be saved" -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Wed, 12 Feb 2003 10:27:39 &#45;0800 (PST) -->
+<!--X-Message-Id: 3E4A92A0.39678832@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.21.0301201143040.612&#45;100000@caos.iisc.ernet.in -->
+<!--X-Reference: 72k7h0rzme.fsf@kongle.ii.uib.no -->
+<!--X-Reference: 3E48BDBB.42CEF645@nus.edu.sg -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: &quot;Irregular T axis box limits cannot be saved&quot;</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00132.html">Thread Prev</a>][<a href="msg00048.html">Thread Next</a>][<A HREF="threads.html#00136">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: &quot;Irregular T axis box limits cannot be saved&quot;</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:hengkek@DOMAIN.HIDDEN">hengkek@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: &quot;Irregular T axis box limits cannot be saved&quot;</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 12 Feb 2003 10:29:52 -0800</li>
+<li>Cc: Ferret Users List &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00046.html">Pine.LNX.4.21.0301201143040.612-100000@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00047.html">72k7h0rzme.fsf@kongle.ii.uib.no</a>&gt; &lt;<a href="msg00132.html">3E48BDBB.42CEF645@nus.edu.sg</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Kek,
+You can't append irregular time steps to a NetCDF file,
+because time is the &quot;record dimension&quot;, meaning it is of
+unlimited length and can be increased by appending.
+For the time axis to be used this way, the axis intervals
+must be of equal size.
+
+However, you can set up the output time axis in advance and
+save that to your output file, and then you can fill in the
+time steps by writing successive times to the file.  This is
+along the lines of what's in the Users Guide, in the index
+under &quot;append, slab to NetCDF file&quot;.
+
+For example,
+
+! Write time steps to a file, with a non-uniform time axis.
+
+! Define the output time axis - I've made an axis with
+! the grid points at the center of each month.
+
+def axis/t/units=days/t0=1-jan-2001 t_out = {15,45,73,104,134,165,195,226,257,287,318,348}
+
+list t[gt=t_out], tbox[gt=t_out]
+
+! We will add this to the variables, to put them on the
+! output time axis.
+
+LET  timestamp = T[gt=t_out] * 0              !always 0
+
+! Use one of your files with timestamp to define the output grid
+! I have L=@AVE to make sure the variable varx does not have
+! its own time dependence.
+
+use jan.nc
+let v = varx[l=@ave] + timestamp
+
+! Create the file with the output time axis
+save/clobber/file=outfile.nc/rigid/heading=enhanced/llimits=1:12 v
+
+! Now save each time step using the APPEND qualifier and
+! /L= for desired time step.  Here L is along our time axis t_out.
+
+use jan.nc
+let v = varx[l=@ave] + timestamp
+save/append/file=outfile.nc/L=1 v
+
+use feb.nc
+let v = varx[l=@ave] + timestamp
+save/append/file=outfile.nc/L=2 v
+
+use mar.nc
+let v = varx[l=@ave] + timestamp
+save/append/file=outfile.nc/L=3 v
+
+...
+
+hengkek@nus.edu.sg wrote:
+
+&gt; Hi
+&gt;
+&gt; I'm trying to group several netCDF files into one.  Each of the netCDF
+&gt; files have identical spatial grids.  But the Time grid is different --
+&gt; the time intervals may not be constant.  So, I'm getting the
+&gt; error/warning as per the log below.
+&gt;
+&gt; The final &quot;2001SST50.nc&quot; appears to be created okay, but trying to
+&gt; generate the vis5d file from it gives a vis5d file which is totally
+&gt; wrong.  If I omit the &quot;SSTmonth.nc&quot; files which cause the warning, the
+&gt; vis5d file produced is good.
+&gt;
+&gt; What are my options for using netCDF files with irregular time axis to
+&gt; generate sane vis5d files?
+&gt;
+&gt; Thanks for any hints or pointers
+&gt;
+&gt; -Kek
+&gt; Physical Oceanography
+&gt; Singapore
+&gt;
+&gt; -----start error log----------------
+&gt;  ! NOAA/PMEL TMAP
+&gt;  ! FERRET v5.40
+&gt;  ! Solaris 5.6 - 02/15/02
+&gt;  ! 11-Feb-03 13:51
+&gt;
+&gt; yes? use &quot;Jan/SSTmonth.nc&quot;
+&gt; yes? save /clobber/file=2001SST50.nc varx
+&gt;  LISTing to file 2001SST50.nc
+&gt; yes? use &quot;Feb/SSTmonth.nc&quot;
+&gt; yes? save /append/file=2001SST50.nc varx
+&gt;  LISTing to file 2001SST50.nc
+&gt; yes? use &quot;Mar/SSTmonth.nc&quot;
+&gt; yes? save /append/file=2001SST50.nc varx
+&gt;  LISTing to file 2001SST50.nc
+&gt;  *** NOTE: Irregular T axis box limits cannot be saved
+&gt;  *** NOTE: in NetCDF files created by this means.
+&gt;  *** NOTE: To avoid this create the file using the qualifiers
+&gt;  *** NOTE:     /RIGID/HEADING=ENHANCED/LLIMITS=lo:hi
+&gt;  *** NOTE: This warning will not be repeated.
+&gt; ...[deleted]...
+&gt; yes? use 2001SST50.nc
+&gt; yes? go vis5d_write 2001SST50.v5d varx
+&gt; To view the file with Vis5D say:   GO vis5d_start 2001SST50.v5d
+&gt; -----start error log----------------
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00046" href="msg00046.html">Ferret v5.5 on RH Linux 6.2</a></strong>
+<ul><li><em>From:</em> Arindam Chakraborty</li></ul></li>
+<li><strong><a name="00047" href="msg00047.html">Re: Ferret v5.5 on RH Linux 6.2</a></strong>
+<ul><li><em>From:</em> Helge Avlesen</li></ul></li>
+<li><strong><a name="00132" href="msg00132.html">&quot;Irregular T axis box limits cannot be saved&quot;</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00132.html">&quot;Irregular T axis box limits cannot be saved&quot;</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00048.html">[ferretusers] descriptor file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00132.html">Thread Prev</a>][<a href="msg00048.html">Thread Next</a>][<A HREF="threads.html#00136">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

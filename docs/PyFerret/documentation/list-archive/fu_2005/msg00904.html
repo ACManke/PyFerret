@@ -1,0 +1,207 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Use of legline.jnl on time axis -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 28 Sep 2005 07:43:01 &#45;0700 -->
+<!--X-Message-Id: 12a7c2ce34eef5ea297142c963fb6e3f@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 433A7A6E.3000207@ipimar.pt -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Use of legline.jnl on time axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00903.html">Thread Prev</a>][<a href="msg00905.html">Thread Next</a>][<A HREF="threads.html#00904">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Use of legline.jnl on time axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Use of legline.jnl on time axis</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 28 Sep 2005 07:42:43 -0700</li>
+<li>Cc: &quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00903.html">433A7A6E.3000207@ipimar.pt</a>&gt;</li>
+<li>References: &lt;<a href="msg00903.html">433A7A6E.3000207@ipimar.pt</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+No trick. No easy way, either. There are 2 possibilities:<br>
+<br>
+1. After having made the plot, do PPL LIST TAXIS. The output will look 
+something like this:<br>
+<br>
+yes? ppl list taxis<br>
+<br>
+         TAXIS QUALITIES<br>
+         LO= 8.76E+03 DT= 6.00E+01 CSIZE= 1.00E-01 TYPE= TAXIS3 VANG= 
+0.00E+00<br>
+          TOP AXIS= ON  BOTTOM AXIS= ON<br>
+           TMIN=19920101000000  0:00 JAN  1,1992<br>
+           TMAX=20030101000000  0:00 JAN  1,2003<br>
+         TSTART=19901231235724 23:57 DEC 31,1990<br>
+         NMTC= -1 LABEL= -3 IFDB=  3 ISDB=  1 TAXIS= XAXIS IAUTOT= ON<br>
+<br>
+TMIN is the starting value of the plotted time axis. TSTART is the 
+beginning of the time axis (not on the plot but somewhere in Ferret's 
+mind). It is usually about 1 year earlier than TMIN, as shown here. All 
+references to a location on the plot must be relative to TSTART, not 
+TMIN. DT is the time unit Ferret is using, in minutes (here it is one 
+hour).<br>
+<br>
+Thus,, to make a legend line of length 1 year, beginning 1 year to the 
+right of TMIN, do something like:<br>
+<br>
+go legline.go `365*24*2` `365*24` [yvalue]  [line_type]  [char_ht]  
+&quot;this is the label to use&quot;<br>
+<br>
+2. In response to this cumbersome method, which cannot be automated 
+because it requires the plot to be made and inspected, Emily Vanvyve 
+figured out how to do a legend line in NOUSER units. The script 
+converts NOUSER to USER units, then calls legline.go. It is not 
+bullet-proof but often works. Here is the script:<br>
+<br>
+\can mode verify<br>
+! make a legend line and its label (nouser units) (Vanvyve e-mails 25 
+July 2003)<br>
+! still calls user-unit legline script, but pre-chooses to make nouser 
+units<br>
+<br>
+! arg1=x-value of line starting point (fraction of plot width)<br>
+! arg2=length of line (fraction of plot width)<br>
+! arg3=y-value of line (fraction of plot height)<br>
+! arg4=line type (number 1-19)<br>
+! arg5=text character height<br>
+! arg6=label text<br>
+! only gets label position right for positive-up axes<br>
+<br>
+let xrange `($xaxis_max) - ($xaxis_min)`<br>
+let yrange `($yaxis_max) - (($yaxis_min))`<br>
+let leg1 `($xaxis_min) + xrange*$1`<br>
+let leg2 `xrange*$2`<br>
+let leg3 `($yaxis_min) + yrange*$3`<br>
+<br>
+go legline.go `leg1` `leg2` `leg3` $4 $5 &quot;$6&quot;<br>
+set mode/last verify<br>
+<br>
+Additional complications ensue when the vertical plot axis is down (a 
+depth axis). Clearly Ferret needs a better legend line situation than 
+these user kluges.<br>
+<br>
+Billy K<br>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<br>
+William S. Kessler<br>
+NOAA / Pacific Marine Environmental Laboratory<br>
+7600 Sand Point Way NE<br>
+Seattle WA 98115 USA<br>
+<br>
+william.s.kessler@noaa.gov<br>
+Tel: 206-526-6221<br>
+Fax: 206-526-6744<br>
+Home page: <a  href="http://www.pmel.noaa.gov/~kessler">http://www.pmel.noaa.gov/~kessler</a><br>
+<br>
+<br>
+On Sep 28, 2005, at 4:11 AM, Paulo B. Oliveira wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi,
+
+What's the trick to make legline work with a time-series plot ?
+Here is a test script and the results to illustrate the problem:
+------------------------------------------------------------
+def ax/t=1-jan-2005:21-feb-2005:1/unit=day t1
+set win/asp=0.5
+set viewp left
+plot/i=1:10 i
+go legline 1 5 5 2 0.2 LAB1
+set view right
+plot t[gt=t1]
+go legline `t[gt=t1,t=1-jan-2005]` 5 37990 2 0.2 LAB1
+frame/file=legline_test.gif
+------------------------------------------------------------
+
+Best regards,
+Paulo
+&lt;legline_test.gif&gt; ! NOAA/PMEL TMAP
+ ! FERRET v5.81
+ ! Linux(g77) 2.4.21-32 - 07/13/05
+ ! 27-Sep-05 19:57
+
+def ax/t=1-jan-2005:21-feb-2005:1/unit=day t1
+
+set win/asp=0.5
+
+set viewp left
+ plot/i=1:10 i
+ go legline 1 5 5 2 0.2 LAB1
+
+set view right
+ plot t[gt=t1]
+ go legline `t[gt=t1,t=1-jan-2005]` 5 37990 2 0.2 LAB1
+
+frame/file=legline_test.gif
+
+quit
+
+</pre>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00905" href="msg00905.html">Re: [ferret_users] Use of legline.jnl on time axis</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00903" href="msg00903.html">[ferret_users] Use of legline.jnl on time axis</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00903.html">[ferret_users] Use of legline.jnl on time axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00905.html">Re: [ferret_users] Use of legline.jnl on time axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00903.html">Thread Prev</a>][<a href="msg00905.html">Thread Next</a>][<A HREF="threads.html#00904">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

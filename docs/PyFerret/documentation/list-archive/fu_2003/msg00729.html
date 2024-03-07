@@ -1,0 +1,394 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: overlay of sampling locations -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Wed, 8 Oct 2003 13:21:53 &#45;0700 -->
+<!--X-Message-Id: 3F847274.DA17ECA5@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3F842936.BB1B936A@whoi.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: overlay of sampling locations</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00727.html">Thread Prev</a>][<a href="msg00730.html">Thread Next</a>][<A HREF="threads.html#00729">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: overlay of sampling locations</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Cyndy Chandler &lt;<a href="mailto:cchandler@DOMAIN.HIDDEN">cchandler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: overlay of sampling locations</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Oct 2003 13:24:21 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00727.html">3F842936.BB1B936A@whoi.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Cyndy,
+You always want to add or subtract multiples of 360 to
+the longitude values to shift them so they will appear in the
+region that's on the plot. Adding 180 would put a point on
+the other side of the globe; only 360 keeps it at its original
+location. The polygon command and mp_polymark script take
+care of putting the points at the correct location on the plot, as
+long as the longitude of the point is within the range on the
+plot.  I've simplified the script to better show what is happening
+and use coarser topography data to speed things up.
+
+  use etopo60
+  go mp_plate_caree
+  set grid rose
+  go mp_aspect
+  set region/x=100E:100E/y=-90:90
+  shade rose, x_page, y_page
+
+  ! Get the trap lon and lat location data
+  file/var=&quot;trap_lat,trap_lon&quot; trap_locs.dat
+
+  ! Plot polygons at the longitude and latitude points
+  go mp_polymark POLY/OVER/NOLAB/NOAXES/NOKEY/PALETTE=red trap_lon, trap_lat, , circle, 0.5
+  go mp_polymark POLY/OVER/NOLAB/NOAXES/NOKEY/PALETTE=black trap_lon+360, trap_lat, , circle, 0.5
+
+The second call to mp_polymark ( plotted in black so you
+can see which points these are) plots all the points which
+do not lie in the region x=-100:460
+
+Commands like SHOW DATA, SHOW REGION,
+STAT trap_lon are helpful to see what you are working
+with at any given point in a script, as well as LIST on
+parts of the data to see what the data and coordinates
+you've got.
+
+Interestingly, in rectangular coordinates, the SET REGION
+command would result in not ever using some of the trap locations.
+The ascii data file is read in on an abstract X axis, and with the
+default region set to x=-100:460 then the first 99 points are not
+ever looked at in any of the plot commands.  (The SET REGION
+happens to work with map projection scripts because those scripts
+suspend regions that have been set, as they set their own regions
+internally.)
+
+Making the plot in rectangular coordinates:
+
+  cancel region
+  use etopo60
+  shade/noaxes/palette=dark_land_sea/x=100E:100E/y=-90:90 rose
+
+  file/var=&quot;trap_lat,trap_lon&quot; trap_locs.dat
+  go polymark POLY/OVER/NOLAB/NOAXES/NOKEY/PALETTE=red trap_lon, trap_lat, , circle, 0.5
+  go polymark POLY/OVER/NOLAB/NOAXES/NOKEY/PALETTE=black trap_lon+360, trap_lat, , circle, 0.5
+
+
+
+Cyndy Chandler wrote:
+
+&gt; Hello ferreters,
+&gt;
+&gt; I'm trying to overlay some sampling locations on a map of the world, and
+&gt; would appreciate some help ...
+&gt;
+&gt; I was successful at doing an overlay plot of some sampling locations on
+&gt; a map of the world with region /x=-180:180/y=-90:90 but I wanted to make
+&gt; the map edge at 100E (because of the distribution of my data), and can't
+&gt; figure out how to do an overlay plot on that 100W centric base map
+&gt; (/x=100E:100E).  The base map looks fine, but the sampling location data
+&gt; is still geing plotted on an x=-180:180 axis.
+&gt;
+&gt; I've played around with various offsets to the longitudes of my sampling
+&gt; locations, but all such attempts were unsuccesful, I think because that
+&gt; longitude axis is not modulo.
+&gt;
+&gt; I've attached the ferret script and sampling location datafile.
+&gt;
+&gt; Can anyone tell me what I'm missing here?
+&gt;
+&gt; Thanks much, Cyndy
+&gt;
+&gt;   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+&gt; ! Make map of world
+&gt; ! add lon, lat data points as red dots
+&gt; ! (modified from FUG and LAS FAQ scripts)
+&gt; ! 031007.clc.
+&gt; !
+&gt; ! Usage:
+&gt; ! ferret  [ -gif after interactive mode messing about ]
+&gt; !         [ -gif creates better res gif image ]
+&gt; !   go map_sed_trap
+&gt; !
+&gt; ! Product:
+&gt; !  creates map_sed_trap.gif
+&gt; !
+&gt; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+&gt;
+&gt; ! set up environment
+&gt; !
+&gt; set mem/size=60
+&gt; set win/size=.5
+&gt;
+&gt; ! world topo data source
+&gt; ! etopo60  first, then etopo20 for final image
+&gt; !
+&gt; !use etopo20
+&gt; use etopo60
+&gt; !show data/all
+&gt;
+&gt; ! color the whole world beautiful
+&gt; !
+&gt; palette dark_land_sea
+&gt; !set region/x=-180:180/y=-90:90  ... this one works
+&gt; ! but next one is better view for trap site distribution
+&gt; ! make the world begin in ... Bangkok
+&gt; set region/x=100E:100E/y=-90:90
+&gt; ! set region/x=100:460/y=-90:90   .. this made the map I wanted, but
+&gt; ! how to adjust trap_lon? +280 (0:360 + 100 = 100:460)
+&gt;
+&gt; ! set up for Plate Caree map of the world
+&gt; !
+&gt; go mp_plate_caree
+&gt; set grid rose
+&gt;
+&gt; ! Adjust the window aspect ratio
+&gt; !
+&gt; go mp_aspect
+&gt;
+&gt; ! Create the underlay map
+&gt; !
+&gt; shade/nokey/lev=(-10500,-5500,5000)(-5500,0,500)(0,2000,250)(2000,6000,1000)/nolab rose, x_page, y_page
+&gt;
+&gt; ! Lyme prevention: tics begone
+&gt; !
+&gt; ppl size ($ppl$xlen),($ppl$ylen)
+&gt; ppl axlen ($ppl$xlen),($ppl$ylen)
+&gt; ppl origin 0,0
+&gt; shade/nokey/lev=(-10500,-5500,5000)(-5500,0,500)(0,2000,250)(2000,6000,1000)/nolab rose, x_page, y_page
+&gt;
+&gt; ! Get the trap lon and lat location data
+&gt; !
+&gt; file/var=&quot;trap_lat,trap_lon&quot; trap_locs.dat
+&gt;
+&gt; ! mess with the data as needed
+&gt; !
+&gt; ! convert longitudes from -180:180 to 0:360 degrees
+&gt; !let lon = trap_lon + 180
+&gt; ! convert longitudes from -180:180 to 100:460 degrees
+&gt; !let lon = trap_lon + 280
+&gt; ! convert longitudes to 100W centric world
+&gt; !let lon = trap_lon[x=100E:100E]
+&gt; !list lon[I=1:137]
+&gt; !
+&gt; let lat = trap_lat
+&gt; let lon = trap_lon
+&gt;
+&gt; ! Plot the locations
+&gt; ! as small red dots (lox pox)
+&gt; ! use Map projection version of polymark.jnl
+&gt; !     for working with map projection scripts
+&gt; !
+&gt; go mp_polymark POLY/OVER/NOLAB/NOAXES/NOKEY/PALETTE=red lon, lat, , circle, 0.5
+&gt;
+&gt; ! save plot to gif file
+&gt; !
+&gt; frame/file=map_sed_trap.gif
+&gt;
+&gt;   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+&gt; 78.86   1.37
+&gt; 78.90   6.70
+&gt; 74.58   -6.73
+&gt; 70.00   -1.96
+&gt; 69.50   10.00
+&gt; 65.52   -0.10
+&gt; 75.86   11.47
+&gt; 73.00   19.00
+&gt; 47.72   -20.87
+&gt; 33.82   -21.02
+&gt; 32.73   -70.82
+&gt; 23.20   -63.98
+&gt; 32.08   -64.25
+&gt; 13.50   -54.00
+&gt; 1.80    -11.13
+&gt; -2.18   -9.90
+&gt; 70.00   0.00
+&gt; 72.50   -8.00
+&gt; 68.00   -12.66
+&gt; 25.30   -79.50
+&gt; 54.58   -21.15
+&gt; 47.83   -19.50
+&gt; 47.82   -19.75
+&gt; 33.15   -21.98
+&gt; 31.55   -24.67
+&gt; 29.13   -15.43
+&gt; 28.00   -21.98
+&gt; 24.55   -22.83
+&gt; 21.98   -25.23
+&gt; 21.15   -20.68
+&gt; 20.92   -19.75
+&gt; 19.00   -20.17
+&gt; 11.48   -21.03
+&gt; 31.54   -55.92
+&gt; -5.00   -25.00
+&gt; -8.00   -28.00
+&gt; -20.05  9.16
+&gt; -20.00  -10.00
+&gt; 16.00   60.00
+&gt; 14.00   64.00
+&gt; 15.00   68.00
+&gt; 17.45   89.60
+&gt; 15.23   89.17
+&gt; 13.15   84.37
+&gt; 4.46    87.30
+&gt; 17.69   58.85
+&gt; 17.40   58.80
+&gt; 17.21   59.59
+&gt; 15.10   61.50
+&gt; 10.00   65.01
+&gt; -76.49  -177.87
+&gt; -73.54  176.89
+&gt; -74.50  180.00
+&gt; -66.16  -168.67
+&gt; -63.15  -169.90
+&gt; -60.28  -170.06
+&gt; -56.90  -170.17
+&gt; -53.03  -174.73
+&gt; -57.00  -37.00
+&gt; -62.26  -57.53
+&gt; -62.44  -34.76
+&gt; -64.92  -2.50
+&gt; -50.67  68.60
+&gt; -50.09  5.77
+&gt; -54.34  -3.34
+&gt; -64.90  -2.56
+&gt; -47.00  141.50
+&gt; -51.00  141.50
+&gt; -61.55  150.45
+&gt; -42.00  178.50
+&gt; -44.00  178.50
+&gt; 58.00   179.00
+&gt; 53.00   149.00
+&gt; 9.00    -140.00
+&gt; 5.00    -140.00
+&gt; 2.00    -140.00
+&gt; 0.00    -140.00
+&gt; -2.00   -140.00
+&gt; -5.00   -140.00
+&gt; -12.00  -135.00
+&gt; 50.00   -145.00
+&gt; 49.00   -138.00
+&gt; 1.04    138.94
+&gt; 11.06   140.14
+&gt; 42.19   -127.58
+&gt; 41.55   -132.00
+&gt; 39.49   -127.69
+&gt; 47.97   -128.10
+&gt; 42.09   -125.77
+&gt; 6.57    -92.77
+&gt; 8.83    -103.98
+&gt; 15.00   -151.00
+&gt; 0.00    175.16
+&gt; 7.93    175.01
+&gt; 34.42   177.74
+&gt; 30.00   175.00
+&gt; 37.40   174.95
+&gt; 46.12   175.03
+&gt; 4.13    136.28
+&gt; 1.22    160.57
+&gt; 39.67   132.40
+&gt; 53.50   -177.00
+&gt; 49.00   -174.00
+&gt; 5.35    -81.88
+&gt; 12.83   -103.90
+&gt; 34.17   141.98
+&gt; 27.88   -111.66
+&gt; 26.03   -110.92
+&gt; 34.23   -120.03
+&gt; 33.55   -118.50
+&gt; 18.47   116.02
+&gt; 14.60   115.10
+&gt; 5.01    138.83
+&gt; 12.01   134.29
+&gt; 44.07   155.03
+&gt; 15.00   175.02
+&gt; 22.75   -158.00
+&gt; 51.50   165.00
+&gt; 45.00   165.00
+&gt; 45.00   -177.00
+&gt; 36.73   -122.05
+&gt; 40.50   142.48
+&gt; 40.46   146.03
+&gt; 30.03   174.98
+&gt; 13.00   175.00
+&gt; 40.00   145.43
+&gt; 46.82   162.12
+&gt; 27.00   127.00
+&gt; 25.00   127.00
+&gt; 77.50   -150.00
+&gt; 78.00   -132.00
+&gt; 79.39   -102.65
+&gt; 42.73   8.52
+&gt; 42.25   32.62
+&gt; 43.18   32.02
+&gt; 43.00   34.00
+&gt; 42.35   37.57
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00727" href="msg00727.html">overlay of sampling locations</a></strong>
+<ul><li><em>From:</em> Cyndy Chandler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00727.html">overlay of sampling locations</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00730.html">Re: overlay of sampling locations</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00727.html">Thread Prev</a>][<a href="msg00730.html">Thread Next</a>][<A HREF="threads.html#00729">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

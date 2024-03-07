@@ -1,0 +1,210 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: draw grids in the map. -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 29 Dec 2004 12:17:55 &#45;0800 -->
+<!--X-Message-Id: 41D310E7.9080301@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20041221202149.79351.qmail@web2703.mail.mci.yahoo.co.jp -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: draw grids in the map.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00922.html">Thread Prev</a>][<a href="msg00923.html">Thread Next</a>][<A HREF="threads.html#00929">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: draw grids in the map.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Namba Takaya &lt;<a href="mailto:takayanamba7@DOMAIN.HIDDEN">takayanamba7@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: draw grids in the map.</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 29 Dec 2004 12:17:43 -0800</li>
+<li>Cc: <a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00922.html">20041221202149.79351.qmail@web2703.mail.mci.yahoo.co.jp</a>&gt;</li>
+<li>References: &lt;<a href="msg00922.html">20041221202149.79351.qmail@web2703.mail.mci.yahoo.co.jp</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi ,<br>
+When you comment out the SHADE command, Ferret does not do the setup
+activities<br>
+that the shade command does, including setting the longitude and
+latitude units and the<br>
+length of the the axes that are plotted on the page. The main trouble
+is that you are starting<br>
+with a POLY/OVERLAY command which does no setup. I think the best
+solution is to <br>
+start with a call to the basemap.jnl script, instead of the call to
+fland that you have in your <br>
+script.&nbsp; This way the axes are set up, and are properly labeled with
+degrees longitude and <br>
+latitude. <br>
+<br>
+Or you could use /HLIMITS and /VLIMITS on the first POLYGON command to <br>
+set the correct lengths of the plot axes, and remove the /OVERLAY
+qualifier on the<br>
+first call so that Ferret knows this is the first plot and it needs to
+do the setup steps,<br>
+setting axis length and so on<br>
+<br>
+Solution 1:<br>
+<pre wrap=""><tt>  go basemap x=160e:180e y=60s:40s 5
+
+  let AA={168,168.5,168.5,168}
+  let BB={-50,-50,-50.5,-50.5}
+
+  polygon/nolabel/over/line/thick=0.2 AA,BB
+  polygon/nolabel/over/line/thick=0.2 0.5+AA,BB
+  polygon/nolabel/over/line/thick=0.2 1.0+AA,BB
+  polygon/nolabel/over/line/thick=0.2 AA,-0.5+BB
+  polygon/nolabel/over/line/thick=0.2 0.5+AA,-0.5+BB
+  polygon/nolabel/over/line/thick=0.2 1.0+AA,-0.5+BB</tt></pre>
+<tt><br>
+</tt>or, Solution 2:<tt><br>
+</tt><br>
+<pre wrap=""><tt>  let AA={168,168.5,168.5,168}
+  let BB={-50,-50,-50.5,-50.5}
+
+  polygon/nolabel/HLIMITS=160e:180e/VLIMITS=60s:40s/line/thick=0.2 AA,BB
+  polygon/nolabel/over/line/thick=0.2 0.5+AA,BB
+  polygon/nolabel/over/line/thick=0.2 1.0+AA,BB
+  polygon/nolab</tt>el/over/line/thick=0.2 AA,-0.5+BB
+  polygon/nolabel/over/line/thick=0.2 0.5+AA,-0.5+BB
+  polygon/nolabel/over/line/thick=0.2 1.0+AA,-0.5+BB
+  go fland 5 </pre>
+-Ansley<br>
+<br>
+Namba Takaya wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <pre wrap="">Hello Mick
+
+I am sorry to make you confused.
+I explain again.
+I use ferret 5.7 on the PC linux (Mandrake 10.1).
+If I delete two lines (make them comments) like below, it
+only draws a strange line without the map of New Zealand.
+If I put two lines, I can get six grids with the proper
+map as I want.
+Could you tell me why?
+
+set region/x=160e:180e/y=40s:60s
+!!! use etopo5
+!!! shade/nokey/nolabel/level=(0,10000) rose
+let AA={168,168.5,168.5,168}
+let BB={-50,-50,-50.5,-50.5}
+polygon/nolabel/over/line/thick=0.2 AA,BB
+polygon/nolabel/over/line/thick=0.2 0.5+AA,BB
+polygon/nolabel/over/line/thick=0.2 1.0+AA,BB
+polygon/nolabel/over/line/thick=0.2 AA,-0.5+BB
+polygon/nolabel/over/line/thick=0.2 0.5+AA,-0.5+BB
+polygon/nolabel/over/line/thick=0.2 1.0+AA,-0.5+BB
+go fland 5 
+quit 
+
+
+
+
+
+--- <a class="moz-txt-link-abbreviated" href="">Mick.Spillane@noaa.gov</a> からのメッセージ：
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hello Namba Takaya,
+	Your script works fine for me using ferret v5.70 -
+I get six
+little boxes below the island.  The /thick=0.2 does
+not match the
+description in the manual where the allowed values
+for the argument would
+seem to be 1,2, or 3 corresponding to the
+thicknesses of lines 1, 7, and
+13 in the case of regular black lines.  But the
+value 0.2 does not cause
+any problem when I tested your script - it just gave
+a normal thickness
+line.
+	Can you give more detail about how the script
+failed when you
+ran it.
+
+Mick
+
+|!!! <a class="moz-txt-link-abbreviated" href="">Mick.Spillane@noaa.gov</a> !!!|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+__________________________________
+Do You Yahoo!?
+Upgrade Your Life
+<a class="moz-txt-link-freetext" href="">http://bb.yahoo.co.jp/</a>
+
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00922" href="msg00922.html">Re: draw grids in the map.</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00922.html">Re: draw grids in the map.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00923.html">conset command</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00922.html">Thread Prev</a>][<a href="msg00923.html">Thread Next</a>][<A HREF="threads.html#00929">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

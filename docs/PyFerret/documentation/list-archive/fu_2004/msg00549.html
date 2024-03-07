@@ -1,0 +1,143 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Geostrophic velocity -->
+<!--X-From-R13: [vpx Ecvyynar <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Thu, 5 Aug 2004 11:25:45 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0408050944190.760&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41115CD0.639C45BF@darya.nio.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Geostrophic velocity</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00544.html">Thread Prev</a>][<a href="msg00550.html">Thread Next</a>][<A HREF="threads.html#00549">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Geostrophic velocity</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Mohammed Al Saafani &lt;<a href="mailto:alsafany@DOMAIN.HIDDEN">alsafany@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Geostrophic velocity</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 5 Aug 2004 11:25:43 -0700 (PDT)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00544.html">41115CD0.639C45BF@darya.nio.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Wed, 4 Aug 2004, Mohammed Al Saafani wrote:
+&gt; I'm trying to calculate the dynamic height and geostrophic velocity
+&gt; using the &quot;dynamic_height.jnl&quot; supported with ferret, but my problem
+&gt; that my section is perpendicular to the coast line (making angle with
+&gt; lat and also with lon). I had created the section using the example in
+&gt; chapter 8 with &quot;sorti and reshape:&quot; to get section with longitude and
+&gt; depth, in that latitude is still a variable which was not recognized in
+&gt; calculating GEO_U and GEO_Uz in &quot;dynamic_height.jnl&quot; since latitude is
+&gt; not a dimension in this case. Its like calculating the geostrophic
+&gt; velocity for along track stations.
+
+Hello Mohammed,
+
+!!! See the remark at the end if you are dealing with a situation where
+your original data is on an east-west/north-south grid!!!
+
+	I looked at the script dynamic_height.jnl which, as you say, is
+based on an east-west/north-south grid. The variable dyn_ht does not
+depend on the horizontal grid and should work with any section data.
+There are however two problems in the geostrophic variable calculations :
+
+  1) the Coriolis parameter ( 1.458424E-4*SIN(Y/57.29578) in the original)
+
+  2) the horizontal gradient (for example DYN_HT[X=@DDC])
+
+The first of these is easily fixed - just replace Y with the actual
+latitude along your section.  The second is a bit trickier. As the script
+stands the horizontal derivatives assume that X and Y are in units of
+longitude and latitude so that @ddc will return gradients in units of
+&quot;per meter&quot;.
+	In the example in the manual where a section is extracted by
+defining XLON and YLAT and using &quot;samplexy&quot;, the section axis is abstract
+I.  One would need to introduce great circle distances along the section
+to properly represent the station spacing.
+
+Here is a snippet I used in a situation where I needed great circle
+separations
+
+! computes greatcircle distance (in km) from lon,lat in degrees
+let d2r=atan(1.)/45
+let lat1=d2r*lat ; lat2=d2r*lat[i=@shf:1]
+let lon1=d2r*lon ; lon2=d2r*lon[i=@shf:1]
+let ds=111.11*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon2-lon1))
+
+These may give you some ideas for how to write a geostrophic calculation
+routine for a rotated coordinate system. Perhaps some other user has
+already dealt with the issue.
+
+Good luck,
+Mick
+
+PS: One other thought comes to mind if you (or other users) were starting
+with data on a east-west/north-south grid!
+	If you used the existing dynamic_height script on the original
+temp and salt, wouldn't it be better (and correct) to samplexy the
+resulting geostrophic velocity components to the skewed section, rather than
+samplexy'ing the temp and salt to the section and then applying
+dynamic_height to the slanttemp and slantsalt variables?
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00544" href="msg00544.html">Geostrophic velocity</a></strong>
+<ul><li><em>From:</em> Mohammed Al Saafani</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00544.html">Geostrophic velocity</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00550.html">Re: Geostrophic velocity</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00544.html">Thread Prev</a>][<a href="msg00550.html">Thread Next</a>][<A HREF="threads.html#00549">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

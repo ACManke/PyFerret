@@ -1,0 +1,149 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Outlining grid boxes -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Mon, 1 Nov 2004 11:21:50 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0411011039310.624&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 000501c4c039$e00d66a0$7eabe6a5@ad.des.rutgers.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Outlining grid boxes</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00771.html">Thread Prev</a>][<a href="msg00774.html">Thread Next</a>][<A HREF="threads.html#00772">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Outlining grid boxes</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>John Krasting &lt;<a href="mailto:krasting@DOMAIN.HIDDEN">krasting@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Outlining grid boxes</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 1 Nov 2004 11:21:49 -0800 (PST)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00771.html">000501c4c039$e00d66a0$7eabe6a5@ad.des.rutgers.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Mon, 1 Nov 2004, John Krasting wrote:
+&gt; I am using GFDL climate model output and I am trying to outline individual
+&gt; grid boxes and areas of grid boxes.
+&gt; The GO BOX script uses latitude and longitude as its inputs.  Is there an
+&gt; easier way to outline individual grid boxes without having to manually
+&gt; compute the coordinates of the box corners?
+
+Hi John,
+	I take it you can define a mask that identifies the grid cells
+that you need to outline. If so then the &quot;polygon&quot; command may be a
+way to achieve what you need.
+	The example below illustrates the case of a grid where the
+interval in uniform in both directions.  If the grid were not regular
+in one or both direction then one would need a more clever way of
+defining the box surrounding each &quot;valid&quot; grid cell. (I suspect there
+may be a cunning way to outline the outermost boundary of a group of
+selected cells too in several passes of left, right, top and bottom
+edges ... )
+
+	In the following example I will plot a chart of the Indian
+Ocean, then outline the grid cells in the coarser etopo120 bathymetry
+that are deeper than 3000m and lie between 30S and the equator.
+
+use etopo20
+region/x=30e:120e/y=40s:20n
+shade/nolab/nokey/pal=black if(rose ge 0)then rose
+
+use etopo120 ! 2 degree spacing in x and y, centered on odd degrees
+let dx=2 ; let dy=2  ! the uniform intervals
+let bx=zsequence({-0.5,0.5,0.5,-0.5}) ! coords of a unit cell
+let by=zsequence({0.5,0.5,-0.5,-0.5}) !  centered in this case
+
+! now define mask for the desired grid cells
+let deep=if(rose lt -3000)then rose
+let deepx=if(deep)then x[g=rose]+0*y[g=rose] ! coords of &quot;valid&quot; grid
+let deepy=if(deep)then y[g=rose]+0*x[g=rose] !    converted to a 2-d field
+
+show grid/y deep[d=2]
+! ... use something like this to identify j=31:45 as the zonal
+!        band of interest
+
+repeat/j=31:45 (polygon/nolab/o/line=1/d=2/coord_ax=z \
+                                     deepx+dx*bx,deepy+dy*by)
+
+! adding something like /pal=grey to the last command might further
+! highlight the valid cells.
+
+! another idea to highlight a region of interest (but without the
+! outlining of individual cells would be to use &quot;shade/pat=...&quot;
+! as for example
+shade/nolab/nokey/pal=black/d=1 if(rose ge 0)then rose
+shade/o/nolab/pat=lite_up_right_to_left/pal=black/y=30s:0 deep[d=2]
+
+! a lite shading like this can allow an underlying filled field to
+! show through.
+
+Good Luck,
+Mick Spillane
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00774" href="msg00774.html">Re: Outlining grid boxes</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00771" href="msg00771.html">Outlining grid boxes</a></strong>
+<ul><li><em>From:</em> John Krasting</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00771.html">Outlining grid boxes</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00774.html">Re: Outlining grid boxes</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00771.html">Thread Prev</a>][<a href="msg00774.html">Thread Next</a>][<A HREF="threads.html#00772">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

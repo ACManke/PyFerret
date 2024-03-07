@@ -1,0 +1,244 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Two interpolation syntax questions -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 26 Sep 2005 13:48:30 &#45;0700 -->
+<!--X-Message-Id: 43385E9E.1000302@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200509260131.j8Q1VOEt025676@fire1.fsu.edu -->
+<!--X-Reference: 43384779.6090408@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Two interpolation syntax questions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00900.html">Thread Prev</a>][<a href="msg00902.html">Thread Next</a>][<A HREF="threads.html#00901">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Two interpolation syntax questions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Two interpolation syntax questions</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 26 Sep 2005 13:48:30 -0700</li>
+<li>Cc: Steve Guimond &lt;<a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00900.html">43384779.6090408@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00899.html">200509260131.j8Q1VOEt025676@fire1.fsu.edu</a>&gt; &lt;<a href="msg00900.html">43384779.6090408@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi again,<br>
+I realized I missed one important point for your data.  If the time 
+variable is in the form of hours and minutes HHMM then of course 
+interpolating based on it isn't correct. Maybe this is what you have in 
+mind with your own interpolation method. You'll get the right answer if 
+you use the variables &quot;day&quot; and &quot;time&quot; to define a time axis, and put 
+the lon and lat variables on that axis.  You can decide what units it 
+should have and define things accordingly but for example,<br>
+<br>
+ let hr = INT(time/100)<br>
+ let mn = time - hr*100<br>
+ let daytime = 24*day + hr + mn/60<br>
+<br>
+ def axis/t/units=hours tax = daytime<br>
+ let tlon = reshape (lon, t[gt=tax])<br>
+ let tlat = reshape (lat, t[gt=tax])<br>
+<br>
+ ! Define time point at which we want to interpolate<br>
+ !   day 20, hour 10, 30 minutes:<br>
+ let timepoint = 20*24 + 10 + 30/60<br>
+<br>
+ let tt = t[gt=tax]<br>
+ let test = tlat* tt[t=@weq:`timepoint`]<br>
+ let nlat = test[L=1:48@sum]<br>
+<br>
+-Ansley<br>
+<br>
+Ansley Manke wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Steve,<br>
+Your second attempt is much more the preferred way to do this kind of 
+thing in Ferret. It uses the grid mindset of Ferret to work with the 
+variable as a whole and apply Ferret transformations or other 
+operations to do what you want. Either the @WEQ or @EVNT transform 
+will locate your point, and the variable you define<br>
+<br>
+ let test = lat*time[x=@weq:1030]<br>
+ let nlat = test[x=1:48@sum]<br>
+<br>
+<br>
+should be the latitude at the time point that you've specified, 
+computed by linear interpolation. When you define a variable<br>
+<br>
+  myvar = time[x=@weq:1030]<br>
+<br>
+the @WEQ result returns the weights for the points on either side of 
+the specified value.  It finds where the variable &quot;time&quot; crosses the 
+specified value and and gives the corresponding weights. There are no 
+other places where the variable crosses the value 1030, so the field 
+is missing everywhere else. Doing a calculation based on the value of 
+your variable &quot;test&quot; will give you the latitude just where time 
+crosses 1030, which is what you want.  If you want to ignore the 
+weights and do something else, you could for example define a new 
+variable<br>
+<br>
+  let mytimes = 1 + 0*time[x=@weq:1030]<br>
+<br>
+and the value would be 1 on each side of where TIME crosses 1030 and 
+missing elsewhere.<br>
+<br>
+Or, the output of time[x=@EVNT:1030] is 0 until the variable crosses 
+the specified value, then 1 until it crosses it again, (and would take 
+on the value 2 if it crossed again).<br>
+<br>
+(For the general question about IF statements, the thing to understand 
+is that the expression inside the IF needs to be a scalar or string, 
+that evaluates to a simple TRUE or 1, or FALSE or 0.  There is not an 
+AND clause but something like this could be done with nested IF's. It 
+is cumbersome, which is a good reason to use Ferret expressions like 
+the ones above instead.<br>
+<br>
+ repeat/i=1:48 (let di = day[i=`i`]; let ti = time[i=`i`]; if  `20 eq 
+di` then if `0325 gt ti` then if `0325 lt ti` then ...)<br>
+<br>
+<br>
+<br>
+<br>
+Steve Guimond wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ferreters:<br>
+  I have two separate, but related questions.  I have latitudes,<br>
+longitudes and times for the positions of several tropical cyclones 
+and need to co-locate with some<br>
+satellite data.  Basically, just need to do a simple interpolation to 
+find the position of the storm at satellite overpass.  So, the 
+positions of the storm are at 20.50,53.50 at 0000Z and 21.34,52.10 at 
+0600Z and the satellite overpass is at 0325Z.    Data looks like:<br>
+<br>
+day     i=1:48<br>
+time    i=1:48<br>
+lat       i=1:48<br>
+lon      i=1:48<br>
+<br>
+  I wanted to find the appropriate &quot;i&quot; position in the array that 0325Z<br>
+was between and then apply my own interpolation calculations, but 
+found this difficult.  In<br>
+fortran I would code:<br>
+<br>
+do i=1,48<br>
+if ( 0325 .gt. time(i) .and. 0325 .lt. time(i+1) ) then<br>
+complete interpolation<br>
+endif<br>
+enddo<br>
+<br>
+I tried this in ferret by saying:<br>
+<br>
+repeat/range=1:48:1/name=a (if 20 eq day[i=`a`] and 0325 gt time[i=`a`]<br>
+and 0325 lt time[i=`a`+1] then complete interpolation)<br>
+<br>
+I tried various sequences, but could not get the equivalent of my 
+fortran code in ferret to work.      Additionally, I tried using the 
+@weq transformation as:<br>
+<br>
+let test = lat*time[x=@weq:1030]      !trying a different time here<br>
+let nlat = test[x=1:48@sum]<br>
+<br>
+This worked for the first time in the array between 0000Z and 0600Z, but<br>
+did not produce a field of coefficients for the rest of the times 
+that I needed.  This is<br>
+what I got from listing test and time together...<br>
+      time    test<br>
+1/1: 600.    3.173<br>
+2/2:1200.   8.027<br>
+3/3:1800.   ....<br>
+4/4:      0.   ....<br>
+5/5: 600.     ....<br>
+6/6:1200.   ....<br>
+etc.......<br>
+<br>
+why are there not coefficients for the rest of the times at 1030?<br>
+<br>
+Can anyone help to clear up (1) how to cycle through data element by<br>
+element like fortran for the statement above and (2) how to get 
+coefficients for all the times and not just the first instance of 
+1030 like I showed above?<br>
+<br>
+<br>
+Many thanks...<br>
+<br>
+Steve Guimond<br>
+<br>
+<br>
+<br>
+*****************************************<br>
+Stephen R. Guimond<br>
+Graduate Research Assistant<br>
+Center for Ocean-Atmospheric Prediction Studies 
+*****************************************<br>
+<br>
+<br>
+<br>
+ 
+<br>
+</blockquote><pre>
+</pre>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00899" href="msg00899.html">[ferret_users] Two interpolation syntax questions</a></strong>
+<ul><li><em>From:</em> Steve Guimond</li></ul></li>
+<li><strong><a name="00900" href="msg00900.html">Re: [ferret_users] Two interpolation syntax questions</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00900.html">Re: [ferret_users] Two interpolation syntax questions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00902.html">[ferret_users] how to compute upwelling</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00900.html">Thread Prev</a>][<a href="msg00902.html">Thread Next</a>][<A HREF="threads.html#00901">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

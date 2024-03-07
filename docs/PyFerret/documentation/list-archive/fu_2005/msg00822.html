@@ -1,0 +1,174 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Problems determining indices using CURV_TO_RECT_MAP -->
+<!--X-From-R13: Xbua Epunggry <wbua.fpunggryNabnn.tbi> -->
+<!--X-Date: Mon, 29 Aug 2005 13:48:42 &#45;0700 -->
+<!--X-Message-Id: 43137507.7040808@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Problems determining indices using CURV_TO_RECT_MAP</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00817.html">Thread Prev</a>][<a href="msg00823.html">Thread Next</a>][<A HREF="threads.html#00822">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Problems determining indices using CURV_TO_RECT_MAP</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Problems determining indices using CURV_TO_RECT_MAP</strong></li>
+<li><strong>From</strong>: <strong>John Schattel &lt;<a href="mailto:john.schattel@DOMAIN.HIDDEN">john.schattel@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 29 Aug 2005 16:50:15 -0400</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hello All,<br>
+<br>
+I am trying to use CURV_TO_RECT_MAP to determine the index values of a 
+subgrid for a curvilinear dataset using the  FAQ 
+<a  href="http://www.ferret.noaa.gov/Ferret/FAQ/custom_plots/subsetting_curvi_data.html">http://www.ferret.noaa.gov/Ferret/FAQ/custom_plots/subsetting_curvi_data.html</a>.  
+When I implement the outlined procedure, Ferret crashes (see below).  
+Any thoughts on what might be going wrong?<br>
+<br>
+In advance, thanks for any help you can provide.<br>
+<br>
+John<br>
+<br>
+bash-2.05b$ ferret<br>
+       NOAA/PMEL TMAP<br>
+       FERRET v5.81<br>
+       Linux(g77) 2.4.21-32 - 07/13/05<br>
+       29-Aug-05 16:29<br>
+<br>
+yes? go hazmat_subgrid<br>
+! Input data on a curvilinear grid<br>
+use &quot;<a  href="http://localhost/cgi-bin/nph-dods/dgom/hazmat.nc&quot">http://localhost/cgi-bin/nph-dods/dgom/hazmat.nc&quot</a>;<br>
+*** NOTE: Units on axis &quot;sigma&quot; are not recognized: sigma_level<br>
+*** NOTE: They will not be convertible:<br>
+<br>
+let lonin = lon[d=1]<br>
+let latin = lat[d=1]<br>
+<br>
+! Define the corners of our subset: These will define<br>
+! the axes of our output grid<br>
+<br>
+let xmin = -90<br>
+let xmax = -82<br>
+let ymin = 25<br>
+let ymax = 29<br>
+<br>
+def axis/x=`xmin`:`xmax`/npoints=2/modulo/units=degrees xax<br>
+!-&gt; def axis/x=-90:-82/npoints=2/modulo/units=degrees xax<br>
+def axis/y=`ymin`:`ymax`/npoints=2/units=degrees yax<br>
+!-&gt; def axis/y=25:29/npoints=2/units=degrees yax<br>
+<br>
+!  Define a variable on the output grid<br>
+<br>
+let lonlatout = y[gy=yax] + x[gx=xax]<br>
+<br>
+! Compute weights for the mapping<br>
+<br>
+set memory/size=250<br>
+Cached data cleared from memory<br>
+let map = curv_to_rect_map (lonin, latin, lonlatout, .5)<br>
+<br>
+! The variable &lt;I&gt;map&lt;/I&gt; includes the indices within the source<br>
+! grid which correspond to coordinates in the destination grid.<br>
+! These are the lower lon and lat and upper lon and lat indices:<br>
+<br>
+! e.g. here are the longitude indices (L=2) and latitude indices (L=3)<br>
+! the four nearest neighbors (K=1:4) in the curvilinear grid, which map<br>
+! to the i=1,j=1 location on the output axes.<br>
+<br>
+! Compute the minimum and maximum indices in I and J needed<br>
+! to plot the entire region<br>
+<br>
+show grid map<br>
+   GRID (G005)<br>
+name       axis              # pts   start                end<br>
+XAX       LONGITUDE            2mr   90W(-90)             82W(-82)<br>
+YAX       LATITUDE             2 r   25N                  29N<br>
+ABSTRACT  Z              9999999 r   1                     9999999<br>
+ABSTRACT  T              9999999 r   1                     9999999<br>
+<br>
+let llon = map[i=1,j=@min,l=2,k=@min]<br>
+list map[i=1,j=@min,l=2,k=@min]<br>
+            VARIABLE : CURV_TO_RECT_MAP (LONIN, LATIN, LONLATOUT, .5)<br>
+            LONGITUDE: 90W(-90)<br>
+            LATITUDE : 23N to 31N (minimum)<br>
+            Z        : 0.5 to 4.5 (minimum)<br>
+            T        : 2<br>
+         91.00<br>
+let llat = map[i=@min,j=1,l=3,k=@min]<br>
+list map[i=@min,j=1,l=3,k=@min]<br>
+            VARIABLE : CURV_TO_RECT_MAP (LONIN, LATIN, LONLATOUT, .5)<br>
+            LONGITUDE: 94W(-94) to 78W(-78) (minimum)<br>
+            LATITUDE : 25N<br>
+            Z        : 0.5 to 4.5 (minimum)<br>
+            T        : 3<br>
+         73.00<br>
+<br>
+let ulon = map[i=2,j=@max,l=2,k=@max]<br>
+list map[i=2,j=@max,l=2,k=@max]<br>
+free(): invalid pointer 0xa193d70!<br>
+            VARIABLE : CURV_TO_RECT_MAP (LONIN, LATIN, LONLATOUT, .5)<br>
+            LONGITUDE: 82W(-82)<br>
+            LATITUDE : 23N to 31N (maximum)<br>
+            Z        : 0.5 to 4.5 (maximum)<br>
+            T        : 2<br>
+         183.0<br>
+let ulat = map[i=@max,j=2,l=3,k=@max]<br>
+list map[i=@max,j=2,l=3,k=@max]<br>
+Segmentation fault<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00817.html">[ferret_users] DODS data reading</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00823.html">[ferret_users] How can I check the variable</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00817.html">Thread Prev</a>][<a href="msg00823.html">Thread Next</a>][<A HREF="threads.html#00822">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

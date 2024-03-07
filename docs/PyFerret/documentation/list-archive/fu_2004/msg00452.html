@@ -1,0 +1,255 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Color bar data appearance problem -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 15 Jun 2004 09:41:34 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0406152211400.12724&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 40CEA91E.7070406@bgc&#45;jena.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Color bar data appearance problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00518.html">Thread Next</a>][<A HREF="threads.html#00452">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Color bar data appearance problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Color bar data appearance problem</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 15 Jun 2004 22:14:27 +0530 (IST)</li>
+<li>Cc: &quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:Yogesh.Tiwari@DOMAIN.HIDDEN">Yogesh.Tiwari@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00449.html">40CEA91E.7070406@bgc-jena.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Yogesh,
+             Let me explain in detail. In previous mail i explicitly pointed that
+you have to use /set qualifier with fill or shade command while using ppl shakey
+(since it is not a stand alone command). From your mail..
+
+   ppl shakey 1, 1, 0.10, 0, -1, 9, 0, 0.12, 0.12
+   fill/nolab/lev=(370,382,0.5) sst+348;go land
+
+ It should be like :
+
+   fill/nolab/lev=(370,382,0.5)/set sst+348        ! note the /set qualifier
+   ppl shakey 1, 1, 0.10, 0, -1, 9, 0, 0.12, 0.12  ! ky_hi(10th argument) is missing    
+   ppl fill                                         
+   go land
+
+ While increasing the size of numeric labels, the decimal places maynot be displayed 
+depending on the size of viewport and margins. In this case i would strongly recommend 
+you to define a new viewport with slighly less x_size than the default one like 
+
+     define view/xlim=0:0.97/ylim=0:1 view_main
+     set view vmain
+  
+  Default viewport have xlim=0:1 &amp; the 0.03 difference in the newly defined viewport
+will make room for the color key with complete numeric labels. Please have a look at 
+the example below. If you want change the location of the color key, then define the
+main viewport according to that.
+
+Example :
+
+        define view/xlim=0:0.97/ylim=0:1 vmain       ! make room for color key labels
+        set view vmain                               !    &quot;
+	set data coads_climatology
+        set reg/x=100:300/y=-50:50/l=1
+
+        fill/set/levels=(295,306.5,0.5) sst+273.15   !  note the /set qualifier 
+        ppl shakey , , 0.15, , -1, , , , ,           !  &quot;location of&quot; shakey command
+        ppl fill                                     ! get the plot
+        go fland 20 black
+
+
+Hope this helps
+
+with regards 
+
+
+Jaison
+
+
+6On Tue, 15 Jun 2004, Yogesh K. Tiwari wrote:
+
+&gt; Hello Jaison,
+&gt; 
+&gt; Many thanks for the suggation.
+&gt; 
+&gt; It works fine, but still there is one technical error.
+&gt; 
+&gt; If I keep the key positioning like :
+&gt; 
+&gt; ppl shakey 1, 1, 0.10, 0, -1, 9, 0, 0.12, 0.12
+&gt; 
+&gt; fill/nolab/lev=(370,382,0.5) sst+348;go land
+&gt; 
+&gt; means the lab_size here is 0.10 and it works fine.
+&gt; 
+&gt; 
+&gt; 
+&gt; BUT when I increase the lab size to 0.15 and put the key like :-
+&gt; 
+&gt; ppl shakey 1, 1, 0.10, 0, -1, 9, 0, 0.12, 0.12
+&gt; 
+&gt; then again the decimal place disappears.
+&gt; 
+&gt; 
+&gt; Whether I kept the other keys with wrong numbers in key positioning
+&gt; or there is any other reason.
+&gt; 
+&gt; I want to use lab_size = 0.15 in any case.
+&gt; 
+&gt; Thnaks for your further help.
+&gt; 
+&gt; Regards,
+&gt; Yogesh
+&gt; 
+&gt; 
+&gt;    Kurian wrote:
+&gt; &gt; Hi Yogesh,
+&gt; &gt;            The default value of &quot;klag_dig&quot; (klab_dig is the number of significant 
+&gt; &gt; digits (klab_dig &gt; 0) or decimal places (klab_dig &lt; 0) in the key) is 3 and hence 
+&gt; &gt; the first 3 digits of your variable will be displayed. That is why the decimal 
+&gt; &gt; values are disappearing from your color key (rather than repeating the numeric 
+&gt; &gt; labels twice). Use &quot;ppl SHAKEY&quot; with correct &quot;klag_dig&quot;( in your 
+&gt; &gt; case  4 or -1 ; with /set qualifier to fill command) to get  the key 
+&gt; &gt; labels with decimal values.
+&gt; &gt; 
+&gt; &gt; To find the usage of shakey refer user manual: Appendix C Sec2.12
+&gt; &gt; 
+&gt; &gt; Example :
+&gt; &gt; ---------
+&gt; &gt; 	set data coads_climatology
+&gt; &gt;         set reg/x=100:300/y=-50:50/l=1
+&gt; &gt;         fill/levels=(295,306.5,0.5) sst+273.15
+&gt; &gt;         say     &quot; now the color key does not have decimal values &quot;  
+&gt; &gt;         message &quot; let us see the default shakey values&quot;
+&gt; &gt; 
+&gt; &gt;         ppl list shakey
+&gt; &gt;           
+&gt; &gt;         message &quot; using ppl shakey (only klag_dig) to get the decimal 
+&gt; &gt; values&quot;
+&gt; &gt;         
+&gt; &gt;         fill/set/levels=(295,306.5,0.5) sst+273.15
+&gt; &gt;         ppl shakey , , , , 4, , , , , !  4 ==&gt;  4 significant digits
+&gt; &gt; !        OR
+&gt; &gt; !       ppl shakey , , , ,-1, , , , , !  -1 ==&gt; 1 decimal place
+&gt; &gt;         ppl fill
+&gt; &gt; 
+&gt; &gt; Hope this helps 
+&gt; &gt; 
+&gt; &gt; With Regards 
+&gt; &gt; 
+&gt; &gt; Jaison
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; On Mon, 14 Jun 2004, Yogesh K. Tiwari wrote:
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt;&gt;Hello Ferret Users,
+&gt; &gt;&gt;
+&gt; &gt;&gt;When I fill any data with following command :-
+&gt; &gt;&gt;
+&gt; &gt;&gt;fill/nolab/lev=(370,382,0.5) data[k=19,l=1];go land
+&gt; &gt;&gt;
+&gt; &gt;&gt;the plot generated has the color bar values like :-
+&gt; &gt;&gt;
+&gt; &gt;&gt;370, 371, 371, 372, 372, 373,373,...........,382,382
+&gt; &gt;&gt;
+&gt; &gt;&gt;the problem is the data is repeating two times.
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;whereas the correct values should be like :-
+&gt; &gt;&gt;
+&gt; &gt;&gt;370, 371, 371.5, 372, 372.5...........,382
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;Can any person help me how to rmove this error .
+&gt; &gt;&gt;
+&gt; &gt;&gt;Thanks in advance,
+&gt; &gt;&gt;
+&gt; &gt;&gt;Yogesh
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt; 
+&gt; &gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00449" href="msg00449.html">Re: Color bar data appearance problem</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00449.html">Re: Color bar data appearance problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00518.html">ccbar</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00518.html">Thread Next</a>][<A HREF="threads.html#00452">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

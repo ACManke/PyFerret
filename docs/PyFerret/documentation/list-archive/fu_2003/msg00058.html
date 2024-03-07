@@ -1,0 +1,266 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: COHERENS sigma to meters z coordinate -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Wed, 22 Jan 2003 12:04:17 &#45;0800 (PST) -->
+<!--X-Message-Id: 3E2EF9A6.DF2879B@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 3E273B49.883232C@pmel.noaa.gov -->
+<!--X-Reference: 3E2740EA.4090505@bgc&#45;jena.mpg.de -->
+<!--X-Reference: EXECMAIL.1030116163249.D@UNIVERSI&#45;OF8TQA.ucc.hull.ac.uk -->
+<!--X-Reference: EXECMAIL.1030121133027.C@UNIVERSI&#45;OF8TQA.ucc.hull.ac.uk -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: COHERENS sigma to meters z coordinate</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00101.html">Thread Next</a>][<A HREF="threads.html#00058">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: COHERENS sigma to meters z coordinate</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Francisco J Campuzano Guillen &lt;<a href="mailto:G.F.Campuzano@DOMAIN.HIDDEN">G.F.Campuzano@xxxxxxxxxx</a>&gt;,       &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: COHERENS sigma to meters z coordinate</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 22 Jan 2003 12:05:59 -0800</li>
+<li>References: &lt;<a href="msg00037.html">3E273B49.883232C@pmel.noaa.gov</a>&gt; &lt;<a href="msg00032.html">3E2740EA.4090505@bgc-jena.mpg.de</a>&gt;&lt;<a href="msg00033.html">EXECMAIL.1030116163249.D@UNIVERSI-OF8TQA.ucc.hull.ac.uk</a>&gt;&lt;EXECMAIL.1030121133027.C@UNIVERSI-OF8TQA.ucc.hull.ac.uk&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Francisco,
+<br>In the message from Paul Farrar
+<br><A HREF="">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg00039.html</A>
+<p>he defines a variable we can use for ZAXREPLACE.&nbsp; The
+<br>data Paul uses is in two x and y and your datasets are in one
+<br>or the other, but I think you can use the same ideas.&nbsp; The data
+<br>set he uses is on-line.&nbsp; I'll use that data for an example<tt></tt>
+<p><tt>yes? USE&nbsp; "<A HREF="">http://pdas.navo.navy.mil/cgi-bin/nph-nc/data/SWAFS/swafs_ame_gme_2003011500.nc</A>"</tt><tt></tt>
+<p><tt>yes? SHOW DATA</tt>
+<br><tt>..</tt>
+<br><tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+L</tt>
+<br><tt>&nbsp;GRID_WATER_DEP</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Grid Water
+Depth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:126&nbsp; 1:101&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;
+...</tt>
+<br><tt>&nbsp;WATER_TEMP</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Water Temperature&nbsp;&nbsp;&nbsp;&nbsp;
+1:126&nbsp; 1:101&nbsp;&nbsp; 1:46&nbsp;&nbsp;&nbsp; 1:24</tt><tt></tt>
+<p><tt>&nbsp;</tt>
+<br><tt>yes? SHADE grid_water_dep</tt>
+<br><tt>yes? SET REGION/L=1</tt><tt></tt>
+<p><tt>&nbsp;! Put water depth onto a grid with a depth axis</tt>
+<br><tt>&nbsp;! (Paul uses reshape; either way this depends on</tt>
+<br><tt>&nbsp;! the fact that the variables share the same X-Y grid).</tt><tt></tt>
+<p><tt>yes? LET bb = grid_water_dep + 0*water_temp[L=1]</tt>
+<br><tt>yes? SHOW GRID bb</tt><tt></tt>
+<p><tt>&nbsp; ! Define zz as the depth on the sigma-layer axis;</tt>
+<br><tt>&nbsp; ! this is the function we need for the second</tt>
+<br><tt>&nbsp; ! argument to zaxreplace</tt><tt></tt>
+<p><tt>yes? LET zz=z*bb</tt>
+<br><tt>yes? STAT zz</tt>
+<br><tt>yes? PLOT/I=12/J=40 zz&nbsp; ! zz is linear, ranging 0 to depth</tt><tt></tt>
+<p><tt>&nbsp; ! Define an output Z axis in depth units,</tt>
+<br><tt>&nbsp; ! and a variable on that axis</tt><tt></tt>
+<p><tt>yes? DEF AXIS/Z=0:5500:100/DEPTH z100</tt>
+<br><tt>yes? LET znew = z[gz=z100]</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>!&nbsp; New variable on the depth axis</tt><tt></tt>
+<p><tt>yes? LET watertemp_depth = ZAXREPLACE(water_temp, zz, znew)</tt><tt></tt>
+<p><tt>yes? SET VIEW left</tt>
+<br><tt>yes? SHADE/L=1/Y=39/TITLE="water temp, sigma" water_temp</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>yes? SET VIEW right</tt>
+<br><tt>yes? SHADE/L=1/Y=39N/TITLE="water temp, depth" watertemp_depth</tt>
+<br><tt></tt>&nbsp;
+<br><tt></tt>&nbsp;
+<p>Francisco J Campuzano Guillen wrote:
+<blockquote TYPE=CITE>Hi Ansley:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I have been trying with
+the ZAXREPLACE, and couldn't get the
+<br>conversion done. I'll give you a bit more of information about my
+<br>ouput files for a better understand of the problem. My output files
+are
+<br>this way:
+<p>&nbsp;1> C:\TMAP\fer_dsets\data\frontA_1.out3U.cdf
+<br>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L
+<br>&nbsp;DEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; water_depth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...
+<br>&nbsp;U2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; U3D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:13
+<br>&nbsp;V2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V3D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:13
+<br>&nbsp;W2PHYS&nbsp;&nbsp; W3D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:13
+<br>&nbsp;CONCN&nbsp;&nbsp;&nbsp; Contaminant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:13
+<p>&nbsp;&nbsp;&nbsp; 2> C:\TMAP\fer_dsets\data\seichA_1.out3U.cdf
+<br>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L
+<br>&nbsp;DEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; water_depth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:60&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...
+<br>&nbsp;U2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; U3D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:60&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:8
+<br>&nbsp;V2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V3D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:60&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:8
+<br>&nbsp;W2PHYS&nbsp;&nbsp; W3D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:60&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:8
+<br>&nbsp;S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Salinity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:60&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:8
+<p>where S or CONCN have 20 sigma layers, and DEP is the depth in meters
+<br>for every I or J step, being 50 and 60 values respectively. So I do
+not
+<br>have a proper function for transforming the sigma layer into meters.
+<br>How should I replace or transform the Z-axis?. Many thanks in advance
+<br>for your advice. Regards:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Francisco Javier Campuzano Guillen
+<p>On Thu, 16 Jan 2003 15:07:53 -0800 Ansley Manke &lt;ansley@pmel.noaa.gov>
+<br>wrote:
+<p>> Hi Francisco,
+<br>> Welcome to Ferret!&nbsp; There is a method to replace the Z axis
+<br>> and convert from sigma coordinates to depth.&nbsp; There is an
+<br>> FAQ on this; the example there (using ZAXREPLACE) should
+<br>> help you, if you have a function that relates the sigma levels to
+<br>> depth in meters.
+<br>>
+<br>> <a href="">http://ferret.pmel.noaa.gov/Ferret/FAQ/data_management/sigma_coordinate_demo.html</a>
+<br>>
+<br>> Ansley Manke
+<br>>
+<br>>
+<br>>
+<br>>
+<br>> Francisco J Campuzano Guillen wrote:
+<br>>
+<br>> > Hello Ferret users:
+<br>> >
+<br>> > This is my first message to the list, I recently started to use
+this
+<br>> > software because of the need to represent the NETCDF results from
+the
+<br>> > COHERENS (Coupled Hydrodynamical-Ecological Model for Regional
+and
+<br>> > Shelf Seas) model.
+<br>> > At this moment, I'm starting to experiment with the test cases
+that
+<br>> > comes included in the CD-ROM, and trying to represent the same
+<br>> > diagrams as they did in the COHERENS User's Guide(where depths
+are
+<br>> > represented in meters),and here is where my doubt comes:
+<br>> > How can I represent with the FERRET package the vertical coordinate
+in
+<br>> > meters instead of sigma-coordinated (I'm using the version 5.41
+for
+<br>> > win32 (so -gui mode is not supported))?.Although I can use the
+data in
+<br>> > the default sigma coordinates,the outcomes when I SET DATA are:
+<br>> >
+<br>> > *** NOTE: Units on axis "z" are not recognized: sigma_level
+<br>> > *** NOTE: They will not be convertible
+<br>> >
+<br>> > I know it is possibly a quite simple question, but I have been
+looking
+<br>> > through the FERRET USERGUIDE and couldn't find the solution, if
+you
+<br>> > need any other details please ask.Thank you very much in advance
+your
+<br>> > help.Yours sincerely:
+<br>> >
+<br>> >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Francisco Javier Campuzano Guillin
+<br>> >
+<br>> > ----------------------------------------
+<br>> > Francisco J Campuzano Guillin
+<br>> > Email: G.F.Campuzano@hull.ac.uk
+<br>> > University of Hull
+<br>>
+<br>> --
+<br>> Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp;
+Seattle WA&nbsp; (206)526-6246
+<br>>
+<br>>
+<p>----------------------------------------
+<br>Francisco J Campuzano Guill&eacute;n
+<br>Email: G.F.Campuzano@hull.ac.uk
+<br>University of Hull</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00037" href="msg00037.html">Re: COHERENS sigma to meters z coordinate</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00032" href="msg00032.html">probblem</a></strong>
+<ul><li><em>From:</em> Yogesh Kumar Tiwari</li></ul></li>
+<li><strong><a name="00033" href="msg00033.html">COHERENS sigma to meters z coordinate</a></strong>
+<ul><li><em>From:</em> Francisco J Campuzano Guillen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00037.html">Re: COHERENS sigma to meters z coordinate</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00101.html">A problem on ferret v5.5 on DEC Alpha machine</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00101.html">Thread Next</a>][<A HREF="threads.html#00058">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

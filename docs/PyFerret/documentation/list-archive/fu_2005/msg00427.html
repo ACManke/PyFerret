@@ -1,0 +1,286 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Large files access time -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 12 May 2005 09:13:02 &#45;0700 -->
+<!--X-Message-Id: 4283808E.2080308@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 1114166381.25454.136.camel@manche -->
+<!--X-Reference: 42692601.1040404@noaa.gov -->
+<!--X-Reference: 1115019972.6261.11.camel@manche -->
+<!--X-Reference: 4276EEEE.9FB9FF14@noaa.gov -->
+<!--X-Reference: 1115125901 	.26500.12.camel@manche -->
+<!--X-Reference: 42782AF8.1A0267D6@noaa.gov -->
+<!--X-Reference: 1115911826.32500.25.camel@manche -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Large files access time</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00426.html">Thread Prev</a>][<a href="msg00373.html">Thread Next</a>][<A HREF="threads.html#00427">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Large files access time</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Jean-Marie.Epitalon@DOMAIN.HIDDEN">Jean-Marie.Epitalon@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Large files access time</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 12 May 2005 09:13:02 -0700</li>
+<li>Cc: Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00426.html">1115911826.32500.25.camel@manche</a>&gt;</li>
+<li>References: &lt;<a href="msg00369.html">1114166381.25454.136.camel@manche</a>&gt;  &lt;<a href="msg00372.html">42692601.1040404@noaa.gov</a>&gt;	&lt;<a href="msg00390.html">1115019972.6261.11.camel@manche</a>&gt;  &lt;<a href="msg00397.html">4276EEEE.9FB9FF14@noaa.gov</a>&gt;&lt;1115125901 	.26500.12.camel@manche&gt;  &lt;<a href="msg00403.html">42782AF8.1A0267D6@noaa.gov</a>&gt; &lt;<a href="msg00426.html">1115911826.32500.25.camel@manche</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Jean-Marie,<br>
+Thank you for the report, and for tracking down which versions behave
+this way.&nbsp; I've found that there's a bug in the USE/REGULART command
+which was introduced when we added the use of the AXIS and
+CARTESIAN_AXIS attributes in netCDF files.&nbsp; REGULART is not applied,
+and this change was made between versions 5.51 and 5.53, as you found.<br>
+<br>
+It's a simple fix and it'll be in the next release of Ferret --<br>
+<br>
+Ansley<br>
+<br>
+J-M Epitalon wrote:<br>
+<blockquote type="cite" cite="">
+  <pre wrap="">Steve,
+
+after further investigation, I noticed the following:
+
+When using option use/regulart for accessing a 1.5Gb file,
+access time is immediate when Ferret version 5.51 (for RedHat 7.1) is
+used.
+
+It is much longer (20 to 45 seconds depending on local or remote) when
+Ferret 5.53 (for RedHat 9) and up (5.7 an 5.8 tested) is used.....
+
+I will continue my investigations, testing Ferret 5.8 for RedHat 7.1
+
+Please, if you have any idea about this, tell me.
+
+Jean-Marie Epitalon
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi J-M,
+
+The usual interpretation of this is disk latency:  the first time you open the file
+the contents are read from disk (30-45 sec).  The second time, the disk blocks are
+still in the Unix disk cache -- "opens immediately".
+
+This implies that there is a substantial amount of disk seeking going on.  I'm not
+sure why ...   You could check in the netCDF email archives or post a message to the
+netCDF group. If you have a debug ("-g") version of Ferret available you can step
+through the netCDF open sections and probably can see exactly which netCDF call is
+taking so long ...
+
+    - steve
+
+J-M Epitalon wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Steve,
+
+thanks for your answer.
+I notice that the option /regulart speeds up quite a bit.
+On my personnal workstation, a Red-Hat PC running Ferret 5.51, the
+instruction use/regulart executes instantaneously.
+
+However, on my LAS server, which is a quadriprocessor PowerEdge 2650
+DELL PC with Red Hat Enterprise Linux, running Ferret 5.8, I cannot
+achieve the same result:
+
+When opening a 1.5 Gb NetCDF file, it takes 20 to 30 seconds, even for a
+local file!!!
+For a NFS remote file, it takes 30 to 45s.
+
+Then, the second time I open it, whether in the same or another Ferret
+session, it opens immediately.
+
+I tried different versions of Ferret for Linux Red-Hat 9: v5.53, 5.7 and
+5.8 and I cannot see any difference.
+I suppose the problem lies in the PC or in the OS...
+
+Please, could you help me understand this ?
+
+Jean-Marie
+
+On Tue, 2005-05-03 at 05:24, Steve Hankin wrote:
+      </pre>
+      <blockquote type="cite">
+        <pre wrap="">Hi Jean-Marie,
+
+Did you try
+    yes?  USE/regularT my_file.nc
+
+When that qualifier is used Ferret reads only the first and last time step of
+the time axis.  There's a long disk seek between the two time steps, since the
+file is large, but it would account for only a fraction of a second in the
+worst case.
+
+If you are using /regularT and still getting the slow speed then I cannot
+account for it.  Can you send us the output of ncdump -c  ?
+
+    - steve
+
+
+J-M Epitalon wrote:
+
+        </pre>
+        <blockquote type="cite">
+          <pre wrap="">Jon and Steve,
+
+sorry. I mislead you.
+My file is 1.5 Gb (not Mb) !
+and it is accessed through NFS.
+I suppose this is why it is really slow.
+
+Anyway, when accessed localy, it still takes half a minute to open it.
+(3 to 4 mn thru NFS)
+
+Since I want to keep the system architecture with NFS, I solved my
+problem by splitting the file in several parts and using a MC file.
+
+Please, what would you suggest as an alternative solution ?
+
+Jean-Marie Epitalon
+CERFACS
+Toulouse, FR
+
+On Fri, 2005-04-22 at 18:27, Jonathan Callahan wrote:
+          </pre>
+          <blockquote type="cite">
+            <pre wrap="">Jean-Marie,
+
+This seems inordinately slow for Ferret.  Especially for a file that is
+only 1.5 Mb!  When this happens it usually means that the time axis is
+marked as 'irregular' which means that Ferret has to read in the entire
+time axis before it can begin.  We have found many cases where the axis
+was actually 'regular' in spite of what the NetCDF attribute says.  If
+this is the case then you can use ncatted to change the time axis
+attribute and Ferret should open this dataset much more quickly.
+
+
+-- Jon
+
+
+J-M Epitalon wrote:
+
+            </pre>
+            <blockquote type="cite">
+              <pre wrap="">hello,
+
+I have daily simulation output covering the period 01-01-1950 to
+31-12-2005. It is in a NetCDF file that is 1.5 Mb large.
+
+When I access it through Ferret, it takes 2 to 4 mn to open it (execute
+instruction "use").
+
+I read in NCO documentation that "Some random access operations on large
+files on certain architecture are slow when using the NetCDF interface".
+
+That seems to be the problem. I could check that it is slow also with
+other tools than ferret (Python, or NCO tools).
+
+Anyway, what solution would you suggest to work around this ?
+Is using MC descriptors a good idea?
+
+Thanks
+
+Jean-Marie Epitalon
+CERFACS
+Toulouse, France
+
+
+
+              </pre>
+            </blockquote>
+            <pre wrap="">
+            </pre>
+          </blockquote>
+        </blockquote>
+        <pre wrap="">
+        </pre>
+      </blockquote>
+    </blockquote>
+    <pre wrap="">
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00369" href="msg00369.html">Large files access time</a></strong>
+<ul><li><em>From:</em> J-M Epitalon</li></ul></li>
+<li><strong><a name="00372" href="msg00372.html">Re: Large files access time</a></strong>
+<ul><li><em>From:</em> Jonathan Callahan</li></ul></li>
+<li><strong><a name="00390" href="msg00390.html">Re: Large files access time</a></strong>
+<ul><li><em>From:</em> J-M Epitalon</li></ul></li>
+<li><strong><a name="00397" href="msg00397.html">Re: Large files access time</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+<li><strong><a name="00403" href="msg00403.html">Re: Large files access time</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+<li><strong><a name="00426" href="msg00426.html">Re: Large files access time</a></strong>
+<ul><li><em>From:</em> J-M Epitalon</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00426.html">Re: Large files access time</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00373.html">Contour in a vertical plane: how to get latitude values instead of km?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00426.html">Thread Prev</a>][<a href="msg00373.html">Thread Next</a>][<A HREF="threads.html#00427">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

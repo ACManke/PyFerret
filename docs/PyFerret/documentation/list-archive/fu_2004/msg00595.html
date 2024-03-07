@@ -1,0 +1,194 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Time axis definition -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 31 Aug 2004 04:33:05 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0408311705460.26526&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20040831074549.GA28424@knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Time axis definition</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00594.html">Thread Prev</a>][<a href="msg00597.html">Thread Next</a>][<A HREF="threads.html#00595">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Time axis definition</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Time axis definition</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 31 Aug 2004 17:21:33 +0530 (IST)</li>
+<li>Cc: Hein Zelle &lt;<a href="mailto:zelle@DOMAIN.HIDDEN">zelle@xxxxxxx</a>&gt;, Ben Burford &lt;<a href="mailto:benb@DOMAIN.HIDDEN">benb@xxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00594.html">20040831074549.GA28424@knmi.nl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ben,
+          Hein Zelle made a detailed explanation for your querry.
+It is also possible to impose a grid with the lat and lon information
+along with time to the variable &quot;air_temperature&quot;. (Hope  &quot;XAX&quot;
+cotains longitude value and &quot;YAX&quot; contains latitude value) 
+
+     set data foo.nc
+     define axis/t=&quot;1-OCT-2002:00:30&quot;:&quot;3-OCT-2002:00:00&quot;:30/\
+               T0=&quot;30-SEP-2002:00:00&quot;/UNITS=minutes tmnts
+
+!define lat and lon axes from data 
+ 
+     define axis/x/units=longitudes/from_data xlon=xax
+     define axis/y/units=latitudes/from_data  ylat=yax
+
+!create a dummy variable on the final destination grid
+
+     let xyt_stamp = t[gt=tmnts]*0 + x[gx=xlon]*0 + y[gy=ylat]*0 
+
+!get &quot;air_temperature&quot; on to the destination grid
+!    RESHAPE function wraps the first argument to the
+!    grid of second argument
+
+     let airt = RESHAPE(air_temperature,xyt_stamp)
+
+!assign  title &amp; units
+
+     set var/title=&quot;Air Temperature&quot;/units=&quot;^oC&quot; airt
+
+     plot airt
+
+! save to a netcdf file for future use
+
+  ! save/file=foo_xytgrd.nc/append airt
+
+
+Hope This Helps
+
+With Regards 
+
+Jaison 
+   
+
+ On Tue, 31 Aug 2004, Hein Zelle wrote:
+
+&gt; Ben Burford wrote:
+&gt; 
+&gt; &gt;  AIR_TEMPERATURE
+&gt; &gt;           Air_Temperature                  1:96      ...       ...       ...
+&gt; &gt;  XAX      Longitude                        1:1       ...       ...       ...
+&gt; &gt;  YAX      Latitude                         1:1       ...       ...       ...
+&gt; &gt;  TAX      Time                             ...       ...       ...       1:2
+&gt; &gt;  
+&gt; &gt; yes? DEFINE AXIS/T=&quot;1-OCT-2002:00:30&quot;:&quot;3-OCT-2002:00:00&quot;:30/UNITS=minutes TAX
+&gt; &gt; yes? plot/I=1:96 Air_Temperature
+&gt; &gt; yes? plot Air_Temperature
+&gt;   &gt; 
+&gt; &gt; In both cases I get a plot but the x axis doesn't show time, it shows the va
+&gt; &gt; lues 1 to 96.  How do I define my time interval, get that recognized as the 
+&gt; &gt; x axis, and plot the 96 air temperature values on the y axis against time on
+&gt; &gt;  the x axis?
+&gt; 
+&gt; You have 2 problems here: 1) your data is defined on the wrong axis (x
+&gt; instead of t) and 2) although you've defined a proper time axis, you
+&gt; don't use it when plotting. To get your data onto a time axis:
+&gt; 
+&gt;     let tseq_air_temp = tsequence(Air_Temperature)
+&gt; 
+&gt; It is now on an &quot;abstract&quot; grid, ie no proper time values but it is a
+&gt; time axis (show grid time_air_temp). To get the data on your new time
+&gt; axis:
+&gt; 
+&gt;     let tax_air_temp = tseq_air_temp[gt=tax@asn]
+&gt;     plot tax_air_temp
+&gt; 
+&gt; The @asn assigns element 1 of the sequence to position 1 of your new
+&gt; axis, disregarding any time values on the axis. That means the
+&gt; tsequence and the new time axis should have the same number of
+&gt; elements. This works for me, but I created a test variable so I may
+&gt; have mistyped something. Let me know if it works.
+&gt; 
+&gt; Hein Zelle
+&gt; 
+&gt; &gt;-----------------------------------------------------------------&lt;
+&gt;     Hein Zelle
+&gt;     Dept. of Oceographic Research
+&gt;     KNMI, The Netherlands
+&gt;     work:        zelle@knmi.nl     <a  href="http://www.knmi.nl/~zelle">http://www.knmi.nl/~zelle</a>
+&gt;     private:     hein@icce.rug.nl  <a  href="http://www.icce.rug.nl/~hein">http://www.icce.rug.nl/~hein</a>
+&gt;     Phone:       +31 (0)30 2206704
+&gt; &gt;-----------------------------------------------------------------&lt;
+&gt; -------------------------------------------------------------- 
+&gt; 
+&gt; Zie ook/see also: <a  href="http://www.knmi.nl/maildisclaimer.html">http://www.knmi.nl/maildisclaimer.html</a> 
+&gt;  
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00594" href="msg00594.html">Re: Time axis definition</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00594.html">Re: Time axis definition</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00597.html">time_counter as axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00594.html">Thread Prev</a>][<a href="msg00597.html">Thread Next</a>][<A HREF="threads.html#00595">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

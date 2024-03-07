@@ -1,0 +1,409 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Convert units of  x and y axis from (KM) to (Degree) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 6 Sep 2005 09:14:34 &#45;0700 -->
+<!--X-Message-Id: 431DC069.7070508@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20050906155145.68911.qmail@web40628.mail.yahoo.com -->
+<!--X-Derived: png00000.png -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Convert units of  x and y axis from (KM) to (Degree)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00851.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00853">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Convert units of  x and y axis from (KM) to (Degree)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ashraf Zakey &lt;<a href="mailto:ashraf_saber123@DOMAIN.HIDDEN">ashraf_saber123@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Convert units of  x and y axis from (KM) to (Degree)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 06 Sep 2005 09:14:33 -0700</li>
+<li>Cc: &quot;List (Ferret)&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;20050906155145.68911.qmail@web40628.mail.yahoo.com&gt;</li>
+<li>References: &lt;20050906155145.68911.qmail@web40628.mail.yahoo.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ashraf,<br>
+You do not need to do any conversion. This is a curvilinear data set,
+with coordinate variables lat and long in degrees, and a data variable
+D2_aNO3. The units of i and j are not important, they are treated as
+indices only. You can user Ferret's curvilinear plot commands,<br>
+<br>
+&nbsp;&nbsp; FILL D2_aNO3[L=1], long, lat<br>
+<br>
+or<br>
+<br>
+&nbsp;&nbsp; SHADE D2_aNO3[L=1], long, lat<br>
+<br>
+Specifying any time step, like L=1 if the data depended on more than
+one time.&nbsp; I don't see that D2_aNO3 depends on depth, but that could be
+specified in the square brackets if a variable depends on K. <br>
+<br>
+To explore the data set further, try these commands (thanks to Andrew
+Wittenberg for the idea of a checkerboard variable.):<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! show the curvilinear coordinates<br>
+&nbsp;&nbsp; yes? fill long<br>
+&nbsp;&nbsp; yes? fill lat<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! show a variable on the curvilinear grid that alternates colors
+between each grid cell<br>
+&nbsp;&nbsp; yes? let checkerboard = 0*D2_aNO3 + MOD(i+j, 2)<br>
+&nbsp;&nbsp; yes? shade checkerboard, long, lat<br>
+<br>
+<br>
+Ashraf Zakey wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <pre wrap="">Hi Ansley,
+
+    Thank you for your reply. And I would like to draw
+this data on the following domain, please see the
+attched figure. I appricate your help.
+
+All the best
+Ashraf
+
+   
+The characteristics of my data is:
+
+ncdump -h rv2_2_10_NILU_year.nc
+
+netcdf rv2_2_10_NILU_year {
+dimensions:
+        i = 101 ;
+        j = 51 ;
+        k = 20 ;
+        time = UNLIMITED ; // (1 currently)
+variables:
+        float i(i) ;
+                i:coord_axis = "x" ;
+                i:long_name = "EMEP grid x coordinate";
+                i:units = "km" ;
+        float i_EMEP(i) ;
+                i_EMEP:long_name = "official EMEP grid coordinate i" ;
+                i_EMEP:units = "gridcells" ;
+        float j(j) ;
+                j:coord_axis = "y" ;
+                j:long_name = "EMEP grid y coordinate";
+                j:units = "km" ;
+        float j_EMEP(j) ;
+                j_EMEP:long_name = "official EMEP grid coordinate j" ;
+                j_EMEP:units = "gridcells" ;
+        float lat(j, i) ;
+                lat:long_name = "latitude" ;
+                lat:units = "degrees" ;
+        float long(j, i) ;
+                long:long_name = "longitude" ;
+                long:units = "degrees" ;
+        float k(k) ;
+                k:coord_alias = "level" ;
+                k:long_name = "vertical eta coordinates" ;
+                k:units = "eta_level" ;
+                k:positive = "down" ;
+
+
+float D2_aNO3(time, j, i) ;
+                D2_aNO3:long_name = "D2_aNO3" ;
+                D2_aNO3:numberofrecords = 1 ;
+                D2_aNO3:units = "ugN/m3" ;
+                D2_aNO3:class = "ADV" ;
+                D2_aNO3:scale_factor = 1. ;
+                D2_aNO3:_FillValue = 9.96921e+36f ;
+                D2_aNO3:xfelt_ident = 0, 0, 0, 6, 2, 670, 1000, 0, 0, 101, 51, 0, 0, 0, -21, 72, 0, 0, 0, 0;
+                D2_aNO3:current_date_first = 2001, 1, 1, 3 ;
+                D2_aNO3:current_date_last = 2001, 1, 1, 3 ;
+
+global attributes:
+                :Conventions = "GDV" ;
+                :model = "ZD_OZONE" ;
+                :author_of_run = "Unimod group" ;
+                :created_date = "20050905" ;
+                :created_hour = "164425.705" ;
+                :lastmodified_date = "20050905" ;
+                :lastmodified_hour = "164519.940" ;
+                :projection = "Stereographic" ;
+                :projection_params = "90.0 -32.0 0.933013" ;
+                :vert_coord = "vertical coordinates =(p-p(top))/(p(surf)-p(top))" ;
+                :period_type = "yearly" ;
+                :run_label = "rv2_2_10_NILU_2001" ;
+
+
+
+
+
+
+--- Ansley Manke <a class="moz-txt-link-rfc2396E" href="">&lt;ansley.b.manke@noaa.gov&gt;</a> wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi Ashraf,
+You asked several questions that all seemed to be
+related to the same 
+question in working with your data.  Did Jaison's
+answer help you?  If 
+you still need more help, could you tell us more
+about the data you are 
+using and how you set up the stereograpic
+projection?
+
+It sounds as though your variable NO3 is initially
+on a grid defined in 
+km.  If so, then you need to define a new grid in
+units of degrees, and 
+regrid the data to that grid. If you define the new
+grid to have its 
+coordinate points at the same locations as the input
+grid, but in the 
+new units of degrees, then you would use the @ASN
+regridding 
+transformation to put the data onto the
+latitude-longitude grid.
+
+Are you running the mp_stereographic_north or
+mp_stereographic_south 
+journal script to create the projection? If so, then
+you should regrid 
+to the grid defined in degrees first, and then use
+the projection script.
+
+Ansley
+
+Ashraf Zakey wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Hello everyone,
+
+   With Netcdf data and Stereographic projection, 
+      </pre>
+    </blockquote>
+    <pre wrap="">I
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">would like to convert the units of X and Y axis
+      </pre>
+    </blockquote>
+    <pre wrap="">&gt;from (KM) to (Degree) using Ferret to darw the
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">concentrations of some Air pollutants.
+
+  
+
+I did something such as:
+
+let x1=x/111.1
+let y1=y/111.1
+fill/set NO2,x1,y1
+
+But it donsn't work
+
+I appreciate any help
+
+Thanks
+
+Ashraf
+
+
+
+
+''~``
+                       ( o o )
+      </pre>
+    </blockquote>
+    <pre wrap="">+------------------.oooO--(_)--Oooo.------------------+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|                                                  
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|           Ashraf Saber Zakey                     
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|           Department of Chemistry                
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|           Atmospheric Science group              
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|           Universty of Gothenburg                
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|           SE 412 96 Gothenbrg                    
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|           Sweden                                 
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|           e-mail:  <a class="moz-txt-link-abbreviated" href="">zakey@chem.gu.se</a>              
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|                    <a class="moz-txt-link-abbreviated" href="">ashraf_saber123@yahoo.com</a>     
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|                                                  
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|                    .oooO                         
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">|                    (   )   Oooo.                 
+      </pre>
+    </blockquote>
+    <pre wrap="">  |
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">+---------------------\ (----(  
+      </pre>
+    </blockquote>
+    <pre wrap="">)--------------------+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">                      \_)    ) /
+                            (_/
+
+
+	
+		
+      </pre>
+    </blockquote>
+    <pre wrap="">______________________________________________________
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Click here to donate to the Hurricane Katrina
+      </pre>
+    </blockquote>
+    <pre wrap="">relief effort.
+    </pre>
+    <blockquote type="cite">
+      <pre wrap=""><a class="moz-txt-link-freetext" href="">http://store.yahoo.com/redcross-donate3/</a>
+
+ 
+
+      </pre>
+    </blockquote>
+    <pre wrap="">
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+''~``
+                        ( o o )
++------------------.oooO--(_)--Oooo.------------------+
+|                                                     |
+|           Ashraf Saber Zakey                        |
+|           Department of Chemistry                   |
+|           Atmospheric Science group                 |
+|           Universty of Gothenburg                   |
+|           SE 412 96 Gothenbrg                       |
+|           Sweden                                    |
+|           e-mail:  <a class="moz-txt-link-abbreviated" href="">zakey@chem.gu.se</a>                 |
+|                    <a class="moz-txt-link-abbreviated" href="">ashraf_saber123@yahoo.com</a>        |
+|                                                     |
+|                    .oooO                            |
+|                    (   )   Oooo.                    |
++---------------------\ (----(   )--------------------+
+                       \_)    ) /
+                             (_/
+
+
+	
+		
+______________________________________________________
+Click here to donate to the Hurricane Katrina relief effort.
+<a class="moz-txt-link-freetext" href="">http://store.yahoo.com/redcross-donate3/</a></pre>
+  <br>
+  <hr width="90%" size="4"><br>
+  <center><img src="png00000.png"></center>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00851.html">Re: [ferret_users] Convert units of  x and y axis from (KM) to (Degree)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00851.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00853">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

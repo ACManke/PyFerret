@@ -1,0 +1,213 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: intepolating scattered cdf file -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Fri, 30 May 2003 09:41:03 &#45;0700 -->
+<!--X-Message-Id: 3ED78A16.47BBFEF1@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 5.1.0.14.0.20030530160955.00a73da0@mail.flinders.edu.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: intepolating scattered cdf file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00432">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: intepolating scattered cdf file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hemerson Tonin &lt;<a href="mailto:hemer.tonin@DOMAIN.HIDDEN">hemer.tonin@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: intepolating scattered cdf file</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 30 May 2003 09:43:02 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00429.html">5.1.0.14.0.20030530160955.00a73da0@mail.flinders.edu.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Hemerson,
+<br>The scat2grid functions are intended to put data that is not
+<br>already on any axis or grid, onto a grid that you define. The
+<br>first two arguments to the scat2grid functions need to be
+<br>1-dimensional lists the same length; they describe the locations
+<br>of the points to be interpolated onto the grid.&nbsp; These functions
+<br>expect a list of function values at a set of x, y locations ( x, y,
+f(x,y) )
+<p>If you have data that's already on a grid, you can define new axes
+<br>and regrid to those new axes with ordinary Ferret regridding
+<br>operations.
+<p>Here are a couple of examples. First, use some data that has a
+<br>regular Y axis and an irregular X axis, regrid to a regular X axis
+<br>and a new Y axis, but keep the Z axis.&nbsp; On the SHOW DATA
+<br>commands, you can see which axes are irregular.&nbsp; Under the # pts
+<br>column note the the letter i for irregular or r for regular.<tt></tt>
+<p><tt>yes? USE myfile</tt>
+<br><tt>yes? SHO data</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp; currently SET data sets:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 1> ./myfile.nc&nbsp; (default)</tt>
+<br><tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+L</tt>
+<br><tt>&nbsp;TEMP&nbsp;&nbsp;&nbsp;&nbsp; TEMPERATURE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:10&nbsp;&nbsp; 1:40&nbsp;&nbsp; 1:20&nbsp;&nbsp; ...</tt><tt></tt>
+<p><tt>yes? SHO GRID temp</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; GRID GLR1</tt>
+<br><tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end</tt>
+<br><tt>&nbsp;XAXL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+10 i&nbsp;&nbsp; 123&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+222</tt>
+<br><tt>&nbsp;YAXL LATITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 40
+r&nbsp;&nbsp; 19.5S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 19.5N</tt>
+<br><tt>&nbsp;ZAXL DEPTH (m)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 20 i-&nbsp;
+0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5000</tt>
+<br><tt>&nbsp;normal&nbsp;&nbsp;&nbsp; T</tt><tt></tt>
+<p><tt>yes? DEF AXIS/X=123:223:5&nbsp; newx</tt>
+<br><tt>yes? DEF AXIS/Y=-20:20:5 newy</tt><tt></tt>
+<p><tt>yes? LET outvar = temp[gx=newx,gy=newy]</tt>
+<br><tt>yes? SHOW GRID outvar</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>yes? show grid outvar</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; GRID (G002)</tt>
+<br><tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;
+# pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end</tt>
+<br><tt>&nbsp;NEWX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+21 r&nbsp;&nbsp; 123&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+223</tt>
+<br><tt>&nbsp;NEWY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Y&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+9 r&nbsp;&nbsp; -20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+20</tt>
+<br><tt>&nbsp;ZAXLEVITR DEPTH (m)&nbsp; 20 i-&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5000</tt>
+<br><tt>&nbsp;normal&nbsp;&nbsp;&nbsp; T</tt>
+<br><tt></tt>&nbsp;<tt></tt>
+<p><tt>-------------------------------------------</tt>
+<br>Now, an example of how to use scat2gridgauss.&nbsp; See how the
+<br>variables LON and LAT are just 1-D lists of values, which&nbsp; become
+<br>inputs to the function, and X[GX=XAX], Y[GY=YAX] are the
+<br>coordinates of the axes we want the result to be on.<tt></tt>
+<p><tt>yes? SET DATA scat.nc</tt>
+<br><tt>yes? SHOW data</tt><tt></tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp; currently SET data sets:</tt>
+<br><tt>&nbsp;&nbsp;&nbsp; 1> /home/shiva5/data/island_rainfall.cdf&nbsp;
+(default)</tt>
+<br><tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;
+K&nbsp;&nbsp;&nbsp;&nbsp; L</tt>
+<br><tt>&nbsp;LAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Latitude&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:226&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp; ...&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;LON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Longitude&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:226&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp; ...&nbsp;&nbsp; ...</tt>
+<br><tt>&nbsp;RAIN&nbsp;&nbsp;&nbsp;&nbsp; Island rainfall&nbsp;&nbsp;&nbsp;&nbsp;
+1:226&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp; ...&nbsp;&nbsp; 1:840</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>yes? define axis/x=130:240:2.5 xax</tt>
+<br><tt>yes? define axis/y=-35:20:2.5 yax</tt><tt></tt>
+<p><tt>yes? let raingrid = scat2gridgauss_xy (lat, lon, rain,</tt>
+<br><tt>&nbsp;x[gx=xax], y[gy=yax],&nbsp; 4, 2, 4, 2)</tt>
+<br><tt>yes? stat sgrid</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SCAT2GRIDGAUSS_XY (LON, LAT, RAIN,&nbsp; X[GX=XAX], Y[GY=YAX],&nbsp; 4,
+2, 4,2)</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X: 128.8 to 241.2</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Y: -36.2 to 21.2</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Z:&nbsp; N/A</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+TIME: 31-DEC-1970 12:00 to 19-APR-1973 12:00</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DATA SET: /home/data/island_rainfall.cdf</tt>
+<br><tt>&nbsp;</tt>
+<br><tt>&nbsp;Total # of data points: 869400 (45*23*1*840)</tt>
+<br><tt>&nbsp;# flagged as bad&nbsp; data: 386543</tt>
+<br><tt>&nbsp;Minimum value: 0</tt>
+<br><tt>&nbsp;Maximum value: 380.4</tt>
+<br><tt>&nbsp;Mean&nbsp;&nbsp;&nbsp; value: 5.8762 (unweighted average)</tt>
+<br><tt>&nbsp;Standard deviation: 12.64</tt>
+<p>Hemerson Tonin wrote:
+<blockquote TYPE=CITE>Hi ferreter's
+<p>Do external functions (scat2gridgauss_xy and scat2gridlaplace)
+<br>interpolations from irregular axes to regular ones?
+<p>Because I have tryed with regular axis for longitude and irregular one
+for
+<br>latitude ( time and depth axes will not changed ) and, it has given
+me the
+<br>message:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Bailing out of external function "scat2gridgauss_xy":
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Input scattered x, y have different # of
+<br>points&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+11
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+**ERROR: : error in external function
+<p>Well, suggestions to do this will be welcome !
+<p>Thank's
+<p>Tonin, H. E.
+<br>School of Chemistry, Physics and Earth Sciences
+<br>Flinders University of South Australia</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00429" href="msg00429.html">intepolating scattered cdf file</a></strong>
+<ul><li><em>From:</em> Hemerson Tonin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00429.html">intepolating scattered cdf file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00430.html">Merging climatologies</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00432">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

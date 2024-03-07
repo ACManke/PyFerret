@@ -1,0 +1,137 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Filling in the blanks with interpolation -->
+<!--X-From-R13: [negva Epuzvqg <zfpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Thu, 17 Nov 2005 06:58:55 &#45;0800 -->
+<!--X-Message-Id: 200511171458.jAHEwXG40162@phy&#45;33.io&#45;warnemuende.de -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Derived: bin00015.bin -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Filling in the blanks with interpolation</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01011.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#01012">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Filling in the blanks with interpolation</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Filling in the blanks with interpolation</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:mschmidt@DOMAIN.HIDDEN">mschmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 17 Nov 2005 15:58:33 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Yogesh!
+
+This method is not suitable for a script, because is includes an iteration. 
+Hence, it is implemented as a fortran external function. The attached file
+is fill.tar which contains all files you need.
+
+How to install?
+
+Put the subdirectory &quot;fill&quot; into &quot;your_ferret&quot;/ext_func/src
+
+This can be also $HOME/ferret/ext_func/src
+
+Modify fill_xy.F and Makefile for your system. Please follow the templates as found
+in the exaples delivered with ferret, e.g. in 
+
+&quot;your_ferret&quot;/ext_func/src/examples
+
+Please compare in fill_xy.F and add_9.F, how underscores have to be defined.
+
+It should be either
+
+   fill_xy_init_(id) and fill_xy_compute_(....
+
+or 
+
+   fill_xy_init(id) and fill_xy_compute(....
+   
+Adjust the Makefile to your compiler. Follow the template delivered
+with ferret for your system. The Makefile in &quot;fill&quot; works for AIX. Only the 
+system issues for AIX are described in external_functions_aix.html. 
+
+ferret_cmn is from the version 5.41 for AIX. I suggest to should replace it by the
+version delivered for your system. 
+
+Otherwise follow the instructions on the Ferret web pages on external functions.    
+   
+If the function is installed, start ferret    
+
+sh func/external
+
+should list fill_xy (among all other functions ...)
+
+use coads_climatology
+set win 1
+shade/l=1 sst
+
+!Now test, what fill does.
+set win 2
+let mask = missing(sst,0)*0 + 1  
+! 1 at the sst-grid, all points may be filled if missing
+let sst_fill = fill_xy(sst,mask,1)
+shade/l=1 sst_fill -missing(sst,0) ! shows what happens
+
+! Now fill only in the southern ocean
+let mask1 =if y[gy=sst] lt 0 then mask else 1/0
+let sst_fill = fill_xy(sst,mask1,20)
+shade/l=1 sst_fill
+
+Good luck!
+
+Martin Schmidt</pre>
+<p><strong>Attachment:
+<a href="bin00015.bin" ><tt>bin00015.bin</tt></a></strong><br>
+<em>Description:</em> fill.tar</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01011.html">Re: [ferret_users] Filling in the blanks with interpolation</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01011.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#01012">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

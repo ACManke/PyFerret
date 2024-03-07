@@ -1,0 +1,244 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: counting number of elements in a string array?? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 14 Sep 2004 10:30:41 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409142251010.16880&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 414722FA.2090203@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: counting number of elements in a string array??</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00624.html">Thread Prev</a>][<a href="msg00623.html">Thread Next</a>][<A HREF="threads.html#00625">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: counting number of elements in a string array??</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: counting number of elements in a string array??</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 14 Sep 2004 23:01:44 +0530 (IST)</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;, James Orr &lt;<a href="mailto:orr@DOMAIN.HIDDEN">orr@xxxxxxxxxxxxxxxxxx</a>&gt;,  Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00624.html">414722FA.2090203@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie, James &amp; Ansley,
+                             There is an easy fix for the problem paused
+using any one of the functions XSEQUENCE, YSEQUENCE, ZSEQUENCE or 
+TSEQUENCE. Once the variable is sampled using this function, it will have
+the &quot;exact&quot; size along the abstract axis corresponding to the function
+used. 
+
+   As a comment : If we know that there are files in the directory with 
+                        the given pattern (atleast one) then there is no 
+                        need to give the &quot;dummy&quot; along with the spawn
+                        (see the example below). 
+
+
+       NOAA/PMEL TMAP
+        FERRET v5.50
+        Linux 2.4.3-12smp - 01/15/03
+        14-Sep-04 22:46
+
+yes? let fnames = {spawn: &quot;ls *.nc&quot;}
+yes? list fnames
+             VARIABLE : {SPAWN: &quot;ls *.nc&quot;}
+             SUBSET   : 3 points (X)
+ 1   / 1:&quot;gpcc.nc&quot;
+ 2   / 2:&quot;junk1.nc&quot;
+ 3   / 3:&quot;junk.nc&quot;
+yes? list `fnames,r=iend`
+ !-&gt; list 2000
+             VARIABLE : constant
+          2000.
+yes? list `fnames,r=istart`
+ !-&gt; list 1
+             VARIABLE : constant
+          1.000
+yes? let files = XSEQUENCE(fnames)
+yes? list `files,r=iend`
+ !-&gt; list 3
+             VARIABLE : constant
+          3.000
+yes? let files = YSEQUENCE(fnames)
+yes? list `files,r=jend`
+ !-&gt; list 3
+             VARIABLE : constant
+          3.000
+yes? let files = TSEQUENCE(fnames)
+yes? list `files,r=lend`
+ !-&gt; list 3
+             VARIABLE : constant
+          3.000
+yes?
+
+
+Hope this helps
+
+Jaison 
+
+
+On Tue, 14 Sep 2004, Ansley Manke wrote:
+
+&gt; Hi Emile and James,
+&gt; Yes, this is a known bug with the spawn command.  Thank you for the
+&gt; workaround, James.
+&gt; 
+&gt; Ansley Manke
+&gt; 
+&gt; James Orr wrote:
+&gt; 
+&gt; &gt;Emilie,
+&gt; &gt;
+&gt; &gt;You followed what was in the manual, and you are right: it does NOT 
+&gt; &gt;work.  On the other hand it would work if you only listed the files
+&gt; &gt;without using the spawn command, e.g.,
+&gt; &gt;
+&gt; &gt;  let my_files = {&quot;dummy&quot;, &quot;box.dat&quot;, &quot;boxmar.dat&quot;, &quot;dummy&quot;}
+&gt; &gt;
+&gt; &gt;A work around (while using the spawn command) would be to  do the 
+&gt; &gt;following
+&gt; &gt;
+&gt; &gt;  let my_files = {&quot;dummy&quot;, spawn: &quot;ls box*.dat&quot;, &quot;dummy&quot;}
+&gt; &gt;  let len_files = strlen(my_files)
+&gt; &gt;  let one_files = if len_files gt 0 then 1
+&gt; &gt;  let n = one_files[i=@sum]
+&gt; &gt;  list n
+&gt; &gt;
+&gt; &gt;-- Jim
+&gt; &gt;
+&gt; &gt;On Tue, 14 Sep 2004, Emilie Vanvyve wrote:
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; &gt;&gt;Hello,
+&gt; &gt;&gt;
+&gt; &gt;&gt;I have a little problem when I do the following to count the number of 
+&gt; &gt;&gt;elements I have in a string array:
+&gt; &gt;&gt;
+&gt; &gt;&gt;yes? spawn ls
+&gt; &gt;&gt;box.dat                 plot-xy-hlat.jnl        plot-xy-ro.jnl          
+&gt; &gt;&gt;plot-xy.set-mask.jnl
+&gt; &gt;&gt;boxmar.dat              plot-xy-precp.jnl       plot-xy-t2m.jnl         
+&gt; &gt;&gt;plot-xy.set-shakey.jnl
+&gt; &gt;&gt;yes?
+&gt; &gt;&gt;yes? let my_files = {&quot;dummy&quot;, spawn: &quot;ls box*.dat&quot;, &quot;dummy&quot;}
+&gt; &gt;&gt;yes? list my_files
+&gt; &gt;&gt;              VARIABLE : {&quot;dummy&quot;, SPAWN: &quot;ls box*.dat&quot;, &quot;dummy&quot;}
+&gt; &gt;&gt;              SUBSET   : 4 points (X)
+&gt; &gt;&gt;  1   / 1:&quot;dummy&quot;
+&gt; &gt;&gt;  2   / 2:&quot;box.dat&quot;
+&gt; &gt;&gt;  3   / 3:&quot;boxmar.dat&quot;
+&gt; &gt;&gt;  4   / 4:&quot;dummy&quot;
+&gt; &gt;&gt;yes?
+&gt; &gt;&gt;yes? let n = `my_files,return=iend`
+&gt; &gt;&gt;  !-&gt; DEFINE VARIABLE n = 2002
+&gt; &gt;&gt;yes? let n = `my_files,return=jend`
+&gt; &gt;&gt;  !-&gt; DEFINE VARIABLE n = 0
+&gt; &gt;&gt;yes? let n = `my_files,return=kend`
+&gt; &gt;&gt;  !-&gt; DEFINE VARIABLE n = 0
+&gt; &gt;&gt;yes? let n = `my_files,return=lend`
+&gt; &gt;&gt;  !-&gt; DEFINE VARIABLE n = 0
+&gt; &gt;&gt;yes?
+&gt; &gt;&gt;
+&gt; &gt;&gt;Why is it so? Why do I not get n=4?
+&gt; &gt;&gt;I'm likely to have done just a stupid mistake somewhere, but I don't 
+&gt; &gt;&gt;see.
+&gt; &gt;&gt;
+&gt; &gt;&gt;Emilie
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;____________________________________________________________
+&gt; &gt;&gt;Emilie VANVYVE
+&gt; &gt;&gt;Physicist, PhD student
+&gt; &gt;&gt;
+&gt; &gt;&gt;Université catholique de Louvain (UCL)
+&gt; &gt;&gt;Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+&gt; &gt;&gt;Chemin du Cyclotron, 2
+&gt; &gt;&gt;1348 Louvain-la-Neuve (Belgium)
+&gt; &gt;&gt;Phone : +32-(0)10-473300
+&gt; &gt;&gt;Fax : +32-(0)10-474722
+&gt; &gt;&gt;E-mail : vanvyve@astr.ucl.ac.be
+&gt; &gt;&gt;Web : www.astr.ucl.ac.be
+&gt; &gt;&gt;    
+&gt; &gt;&gt;
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00624" href="msg00624.html">Re: counting number of elements in a string array??</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00624.html">Re: counting number of elements in a string array??</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00623.html">Descriptor Files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00624.html">Thread Prev</a>][<a href="msg00623.html">Thread Next</a>][<A HREF="threads.html#00625">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: how to define a 3&#45;D variable -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 7 Sep 2004 10:59:12 &#45;0700 -->
+<!--X-Message-Id: 413DF71A.5030607@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20040907170058.67587.qmail@web41203.mail.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how to define a 3-D variable</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00604.html">Thread Prev</a>][<a href="msg00606.html">Thread Next</a>][<A HREF="threads.html#00605">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how to define a 3-D variable</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Boyin Huang &lt;<a href="mailto:huang_boyin@DOMAIN.HIDDEN">huang_boyin@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how to define a 3-D variable</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 07 Sep 2004 10:59:54 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00604.html">20040907170058.67587.qmail@web41203.mail.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00604.html">20040907170058.67587.qmail@web41203.mail.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Boyin,<br>
+Perhaps the best idea is for you to make your own version of the 
+poly_vectors.jnl<br>
+script, and define a thinner arrow head.  You can find the script with 
+the Unix<br>
+command &quot;Fgo poly_vectors&quot;.   Copy it to your own journal script directory,<br>
+and rename it to for instance,  poly_vectors_thin.jnl  in which you 
+change the<br>
+value of the arrowhead width.  Find the lines<br>
+<br>
+  ! arrow head half-width (inches)<br>
+  let arrow_hd_half_wd = if (arrowhead_draw eq 0) then 0.05 else 0 
+<br>
+and change 0.05 to a smaller number, say 0.03.<br>
+<br>
+The repeat command you tried does not work to fill a 3-D variable with<br>
+numbers; because of the way Ferret makes variable definitions. What you<br>
+have computed is the value for just the last iteration of the REPEAT.  You<br>
+could define a more complex mask to define the variable vv, or one can<br>
+draw the kind of plot you want with overlays:<br>
+<br>
+ use coads_climatology<br>
+ set reg/l=1<br>
+ vec/color=blue (if sst lt 15 then uwnd),  (if sst lt 15 then vwnd)<br>
+ go fland<br>
+ vec/over/color=green (if sst lt 20 and sst gt 15 then uwnd),  (if sst 
+lt 20 and sst gt 15 then vwnd)<br>
+ vec/over/color=purple (if sst lt 25 and sst gt 20 then uwnd),  (if sst 
+lt 25 and sst gt 20 then vwnd)<br>
+ vec/over/color=red (if sst gt 25 then uwnd),  (if sst gt 25 then vwnd)<br>
+<br>
+(Of course this can be cleaned up with a new title, and vector/nolabel 
+commands).<br>
+This is not as satisfactory as using a version of poly_vectors.jnl, 
+since the /COLOR=<br>
+option for the vector command has so few choices of colors.<br>
+<br>
+Ansley<br>
+<br>
+Boyin Huang wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear ferreters:<br>
+<br>
+<br>
+The purpose is to control vector colors using vector<br>
+routine (poly_vector routine is not good due to wide<br>
+arrow head).<br>
+<br>
+Assume I have velocity V(x,y), I wish to separate it<br>
+into a 3-D field VV(x,y,t) according to the 3rd<br>
+variable (say SST). If I can do this, I will be able<br>
+to plot series vector/over plot with different colors.<br>
+<br>
+Here is what I did:<br>
+<br>
+----------------------------------------<br>
+DEFINE AXIS/t=1:10:1/unit=none naxis<br>
+<br>
+repeat/range=1:10/name=m (let/t=`m` vv = if (sst gt<br>
+`m`) then v)<br>
+<br>
+list vv[t=1]<br>
+list vv[t=10]<br>
+----------------------------------------<br>
+The listed values of vv[t=1] and vv[t=10] are same.<br>
+<br>
+I guess the problem is &quot;let/t=...&quot;<br>
+Is there any way to define a new variable with<br>
+additional dimension?<br>
+<br>
+Thanks<br>
+<br>
+=====<br>
+Boyin Huang<br>
+The Center for Research on the Changing Earth System (CRCES)<br>
+10211 Wincopin Circle, Suite 240<br>
+Columbia, Maryland 21044<br>
+Tel. 410-992-5300/19 (O), 410-461-9339(H) 
+Fax. 410-992-5944, Email. byh@crces.org 
+<a  href="http://byh.crces.org">http://byh.crces.org</a><br>
+<br>
+<br>
+		<br>
+__________________________________<br>
+Do you Yahoo!?<br>
+New and Improved Yahoo! Mail - Send 10MB messages!<br>
+<a  href="http://promotions.yahoo.com/new_mail">http://promotions.yahoo.com/new_mail</a> 
+ 
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00604" href="msg00604.html">how to define a 3-D variable</a></strong>
+<ul><li><em>From:</em> Boyin Huang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00604.html">how to define a 3-D variable</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00606.html">linear trend</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00604.html">Thread Prev</a>][<a href="msg00606.html">Thread Next</a>][<A HREF="threads.html#00605">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Title label variable help -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 8 Jul 2005 09:32:27 &#45;0700 -->
+<!--X-Message-Id: 42CEAA9A.6030607@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20050708130717.48685.qmail@web84108.mail.dcn.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Title label variable help</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00684.html">Thread Prev</a>][<a href="msg00690.html">Thread Next</a>][<A HREF="threads.html#00685">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Title label variable help</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Selina Satterfield &lt;<a href="mailto:satterfields2000@DOMAIN.HIDDEN">satterfields2000@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Title label variable help</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 08 Jul 2005 09:32:26 -0700</li>
+<li>Cc: Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00684.html">20050708130717.48685.qmail@web84108.mail.dcn.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00684.html">20050708130717.48685.qmail@web84108.mail.dcn.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Selina,<br>
+That might be easiest, to do the last bit of editing outside Ferret&nbsp; in
+your c++ (I think sed is commonly included as part of Unix, so it still
+might be an option).&nbsp; ASCII output from Ferret is designed to have all
+the information available to you, but it is not set up to be flexible
+in all possible ways<br>
+<br>
+You can use the lengths of the strings to create format statements
+that'll align the text<br>
+<br>
+<pre wrap="">  let len = strlen(ut1)
+  list/file=temp.txt/nohead/format=(8X,A`len`)/APPEND ut1
+
+  let len = strlen(dt1)
+  list/file=temp.txt/nohead/format=(8x,A`len)/APPEND dt1 
+
+  ...
+</pre>
+And, rather than making a string bf1 containing the bad flag, use a
+FORMAT statement to write out the numeric value with the format that
+you want:<br>
+<pre wrap="">
+  ...
+  let bf = `variable, return=bad`
+  list/file=temp.txt/nohead/format=(8x,"BAD FLAG : ", f8.4)/APPEND bf</pre>
+<br>
+Selina Satterfield wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <pre wrap="">Thanks Ansley, 
+
+I will probably have to just do the switch in my C++
+code since I can't use third party tools other than
+ferret. 
+I have successfully re-created all the headers for
+COMMA and TAB formats. Is there any way to align all
+of this information. I tried passing the value for
+STRLEN in to the format command, but it ended up
+cutting off the header.
+
+Here is what my out put looks like:
+         VARIABLE : Average Gradient Deg. C/100 Km
+             DATA SET : SST 100KM GLOBAL
+           FILENAME : MY_Descriptor.des
+             FILEPATH : /HTML/www/product/1
+                        BAD FLAG : 999.9
+               TIME : 16-MAY-2005 00:00 to 17-MAY-2005
+00:00
+ 
+I would like to have the first letter in each line to
+line up like this:
+
+     VARIABLE : Average Gradient Deg. C/100 Km
+     DATA SET : SST 100KM GLOBAL
+     FILENAME : MY_Descriptor.des
+     FILEPATH : /HTML/VisUser/www/product/1
+     BAD FLAG : 999.9
+     TIME : 16-MAY-2005 00:00 to 17-MAY-2005 00:00
+
+list/file=temp.txt/nohead/format=(A50)/APPEND ut1
+list/file=temp.txt/nohead/format=(A40)/APPEND dt1 
+list/file=temp.txt/nohead/format=(A40)/APPEND fn1 
+list/file=temp.txt/nohead/format=(A70)/APPEND fp1
+list/file=temp.txt/nohead/format=(A40)/APPEND bf1
+
+Also is there anyway to set the precision. For example
+I would like BAD FLAG to be set to 999.9000
+
+I tried adding the precision option however it didn't
+change.
+list/PRECISION=8/file=temp.txt/nohead/format=(A40)/APPEND
+bf1
+
+
+Thanks again.
+
+Selina
+--- Ansley Manke <a class="moz-txt-link-rfc2396E" href="">&lt;ansley.b.manke@noaa.gov&gt;</a> wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi Selina,
+Ferret does not have a way to restore the coordinate
+labels that are 
+removed with /NOHEAD.  I wonder if you might want to
+leave the header 
+and use a tool like sed afterwards to edit the time
+label.  A spawn 
+command from Ferret could do this from your script
+so that the editing 
+would always occur when you create the file.
+
+Ansley
+
+Selina Satterfield wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">I don't have the option to change to linux I have
+      </pre>
+    </blockquote>
+    <pre wrap="">to
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">stay with AIX, however, I have found another way to
+enter the information since I am dynamically
+      </pre>
+    </blockquote>
+    <pre wrap="">creating
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">the jnl file from C++ I can obtain the data set
+      </pre>
+    </blockquote>
+    <pre wrap="">title
+&gt;from the database not sure why I didn't think of
+that
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">earlier. 
+
+The only issue that I have left now is being able
+      </pre>
+    </blockquote>
+    <pre wrap="">to
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">display the Coordinate headers that are removed
+      </pre>
+    </blockquote>
+    <pre wrap="">from
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">ASCII files when using LIST/NOHEAD
+
+For example the following X Y and T COORDINATES
+X COORDINATES: degrees_east
+ 134.00      135.00      136.00      137.00     
+138.00    
+ 139.00      140.00      141.00      142.00     
+143.00    
+Y COORDINATES: degrees_north
+-46.000     -45.000     -44.000     -43.000    
+-42.000    
+-41.000     -40.000     -39.000     -38.000    
+-37.000    
+DATA:
+....
+
+I could probably do this with my C++ code as well,
+however if ferret already has a way of doing this I
+would rather use that route.
+
+Again Thank you Jaison, Martin and Ansley for all
+      </pre>
+    </blockquote>
+    <pre wrap="">of
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">your help.
+
+Selina
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam
+      </pre>
+    </blockquote>
+    <pre wrap="">protection around 
+    </pre>
+    <blockquote type="cite">
+      <pre wrap=""><a class="moz-txt-link-freetext" href="">http://mail.yahoo.com</a> 
+ 
+
+      </pre>
+    </blockquote>
+    <pre wrap="">
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+<a class="moz-txt-link-freetext" href="">http://mail.yahoo.com</a> 
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00684" href="msg00684.html">Re: [ferret_users] Title label variable help</a></strong>
+<ul><li><em>From:</em> Selina Satterfield</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00684.html">Re: [ferret_users] Title label variable help</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00690.html">[ferret_users] bathimetry in various data format</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00684.html">Thread Prev</a>][<a href="msg00690.html">Thread Next</a>][<A HREF="threads.html#00685">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

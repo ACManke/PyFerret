@@ -1,0 +1,324 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Comparing Two Curvilinear Variables -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 29 Jun 2004 09:02:00 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0406292133200.19736&#45;200000@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: Pine.LNX.4.58.0406290003130.15581@pircsds0.agron.iastate.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Comparing Two Curvilinear Variables</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00472.html">Thread Prev</a>][<a href="msg00475.html">Thread Next</a>][<A HREF="threads.html#00473">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Comparing Two Curvilinear Variables</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Comparing Two Curvilinear Variables</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 29 Jun 2004 21:37:22 +0530 (IST)</li>
+<li>Cc: Daryl Herzmann &lt;<a href="mailto:akrherz@DOMAIN.HIDDEN">akrherz@xxxxxxxxxxx</a>&gt;, James Orr &lt;<a href="mailto:orr@DOMAIN.HIDDEN">orr@xxxxxxxxxxxxxxxxxx</a>&gt;,  &quot;Thoppil, Prasad IND&quot; &lt;<a href="mailto:prasad@DOMAIN.HIDDEN">prasad@xxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00472.html">Pine.LNX.4.58.0406290003130.15581@pircsds0.agron.iastate.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+      It seems that the transformation of curvilinear data to regular
+grid is of general interst. Earlier Prasad posted a mail about the same
+(<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01271.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01271.html</a>)
+and we made some offline discussions. Infact the answer to this problem
+was there in the Ferret mail archive 
+(<a  href="http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_2003/msg00286.html">http://www.ferret.noaa.gov/Ferret/Mail_Archives/fu_2003/msg00286.html</a>) 
+as a workaround suggested for SAMPLEXY_CURV function by James Orr. 
+James Orr kindly provided me all the details necessary for the 
+transformation of a variable on curvilinear co-ordinates to regular/
+rectilinear co-ordinates. I just made a simple example based on 
+objective_analysis_demo.jnl to describe the method. Fine details are 
+given in the jnl(curv2regular_demo.jnl) file atached. 
+
+Suppose the curvilinear data is of the form (from Prasad's mail)
+
+dimensions:
+         nx = 316 ;
+         ny = 332 ;
+variables:
+         float lon(ny, nx) ;
+                 lon:long_name = &quot;longitude&quot; ;
+                 lon:units = &quot;degrees_east&quot; ;
+         float lat(ny, nx) ;
+                 lat:long_name = &quot;latitude&quot; ;
+                 lat:units = &quot;degrees_north&quot; ;
+         float ice_con(ny, nx) ;
+                 ice_con:units = &quot;%&quot;
+
+ ie. ny*nx lat points,  ny*nx lon points,  ny*nx data(ice_con) points.
+
+The steps involved to get this in regular grid are :
+        
+	1. get 2D data of lat(ny,nx) &amp; lon(ny,nx) to 1D variables
+                   of nx*ny points using xsequence
+        2. define regular/rectilinear axes on which the data
+                   is needed
+        3. Now we have 1D lat (nx*ny points), 1D lon (nx*ny points) 
+                   and 2D(in the above case; only x &amp; y dimesions) 
+                   variable (nx*ny points) ...or we can say  
+                   data in a  &quot;scattered&quot; form. Regrid this data to  
+                   a &quot;regular grid&quot; using SCAT2GRIDGAUSS_XY or SCAT2GRIDLAPLACE_XY  
+                   functions available in ferret.  We need to provide
+                   other necessary arguments like XSCALE/YSCALE/OFFSET
+                   to the function according to the accuracy/need.
+        4. perform nessessary calculations/plotting using the new
+                   variable on regular grid and save the output to 
+                   a netcdf file for future use (if needed).
+
+Daryl almost reached the answer ; the problem was with the 2D array of
+latitude and longitude passed to the SCAT2GRIDGAUSS_XY function.
+
+I would like to thank James Orr for his quick response and detailed 
+reply. Hope James Orr will add his comments especially if I missed 
+something.
+
+With Regards 
+
+Jaison 
+
+
+On Tue, 29 Jun 2004, Daryl Herzmann wrote:
+
+&gt; Hi Ferret!
+&gt; 
+&gt; I am in a dill of a pickle and have been trying to think like a Ferret 
+&gt; without much luck.  Perhaps a kind person could help me out with a 
+&gt; documentation reference I have probably missed :(
+&gt; 
+&gt; I have MM5 model forecasted precip on one curvilinear grid.  The NetCDF 
+&gt; highlights are:
+&gt; 
+&gt;     float rain_non(time, i_cross, j_cross) ;
+&gt;         rain_non:long_name = &quot;ACCUMULATED NONCONVECTIVE PRECIPITATION&quot; ;
+&gt;         rain_non:units = &quot;cm&quot; ;
+&gt;     float latitcrs(i_cross, j_cross) ;
+&gt;         latitcrs:long_name = &quot;LATITUDE (SOUTH NEGATIVE)&quot; ;
+&gt;         latitcrs:units = &quot;degrees&quot; ;
+&gt;     float longicrs(i_cross, j_cross) ;
+&gt;         longicrs:long_name = &quot;LONGITUDE (WEST NEGATIVE)&quot; ;
+&gt;         longicrs:units = &quot;degrees&quot; ;
+&gt; 
+&gt; And I have NCEP stage4 precip data on a different curvilinear grid. Again, 
+&gt; the NetCDF highlights.
+&gt; 
+&gt;     float APCP_SFC(YCells, XCells) ;
+&gt;         APCP_SFC:long_name = &quot;Total precipitation&quot; ;
+&gt;         APCP_SFC:units = &quot;inch&quot; ;
+&gt;     float longitude(YCells, XCells) ;
+&gt;         longitude:long_name = &quot;longitude&quot; ;
+&gt;         longitude:units = &quot;degrees_east&quot; ;
+&gt;     float latitude(YCells, XCells) ;
+&gt;         latitude:long_name = &quot;latitude&quot; ;
+&gt;         latitude:units = &quot;degrees_north&quot; ;
+&gt; 
+&gt; 
+&gt; So, thinking like a Ferret, I would think I need to regrid these two 
+&gt; curvilinear grids onto a common regular lat-lon grid and then proceed with 
+&gt; the comparison between the two.  Unfortunately, I can't figure out how to 
+&gt; do this :(  From the docs, I see this in Chp 8 Sec 8.2
+&gt; 
+&gt; &quot;To perform the analysis in a rectilinear coordinate system, the
+&gt; conversion of the curvilinear data is most easily done with SAMPLEXY_CURV
+&gt; (under development06/00 ).&quot;
+&gt; 
+&gt; I can't seem to find that samplexy_curve was implemented. So I searched 
+&gt; the email archives and found this post which suggests to use scat2grid 
+&gt; functions.
+&gt; 
+&gt; <a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00084.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00084.html</a>
+&gt; 
+&gt; But those functions don't seem to work for me.  The resulting grid is 
+&gt; always &quot;No valid data&quot;.  For example I did:
+&gt; 
+&gt; yes? use APCP_06171200.nc  ! My NCEP data
+&gt; yes? DEFINE AXIS/X=100w:90w:0.5/UNITS=degrees x0
+&gt; yes? DEFINE AXIS/Y=40n:50n:0.5/UNITS=degrees y0
+&gt; yes? show data
+&gt;      currently SET data sets:
+&gt;     1&gt; ./APCP_06171200.nc  (default)
+&gt;  name     title                             I         J         K      L
+&gt;  APCP_SFC Total precipitation              1:1121    1:881     ...    ...
+&gt;  MAPPROJECTION
+&gt;           MapProjection                    ...       ...       ...    ...
+&gt;  LONGITUDE
+&gt;           longitude                        1:1121    1:881     ...    ...
+&gt;  LATITUDE latitude                         1:1121    1:881     ...    ...
+&gt; 
+&gt; yes? LET outg = SCAT2GRIDGAUSS_XY(longitude, latitude, APCP_SFC, x[gx=x0], 
+&gt; y[gy=y0],0.5,0.5,2,2)
+&gt; yes? shade outg
+&gt; 
+&gt; 
+&gt; I am using Ferret 5.53 on Fedora Core 1 and am probably doing something 
+&gt; ignorant :(
+&gt; 
+&gt; thanks,
+&gt;   daryl
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+</pre>
+<pre>\ cancel mode verify
+!
+! curv2regular_demo.jnl
+!
+! 1. get some sample data on curvilinear co-ordinates
+! ---------------------------------------------------
+! like
+!      lat(ni,nj), lon(ni,nj), var(ni,nj,time)
+!           define ni &amp; nj axis ; suppose we need 
+!                                10      lon points
+!                                12      lat points &amp; 
+!                                10      time points
+
+    ! define two &quot;index&quot; axes and a time axis
+  
+	define axis/x=1:10:1 niax
+	define axis/y=1:12:1 njax
+        define axis/t=&quot;01-jan-2003:12&quot;:&quot;10-jan-2003:12&quot;:1/t0=&quot;31-dec-2002:12&quot;/np=10/units=days tax 
+
+    ! get curvilinear lat &amp; lon : curv_*
+
+	let curv_lon = x[gx=niax]   + y[gy=njax]*0
+	let curv_lat = x[gx=niax]*0 + y[gy=njax]
+
+    ! get curvilinear variable : curv_var
+    !    &quot;curv_var&quot; is defined in the same way as given in the 
+    !    objective_analysis_demo.jnl but with 'time' dimension
+
+        let xpts  = x[gx=niax] ; let ypts = y[gy=njax]
+
+        let wave  = sin(kx*xpts + ky*ypts - phase) / 3
+        let phase = 0    ; let  kappa = 0.4
+        let kx    = 0.4  ; let  ky    = 0.7
+
+        let fcn1  = sin(r)/(r+1)
+        let r     = ((xpts-x0)^2+ 5*(ypts-y0)^2)^0.5
+        let x0    = 3   ;  let y0 = 8
+
+        let curv_dummy = fcn1 + wave
+
+    ! to make curv_dummy a 3d variable with time dimension
+    !     like curv_var(ni,nj,time)
+
+        let curv_var = curv_dummy + sin(t[gt=tax])
+
+        fill/l=10/title=&quot;varialbe on curvilinear grid&quot; curv_var
+
+        say ; message &quot;let us do the regridding to regular lat-lon grid&quot;
+        say
+
+! 2. get the 2D lat and lon to 1D ( or to &quot;flatten&quot; lat and lon) : scat_*
+!--------------------------------------------------------------------------
+      
+        let scat_lon  = xsequence(curv_lon)
+        let scat_lat  = xsequence(curv_lat)
+
+! 3. Define a regular grid/axes on which the data is needed
+!------------------------------------------------------------
+
+    ! get the safe minimum and maximum for the regular grids to be defined
+
+        let x_min   = int(scat_lon[i=@min]) ; let x_max = int(scat_lon[i=@max])
+        let y_min   = int(scat_lat[i=@min]) ; let y_max = int(scat_lat[i=@max])
+
+    ! define axes of regular grid : reg_*
+
+        define axis/x=`x_min`:`x_max`:1/units=longitudes reg_lon        
+        define axis/y=`y_min`:`y_max`:1/units=latitudes  reg_lat        
+
+! 4. Do actual &quot;REGRIDDING&quot; : for details refer Ch3 Sec2.3.35. SCAT2GRIDGAUSS_XY
+!                                 (SCAT2GRIDLAPLACE_XY also can be used)
+!---------------------------------------------------------------------------------
+
+    ! define arguments for scat2gridgauss_xy 
+
+        define symbol scale  = 0.5
+        define symbol cutoff = 2        
+
+        let reg_var = scat2gridgauss_xy(scat_lon,scat_lat,curv_var,x[gx=reg_lon],y[gy=reg_lat],($scale),($scale),($cutoff),($cutoff))
+
+! 5. Do calculations / plotting or save to a netcdf file
+!--------------------------------------------------------
+
+        set var/title=&quot;Variable on regular grid&quot;/units=&quot;myunits&quot; reg_var
+        fill/l=10 reg_var
+ 
+       !save/file=reg_var.nc/append reg_var 
+
+! end of curv2regular_demo.jnl
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00472" href="msg00472.html">Comparing Two Curvilinear Variables</a></strong>
+<ul><li><em>From:</em> Daryl Herzmann</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00472.html">Comparing Two Curvilinear Variables</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00475.html">Re: Comparing Two Curvilinear Variables</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00472.html">Thread Prev</a>][<a href="msg00475.html">Thread Next</a>][<A HREF="threads.html#00473">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

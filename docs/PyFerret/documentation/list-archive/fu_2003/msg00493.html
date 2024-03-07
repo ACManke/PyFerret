@@ -1,0 +1,191 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: ASCII data plot -->
+<!--X-From-R13: Oevaqnz Qunxenobegl <nepuNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 8 Jul 2003 09:58:13 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.21.0307082221360.8216&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3F0AEDBF.6030305@rsmas.miami.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: ASCII data plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00492.html">Thread Prev</a>][<a href="msg00489.html">Thread Next</a>][<A HREF="threads.html#00493">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: ASCII data plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Rolando S. Balotro&quot; &lt;<a href="mailto:rbalotro@DOMAIN.HIDDEN">rbalotro@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: ASCII data plot</strong></li>
+<li><strong>From</strong>: <strong>Arindam Chakraborty &lt;<a href="mailto:arch@DOMAIN.HIDDEN">arch@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 08 Jul 2003 22:32:30 +0530 (IST)</li>
+<li>Cc: ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00491.html">3F0AEDBF.6030305@rsmas.miami.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>hello Rolando,
+	Probably you are missing the trick at
+/var=&quot;taox,taoy&quot;
+which reads alternative data points into taox and taoy. But your taox
+and taoy are separate blocks of data and the suggestion to read this
+kind of data is given at:
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/</a>
+current/fer_html.htm
+
+under section Ch2 Sec6. TRICKS TO READING BINARY AND ASCII FILES.
+
+
+Basically what you need to do, make soft link to your original data
+file to two files (under unix environment):
+ln -s var.dat varx.dat
+ln -s var.dat vary.dat
+
+and replace the reading line to these two lines:
+file/var=taox/Columns=6/grid=mygrid varx.dat
+file/var=taoy/skip=5/Columns=6/grid=mygrid vary.dat
+
+/skip=n qualifier will skip n lines from the top in that
+file. Your taoy starts after 5 lines in that file and so n is 5 in
+that line.
+
+Hope this helps,
+
+arindam
+------------------------------------------
+ ARINDAM CHAKRABORTY
+ Centre for Atmospheric &amp; Oceanic Sciences
+ Indian Institute of Science
+ Bangalore 560 012; INDIA
+ Tel: +91-80-2932505, +91-80-3600450
+ Fax: +91-80-3600865
+__________________________________________
+
+On Tue, 8 Jul 2003, Rolando S. Balotro wrote:
+
+&gt; Hello All
+&gt; 
+&gt; I would like to read grid file of two variables (taox, taoy) in order to 
+&gt; plot a vector field. But somehow when I list the values they are not 
+&gt; consistent with my field.
+&gt; 
+&gt; file/var=alon lon1.dat
+&gt; file/var=alat lat1.dat
+&gt; 
+&gt; define axis/from_data/x/name=mlon/units=deg alon[d=1]
+&gt; define axis/from_data/y/name=mlat/units=deg alat[d=2]
+&gt; define axis/t=1:1:1 mtime
+&gt; define grid/x=mlon/y=mlat/t=mtime mygrid
+&gt; 
+&gt; cancel data/all
+&gt; file/var=&quot;taox,taoy&quot;/Columns=6/grid=mygrid var.dat
+&gt; save/clobber/file=var.cdf taox, taoy
+&gt; 
+&gt; 
+&gt; Here is the data set
+&gt; 1 2 3.5 6 2 1
+&gt; 2 7.1 9 3 2 2
+&gt; 4 0 1 9 2 1
+&gt; 1.5 2.5 3 3 6 9
+&gt; 
+&gt; 1 2 3.5 6 2 1
+&gt; 2 7.1 9 3 2 2
+&gt; 4 0 1 9 2 1
+&gt; 1.5 2.5 3 3 6 9
+&gt; 
+&gt; Here is my erroneous listing
+&gt; 
+&gt; yes? list taox
+&gt;               VARIABLE : TAOX
+&gt;               FILENAME : var.dat
+&gt;               SUBSET   : 6 by 4 points (LONGITUDE-LATITUDE)
+&gt;               T        : 1
+&gt;                90W    89.5W  89W    88.5W  88W    87.5W
+&gt;                  1      2      3      4      5      6
+&gt;   19.5N  / 4:  4.000  1.000  2.000  1.500  3.000  6.000
+&gt;   19N    / 3:  1.000  3.500  2.000  2.000  9.000  2.000
+&gt;   18.5N  / 2:  4.000  1.000  2.000  1.500  3.000  6.000
+&gt;   18N    / 1:  1.000  3.500  2.000  2.000  9.000  2.000
+&gt; 
+&gt; yes? list taoy
+&gt;               VARIABLE : TAOY
+&gt;               FILENAME : var.dat
+&gt;               SUBSET   : 6 by 4 points (LONGITUDE-LATITUDE)
+&gt;               T        : 1
+&gt;                90W    89.5W  89W    88.5W  88W    87.5W
+&gt;                  1      2      3      4      5      6
+&gt;   19.5N  / 4:  0.000  9.000  1.000  2.500  3.000  9.000
+&gt;   19N    / 3:  2.000  6.000  1.000  7.100  3.000  2.000
+&gt;   18.5N  / 2:  0.000  9.000  1.000  2.500  3.000  9.000
+&gt;   18N    / 1:  2.000  6.000  1.000  7.100  3.000  2.000
+&gt; 
+&gt; 
+&gt; The grid points are consistent but the data are not. I cant figure out
+&gt; the source of error.
+&gt; 
+&gt; Thanks in advance
+&gt; 
+&gt; roland
+&gt; 
+&gt; 
+&gt; 
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00491" href="msg00491.html">Re: ASCII data plot</a></strong>
+<ul><li><em>From:</em> Rolando S. Balotro</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00492.html">Re: ASCII data plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00489.html">Installing question</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00492.html">Thread Prev</a>][<a href="msg00489.html">Thread Next</a>][<A HREF="threads.html#00493">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

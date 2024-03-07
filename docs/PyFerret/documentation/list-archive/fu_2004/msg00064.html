@@ -1,0 +1,173 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: MC descriptor file for unevenly spaced time in netCDF files -->
+<!--X-From-R13: Svane =?WEA&#45;8859&#45;1?C?=R6ea_=R3ynfba?= <rbbNirqhe.vf> -->
+<!--X-Date: Thu, 29 Jan 2004 08:43:30 &#45;0800 -->
+<!--X-Message-Id: 1075394609.11443.134.camel@streymi -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>MC descriptor file for unevenly spaced time in netCDF files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00056.html">Thread Prev</a>][<a href="msg00068.html">Thread Next</a>][<A HREF="threads.html#00064">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>MC descriptor file for unevenly spaced time in netCDF files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>MC descriptor file for unevenly spaced time in netCDF files</strong></li>
+<li><strong>From</strong>: <strong>Einar Örn Ólason &lt;<a href="mailto:eoo@DOMAIN.HIDDEN">eoo@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 29 Jan 2004 16:43:29 +0000</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi list,
+
+I would like to make an MC descriptor file for some model outputs I
+have, but the data is unevenly spaced in time, i.e. I have data for the
+first day of every month, and the length of each month differs. Is it at
+all possible to create an MC file that would do that?
+
+I tried:
+
+&amp;FORMAT_RECORD
+       D_TYPE        = '  MC',
+       D_FORMAT      = '  1A',
+     /
+ &amp;BACKGROUND_RECORD
+       D_TITLE       = 'MOM model output forced by ERA40 data',
+       D_T0TIME      = '01-JAN-0001 00:00:00',
+       D_TIME_UNIT   = 86400.0,
+       D_CALTYPE     = 'NOLEAP',
+       D_TIME_MODULO = .FALSE.,
+ /
+ &amp;MESSAGE_RECORD
+       D_MESSAGE     = ' ',
+       D_ALERT_ON_OPEN      = F,
+       D_ALERT_ON_OUTPUT    = F,
+ /
+ &amp;EXTRA_RECORD
+ /
+ 
+  
+&amp;STEPFILE_RECORD
+       s_filename    = 'mixtest_.000003.01.01.pe.12.nc',
+       S_AUX_SET_NUM = 0,
+       S_START       = 31.0,
+       S_END  = 730.0
+       S_DELTA       = 30.39130435,
+       S_NUM_OF_FILES       = 1,
+       S_REGVARFLAG  = ' ',
+ /
+ 
+  
+&amp;STEPFILE_RECORD
+       s_filename    = 'mixtest_.000005.01.01.pe.12.nc',
+       S_AUX_SET_NUM = 0,
+       S_START       = 761.0,
+       S_END  = 1460.0
+       S_DELTA       = 30.39130435,
+       S_NUM_OF_FILES       = 1,
+       S_REGVARFLAG  = ' ',
+ /  
+ 
+ 
+&amp;STEPFILE_RECORD
+       s_filename    = '**END OF STEPFILES**'
+ 
+/
+
+?
+
+Since listing the t-grid gives (for the second file only)
+
+yes? list t[gt=u[d=mixtest_.000005.01.01.pe.12.nc]]
+             VARIABLE : T
+                        axis TIME3
+             SUBSET   : 24 points (TIME)
+             CALENDAR : NOLEAP
+ 01-FEB-0003 00 /  1:   761.
+ 01-MAR-0003 00 /  2:   789.
+ 01-APR-0003 00 /  3:   820.
+ 01-MAY-0003 00 /  4:   850.
+ 01-JUN-0003 00 /  5:   881.
+ 01-JUL-0003 00 /  6:   911.
+ 01-AUG-0003 00 /  7:   942.
+ 01-SEP-0003 00 /  8:   973.
+ 01-OCT-0003 00 /  9:  1003.
+ 01-NOV-0003 00 / 10:  1034.
+ 01-DEC-0003 00 / 11:  1064.
+ 01-JAN-0004 00 / 12:  1095.
+ 01-FEB-0004 00 / 13:  1126.
+ 01-MAR-0004 00 / 14:  1154.
+ 01-APR-0004 00 / 15:  1185.
+ 01-MAY-0004 00 / 16:  1215.
+ 01-JUN-0004 00 / 17:  1246.
+ 01-JUL-0004 00 / 18:  1276.
+ 01-AUG-0004 00 / 19:  1307.
+ 01-SEP-0004 00 / 20:  1338.
+ 01-OCT-0004 00 / 21:  1368.
+ 01-NOV-0004 00 / 22:  1399.
+ 01-DEC-0004 00 / 23:  1429.
+ 01-JAN-0005 00 / 24:  1460.
+
+and I therefor put S_DELTA  = (1460-761)/23.
+
+However, when I try to use the descriptor file I get a wrong range for l
+or l=1:46 but the files I'm concatinating have l=1:24 each! It turns out
+that it's the last record in each file that's lost. Any thoughts?
+
+	Einar
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00056.html">White band at edge of domain</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00068.html">dods problem on RH7.1</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00056.html">Thread Prev</a>][<a href="msg00068.html">Thread Next</a>][<A HREF="threads.html#00064">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: PLOT command ambiguous coordinates on T axis -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Fri, 31 Jan 2003 13:28:07 &#45;0800 (PST) -->
+<!--X-Message-Id: 3E3AEA97.3CD1C497@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.SOL.3.91.1030130114051.21634A@achnatherum -->
+<!--X-Reference: 3E39856E.52A0306F@pmel.noaa.gov -->
+<!--X-Reference: 3E399690.2E742FEF@nrel.colostate.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: PLOT command ambiguous coordinates on T axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00098.html">Thread Prev</a>][<a href="msg00094.html">Thread Next</a>][<A HREF="threads.html#00102">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: PLOT command ambiguous coordinates on T axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Knox &lt;<a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: PLOT command ambiguous coordinates on T axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 31 Jan 2003 13:28:55 -0800</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00092.html">Pine.SOL.3.91.1030130114051.21634A@achnatherum</a>&gt;&lt;<a href="msg00096.html">3E39856E.52A0306F@pmel.noaa.gov</a>&gt; &lt;<a href="msg00098.html">3E399690.2E742FEF@nrel.colostate.edu</a>&gt;</li>
+<li>Reply-to: <a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Steve,
+Yes, you could set up a time axis and put each variable on it
+(or regrid one variable to the grid of the other) explicitly before
+doing the subtraction.
+
+And the reason you get a missing-value result when you do
+an @AVE with a zero range is that the computation is to add
+up the data in each cell that's included in the range, weighted
+by how much of the cell was in the range, and divide by the
+length specified by the range.  In your example, the range is zero.
+Now, for the 1-dimensional @ave, Ferret detects that you're just
+specifying one point and gives you the value at that point.  But
+that logic is not in the multi-dimensional @AVE computation,
+which requires a positive length in all directions in order to return
+a value.
+
+Ansley
+
+&gt; Thanks for your reply. To avoid this informative message should I be setting up the time axis before ferret tries to
+&gt; reconcile
+&gt; the grids?
+&gt; Also, shouldn't the following statements generate the same results?
+&gt; yes? list/l=1 tmax[d=1,y=40.25,x=-105.75]
+&gt;              VARIABLE : TMAX (degrees C)
+&gt;              FILENAME : ncepM1979.cdf
+&gt;              LONGITUDE: 105W(-105)
+&gt;              LATITUDE : 41N
+&gt;              TIME     : 31-JAN-1979 10:29
+&gt;          -6.784
+&gt; If the lower lat = upper lat I get this:
+&gt; yes? list/l=1 tmax[d=1,y=40.25:40.25@ave,x=-105.75:-105.75@ave]
+&gt;              VARIABLE : TMAX (degrees C)
+&gt;              FILENAME : ncepM1979.cdf
+&gt;              LONGITUDE: 105W(-105) (XY ave)
+&gt;              LATITUDE : 41N (XY ave)
+&gt;              TIME     : 31-JAN-1979 10:29
+&gt;         .... (should be -6.784)
+&gt; If I leave off the ave transformation on the latitude it computes the ave correctly:
+&gt; yes? list/l=1 tmax[d=1,y=40.25,x=-105.75:-105.75@ave]
+&gt;              VARIABLE : TMAX (degrees C)
+&gt;              FILENAME : ncepM1979.cdf
+&gt;              LONGITUDE: 105W(-105) (averaged)
+&gt;              LATITUDE : 41N
+&gt;              TIME     : 31-JAN-1979 10:29
+&gt;          -6.784
+&gt;
+&gt; Steve
+
+Steve Knox wrote:
+
+&gt; Ansley Manke wrote:
+&gt;
+&gt; &gt; Hi Steve,
+&gt; &gt; It's not an error, but an informational message, generated when
+&gt; &gt; Ferret reconciles the grids from the two variables to see if the
+&gt; &gt; variables can be compared.  Once this has been done successfully,
+&gt; &gt; Ferret keeps track of the information about how the grids were
+&gt; &gt; &quot;merged&quot;, and so the message isn't issued on the subsequent commands
+&gt; &gt; that use the same grids.
+&gt; &gt;
+&gt; &gt; Ansley Manke
+&gt; &gt;
+&gt; &gt; Steve Knox wrote:
+&gt; &gt;
+&gt; &gt; &gt; Why do I get the error on the first plot command but not when I simply
+&gt; &gt; &gt; repeat the command?
+&gt; &gt; &gt; Any insights would be greatly appreciated.
+&gt; &gt; &gt;
+&gt; &gt; &gt; ferret -gif
+&gt; &gt; &gt;         NOAA/PMEL TMAP
+&gt; &gt; &gt;         FERRET v5.50 (64bit CDF-No DODS)
+&gt; &gt; &gt;         Solaris 5.8 - 01/23/03
+&gt; &gt; &gt;         30-Jan-03 11:38
+&gt; &gt; &gt;
+&gt; &gt; &gt; yes? use ncepM1979
+&gt; &gt; &gt; yes? use ncepM1980
+&gt; &gt; &gt; yes? plot/l=1:12 tmax[D=1,y=30:40@ave,x=-120:-60@ave]-tmax[d=2,y=30:40@ave,x=-120:-60@ave]
+&gt; &gt; &gt;  *** NOTE: Ambiguous coordinates on T axis: TMAX[D=1,Y=30:40@AVE,X=-120:-60@AVE]-TMAX[D=2Y=30:40@AVE,X=-120:-60@AVE]
+&gt; &gt; &gt; yes? plot/l=1:12 tmax[D=1,y=30:40@ave,x=-120:-60@ave]-tmax[d=2,y=30:40@ave,x=-120:-60@ave]
+&gt; &gt; &gt; yes? frame/file=d.gif
+&gt; &gt; &gt;
+&gt; &gt; &gt; The generated gif is ok.
+&gt; &gt; &gt;
+&gt; &gt; &gt; Steve Knox
+&gt; &gt; &gt; NREL
+&gt; &gt; &gt; Colorado State University
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+&gt;
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00092" href="msg00092.html">PLOT command ambiguous coordinates on T axis</a></strong>
+<ul><li><em>From:</em> Steve Knox</li></ul></li>
+<li><strong><a name="00096" href="msg00096.html">Re: PLOT command ambiguous coordinates on T axis</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00098" href="msg00098.html">Re: PLOT command ambiguous coordinates on T axis</a></strong>
+<ul><li><em>From:</em> Steve Knox</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00098.html">Re: PLOT command ambiguous coordinates on T axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00094.html">Defining T axis from data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00098.html">Thread Prev</a>][<a href="msg00094.html">Thread Next</a>][<A HREF="threads.html#00102">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

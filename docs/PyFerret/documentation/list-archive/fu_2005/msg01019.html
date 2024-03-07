@@ -1,0 +1,176 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] [ferret] pallette question -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 18 Nov 2005 11:00:42 &#45;0800 -->
+<!--X-Message-Id: 437E24D9.60200@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.SOL.4.44.0511180846460.20855&#45;100000@ekman.atmos.washington.edu -->
+<!--X-Reference: 069A96A2&#45;FC6F&#45;49C5&#45;8181&#45;000F37AF9532@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] [ferret] pallette question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01018.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#01019">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] [ferret] pallette question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>James Booth &lt;<a href="mailto:jbooth@DOMAIN.HIDDEN">jbooth@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] [ferret] pallette question</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Nov 2005 11:00:41 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg01018.html">069A96A2-FC6F-49C5-8181-000F37AF9532@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg01017.html">Pine.SOL.4.44.0511180846460.20855-100000@ekman.atmos.washington.edu</a>&gt; &lt;<a href="msg01018.html">069A96A2-FC6F-49C5-8181-000F37AF9532@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi -<br>
+To add to Billy's answer, at least one of the palettes included with 
+Ferret have white as the central color, If you set your contour or shade 
+levels so they're centered at 0 you'll get white where the variaible is 
+0. Look for the palette called white_centered in the FAQ, 
+<a  href="http://www.ferret.noaa.gov/Ferret/FAQ/graphics/colorpalettes.html">http://www.ferret.noaa.gov/Ferret/FAQ/graphics/colorpalettes.html</a><br>
+<br>
+Also, just to be a bit picky in what Billy says in replacing the value 0 
+with a blank value, if the missing-value flag in your data is not the 
+Ferret default value of 1.e-34, you could do this to make the variable 
+take on the missing value of variable &quot;vname&quot; at locations where vname is 0.<br>
+<br>
+ let vname_whitezero = if vname eq 0 then `vname,return=bad` else vname<br>
+ shade/pal=any_palette vname_whitezero<br>
+<br>
+<br>
+Ansley<br>
+<br>
+William S. Kessler wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">It's not exactly clear what you mean by this.<br>
+<br>
+1. For variables that have both positive and negative values (like a  
+field of anomalies), you might want to color positive values red,  
+negative values blue, and near-zero values white (or peraps light  
+gray). In that case use a palette something like:<br>
+<br>
+0     0  100  100<br>
+20   20   20  100<br>
+45  100  100  100<br>
+55  100  100  100<br>
+80  100   20   20<br>
+100 100  100    0<br>
+<br>
+An alternative is to lightly shade the near-zero values light gray,  
+which would distinguish them from missing values:<br>
+<br>
+ 0   20   20  100<br>
+49   85   85   85<br>
+51   85   85   85<br>
+100 100   20   20<br>
+<br>
+2. To formally force values of exactly zero to be blank  
+(i.e.unplotted and thus leaving them the color of the plot  
+background, no matter what palette is chosen or what the range of  
+values is):<br>
+<br>
+let vname_whitezero = if vname eq 0 then (-1.e34) else vname<br>
+shade/pal=any_palette vname_whitezero<br>
+<br>
+or maybe leave near-zero values white:<br>
+<br>
+let vname_whitenearzero = if abs(vname) lt 100 then (-1.e34) else vname<br>
+shade/pal=any_palette vname_whitenearzero<br>
+<br>
+Billy K<br>
+<br>
+On Nov 18, 2005, at 8:52 AM, James Booth wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>
+Is there a way to force the areas that
+have value zero to be colored in with white,
+when using the fill or shade command,
+regardless of the pallette I choose.
+
+Thanks.
+
+(I am using: FERRET v5.51)
+
+
+*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*
+Jimmy Booth
+Atmospheric Oceanography
+Graduate Student
+UW, JISAO, Seattle, WA
+
+
+</pre>
+</blockquote><pre>
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/~kessler">http://www.pmel.noaa.gov/~kessler</a>
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01017" href="msg01017.html">[ferret_users] [ferret] pallette question</a></strong>
+<ul><li><em>From:</em> James Booth</li></ul></li>
+<li><strong><a name="01018" href="msg01018.html">Re: [ferret_users] [ferret] pallette question</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01018.html">Re: [ferret_users] [ferret] pallette question</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01018.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#01019">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

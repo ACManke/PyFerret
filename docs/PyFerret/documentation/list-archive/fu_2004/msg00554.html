@@ -1,0 +1,210 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Fwd: ferret question -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 11 Aug 2004 10:48:12 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0408112324570.27110&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1B60F2BD&#45;EB1C&#45;11D8&#45;A29E&#45;000A95CEDEE4@ucar.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Fwd: ferret question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00551.html">Thread Prev</a>][<a href="msg00557.html">Thread Next</a>][<A HREF="threads.html#00554">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Fwd: ferret question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Fwd: ferret question</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 11 Aug 2004 23:33:25 +0530 (IST)</li>
+<li>Cc: Gary Strand &lt;<a href="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00551.html">1B60F2BD-EB1C-11D8-A29E-000A95CEDEE4@ucar.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Gary Strand,
+                In Ferret we can define an &quot;array&quot; with let command. But 
+we can't assign values to successive array locations &quot;directly&quot; (as often
+we do in Fortran) by let command. In this kind of situations I used to 
+write the values calculated inside the repeat loop to an ascii/netCDF 
+file (if it is a temporary variable then ascii file or if I need that 
+variable for later use then netCDF file) and then read it back 
+for further calculations/plotting.
+
+!Let us make a dummy variable with x,y &amp; z dimensions 
+!----------------------------------------------------
+
+   define axis/y=11:15:1/units=latitudes    ylat
+   define axis/x=-75:-5:5/units=longitudes  xlon
+   define axis/z=1:10:1/units=&quot;levels&quot;      zlev  ! only 10 levels
+
+   let vel = sin(x[gx=xlon]+y[gy=ylat]+z[gz=zlev])
+
+!use set reg/ instead of specifying x &amp; y explicitly
+!--------------------------------------------------------
+
+   set reg/y=11n/x=-65:-10
+   set list/precision=7    ! set to required precision
+   
+! 1. Ascci file method
+!-----------------
+
+   repeat/k=1:10 ( let trpall=vel[x=@din]/10e6 ; list/nohead/file=trpall.dat/append trpall)
+   ! note that k=1@din doesn't makes sense &amp; inside a repeat loop with 
+   !   &quot;k&quot; index, at each time the calculations will be done for the 
+   !   respective &quot;k&quot; level.
+
+   ! read it back
+   cancel variable trpall ! since we are reading an already defined variable
+                          !    from a new file
+   define axis/y=11:11:1/units=latitudes y11  !  proper grids to 
+   define grid/y=y11/z=vel grd                !    read trpall
+
+   file/grid=grd/var=&quot;trpall&quot; trpall.dat
+   list trpall
+   ! after all plotting/calculation remove the trpall.dat file 
+   sp  rm -f trpall.dat
+
+! 2. netCDF file method
+!----------------------
+! we can open a netcdf file for wrting in successive steps as follows:   
+!    Our transport variable will have levels(depth) and latitude infor-
+!    mation. Hence we will create a new netCDF file with /JLIMITS and 
+!    /KLIMITS qualifiers at the first step. For successive steps we will
+!    append the data with spefying the respective J &amp; K positions.
+! If you have any problems with appending to a netcdf file in this way
+! please refer this mail in the archive
+! <a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00282.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00282.html</a>
+
+   let trpall    = vel[x=@din,k=1]/10e6 
+   set var/title=&quot;Transport over 65W-10W&quot;/units=&quot;sv&quot; trpall 
+   SAVE/file=trpall.nc/JLIMITS=1:1/KLIMITS=1:10/J=1/k=1/CLOBBER trpall
+
+   repeat/k=2:10 ( let trpall=vel[x=@din]/10e6 ; save/file=junk.nc/J=1/K=`k`/APPEND trpall)
+
+   ! read it back
+   cancel var trpall  ! since we are reading an already declared variable
+                      !    from a new file
+   set data trpall.nc
+   list trpall
+
+   ! after all plotting/calculation remove the trpall.dat file 
+   sp rm -f trpall.nc
+
+
+Hope This Helps
+
+With Regards
+
+Jaison 
+
+
+
+On Tue, 10 Aug 2004, Gary Strand wrote:
+
+&gt;  From a colleague:
+&gt; &gt; I calculate the oceanic volume transport by layer along a zonal section
+&gt; &gt; in the Equatorial Atlantic.
+&gt; &gt;
+&gt; &gt; For example, at a zonal section on 11N, I made:
+&gt; &gt;
+&gt; &gt; let tranp1=vvel[y=11n,x=-65:-10@din,k=1@din]/10e6 - I have the 
+&gt; &gt; transport
+&gt; &gt; (sv) at the first layer.
+&gt; &gt; let tranp2=vvel[y=11n,x=-65:-10@din,k=2@din]/10e6 - at the second 
+&gt; &gt; layer.
+&gt; &gt;
+&gt; &gt; I try to create a repeat command to do this for all the 22 layers:
+&gt; &gt;
+&gt; &gt; rep/k=1:22:1 (let tranpall=vvel[y=11n,x=-65:-10@din,k=`k`@din]/10e6)
+&gt; &gt;
+&gt; &gt; But every variable &quot;transpall&quot; record only the last value o K and not
+&gt; &gt; the 22 layers.
+&gt; &gt; You have any idea how can I put all the transport values in the same
+&gt; &gt; variable??
+&gt; 
+&gt; I've forgotten how to do this. TIA!
+&gt; 
+&gt; Gary Strand
+&gt; strandwg@ucar.edu
+&gt; <a  href="http://www.cgd.ucar.edu/ccr/strandwg">http://www.cgd.ucar.edu/ccr/strandwg</a>
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00557" href="msg00557.html">Re: Fwd: ferret question</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00551" href="msg00551.html">Fwd: ferret question</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00551.html">Fwd: ferret question</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00557.html">Re: Fwd: ferret question</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00551.html">Thread Prev</a>][<a href="msg00557.html">Thread Next</a>][<A HREF="threads.html#00554">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

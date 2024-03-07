@@ -1,0 +1,254 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: time_counter as axis -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 1 Sep 2004 05:14:27 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409011757160.10465&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1094003603.2304.1992.camel@localhost.localdomain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: time_counter as axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00597.html">Thread Prev</a>][<a href="msg00599.html">Thread Next</a>][<A HREF="threads.html#00598">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: time_counter as axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: time_counter as axis</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 1 Sep 2004 18:03:07 +0530 (IST)</li>
+<li>Cc: &quot;Arthur M. Greene&quot; &lt;<a href="mailto:amg13@DOMAIN.HIDDEN">amg13@xxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00597.html">1094003603.2304.1992.camel@localhost.localdomain</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Greene,
+           
+             These are the necessary steps to find a climatology for your 
+data set.
+
+    1. To find climatology we need the variable in actual calendar 
+          &quot;time axis&quot; instead of the index axis. So we need to &quot;impose&quot;
+          a calendar time axis to the variable.
+       If you know the exact years over which the data is collected then
+          use it or use arbitary years to define the calendar time axis.
+
+    2. Define a monthly climatological axis and regrid the variable on 
+          calendar time grid to this climatological axes via &quot;MODULO&quot;
+          regridding.
+
+Your questions....
+
+     (a) how to produce such a delimited-interval climatology ?
+   
+  From ferret user manual, Ch4 Sec2.5. Modulo regridding
+
+   &quot;To generate a climatology based on a restricted range of input data 
+   simply define an intermediate variable with the desired points&quot;.
+   ....then use this intermediate variable to find the climatology (see
+   the example below).
+
+    (b) what was the problem with my formulation ?
+
+     let vclim = v[GT=month_reg@asn]   this should be like
+
+     let vclim = v[GT=month_reg@MOD]   provided &quot;v&quot; is on &quot;actual&quot; time
+                                        axis
+
+ @ASN regridding associates by subscript (blindly) the points from the 
+ source grid onto destination coordinates (see the example below where
+ @ASN is used to impose the calendat time axis intead of the abstract
+ one). 
+ @MOD regriddging computes climatology/mean by averaging the full time 
+ domain of the input variable in a &quot;modulo fashion&quot; into the time points
+ of the climatological axis. 
+   
+     let v1 = v[T=13:60]
+     let v1clim = v1[GT=month_reg@asn]
+     plot v1clim
+
+  Try listing &quot;list/l=1:10 v1&quot; ...you will get all the 48 values from 
+  v[T=13] to v[T=60] instead of v[T=13] to v[T=24]...why ? v1 is defined
+  as data &quot;segment&quot; with no identity to individual entries in the segment.
+  You are making an attempt to &quot;assign&quot; a 12 point grid (month_reg) to a 
+  sata segment with 48 values. That is why you are getting blank plot and
+  empty values.
+
+  So the preferred way to define v1 is 
+
+    let v1 = TSEQUENCE(v[T=13:60]) (see example below)
+
+  TSEQUENCE unravels the data from the argument into a 1-dimensional line
+  of data on &quot;ABSTRACT&quot; axis L.
+ 
+  Again you should use &quot;@mod&quot; instead of &quot;@asn&quot;.
+
+
+  Please go thorugh the example below. If anything remains not explained
+  please let me know.
+
+  Hope this hleps 
+
+  With Regards 
+
+  Jaison
+
+! --------------example.jnl--------------------------------
+
+! get some dummy data
+
+      define axis/t=1:60:1 tabs
+      let v   = 30 - ( sin(t[gt=tabs]) ) + RANDU(t[gt=tabs])
+      set var/title=&quot;Some variable&quot;/units=&quot;something&quot; v
+
+! Suppose your data is from 16-JAN-1995 to 16-DEC-1999 (60 points).
+! You want to calculate a climatology from ..say last 3 year's of data
+! ( from JAN-1997 to DEC-1999). Then..
+
+   ! extract last three years data ie. abstract index L=25:60
+
+   let v_3to5yr = TSEQUENCE(v[L=25:60])
+
+   ! define monthly time axis from JAN-1997 to DEC-1999 &amp; assign it
+   !     T=0:`365.2425*3`/NPOINTS=36/UNITS=DAYS together will make it for 
+   !      3 years and  T0 will take care of actual year stamp.
+
+      define axis/T=0:`365.2425*3`/NPOINTS=36/EDGES/units=days/\
+                  T0=&quot;01-JAN-1997:00:00&quot; t3to5yr
+
+      let v_3to5yr_t = v_3to5yr[gt=t3to5yr@asn] 
+
+   ! Define a monthly climatological axis 
+   
+      define axis/T=0:365.2425/EDGES/NPOINTS=12/T0=1-JAN-0001/\
+                     UNITS=DAYS/MODULO tclim
+
+   ! Find monthly climatology by &quot;MODULO&quot; regridding
+
+      let v_clim_12mon = v_3to5yr_t[GT=tclim@MOD]
+      plot v_clim_12mon     
+
+! If you want to find anomaly or want to plot the climatology
+!   over the data then please refer :
+!   <a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01470.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01470.html</a>
+
+!---------------------- end of example.jnl-------------
+
+
+On Tue, 31 Aug 2004, Arthur M. Greene wrote:
+
+&gt; Hello Ferreters...
+&gt; 
+&gt; I have 5 years of monthly data at a single gridpoint, with the time axis
+&gt; specified by a simple index: 1,2,3,4,5... 60, rather than by specific
+&gt; dates. According to the &quot;show axis&quot; command, this is a &quot;time_counter,&quot;
+&gt; and ferret shows &quot;# pts&quot; as &quot;60 r,&quot; beginning at 1 and ending at 60. I
+&gt; would like to display a monthly climatology, but only for the last four
+&gt; (or possibly three) years. 
+&gt; 
+&gt; Let's call the variable in question v. Then, when I do
+&gt; 
+&gt; let vclim = v[GT=month_reg@asn]
+&gt; plot vclim
+&gt; 
+&gt; I get a nice climatological plot, with Jan Feb Mar... along the x-axis
+&gt; (these happen to be the correct months, even though I haven't told
+&gt; ferret how to map the time index to the calendar.)
+&gt; 
+&gt; However, if I pick off the last four years,
+&gt; 
+&gt; let v1 = v[T=13:60]
+&gt; let v1clim = v1[GT=month_reg@asn]
+&gt; plot v1clim
+&gt; 
+&gt; the resulting plot is blank; a listing shows empty values.
+&gt; 
+&gt; I have read a lot of the grid and axis parts of the docs, but I'm afraid
+&gt; it is still not clear to me (a) how to produce such a delimited-interval
+&gt; climatology, and (b) what the problem actually is with the formulation
+&gt; as given above.
+&gt; 
+&gt; Comments appreciated, and thanks!
+&gt; 
+&gt; A. Greene
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00599" href="msg00599.html">Re: time_counter as axis</a></strong>
+<ul><li><em>From:</em> Arthur M. Greene</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00597" href="msg00597.html">time_counter as axis</a></strong>
+<ul><li><em>From:</em> Arthur M. Greene</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00597.html">time_counter as axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00599.html">Re: time_counter as axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00597.html">Thread Prev</a>][<a href="msg00599.html">Thread Next</a>][<A HREF="threads.html#00598">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

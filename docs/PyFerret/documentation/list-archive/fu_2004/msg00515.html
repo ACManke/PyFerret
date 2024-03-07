@@ -1,0 +1,211 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Latitude axis read from a ASCII file -->
+<!--X-From-R13: Szvyvr Hnailir <inailirNnfge.hpy.np.or> -->
+<!--X-Date: Mon, 19 Jul 2004 08:06:34 &#45;0700 -->
+<!--X-Message-Id: 5CFC7D40&#45;D995&#45;11D8&#45;8DDE&#45;000A95A51444@astr.ucl.ac.be -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Latitude axis read from a ASCII file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00511.html">Thread Prev</a>][<a href="msg00516.html">Thread Next</a>][<A HREF="threads.html#00515">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Latitude axis read from a ASCII file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Latitude axis read from a ASCII file</strong></li>
+<li><strong>From</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 Jul 2004 17:07:34 +0200</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Dear Ferret users,<br>
+<br>
+I need some help to understand and solve the problem explained hereafter... The point is that Ferret always reads upside down my latitude axis. North Pole becomes South Pole, and South Pole North one.<br>
+<br>
+I read an ASCII file (GPCC-pre-199309.dat) containing 3 columns of data (longitude, latitude, precipitation) :<br>
+<br>
+<TT><FONT color="0000,0000,0000">Data         : GPCC 1.0 degree | mean precipitation<br>
+Period       : September  1993<br>
+Area         : global (-180./+180.) (Lon: -180.00 &lt;->  180.00  Lat:  -90.00 &lt;->   90.00)<br>
+Output-Id    : 15072004135347_GPCC_VISUALIZER<br>
+Columns      : Lon Lat Value (at grid center)<br>
+Missing-Value: -99999.99<br>
+<br>
+-179.50   89.50 -99999.99<br>
+-178.50   89.50 -99999.99<br>
+-177.50   89.50 -99999.99<br>
+-176.50   89.50 -99999.99<br>
+-175.50   89.50 -99999.99<br>
+...       ...   ...<br>
+175.50  -89.50      0.12<br>
+176.50  -89.50      0.12<br>
+177.50  -89.50      0.12<br>
+178.50  -89.50      0.12<br>
+179.50  -89.50      0.12<br>
+</FONT></TT><br>
+I have made a script in Ferret to read those values (in order to save them into a NetCDF file). Here is "easy-readable" version of it :<br>
+<TT><FONT color="0000,0000,0000"><br>
+!spatial and temporal grid<br>
+<br>
+define axis/X=179.5W:179.5E:1/units=longitude  x_axis<br>
+define axis/Y=89.5N:89.5S:1/units=latidude     y_axis <br>
+define axis/CALENDAR=360_DAY/t="30-SEP-1993":"30-SEP-1993":30/units=days  t_axis<br>
+<br>
+define grid/x=x_axis/y=y_axis/t=t_axis g_grid<br>
+<br>
+!read variable(s) in ASCII file<br>
+<br>
+file/grid=g_grid/skip=7/var="lon,lat,PP"   "../ascii/GPCC-pre-199309.txt"<br>
+<br>
+show data<br>
+<br>
+list PP[j=1,i=355:360]<br>
+list PP[j=180,i=1:5]<br>
+<br>
+exit<br>
+</FONT></TT><br>
+Here is what Ferret tells me when executing my script :<br>
+<br>
+<TT><FONT color="0000,0000,0000">yes? go gpcc2nc<br>
+<br>
+!spatial and temporal grid<br>
+<br>
+<br>
+define axis/X=179.5W:179.5E:1/units=longitude  x_axis<br>
+define axis/Y=89.5N:89.5S:1/units=latidude     y_axis <br>
+define axis/CALENDAR=360_DAY/t="30-sep-1993":"30-sep-1993":30/units=days  t_axis<br>
+<br>
+<br>
+define grid/x=x_axis/y=y_axis/t=t_axis g_grid<br>
+<br>
+<br>
+!read variable(s) in ASCII file<br>
+<br>
+<br>
+file/grid=g_grid/skip=7/var="lon,lat,PP"   "../ascii/GPCC-pre-199309.txt"<br>
+!-> SET DATA/EZ/grid=g_grid/skip=7/var="lon,lat,PP"   "../ascii/GPCC-pre-199309.txt"<br>
+<br>
+<br>
+show data<br>
+currently SET data sets:<br>
+1> ../ascii/GPCC-pre-199309.txt  (default)<br>
+name     title                             I         J         K         L<br>
+LON      LON                              1:360     1:180     ...       1:1<br>
+LAT      LAT                              1:360     1:180     ...       1:1<br>
+PP       PP                               1:360     1:180     ...       1:1<br>
+<br>
+<br>
+<br>
+<br>
+list PP[j=1,i=355:360]<br>
+VARIABLE : PP<br>
+FILENAME : GPCC-pre-199309.txt<br>
+SUBSET   : 6 points (LONGITUDE)<br>
+LATITUDE : 89.5S<br>
+TIME     : 30-SEP-1993 00:00<br>
+89.5S  <br>
+1<br>
+174.5E  / 355: -100000.<br>
+175.5E  / 356: -100000.<br>
+176.5E  / 357: -100000.<br>
+177.5E  / 358: -100000.<br>
+178.5E  / 359: -100000.<br>
+179.5E  / 360: -100000.<br>
+list PP[j=180,i=1:5]<br>
+VARIABLE : PP<br>
+FILENAME : GPCC-pre-199309.txt<br>
+SUBSET   : 5 points (LONGITUDE)<br>
+LATITUDE : 89.5N<br>
+TIME     : 30-SEP-1993 00:00<br>
+89.5N  <br>
+180<br>
+179.5W / 1:  0.1600<br>
+178.5W / 2:  0.1200<br>
+177.5W / 3:  0.1200<br>
+176.5W / 4:  0.1200<br>
+175.5W / 5:  0.1200<br>
+<br>
+<br>
+exit<br>
+yes? <br>
+</FONT></TT><br>
+So, values of North Pole shifted to South Pole and ones of South Pole to North Pole! (And I don't know where the 0.1600 does come from.)<br>
+I assume I'm wrong somewhere, but where? It's not the first time that I get that problem. I tried to inverse the definition of the x-axis, to use the /order instruction when reading the data, it does not work. The fact that the longitude axis (1st column) varies more rapidly that the latitude one (2nd column) might be a (the) problem?<br>
+<br>
+Does anyone have any idea?<br>
+<br>
+Thanks in advance for any answer!<br>
+<br>
+Emilie<br>
+<br>
+<br>
+<FONT color="4C4C,4C4C,4C4C"><x-tad-smaller>____________________________________________________________<br>
+</x-tad-smaller><B><x-tad-smaller>Emilie VANVYVE<br>
+</x-tad-smaller></B><I><x-tad-smaller>Physicist, PhD student<br>
+</x-tad-smaller><SMALL><SMALL><br>
+</SMALL></SMALL></I><x-tad-smaller>Université catholique de Louvain (UCL)<br>
+Institut d'astronomie et de géophysique G. Lemaître (ASTR)<br>
+Chemin du Cyclotron, 2<br>
+1348 Louvain-la-Neuve (Belgium)<br>
+Phone : +32-(0)10-473300<br>
+Fax : +32-(0)10-474722<br>
+E-mail : vanvyve@astr.ucl.ac.be<br>
+Web : www.astr.ucl.ac.be</x-tad-smaller></FONT>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00516" href="msg00516.html">Re: Latitude axis read from a ASCII file</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00511.html">Adding geolocation to my data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00516.html">Re: Latitude axis read from a ASCII file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00511.html">Thread Prev</a>][<a href="msg00516.html">Thread Next</a>][<A HREF="threads.html#00515">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

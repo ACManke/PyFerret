@@ -1,0 +1,182 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: plotting data in a separate directory -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 31 Mar 2004 02:47:41 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0404010233260.29969&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 721xn9sbgi.fsf_&#45;_@tindved.ii.uib.no -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: plotting data in a separate directory</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00209.html">Thread Prev</a>][<a href="msg00211.html">Thread Next</a>][<A HREF="threads.html#00210">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: plotting data in a separate directory</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Helge Avlesen &lt;<a href="mailto:avle@DOMAIN.HIDDEN">avle@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: plotting data in a separate directory</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Apr 2004 02:48:07 +0530 (IST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00209.html">721xn9sbgi.fsf_-_@tindved.ii.uib.no</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Helge,
+           While specifiying path to a file, you must use quotes
+like;
+
+	yes? use &quot;/home/DATA/mydata.dat&quot;    ! full path
+                                            !   or
+        yes? use &quot;./DATA/mydata.dat&quot;        ! relative to current dir.
+
+
+  To use your present sript, define a new variable like;
+
+        yes? define symbol qts = \&quot;
+  
+   while setting the path to the symbol  put ' &quot; '  &amp; ' . ' in case 
+   of relative path 
+
+      yes? define symbol RESULTS=($qts).($DIR)\/($LABEL).data($qts)
+
+      yes? define symbol VGRID=($qts).($DIR)\/($LABEL)-grid.data($qts)
+
+
+Hope this helps
+
+With Regards 
+
+Jaison Kurian
+
+On Wed, 31 Mar 2004, Helge Avlesen wrote:
+
+&gt; Hi, 
+&gt; I have some data in different directory that I want to include into my
+&gt; plot, but ferret crashes on me... minimized example follows:
+&gt; 
+&gt; /avle@tindved: &gt; cat data/test2.data 
+&gt; 1 35.1 12.1
+&gt; 2 35.2 12.2
+&gt; 3 35.3 12.3
+&gt; 4 35.4 12.4
+&gt; /avle@tindved: &gt; cat data/test2-grid.data 
+&gt; 1 1
+&gt; 2 1
+&gt; 1 2
+&gt; 2 2
+&gt; /avle@tindved: &gt; ferret
+&gt; appending ferret path
+&gt;         NOAA/PMEL TMAP
+&gt;         FERRET v5.53  
+&gt;         Linux(g77) 2.4.x - 09/26/03
+&gt;         31-Mar-04 09:39     
+&gt; 
+&gt; yes? go plot
+&gt; define symbol DIR=data
+&gt; define symbol LABEL=test2
+&gt;  
+&gt; define axis/x=1:2:1 xaxis
+&gt; define axis/y=1:2:1 yaxis
+&gt; define grid/x=xaxis/y=yaxis grid1
+&gt;  
+&gt; define symbol RESULTS=($DIR)\/($LABEL).data
+&gt;  !-&gt; define symbol RESULTS=data/test2.data
+&gt; define symbol VGRID=($DIR)\/($LABEL)-grid.data
+&gt;  !-&gt; define symbol VGRID=data/test2-grid.data
+&gt;  
+&gt; file/var=xcoo,zcoo/grid=grid1 ($VGRID)
+&gt;  !-&gt; SET DATA/EZ/var=xcoo,zcoo/grid=grid1 data/test2-grid.data
+&gt;  
+&gt; let xg=xcoo[d=($VGRID)]
+&gt;  !-&gt; DEFINE VARIABLE xg=xcoo[d=data/test2-grid.data]
+&gt; let zg=zcoo[d=($VGRID)]
+&gt;  !-&gt; DEFINE VARIABLE zg=zcoo[d=data/test2-grid.data]
+&gt;  
+&gt; file/var=dill,sal,temp/grid=grid1 ($RESULTS)
+&gt;  !-&gt; SET DATA/EZ/var=dill,sal,temp/grid=grid1 data/test2.data
+&gt;  
+&gt; shade dill,xg,yg
+&gt; fmt: end of file
+&gt; apparent state: unit 62 named ./data
+&gt; last format: (A)
+&gt; lately reading sequential formatted external IO
+&gt; Aborted
+&gt; /avle@tindved: &gt; 
+&gt; 
+&gt; 
+&gt; I also tried setting the full path to the grid like
+&gt;   define VGRID=&quot;($DIR)/($LABEL)-grid.data&quot;
+&gt; but then ferret will not find the dataset because the RESULTS symbol
+&gt; has a double set of &quot;
+&gt; 
+&gt; is there a way to work around this problem?
+&gt; 
+&gt; Helge
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00211" href="msg00211.html">Re: plotting data in a separate directory</a></strong>
+<ul><li><em>From:</em> Helge Avlesen</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00209" href="msg00209.html">plotting data in a separate directory</a></strong>
+<ul><li><em>From:</em> Helge Avlesen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00209.html">plotting data in a separate directory</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00211.html">Re: plotting data in a separate directory</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00209.html">Thread Prev</a>][<a href="msg00211.html">Thread Next</a>][<A HREF="threads.html#00210">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

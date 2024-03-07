@@ -1,0 +1,206 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: masking of land data -->
+<!--X-From-R13: "Kbtrfu Y. Fvjnev" <xgvjnevNotp&#45;wran.zct.qr> -->
+<!--X-Date: Fri, 4 Mar 2005 04:52:48 &#45;0800 -->
+<!--X-Message-Id: 422859DE.6090705@bgc&#45;jena.mpg.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.4.33.0503020723300.10609&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: masking of land data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00205.html">Thread Prev</a>][<a href="msg00218.html">Thread Next</a>][<A HREF="threads.html#00217">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: masking of land data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>, ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: masking of land data</strong></li>
+<li><strong>From</strong>: <strong>&quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 04 Mar 2005 13:51:42 +0100</li>
+<li>In-reply-to: &lt;<a href="msg00205.html">Pine.GSO.4.33.0503020723300.10609-100000@heron.pmel.noaa.gov</a>&gt;</li>
+<li>Organization: Max-Planck Institute for Biogeochemistry, Jena, Germany</li>
+<li>References: &lt;<a href="msg00205.html">Pine.GSO.4.33.0503020723300.10609-100000@heron.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.2) Gecko/20040906</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hello Mick,<br>
+<br>
+Thanks for the suggation, great !<br>
+<br>
+It works.<br>
+<br>
+But how to save the file if land data masked or 
+ocean data masked.<br>
+<br>
+Or I am thinking wrong ?<br>
+<br>
+Actually I want to mask the data then save the 
+files and then add all jan to dec files and then<br>
+make the time series of land or ocean mask.<br>
+<br>
+But I am not sure I am thinking positive.<br>
+<br>
+Can you help me to resolve this.<br>
+<br>
+The script which worked for mask, looks like :-<br>
+<br>
+use airs_jan.nc<br>
+!sh dat<br>
+use etopo20<br>
+shade/o/pal=grey if(rose ge 0) then 1<br>
+fill CO2[d=1];go land 7<br>
+shade/o/pal=grey if(rose ge 0) then 1<br>
+def grid/x=xlon/y=ylat grd<br>
+def grid/like=CO2[d=1] grd<br>
+let myrose=rose[d=2,g=grd]<br>
+shade/o/pal=black if(myrose ge 0)then 1<br>
+let land=if(myrose ge 0)then 1 else 0<br>
+let vland=if(land eq 1)then CO2[d=1]<br>
+fill vland<br>
+<br>
+Many thsnks,<br>
+<br>
+Regards,<br>
+Yogesh<br>
+<br>
+<br>
+<br>
+Mick.Spillane@noaa.gov wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>On Wed, 2 Mar 2005, Yogesh K. Tiwari wrote:
+
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>How to mask the land  data to see the monthly
+variation(time series) at only ocean and vice versa.
+</pre>
+</blockquote><pre>
+
+Hi Yogesh,
+	What you need to do is to access one of the bathymetry files
+and use it to define a land/sea mask ON THE SAME GRID as your dataset.
+Try the following ... good luck,
+Mick
+
+
+!-------- demo of land/sea mask generation -----------
+
+! FERRET SESSION 1 - make a fake dataset in a lat-lon region
+def axis/x=100e:160e:1/units=longitude xax
+def axis/y=50s:10s:1/units=latitude yax
+def grid/x=xax/y=yax grd
+let v=randu(x[g=grd]+y[g=grd])
+save/file=mydata.nc v
+quit                      ! end the ferret session
+
+! FERRET SESSION 2
+! 1) read in the datafile (with no mask of its own) ...
+use mydata.nc
+shade v
+
+! 2) pick a bathymetry file (a bit finer than your data grid)
+use etopo20
+
+! 3) see how it looks ...
+shade/o/pal=grey if(rose ge 0)then 1
+
+! 4) give a name to the grid of the variable you want to examine
+def grid/like=v[d=1] grd
+
+! 5) regrid &quot;rose&quot; to the grid of your variable and check it out
+let myrose=rose[d=2,g=grd]
+shade/o/pal=black if(myrose ge 0)then 1
+
+! 6) define the mask and use it to define vland ...
+let land=if(myrose ge 0)then 1 else 0
+let vland=if(land eq 1)then v[d=1]
+shade vland
+
+! 7) ... and vsea
+let vsea=if(land eq 0)then v[d=1]
+shade vsea
+
+
+
+
+
+
+</pre>
+</blockquote><pre>
+
+--
+
+===========================================
+Yogesh K. Tiwari,
+Max-Planck Institute for Biogeochemistry,
+Beutenberg Campus, Hans-Knoell-Strasse 10,
+D-07745 Jena,
+Germany
+
+Office   : 0049 3641 576 376
+Home     : 0049 3641 223 163
+Fax      : 0049 3641 577 300
+Cell     : 0049 1520 4591 008
+e-mail   : yogesh.tiwari@bgc-jena.mpg.de
+===========================================
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00205" href="msg00205.html">Re: masking of land data</a></strong>
+<ul><li><em>From:</em> Mick.Spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00205.html">Re: masking of land data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00218.html">Re: masking of land data(problem solved)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00205.html">Thread Prev</a>][<a href="msg00218.html">Thread Next</a>][<A HREF="threads.html#00217">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: catching time axis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Thu, 30 Jan 2003 13:18:12 &#45;0800 (PST) -->
+<!--X-Message-Id: 3E399703.93F36EA9@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 134.178.30.65.1043367824@my.monash.edu.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: catching time axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00094.html">Thread Prev</a>][<a href="msg00100.html">Thread Next</a>][<A HREF="threads.html#00097">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: catching time axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>R Prabowo &lt;<a href="mailto:rmpra2@DOMAIN.HIDDEN">rmpra2@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: catching time axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 30 Jan 2003 13:20:03 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;134.178.30.65.1043367824@my.monash.edu.au&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Mulyono,
+<br>You might be able to use the @EVNT transformation for this.
+<br>The result of @EVNT is an index, incremented every time the
+<br>event occurs., Here's a simple example, where the event is
+<br>that the variable diff crosses zero.&nbsp; This results in the location
+<br>of the gridpoint just after the variable crosses zero; you could
+<br>interpolate to get the exact location of the crossings.
+<blockquote><tt>yes? ! make up two variables, take the difference</tt>
+<br><tt>yes? let a = {1,0,4,6,7,2,4,7,9,12}</tt>
+<br><tt>yes? let b = {3,4,5,6,2,3,4,5,12,11}</tt>
+<br><tt>yes? let diff = a-b</tt>
+<p><tt>yes? let e = diff[x=@evnt:0]</tt>
+<br><tt>yes? list diff, e</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X: 0.5 to 10.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: DIFF is A-B</tt>
+<br><tt>&nbsp;Column&nbsp; 2: E is DIFF[X=@EVNT:0]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DIFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; E</tt>
+<br><tt>1&nbsp;&nbsp;&nbsp; /&nbsp; 1: -2.000&nbsp; 0.000</tt>
+<br><tt>2&nbsp;&nbsp;&nbsp; /&nbsp; 2: -4.000&nbsp; 0.000</tt>
+<br><tt>3&nbsp;&nbsp;&nbsp; /&nbsp; 3: -1.000&nbsp; 0.000</tt>
+<br><tt>4&nbsp;&nbsp;&nbsp; /&nbsp; 4:&nbsp; 0.000&nbsp; 1.000</tt>
+<br><tt>5&nbsp;&nbsp;&nbsp; /&nbsp; 5:&nbsp; 5.000&nbsp; 1.000</tt>
+<br><tt>6&nbsp;&nbsp;&nbsp; /&nbsp; 6: -1.000&nbsp; 2.000</tt>
+<br><tt>7&nbsp;&nbsp;&nbsp; /&nbsp; 7:&nbsp; 0.000&nbsp; 3.000</tt>
+<br><tt>8&nbsp;&nbsp;&nbsp; /&nbsp; 8:&nbsp; 2.000&nbsp; 3.000</tt>
+<br><tt>9&nbsp;&nbsp;&nbsp; /&nbsp; 9: -3.000&nbsp; 4.000</tt>
+<br><tt>10&nbsp;&nbsp; / 10:&nbsp; 1.000&nbsp; 5.000</tt><tt></tt>
+<p><tt>yes?&nbsp; ! Take the first difference,</tt>
+<br><tt>yes? let cross = e -&nbsp; e[i=@shf:-1]</tt><tt></tt>
+<p><tt>yes? list diff, e, cross</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X: 0.5 to 10.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: DIFF is A-B</tt>
+<br><tt>&nbsp;Column&nbsp; 2: E is DIFF[X=@EVNT:0]</tt>
+<br><tt>&nbsp;Column&nbsp; 3: CROSS is E -&nbsp; E[I=@SHF:-1]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DIFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; E&nbsp; CROSS</tt>
+<br><tt>1&nbsp;&nbsp;&nbsp; /&nbsp; 1: -2.000&nbsp; 0.000&nbsp;&nbsp; ....</tt>
+<br><tt>2&nbsp;&nbsp;&nbsp; /&nbsp; 2: -4.000&nbsp; 0.000&nbsp; 0.000</tt>
+<br><tt>3&nbsp;&nbsp;&nbsp; /&nbsp; 3: -1.000&nbsp; 0.000&nbsp; 0.000</tt>
+<br><tt>4&nbsp;&nbsp;&nbsp; /&nbsp; 4:&nbsp; 0.000&nbsp; 1.000&nbsp; 1.000</tt>
+<br><tt>5&nbsp;&nbsp;&nbsp; /&nbsp; 5:&nbsp; 5.000&nbsp; 1.000&nbsp; 0.000</tt>
+<br><tt>6&nbsp;&nbsp;&nbsp; /&nbsp; 6: -1.000&nbsp; 2.000&nbsp; 1.000</tt>
+<br><tt>7&nbsp;&nbsp;&nbsp; /&nbsp; 7:&nbsp; 0.000&nbsp; 3.000&nbsp; 1.000</tt>
+<br><tt>8&nbsp;&nbsp;&nbsp; /&nbsp; 8:&nbsp; 2.000&nbsp; 3.000&nbsp; 0.000</tt>
+<br><tt>9&nbsp;&nbsp;&nbsp; /&nbsp; 9: -3.000&nbsp; 4.000&nbsp; 1.000</tt>
+<br><tt>10&nbsp;&nbsp; / 10:&nbsp; 1.000&nbsp; 5.000&nbsp; 1.000</tt></blockquote>
+
+<p>R Prabowo wrote:
+<blockquote TYPE=CITE>Dear ferreters,
+<p>I have two different data files which have same time axis (L1 = L2).
+When I plot them together, at certain L values the graphs crossed each
+other.
+<br>The thing that I want is "to catch the time-axis-values at the time
+the two graphs crossed each other and to save the catched time axis into
+a file". Is there any one has experience doing such
+<br>thing.
+<p>Thank you very much.
+<p>Mulyono Prabowo
+<p>--
+<br>Mulyono R. Prabowo
+<br>PhD Candidate
+<br>School of Geography and Environmental Science
+<br>Monash University,
+<br>PO box 11A, Clayton, Victoria
+<br>AUSTRALIA, 3800
+<br>Telp&nbsp; : +61 3 9905 9992
+<br>Fax&nbsp;&nbsp; : +61 3 9905 2948
+<br>e-mail: rmpra2@student.monash.edu.au</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00094.html">Defining T axis from data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00100.html">hi</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00094.html">Thread Prev</a>][<a href="msg00100.html">Thread Next</a>][<A HREF="threads.html#00097">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Ferret: Vector plots of velocity on a C&#45;grid -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Mon, 13 Jun 2005 13:25:12 &#45;0700 -->
+<!--X-Message-Id: 20050613.102007.74740862.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 260502556d.2556d26050@pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Ferret: Vector plots of velocity on a C-grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00593.html">Thread Prev</a>][<a href="msg00592.html">Thread Next</a>][<A HREF="threads.html#00597">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Ferret: Vector plots of velocity on a C-grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Ferret: Vector plots of velocity on a C-grid</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Jun 2005 10:20:07 -1000 (HST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>, <a href="mailto:billy.kessler@DOMAIN.HIDDEN">billy.kessler@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00591.html">260502556d.2556d26050@pmel.noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00591.html">260502556d.2556d26050@pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Billy,
+
+| I have OGCM output on a C-grid. The temperature and velocity
+| components are on a staggered grid structure. A single gridbox looks
+| like:
+| 
+|   v  
+| u T u 
+|   v  
+| 
+| where the u-values are the currents in/out the east-west sides of the
+| box, and the v-values out the north-south, and T is the temperature
+| value defined in the center of the box. All these are on the same
+| vertical level. 
+[...]
+| Anybody have a good idea how to do this as correctly as possible?
+
+It depends on the definition of &quot;correctly&quot;, but the following is
+&quot;correct&quot; in terms of conservation of volume transport.
+
+First, for a notational convenience, I redraw your grid as
+
+            vm(j)
+   um(i-1)  T        um(i)
+            vm(j-1)
+
+Index i is in the x-direction, and j in the y-direction.
+
+Nest, let us regrid your velocity field onto the B-grid:
+
+    uv(i-1,j)     uv(i,j)
+                T
+    uv(i-1,j-1)   uv(i,j-1)
+
+uv's represent the corners of the T box, and the new u and v are
+defined on these uv points.  Now, let us define the new velocity
+components such that
+
+    [u(i-1,j-1) + u(i-1,j)]/2 == um(i-1)
+    [u(i,  j-1) + u(i,  j)]/2 == um(i)
+
+    [v(i-1,j)   + v(i,j)  ]/2 == vm(j)
+    [v(i-1,j-1) + v(i,j-1)]/2 == vm(j-1)
+
+That is, um is the average of the u's to the south and north.
+and vm is the average of the v's to the west and east.
+
+In fact, the model I use employs the B-grid.  Although this model
+uses the B-grid, the continuity equation is expressed on the C-grid,
+as
+
+    [um(i) - um(i-1)]/dx  + [vm(j) - vm(j-1)]/dy
+  + [w(up) - w(down)]/dz = 0,
+
+where um's and vm's are computed from u's and v's using the
+relationship shown above.
+
+I guess that your model uses a similar expression for
+the continuity equation using um's and vm's.  Then, regridding
+your um's and vm's onto the B-grid guarrantees the conservation
+of volume transport.
+
+One concern is land points.  If your land boxes coincide with T-boxes
+(as they do in the model I use), then the new u and v should be
+defined as zero on the vertices of the land boxes.
+
+Hope this helps,
+Ryo
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00591" href="msg00591.html">Ferret: Vector plots of velocity on a C-grid</a></strong>
+<ul><li><em>From:</em> William S Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00593.html">Re: Ferret: Vector plots of velocity on a C-grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00592.html">Re: Ferret: Vector plots of velocity on a C-grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00593.html">Thread Prev</a>][<a href="msg00592.html">Thread Next</a>][<A HREF="threads.html#00597">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

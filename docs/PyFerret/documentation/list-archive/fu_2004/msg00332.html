@@ -1,0 +1,249 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: how to add lat/lon/depth to an existing netcdf file -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 23 Apr 2004 09:31:45 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0404232151480.23053&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 7269A3DE93C81E41A59A84EEABEB3FAB214A97@saipan.ad.nps.navy.mil -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how to add lat/lon/depth to an existing netcdf file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00328.html">Thread Prev</a>][<a href="msg00329.html">Thread Next</a>][<A HREF="threads.html#00332">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how to add lat/lon/depth to an existing netcdf file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how to add lat/lon/depth to an existing netcdf file</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 23 Apr 2004 22:02:54 +0530 (IST)</li>
+<li>Cc: &quot;Thoppil, Prasad IND&quot; &lt;<a href="mailto:prasad@DOMAIN.HIDDEN">prasad@xxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00327.html">7269A3DE93C81E41A59A84EEABEB3FAB214A97@saipan.ad.nps.navy.mil</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Prasad,
+            If you want to solve your problem using ferret then
+the solution is regridding as suggested by Edward. Since you have
+a big file with many grid points, regridding in ferret will be time 
+consuming. Again the regridding will depend on how your lat. lon &amp; 
+depth axes are....wether they are uniformly spaced or not. Ofcourse 
+you can modify much easily if you are familiar with editing netcdf  
+using fortran or c. 
+
+	Here is an example for adding lat lon and depth dimension to 
+a netcdf file through regridding in ferret. I took a case with
+10 lat, 10 lon &amp;  5 depth  points.  
+
+
+Hope this helps
+
+
+With Regards 
+
+Jaison
+
+ if your x, y &amp; z axes are uniformly spaced like ......
+                           ----------------
+ lon : 42,44,46,48,50....60    ! 10 points
+ lat : 11,12,13.....20         ! 10 points
+ dep : 0,10,..40               !  5 points 
+         
+        use data.nc ! in your case tavg.icecpl.199001.nc  
+
+	define axis/x=42:60:2/units=longitudes xax  
+	define axis/y=11:20:1/units=latitudes  yax
+	define axis/z=0:40:10/units=meters/DEPTH  zax  ! /DEPTH
+				  ! for &quot;positive=down&quot; z-axis
+        define grid/x=xax/y=yax/z=zax gr_xyz
+        define grid/x=xax/y=yax gr_xy
+       
+        let/title=&quot;something&quot;/unit=&quot;something&quot; HDIFT_new = HDIFT[g=gr_xy@asn] 
+        let/title=&quot;something&quot;/unit=&quot;something&quot; UET_new   = UET[g=gr_xyz@asn]
+        let/title=&quot;something&quot;/unit=&quot;something&quot; VNT_new   = VNT[g=gr_xyz@asn]
+
+        fill/k=1 UET_new
+
+! saving to a file
+
+        save/file=&quot;./regridded_data.nc&quot;/append HDIFT_new, UET_new, VNT_new
+------------------------------------------------------------------
+
+ suppose you have non-uniform spacing for axes..then
+                  -------------------
+ it will be easier to read the values of lat, lon and dep from
+    an ascci file since you have many grid points. 
+  suppose  lon   is in 1st column
+           lat   is in 2nd   &quot;
+           depth is in 3rd   &quot;    like
+
+40 0  0 
+42 2  2
+46 3  5
+50 5  10 
+55 8  25
+60 10 
+63 14 
+65 15 
+67 17 
+74 20
+
+  in a file...say &quot;axis_values.dat&quot;
+
+! since these three columns have different lengths (in your
+! case 900,601,40) little care should be taken to read them
+
+        define axis/x=1:10:1 dummyx  ! in your case 1:900:1
+        define axis/y=1:10:1 dummyy  ! in your case 1:601:1
+        define axis/z=1:5:1 dummyz   ! in your case 1:40:1
+        define grid/x=dummyx grx
+        define grid/y=dummyy gry
+        define grid/z=dummyz grz
+
+!   /skip is to skip &quot;rows&quot; and &quot;-&quot; is to skip &quot;columns&quot;
+
+!   read lon/x values and define x-axis from those values   
+
+	file/skip=0/var=&quot;xdat,-,-&quot;/grid=grx axis_values.dat
+	define axis/from_data/x/units=longitudes/name=xaxis xdat
+
+!   read lat/y values and define y-axis from those values
+
+	file/skip=0/var=&quot;-,ydat,-&quot;/grid=gry axis_values.dat
+        define axis/from_data/y/units=latitudes/name=yaxis ydat
+
+!   read dep/z values and define z-axis from those values
+
+	file/skip=0/var=&quot;-,-,zdat&quot;/grid=grz axis_values.dat
+        define axis/from_data/z/units=meters/DEPTH/name=zaxis zdat
+
+        define grid/x=xaxis/y=yaxis gr_xy         ! for 2-D variable
+        define grid/x=xaxis/y=yaxis/z=zaxis gr_xyz ! for 3-D variables
+
+        use data.nc  ! in your case tavg.icecpl.199001.nc
+
+! regridding via @asn will directly associate the axis vales (from
+!      defined grid ) to the newly defined variable
+
+        let HDIFT_2 = HDIFT[g=gr_xy2@asn]
+        let UET_2   = UET[g=gr_xyz@asn]
+        let VNT_2   = VNT[g=gr_xyz@asn]
+
+        plot/i=1/j=1 VNT_2
+
+! for saving to file/putting title and units see first section above
+------------------------------------------------------------------------
+
+
+On Thu, 22 Apr 2004, Thoppil, Prasad IND wrote:
+
+&gt; Hi ferret users:
+&gt; 
+&gt; I have model outputs written in netcdf format. There is no lat/lon/depth
+&gt; information in these files and I would like to add them into an existing
+&gt; netcdf file. It is impossible to dump this file using ncdump and add
+&gt; lat/lon because it is a huge file (800 MB). I hope someone out there can
+&gt; help me with this. 
+&gt; 
+&gt; Thanks, 
+&gt; 
+&gt; Prasad.
+&gt; 
+&gt; Following is the ncdump output
+&gt; 
+&gt; netcdf tavg.icecpl.199001 {
+&gt; dimensions:
+&gt;         i = 900 ;
+&gt;         j = 601 ;
+&gt;         k = 40 ;
+&gt; variables:
+&gt;         float HDIFT(j, i) ;
+&gt;                 HDIFT:long_name = &quot;Vertically integrated horz mix T
+&gt; tend&quot; ;
+&gt;                 HDIFT:units = &quot;degC/cm^2&quot; ;
+&gt;                 HDIFT:grid_loc = &quot;2110&quot; ;
+&gt;                 HDIFT:missing_value = -12345.f ;
+&gt;         float UET(k, j, i) ;
+&gt;                 UET:long_name = &quot;East Flux of Heat&quot; ;
+&gt;                 UET:units = &quot;degC/s&quot; ;
+&gt;                 UET:grid_loc = &quot;3211&quot; ;
+&gt;                 UET:missing_value = -12345.f ;
+&gt;         float VNT(k, j, i) ;
+&gt;                 VNT:long_name = &quot;North Flux of Heat&quot; ;
+&gt;                 VNT:units = &quot;degC/s&quot; ;
+&gt;                 VNT:grid_loc = &quot;3121&quot; ;
+&gt;                 VNT:missing_value = -12345.f ;
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00327" href="msg00327.html">how to add lat/lon/depth to an existing netcdf file</a></strong>
+<ul><li><em>From:</em> Thoppil, Prasad IND</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00328.html">Re: how to add lat/lon/depth to an existing netcdf file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00329.html">[no subject]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00328.html">Thread Prev</a>][<a href="msg00329.html">Thread Next</a>][<A HREF="threads.html#00332">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

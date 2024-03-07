@@ -1,0 +1,233 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Suggestions for improving plots -->
+<!--X-From-R13: Pvyyl Yrffyre <xrffyreNczry.abnn.tbi> -->
+<!--X-Date: Fri, 18 Apr 2003 21:41:47 &#45;0700 -->
+<!--X-Message-Id: 200304190441.h3J4fic13409@pontus.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Suggestions for improving plots</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00307.html">Thread Prev</a>][<a href="msg00312.html">Thread Next</a>][<A HREF="threads.html#00310">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Suggestions for improving plots</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Suggestions for improving plots</strong></li>
+<li><strong>From</strong>: <strong>Billy Kessler &lt;<a href="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Apr 2003 21:41:44 -0700 (PDT)</li>
+<li>Cc: <a href="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello Ferret users -
+
+I see a lot of people using Ferret who always rely on the default 
+plot styles. That is fine for the quick-look, but with a very small 
+effort using the PPLUS commands, Ferret plots can be made professional-
+looking, which is to say uncluttered and easily readable. In fact that 
+is one of Ferret's main attractions, as far as I'm concerned.
+
+We spend so much time preparing our data or model output, it is 
+well worth the small amount of additional effort to clean up the 
+plot so the results shine through clearly. 
+
+Following are a few suggestions to correct common problems.
+------------------------------------------------------------------------
+Problem 1: Axis tics and labels.
+By default, Ferret uses all large tics and labels every other tic. 
+For many purposes, that is not ideal. Better to have the large tics 
+all labeled, and use small unnumbered tics for the smaller intervals. 
+These functions are controlled by:
+
+PPL AXLINT,xint,yint	    ! how often to label tics (default = 2)
+PPL AXNMTC,numticx,numticy  ! how many small tics between each large tic (default = 0)
+
+Both of these functions are persistent. Once set, they remain in 
+force until changed. Full use of this capability is achieved by 
+also specifying the axis limits in the PLOT or FILL command:
+
+PPL AXLINT,1,1
+PPL AXNMTC,2,4
+FILL/HLIMITS=120w:70w:30/VLIMITS=20s:20n:5 variable
+
+In this example longitudes are ticked and numbered every 30 degrees, 
+and latitudes every 5 degrees. There are 2 tics between each longitude 
+label and 4 between each latitude label. Not so hard and looks much 
+better.
+
+It is also easy to change the size of the tic numbers:
+
+PPL AXLSZE,xsize,ysize
+
+This is also a persistent command that only needs to be given 
+once/session.
+
+A final peeve of mine is leaving too many digits in axis numbers. 
+Ferret will often add an extra zero after the decimal in axis numbers,
+and it will include the decimal point following integer values. 
+These clutter the plot and distract the reader from the data. 
+
+To fix this specify the axis formats with PPL XFOR, PPL YFOR.
+These commands are not persistent and must be given for each plot:
+
+PLOT/SET variable
+PPL XFOR,(i3)		! as appropriate
+PPL YFOR,(f5.2)		! as appropriate
+PPL PLOT
+
+Note that if the data grid is not longitude or latitude but you want 
+to force the labels to be geographic:
+
+PPL XFOR,(i5,''lon''); PPL YFOR,(i5,''lat'')
+
+In fact you can add any extra text to axis numbering:
+
+PPL XFOR,(f4.1,''text1''); PPL YFOR,(i3,''text2'')
+
+Suppose you are plotting temperature on the y-axis and want 
+degree marks on the axis numbers:
+
+PPL YFOR,(i2,''#'')
+
+Finally, sometimes the axis titles are not right. 
+Add these manually:
+
+PLOT/SET variable
+PPL XLAB,This text will appear as an axis title
+PPL YLAB,And this text as a y-axis title
+PPL PLOT
+
+Control the size of these titles with LABSET:
+
+PPL LABSET,main-title-size,x-label-size,y-label-size
+------------------------------------------------------------------------
+Problem 2: Too many digits in contour labels.
+
+As with axis labels, Ferret will often include an extra zero after 
+the decimal point in contour labels, or use a superfluous decimal 
+point. These take up valuable reader attention by cluttering the plot.
+Fix these by specifying the contour labels manually. Usually you would 
+first do a default plot to see what the contour range is:
+
+CONTOUR variable	! note the contour range
+CONTOUR/LEV=(lowerlev,upperlev,interval,flag) variable
+
+The option &quot;flag&quot; tells how many decimal places to use: 0-9 for the 
+number of decimal places, -1 for integer labels, -3 for no labels.
+
+Also note that several sets of levels can be specified for total control:
+
+CONTOUR/LEV=(-3,3,1,-1)(-.5,.5,1,1)del(0) variable
+
+This example makes integer-labeled contours for -3,-2,-1,1,2,3, 
+single-decimal-place-labeled contours for -.5,.5 and omits the 
+zero line.
+------------------------------------------------------------------------
+Problem 3: Color key labels too small.
+
+The default is fine for a quick-look, but will sometimes be too small 
+for good readability. Fix this with PPL SHAKEY:
+
+PPL SHAKEY,,,label-size-in-inches
+
+Note that PPL SHAKEY has many other options, which allow you to specify 
+many things about the color key:
+
+PPL SHAKEY [0=nokey,1=key] [0=hor,1=vert] lab-size lab-inc lab-dig lab-len xlo xhi ylo yhi
+
+One way these are useful is if there are, say, a stack of three plots 
+all with the same contour interval. It is much clearer in that case 
+to have a single color key, extending the length of the stack:
+
+SET VI top
+FILL/NOKEY/LEV=(level-specifiers) variable1
+
+SET VI middle
+FILL/NOKEY/LEV variable2   ! LEV without arguments repeats the previous levels
+
+SET VI bottom
+FILL/SET/LEV variable3
+PPL SHAKEY,,,,,,,`1.2+($ppl$xlen)+.4`,`1.2+($ppl$xlen)+.7`,1.4,`1.4+3*($ppl$ylen)+1.`
+PPL FILL
+
+The last 4 options on SHAKEY specify the x-coordinates of the left
+and right side of the color key, and then the y-coordinates of the 
+bottom and top of the key, relative to the page origin. The plot 
+origin is (1.2,1.4), the axis lengths are ($ppl$xlen) and ($ppl$ylen), 
+and the final value in the above example (1.) is a guess at the 
+extra space between the three plots. You have to find this by 
+experiment. This is not something you would do for an exploratory 
+plot, but is worth the effort for a plot to be shown or published.
+------------------------------------------------------------------------
+Problem 4: Equator line missing.
+
+All maps need an equator line! In almost every case, equatorial 
+dynamics have a small meridional scale so it is highly relevant 
+whether a signal is exactly at the equator or slightly north and 
+south. This is the simplest of all:
+
+PPL CROSS,1
+
+Now you will always have an equator line on your maps.
+This is a persistent command, so just give it at the beginning of 
+a Ferret session, or put it in a startup script. PPL CROSS,0 cancels.
+------------------------------------------------------------------------
+
+Billy K
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00307.html">Command line syntax for batch exectution of a jnl file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00312.html">Record too long for input buffer</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00307.html">Thread Prev</a>][<a href="msg00312.html">Thread Next</a>][<A HREF="threads.html#00310">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: determine T0 from Netcdf header -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 3 Jan 2005 11:15:40 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0501040036410.7406&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41D99321.9020105@nrel.colostate.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: determine T0 from Netcdf header</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00004.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00005">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: determine T0 from Netcdf header</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: determine T0 from Netcdf header</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 4 Jan 2005 00:53:31 +0530 (IST)</li>
+<li>Cc: Steve Knox &lt;<a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00004.html">41D99321.9020105@nrel.colostate.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Steve Knox,
+                In Ferret, you can derive lot of informations about the
+variable in a NetCDF file. Please have a look at the user manual for
+the key word &quot;RETURN&quot;. Here is an example :
+ 
+        ! please note that &quot;RETURN&quot; is used within grave accents (``)  
+
+        yes?  set data monthly_navy_winds ! dataset available with Ferret
+        yes?  define symbol t_zero  = `uwnd,r=T0` ! r ==&gt; RETURN
+        yes?  define symbol t_units = `uwnd,r=TUNITS`
+        yes?  define symbol t_cal   = `uwnd,r=CALENDAR`
+        yes?  show symbol t_zero, t_units,  t_cal
+          T_ZERO = &quot;14-JAN-1980 14:00:00&quot;
+          T_UNITS = &quot;hour&quot;
+          T_CAL = &quot;GREGORIAN&quot;
+
+ So &quot;define symbol&quot; command along with &quot;RETURN&quot; will help us to get
+the neccessary informations in seperate variables. Please note that
+it will be safe to put the ($t_zero) in double quotes(&quot; &quot;) wherever it is
+used beacause it may contain the hr:min:sec along with the date, 
+seperated by a blank space. To define a new time axis from these 
+informations 
+
+       yes? define axis/t=10-JAN-2000:10-DEC-2000:1/units=($t_units)/\
+       ...?      t0=&quot;($t_zero)&quot;/CALENDAR=($t_cal) tax
+
+ Suppose you want to get &quot;T0&quot; without the hr:min:sec string. Then use
+&quot;SUBSTRING&quot; command to extract only the date as follows :
+
+       yes? define symbol t_z = `SUBSTRING(&quot;($t_zero)&quot;,1,11)` ! in grave accents
+       yes? show symbol t_z  
+              T_Z = &quot;14-JAN-1980&quot;
+       yes? plot i[i=1:10]
+       yes? label 4,5,0,0,0.12 ($t_z)
+
+ Hope This Helps
+
+ With  Regards 
+
+ Jaison 
+
+
+On Mon, 3 Jan 2005, Steve Knox wrote:
+
+&gt; Good day,
+&gt; 
+&gt; I'm trying to read Netcdf files with ferret.
+&gt; Is there a way for Ferret to return, _as a variable_, the value of the 
+&gt; time _origin _of a netcdf  file?
+&gt; 
+&gt; The Netcdf files use the COARDS conventions:
+&gt;         int time(time) ;
+&gt;                 time:long_name = &quot;Time&quot; ;
+&gt;                 time:units = &quot;days since 1895-01-01&quot; ;
+&gt;                 time:time_step = &quot;monthly&quot; ;
+&gt; but in general the time units will vary so I don't know before running 
+&gt; my Ferret script what the time
+&gt; origin is, unless I write a separate script to parse the header info and 
+&gt; the value of time(0) from the
+&gt; Netcdf file. I'd like to avoid having to do that and just let Ferret 
+&gt; return &quot;T0&quot;.
+&gt; 
+&gt; Thanks!
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt;         int time(time) ;
+&gt;                 time:long_name = &quot;Time&quot; ;
+&gt;                 time:units = &quot;days since 1895-01-01&quot; ;
+&gt;                 time:time_step = &quot;monthly&quot; ;
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00004" href="msg00004.html">determine T0 from Netcdf header</a></strong>
+<ul><li><em>From:</em> Steve Knox</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00004.html">determine T0 from Netcdf header</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00004.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00005">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Re: about color key and plot a rectangular -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sun, 16 Jan 2005 12:16:56 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0501170134590.16799&#45;200000@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: NSQjdF8qoH28Db8XHGh0000239d@ns.scsio.ac.cn -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Re: about color key and plot a rectangular</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00029.html">Thread Next</a>][<A HREF="threads.html#00038">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Re: about color key and plot a rectangular</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Re: about color key and plot a rectangular</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 17 Jan 2005 01:57:13 +0530 (IST)</li>
+<li>Cc: Rongzhen Gao &lt;<a href="mailto:gaorz@DOMAIN.HIDDEN">gaorz@xxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00037.html">NSQjdF8qoH28Db8XHGh0000239d@ns.scsio.ac.cn</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Gao Rongzhen,
+
+On Sun, 16 Jan 2005, Rongzhen Gao wrote:
+
+&gt; Hi, Jaison Kurian,
+&gt; 
+&gt; You did me a big favor. Thanks.
+&gt; Why i couldn't find out it in the Ferret user guide.
+&gt; 
+&gt; Question 1: sp rm -f map.gif    &gt;&gt;&gt;&gt;i wonder why you add this command 
+&gt;    befor &quot;frame/file=map.gif&quot;.
+
+     Just like the &quot;cancel var/all&quot; or &quot;cancel data/all&quot; in your script. 
+     If wind.gif is already present in the current directory, then Ferret
+     will create wind.gif.~1~. So if you issue a rm command before creating
+     the gif file, always you will get the output file in the name 
+     &quot;wind.gif&quot;.
+
+&gt; Question 2: pls see the attached jnl file. when i plot the upper view it 
+&gt;  is ok, but when i plot the upper and lower view together there is a 
+question. As if the etopo5 data file closed after the first plot by itself, 
+and when plot the second figure it does not exist. It is so strange!  
+Have you ever encountered it? 
+&gt; --------------------------------error massage----------------------------------  
+&gt; yes? go d:\wind
+&gt; Re-defining viewport V11
+&gt;  **ERROR: unknown data set: D=1
+&gt; CONTOUR/FILL/nolabel/nokey/lev=(-10000,0,1000)/pal=bluescale/set rose[d=1]
+&gt; Command file, command group, or REPEAT execution aborted
+&gt; ----------------------------------                
+
+     Your first dataset(d=1) is etopo5.cdf. By &quot;go fland 5&quot;, the script 
+     fland.jnl (in ferret/go dir) opens etopo5.cdf. Towards the end of
+     fland.jnl, you can see a line as &quot; cancel data etopo$1&quot;60&quot; &quot;, so 
+     with &quot; go fland 5&quot; it is &quot; cancel data etopo5 &quot;. This is suitable
+     when you are not using etopo5 dataset as the main data, but in 
+     your case it is, and will get cancelled/closed after the first 
+     &quot;go fland 5&quot; commad. That is why you are getting the above error.
+     I don't know exactly how get the status of open datasets to ferret
+     variables so that we can modify the fland.jnl to suit for situations
+     like this. Anyway you can fix it in any of the following way.
+
+        1. use a symbolic link of the etopo5.nc as the main dataset.
+              (see the attachment, wind_2.jnl) &amp; use &quot;go fland 5&quot;
+        2. use etopo5 as the main dataset &amp; use some other etopo datasets 
+              like etopo20 or etopo60 for land masking (not recommented)
+        3. make a copy of ferret/go/fland.jnl to the current directory
+              in a new name (say flnd.jnl) and comment out the line : 
+
+              ! cancel data etopo$1&quot;60&quot;      
+           
+              then use this new file for masking land ==&gt; &quot;go flnd 5&quot; 
+&gt; 
+&gt; Gao Rongzhen
+&gt; 
+
+  Hope this fix the problem.
+
+ With Regards 
+
+ Jaison 
+
+&gt; 
+&gt; 
+&gt; Hi Gao Rongzhen,
+&gt;                   I made few modifications to your script and is 
+&gt; working fine for me (on my pc, Fer5.8). Have a trial with the modified
+&gt; script (please see the attachment color_key1.jnl).
+&gt; 
+&gt;    You can get a box overlayed on your plot in many ways. Two methods are
+&gt; illustrated in color_key1.jnl. 
+&gt; 
+&gt;  1. use box.jnl 
+&gt; 
+&gt;         usage : GO box xlo xhi ylo yhi [pen_number]
+&gt;     
+&gt;         for details see this file /usr/local/fer5.8/go/box.jnl
+&gt;     
+&gt;         this is the most easy method    
+&gt; 
+&gt;  2. use plot command
+&gt; 
+&gt;         define the corner points and plot it using the qualifiers
+&gt; 
+&gt;            /ov/vs/line
+&gt; 
+&gt;  Please let me know if you need more explanation.
+&gt; 
+&gt; With Regards 
+&gt; 
+&gt; Jaison
+&gt; 
+&gt; 
+&gt; On Tue, 11 Jan 2005, Rongzhen Gao wrote:
+&gt; 
+&gt; &gt;  Hi, All
+&gt; &gt;  
+&gt; &gt;  I'm trying to plot topography by fill command, why the color of the shading key is not continuous? 
+&gt; &gt;  Pls look at the attached figure. My problem is why the color from -9000 to -10000 is gray not blue? Is there a way to solve it?
+&gt; &gt;  
+&gt; &gt;  My second question is how to plot a rectangular over the Marianas trench?  Thanks in advance!
+&gt; &gt;  
+&gt; &gt;  Ferret version is 5.5.
+&gt; &gt;  Gao Rongzhen
+&gt; &gt;  
+&gt; &gt;  ---------------------------map.jnl  i used-------------------------------------
+&gt; &gt;  \ cancel mode verify
+&gt; &gt;    cancel region;  cancel data/all;cancel var/all;cancel sym/all
+&gt; &gt;  
+&gt; &gt;    def view/xlim=0.05,0.95/ylim=0.2,0.8 v11
+&gt; &gt;    def sym lon1=105;def sym lon2=165
+&gt; &gt;    def sym lat1=0;  def sym lat2=40
+&gt; &gt;    def sym dx=10;  def sym dy=5
+&gt; &gt;    def sym pall=bluescale
+&gt; &gt;    def sym levv=(-10000,0,1000)
+&gt; &gt;    set window/size=1/aspect=1.294
+&gt; &gt;  
+&gt; &gt;    set data etopo5
+&gt; &gt;    set view v11
+&gt; &gt;    set region/x=($lon1):($lon2)/y=($lat1):($lat2)
+&gt; &gt;    fill/nolabel/nokey/lev=($levv)/pal=($pall)/set rose
+&gt; &gt;    ppl xaxis ($lon1),($lon2),($dx); ppl yaxis ($lat1),($lat2),($dy)
+&gt; &gt;    ppl labset,,0.16,0.16;ppl axlsze 0.16,0.16;ppl tics .1,.12,.1,.12;ppl axlint 1,1  
+&gt; &gt;    let ylo = ($ppl$yorg);let yhi = ylo + ($ppl$ylen);let xlo = ($ppl$xorg) + ($ppl$xlen) + .2; let xhi = xlo + .2
+&gt; &gt;    ppl shakey 1, 1, 0.12, 0, 5, 6, `xlo`, `xhi`, `ylo`, `yhi`; ppl fill;ppl shaset reset 
+&gt; &gt;    contour/nolabel/line=2/lev=(-10000,-9000,1000)/over/set rose;ppl contour/over
+&gt; &gt;    ppl xaxis ($lon1),($lon2),($dx); ppl yaxis ($lat1),($lat2),($dy);  ppl labset,,0.16,0.16; ppl axlsze 0.16,0.16;ppl tics .1,.12,.1,.12;ppl axlint 1,1
+&gt; &gt;    ppl ylab LATITUDE;ppl xlab LONGITUDE;
+&gt; &gt;    ppl contour
+&gt; &gt;    go fland 5  
+&gt; &gt;  
+&gt; &gt;   
+&gt; &gt;    frame/file=map.gif
+&gt; &gt;  
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+</pre>
+<pre>! cancel mode verify
+  cancel region;  cancel data/all ; cancel var/all ; cancel sym/all
+
+  ! &quot;go fland 5&quot; cancel's dataset etopo5 by default. So use a symbolic 
+  ! link to etopo5 instead of the actual dataset. Please modify it 
+  ! according to you ferret data directory.
+
+  sp ln -s /home/pkgs/fer5.8/fer_dsets/data/etopo5.cdf etopo5_ln.nc
+
+  use etopo5_ln.nc
+  use coads_climatology
+
+  def view/xlim=0.05,0.95/ylim=0.50,0.95 v11
+  def view/xlim=0.05,0.95/ylim=0.05,0.50 v21
+
+  set window/size=1/aspect=1.294 
+
+  def sym lon1=105e  ;  def sym lon2=165e  
+  def sym lat1=0     ;  def sym lat2=30n
+  def sym dx=10      ;  def sym dy=5  
+  def sym pall=bluescale
+  def sym levv=(-10000,0,1000)
+  def sym vec_pos=160,32
+  def sym level3=&quot;(0,12,1,-1) dark(0,12,1) pen(0,12,1,1)&quot;   
+  def sym margin1= .2,.2,.2,.2
+  def sym string1=Mar
+  def sym string2=Apr
+  def sym string_pos=109,27,0,0,0.25
+
+  go bold
+
+  set region/x=($lon1):($lon2)/y=($lat1):($lat2)
+
+    set view v11
+       go margins ($margin1)
+       fill/nolabel/nokey/lev=($levv)/pal=($pall)/set rose[d=1]
+         ppl xaxis ($lon1),($lon2),($dx)
+         ppl yaxis ($lat1),($lat2),($dy)
+         ppl labset,,0.16,0.16 
+         ppl axlsze 0.16,0.16 
+         ppl tics .1,.12,.1,.12
+         ppl axlint 1,3
+         let ylo = ($ppl$yorg);let yhi = ylo + ($ppl$ylen)
+         let xlo = ($ppl$xorg) + ($ppl$xlen) + .2; let xhi = xlo + .2
+         ppl shakey 1, 1, 0.12, 0, 5, 6, `xlo`, `xhi`, `ylo`, `yhi`
+       ppl fill
+  
+       contour/nolabel/color=5/lev=(-10000,-8000,1000,-3)/over/set rose[d=1]
+       ppl contour/over
+ 
+       vector/over/set/nolabel/length=10/color=2/L=3  uwnd[d=2],vwnd[d=2]
+          ppl veckey ($vec_pos)
+       ppl vector/over   
+ 
+       contour/nolabel/lev=($level3)/set/over/L=3 wspd[d=2]
+          ppl conset 0.12,2
+       ppl contour/over
+       go fland 5
+ 
+      label ($string_pos) ($string1)
+
+    set view v21
+      go margins ($margin1)
+      fill/nolabel/nokey/lev=($levv)/pal=($pall)/set rose[d=1]
+        ppl xaxis ($lon1),($lon2),($dx)
+        ppl yaxis ($lat1),($lat2),($dy)
+        ppl labset,,0.16,0.16  ;  ppl axlsze 0.16,0.16
+        ppl tics .1,.12,.1,.12 ;  ppl axlint 1,3
+        let ylo = ($ppl$yorg);let yhi = ylo + ($ppl$ylen)
+        let xlo = ($ppl$xorg) + ($ppl$xlen) + .2; let xhi = xlo + .2
+        ppl shakey 1, 1, 0.12, 0, 5, 6, `xlo`, `xhi`, `ylo`, `yhi`
+      ppl fill 
+  
+      contour/nolabel/color=5/lev=(-10000,-8000,1000,-3)/over/set rose[d=1]
+      ppl contour/over
+ 
+      vector/over/set/nolabel/length=10/color=2/L=4  uwnd[d=2],vwnd[d=2]
+        ! ppl veckey ($vec_pos)
+      ppl vector/over   
+ 
+      contour/nolabel/lev=($level3)/set/over/L=4 wspd[d=2]
+         ppl conset 0.12,2
+      ppl contour/over
+      go fland 5
+
+      label ($string_pos) ($string2)
+  
+    sp rm -f wind.gif*
+    frame/file=wind.gif
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00037" href="msg00037.html">Re: Re: about color key and plot a rectangular</a></strong>
+<ul><li><em>From:</em> Rongzhen Gao</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00037.html">Re: Re: about color key and plot a rectangular</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00029.html">question about v5d (compiling)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00029.html">Thread Next</a>][<A HREF="threads.html#00038">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

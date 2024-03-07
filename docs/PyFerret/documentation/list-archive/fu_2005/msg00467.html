@@ -1,0 +1,235 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: compute avrage over certain region -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sun, 22 May 2005 03:03:47 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0505221535390.9315@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 20050519114421.93788.qmail@web32804.mail.mud.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: compute avrage over certain region</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00443.html">Thread Prev</a>][<a href="msg00446.html">Thread Next</a>][<A HREF="threads.html#00467">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: compute avrage over certain region</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: compute avrage over certain region </strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 22 May 2005 15:38:29 +0530 (IST)</li>
+<li>Cc: jagadish karmacharya &lt;<a href="mailto:j_karmacharya@DOMAIN.HIDDEN">j_karmacharya@xxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00443.html">20050519114421.93788.qmail@web32804.mail.mud.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00443.html">20050519114421.93788.qmail@web32804.mail.mud.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jagadish,
+              Your question was a really interesting one. When you asked
+the same question earlier, i tried to write a script to do it..but
+failed. I think it is really difficult make a logical frame work for a
+generalized script where you can give the (x,y) or (i,j) values of the
+boundary and then get the grid points inside it (just because of the
+complexity of possible shapes).
+
+    Then i thought about &quot;visual editing&quot; so that with &quot;IF conditions&quot;
+we can set the grid points outside the region of interest to missing
+values. I know this is tedious and we have to do the same exercise
+everytime when we change the region. But getting the average over a
+selected region is important for your work..then i think the time you
+spend is worth....
+
+    I wrote a sample script(please see the attachment nepal.jnl), using
+a dummy variable. Please find the the explanations inside the jnl file.
+If you face any problem with and Ferret functions (when you work with
+your data) or you have any doubts please let me know.
+
+    Does anybody have any other idea for doing average over an irregular
+shaped region in Ferret ????
+
+With Regards
+
+Jaison
+
+On Thu, 19 May 2005, jagadish karmacharya wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Dear Ferret users,
+
+I want to compute average value of a field over
+certain region. ( over the grids enclosed by the
+boundry of the  country in the attached figure).
+
+I have asked similar question earlier also.Then i was
+suggested to define a mask to match with the boundry.
+I wonder if there is a simpler technic  to &quot;define the
+grid point/coordinates(i, j values)&quot;  over which
+averaging can be done.
+
+Regards
+Jagadish
+
+
+
+Yahoo! Mail
+Stay connected, organized, and protected. Take the tour:
+<a  href="http://tour.mail.yahoo.com/mailtour.html">http://tour.mail.yahoo.com/mailtour.html</a>
+
+</pre>
+</blockquote><pre>
+--
+___________________________________________________
+
+    Jaison Kurian
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-22932505 Extn. 229
+        +91-80-23600450
+    Fax:+91-80-23600865
+___________________________________________________</pre>
+<pre>\ cancel mode verify
+! make a dummy variable defined over the nepal region
+!  ....ofcourse on a regular x-y grid
+
+      define axis/x=79:89:0.25/units=longitudes xlon
+      define axis/y=24:31:0.25/units=latitudes  ylat
+
+      let var = x[gx=xlon] * y[gy=ylat]
+
+      fill/pal=rainbow var
+
+      go land_detail black overlay 7 12 
+
+! now define the end points and delta (should match with the 
+!     original variables delta and grid points) for a rectangular
+!     region covering the region of interest
+
+      let xlo = 80.25
+      let xhi = 88.0 
+      let dx  =  0.25
+      let ylo = 26.50
+      let yhi = 30.25
+      let dy  =  0.25
+   
+      let xpts = x[x=`xlo`:`xhi`:`dx`] + 0*y[y=`ylo`:`yhi`:`dy`]
+      let ypts = 0*x[x=`xlo`:`xhi`:`dx`] + y[y=`ylo`:`yhi`:`dy`]
+
+! let us see the selected region
+
+      pause
+      plot/vs/nolab/over/color=white xpts, ypts
+      pause
+
+! get the missing value for the original variable
+
+      let miss = `var,r=bad`
+
+! now using IF conditions set the grid points outside the interested region
+!      to missing value (if possible do it for a rectangular region)
+
+      let x1   = IF x[gx=xpts] GT 85.25 AND y[gy=xpts] GT 28.25 THEN miss ELSE xpts
+      let x2   = IF x[gx=xpts] GT 83.50 AND y[gy=xpts] GT 29.25 THEN miss ELSE x1
+      let x3   = IF x[gx=xpts] GT 82.25 AND y[gy=xpts] GT 29.75 THEN miss ELSE x2
+      let x4   = IF x[gx=xpts] GE 84.75 AND y[gy=xpts] GE 28.75 THEN miss ELSE x3
+      let x5   = IF x[gx=xpts] GE 87.25 AND y[gy=xpts] GE 28.00 THEN miss ELSE x4
+      let x6   = IF x[gx=xpts] GE 86.00 AND y[gy=xpts] GE 28.25 THEN miss ELSE x5
+      let x7   = IF x[gx=xpts] LE 84.50 AND y[gy=xpts] LE 27.25 THEN miss ELSE x6
+      let x8   = IF x[gx=xpts] LE 86.25 AND y[gy=xpts] LE 26.50 THEN miss ELSE x7
+      let x9   = IF x[gx=xpts] LE 85.00 AND y[gy=xpts] LE 26.75 THEN miss ELSE x8
+      let x10  = IF x[gx=xpts] LE 82.00 AND y[gy=xpts] LE 27.75 THEN miss ELSE x9
+      let x11  = IF x[gx=xpts] LE 82.50 AND y[gy=xpts] LE 27.50 THEN miss ELSE x10
+      let x12  = IF x[gx=xpts] LE 81.00 AND y[gy=xpts] LE 28.25 THEN miss ELSE x11
+      let x13  = IF x[gx=xpts] LE 80.50 AND y[gy=xpts] GE 30.00 THEN miss ELSE x12
+      let x14  = IF x[gx=xpts] LE 80.75 AND y[gy=xpts] LE 28.50 THEN miss ELSE x13
+      let x15  = IF x[gx=xpts] LE 81.50 AND y[gy=xpts] LE 28.00 THEN miss ELSE x14
+      let x16  = IF x[gx=xpts] LE 80.25 AND y[gy=xpts] GE 29.75 THEN miss ELSE x15
+      let x17  = IF x[gx=xpts] EQ 80.75 AND y[gy=xpts] EQ 30.25 THEN miss ELSE x16
+      let x18  = IF x[gx=xpts] EQ 81.25 AND y[gy=xpts] EQ 30.25 THEN miss ELSE x17
+      let x19  = IF x[gx=xpts] EQ 82.25 AND y[gy=xpts] EQ 30.25 THEN miss ELSE x18
+      let x20  = IF x[gx=xpts] GE 83.00 AND y[gy=xpts] GE 29.75 THEN miss ELSE x19
+      let x21  = IF x[gx=xpts] GE 83.50 AND y[gy=xpts] GE 29.50 THEN miss ELSE x20
+      let x22  = IF x[gx=xpts] GE 84.50 AND y[gy=xpts] GE 29.00 THEN miss ELSE x21
+      let x23  = IF x[gx=xpts] GE 84.25 AND y[gy=xpts] GE 29.25 THEN miss ELSE x22
+ 
+      let y23 = x23*0 + ypts       ! set missing y-points according to x-points 
+  
+      plot/ov/vs/color=2 x23, y23  ! let us see wether all the grid points lies
+                                   !   inside the interested region
+
+! now all the unwanted points are set to missing values. First make the 
+!    2 dimensional arrays (x23 &amp; y23) to 1-dimensional using XSEQUENCE 
+!    and then push the missing values to the end of the array using 
+!    COMPRESSI. After this find the number of data points using @NGD transfor-
+!    mation...save this points to a new variable then use these x and
+!    y points to sample the data from original variable using SAMPLEXY
+
+     let ypts_1d   = XSEQUENCE(y23)
+     let ypts_comp = COMPRESSI(ypts_1d) 
+     let ypts_good = ypts_comp[i=1:`ypts_comp[i=@NGD]`]
+
+     let xpts_1d   = XSEQUENCE(x23)
+     let xpts_comp = COMPRESSI(xpts_1d) 
+     let xpts_good = xpts_comp[i=1:`xpts_comp[i=@NGD]`]
+
+     let var_nepal = SAMPLEXY(var,xpts_good,ypts_good)
+
+     list var_nepal[i=@AVE]
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00443" href="msg00443.html">compute avrage over certain region</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00443.html">compute avrage over certain region</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00446.html">Multi-file netcdf dataset via dods?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00443.html">Thread Prev</a>][<a href="msg00446.html">Thread Next</a>][<A HREF="threads.html#00467">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

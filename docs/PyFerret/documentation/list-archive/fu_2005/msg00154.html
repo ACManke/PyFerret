@@ -1,0 +1,127 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Calculating Track Length from Latitude and Longitude -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Tue, 15 Feb 2005 16:17:05 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0502151532160.214&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4EB3DFC97841304EAB19DBD0BED2D935016C1D01@cumulus.shore.mbari.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Calculating Track Length from Latitude and Longitude</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00152.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Calculating Track Length from Latitude and Longitude</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Godin, Michael&quot; &lt;<a href="mailto:Godin@DOMAIN.HIDDEN">Godin@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Calculating Track Length from Latitude and Longitude</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 15 Feb 2005 16:17:04 -0800 (PST)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00152.html">4EB3DFC97841304EAB19DBD0BED2D935016C1D01@cumulus.shore.mbari.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Michael,
+	What you need to do I think is to use @ddf rather than
+the difference you use where the terms subtracted have different
+numbers of values.  With @ddf the last point on the track
+will be lost - if you used @ddb or @ddc the first or both end
+points would be lost.
+	Since you use L=... I presume the data is read in along
+the t-axis.  Here is a demo based on your email to illustrate.
+Good luck,
+	Mick
+
+! define a track with &quot;sst&quot; increasing linearly along it
+region/L=1:1000
+let LONGITUDE = 180+(L-500)^2/2500
+let LATITUDE  = 20+(L-500)/10
+let SST = 30 - abs(latitude)/5  ! fake sst, decreasing from equator
+
+LET R_EQUATOR=6378.137 ! earths equatorial radius
+LET R_POLAR  =6356.752 ! earths polar radius
+LET D2R = atan(1.)/45  ! PI/180 to convert degrees to radians
+! then the east and north positions in km are
+LET EASTING  =R_EQUATOR*cos(D2R*LATITUDE)*LONGITUDE*D2R
+LET NORTHING =R_POLAR*LATITUDE*D2R
+! use forward difference to get increments in position
+LET DX = EASTING[L=@DDF]
+LET DY = NORTHING[L=@DDF]
+LET DTRACK = (DX^2+DY^2)^0.5
+LET/TITLE=&quot;Track&quot;/UNITS=&quot;km&quot; TRACK = DTRACK[L=@RSUM]
+
+! plot sst vs track
+set view upper ; plot/nolab/vs/line=1 track,sst
+
+! shade a chart in lower half
+set view lower ; ppl axlen,5,3
+use etopo40
+shade/nolab/nokey/pal=gray if(rose ge 0)then 1
+! define a rectangular mark
+let bx=ysequence({-0.5,0.5,0.5,-0.5})
+let by=ysequence({-0.5,-0.5,0.5,0.5})
+! ... and color the trajectory according to the value of sst
+polygon/o/nolab/coord_ax=y longitude+bx,latitude+by,sst
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00152" href="msg00152.html">Calculating Track Length from Latitude and Longitude</a></strong>
+<ul><li><em>From:</em> Godin, Michael</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00152.html">Calculating Track Length from Latitude and Longitude</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00155.html">RE: Calculating Track Length from Latitude and Longitude</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00152.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

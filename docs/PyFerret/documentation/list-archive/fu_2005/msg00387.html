@@ -1,0 +1,203 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: plane rotation -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 28 Apr 2005 13:17:01 &#45;0700 -->
+<!--X-Message-Id: 427144BC.7090600@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 5.1.0.14.0.20050427124816.00a9cb40@mail.flinders.edu.au -->
+<!--X-Reference: 42712C42.7090207@noaa.gov -->
+<!--X-Derived: gif00021.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: plane rotation</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00386.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00387">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: plane rotation</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: plane rotation</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 28 Apr 2005 13:17:00 -0700</li>
+<li>Cc: Hemerson Tonin &lt;<a href="mailto:hemer.tonin@DOMAIN.HIDDEN">hemer.tonin@xxxxxxxxxxxxxxx</a>&gt;,       &quot;ferret users-noaa.gov&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00386.html">42712C42.7090207@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00381.html">5.1.0.14.0.20050427124816.00a9cb40@mail.flinders.edu.au</a>&gt; &lt;<a href="msg00386.html">42712C42.7090207@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi all,<br>
+Part II.  The rotated output grid is really a rectangular grid, it just 
+does not follow constant lines of longitude and latitude.  So we can put 
+the rotated data onto an x-y grid, and not have to deal with it in 
+curvilinear coordinates.  Think of the equator.  In the lat-lon grid 
+it's a set of points with varying longitude and constant latitude.  In 
+the rotated grid both the longitude and latitude coordinates vary.  We 
+can use the SAMPLEXY function to get the values of the data field at 
+that set of longitudes and latitudes. We can do this for all the points 
+on the 2-D grid.  Then create the output, rotated grid in terms of index 
+space, I and J (abstract X and Y axes).  In out map projection script, 
+we have units of radians, so I'll do the samplexy on the data in radians.<br>
+<br>
+First, the rotate script needs the parameters central_meridian and 
+standard_parallel so it will work for data on any part of the globe.<br>
+<br>
+  
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!<br>
+  \ cancel mode verify  
+  ! mp_rotate.jnl --  Sets up variables for a Rotated projection using<br>
+  !                  'curvilinear coordinates' code in Ferret v4.50<br>
+  !                  
+  ! Ansley Manke 4/28/05<br>
+  ! based on other map projection scripts<br>
+ 
+  ! Description:  Sets up variables for a Rotated map of the world<br>
+  !<br>
+  ! Usage:    
+  !  go mp_rotate angle [central meridian] [standard_parallel]<br>
+  !<br>
+  ! arg 1 - angle to rotate from horizontal X axis, in degrees<br>
+  ! arg 2 - longitude used for the center of the projection, 
+mp_central_meridian<br>
+  ! arg 3 - latitude used for the center of the projection, 
+mp_standard_parallel<br>
+ 
+  ! Example:<br>
+  !  use coads_climatology<br>
+  !  go mp_rotate 30<br>
+  !  set grid sst<br>
+  !  shade/noaxis sst[l=1], x_page, y_page<br>
+  !<br>
+  let/quiet mp_x = x<br>
+  let/quiet mp_central_meridian = $2%(mp_x[i=@max] + mp_x[i=@min])/2%<br>
+  let/quiet mp_y = y<br>
+  let/quiet mp_standard_parallel = $3%(mp_y[j=@max] + mp_y[j=@min])/2 
+%  ! ???<br>
+ 
+  let/quiet Pi = 3.14159265<br>
+  let/quiet deg2rad = Pi / 180.0<br>
+ 
+  let/quiet mp_R = $1* deg2rad<br>
+ 
+  let/quiet mp_lambda0 = mp_central_meridian * deg2rad<br>
+ 
+  let/quiet mp_phi0 = mp_standard_parallel * deg2rad<br>
+ 
+  let/quiet mp_lambda = mp_x * deg2rad - mp_lambda0<br>
+  let/quiet mp_phi = mp_y * deg2rad - mp_phi0<br>
+ 
+  let/quiet x_page = mp_lambda* cos(mp_R) - mp_phi* sin(mp_R)<br>
+  let/quiet y_page = mp_phi* cos(mp_R) + mp_lambda* sin(mp_R)<br>
+ 
+  let/quiet mp_mask = 1<br>
+  set mode/last verify<br>
+  
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!<br>
+<br>
+ 
+<br>
+A sample script, using a subset of the ETOPO data so we can see the 
+rotation easily.<br>
+<br>
+  yes? use etopo20<br>
+  yes? save/clobber/file=esubset.nc  rose[x=100:150,y=-40:0]<br>
+  yes? can data/all<br>
+<br>
+     ! Do the rotated map projection<br>
+  yes? use esubset<br>
+  yes? set grid rose<br>
+  yes? go mp_rotate 30<br>
+  yes? shade/pal=land_sea rose, x_page, y_page<br>
+<br>
+     ! The rotation variables are defined in radians.<br>
+     ! Define axes in radians, and transfer ROSE onto them<br>
+<br>
+  yes? def axis/x xrad=mp_lambda<br>
+  yes? def axis/y yrad=mp_phi<br>
+  yes? let roserad = rose[gx=xrad@asn,gy=yrad@asn]<br>
+<br>
+     ! Set up the points to sample ROSERAD at;<br>
+     ! all the locations on the rotated grid, as a<br>
+     ! simple lists of x, y, and function.<br>
+<br>
+  yes? let xx = xsequence(x_page)<br>
+  yes? let yy = xsequence(y_page)<br>
+  yes? let rpts = samplexy(roserad, xx, yy)<br>
+<br>
+     ! This is the output grid, in rotated space. (Give<br>
+     ! the axes units of INDEX to emphasize this is in<br>
+     ! index space).<br>
+<br>
+  yes? let nx = `rose,return=isize`<br>
+  yes? let ny = `rose,return=jsize`<br>
+  yes? def axis/x=1:`nx`:1/units=index xrot<br>
+  yes? def axis/y=1:`ny`:1/units=index yrot<br>
+<br>
+     ! The reshape function puts our sampled points on<br>
+     ! the output grid.<br>
+<br>
+  yes? let outvar = x[gx=xrot] + y[gy=yrot]<br>
+  yes? shade/pal=land_sea reshape(rpts, outvar)<br>
+<br>
+<br>
+<p><a href="gif00021.gif" ><img src="gif00021.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00381" href="msg00381.html">plane rotation</a></strong>
+<ul><li><em>From:</em> Hemerson Tonin</li></ul></li>
+<li><strong><a name="00386" href="msg00386.html">Re: plane rotation</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00386.html">Re: plane rotation</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00383.html">ylab</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00386.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00387">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

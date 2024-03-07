@@ -1,0 +1,237 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?) -->
+<!--X-From-R13: Ayvivre Oepure <Ayvivre.OepureNvserzre.se> -->
+<!--X-Date: Fri, 2 May 2003 10:16:47 &#45;0700 -->
+<!--X-Message-Id: 3EB237FD.7090705@ifremer.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3EA9009C.4020902@ifremer.fr -->
+<!--X-Reference: 3EAFE2C2.90908@ifremer.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00323.html">Thread Prev</a>][<a href="msg00349.html">Thread Next</a>][<A HREF="threads.html#00333">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</strong></li>
+<li><strong>From</strong>: <strong>Olivier Archer &lt;<a href="mailto:Olivier.Archer@DOMAIN.HIDDEN">Olivier.Archer@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 02 May 2003 11:18:53 +0200</li>
+<li>References: &lt;<a href="msg00318.html">3EA9009C.4020902@ifremer.fr</a>&gt; &lt;<a href="msg00323.html">3EAFE2C2.90908@ifremer.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.0.0) Gecko/20020623Debian/1.0.0-0.woody.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi,<br>
+   I've *temporary* solved my problem, with a so ugly hack:<br>
+I've overload the fopen libc function to set errno whith EACCES when it 
+is EROFS...<br>
+<br>
+#include &lt;stdlib.h&gt;<br>
+#include &lt;dlfcn.h&gt;<br>
+#include &lt;signal.h&gt;<br>
+#include &lt;errno.h&gt;<br>
+<br>
+<br>
+FILE *fopen(const char *path, const char *mode){<br>
+       static FILE *(*RealFopen)(const char *path, const char *mode)=0;<br>
+       FILE *fid;<br>
+<br>
+<br>
+ // set it up only once<br>
+ if (!RealFopen){<br>
+   RealFopen=dlsym(((void *) -1l), &quot;fopen&quot;);<br>
+   if (!RealFopen){<br>
+     fprintf(stderr, &quot;Fatal error - cannot find fopen()\n&quot;);<br>
+     abort();<br>
+   }<br>
+ }<br>
+<br>
+ fid= RealFopen(path,mode);<br>
+   /* force errno to be EACCES if it is EROFS */<br>
+ if( (fid == NULL) &amp;&amp; ( errno == EROFS ) ){ errno=EACCES; }<br>
+ return fid;<br>
+}<br>
+<br>
+%gcc -o fopen.so -shared fopen.c<br>
+%setenv LD_PRELOAD fopen.so<br>
+%ferret<br>
+<br>
+This hack permit me go ahead with LAS, but I think something is doable 
+source side...<br>
+<br>
+--<br>
+Olivier<br>
+<br>
+<br>
+Olivier ARCHER wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi again, still investgating....<br>
+<br>
+I've noticed that if the 'go' statement fail with 'permission denied', 
+ferret try to open it ro. ie:<br>
+<br>
+<br>
+wlos datacer:/home/biblios/las/server/jnls# cat test.jnl<br>
+message hello ferret<br>
+wlos datacer:/home/biblios/las/server/jnls# ls -l test.jnl<br>
+-r--r--r--    1 www-data www-data       21 Apr 30 13:34 test.jnl<br>
+<br>
+if I now run ferret as root, it work. strace says:<br>
+open(&quot;./test.jnl&quot;, O_RDWR)              = -1 EACCES (Permission denied)<br>
+open(&quot;./test.jnl&quot;, O_RDONLY)            = 3<br>
+<br>
+so ferret see that he cannot open rw, so he open ro. great!<br>
+<br>
+But if i run ferret as www-data user i've got:<br>
+**ERROR: test: Read-Only file system<br>
+and strace *only* say:<br>
+open(&quot;./test.jnl&quot;, O_RDWR)              = -1 EROFS (Read-only file 
+system)<br>
+<br>
+and ferret doesn't try to open it ro ...<br>
+<br>
+<br>
+So i think that ferret handle correctly EACCESS error, falling back to 
+RO. But the EROFS error seem to not be handled correctly... probably 
+something like<br>
+if (errno == EACCESS ) as to be changed to<br>
+if ( (errno == EACCESS) || (errno ==EROFS)  )<br>
+<br>
+I havent the ferret source code to check and try.... And reading 
+source code is more understandable than strace...<br>
+Is someone who have acces to source code can check ? Or maybe someone 
+can send it to me ?<br>
+<br>
+Thx<br>
+--<br>
+Olivier<br>
+<br>
+<br>
+Olivier ARCHER wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+   I'm very new to ferret, and i using it in conjuction with Live 
+Access Server.<br>
+<br>
+When Ferret trie on my system (linux 2.4.18 debian) to access a .jnl 
+file, it try to open it RW. But .jnl file are on nfs ro and ferret 
+complain...<br>
+ 
+<br>
+*Adding an acceptable error string: &quot;*** NOTE: &quot;.<br>
+    NOAA/PMEL TMAP<br>
+    FERRET v5.41      Linux 2.4.3-12smp - 08/30/02<br>
+    25-Apr-03 08:49    yes? cancel mode verify<br>
+yes? cancel mode interp<br>
+yes? canc data/all<br>
+yes? go std_initialize 
+&quot;<a  href="http://wlos.ifremer.fr:8094/dodsC/MWF/NSCAT/WEEK&quot">http://wlos.ifremer.fr:8094/dodsC/MWF/NSCAT/WEEK&quot</a>; &quot;1&quot; &quot;1&quot; &quot;wind_speed&quot;<br>
+**ERROR: std_initialize: Read-only file system<br>
+<br>
+<br>
+I've straced ferret, and here are the last signifiant lines:<br>
+<br>
+*read(0, &quot;go std_initialize \&quot;<a  href="http://wlos.i&quot">http://wlos.i&quot</a>;..., 4096) = 90<br>
+write(5, &quot;go std_initialize \&quot;<a  href="http://wlos.i&quot">http://wlos.i&quot</a>;..., 90) = 90<br>
+access(&quot;/home/biblios/las/server/jnls/std_initialize.jnl&quot;, F_OK) = 0<br>
+access(&quot;/home/biblios/las/server/jnls/std_initialize.jnl&quot;, F_OK) = 0<br>
+open(&quot;/home/biblios/las/server/jnls/std_initialize.jnl&quot;, O_RDWR) = -1 
+EROFS (Read-only file system)<br>
+open(&quot;/home/biblios/las/server/jnls/std_initialize.jnl&quot;, O_RDWR) = -1 
+EROFS (Read-only file system)<br>
+dup(2)                                  = 6<br>
+fcntl64(6, F_GETFL)                     = -1 ENOSYS (Function not 
+implemented)<br>
+fcntl(6, F_GETFL)                       = 0x1 (flags O_WRONLY)<br>
+close(6)                                = 0<br>
+fstat(2, {st_mode=S_IFIFO|0600, st_size=0, ...}) = 0<br>
+old_mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, 
+-1, 0) = 0x41c34000<br>
+write(2, &quot;**ERROR: std_initialize: Read-on&quot;..., 47) = 47<br>
+write(1, &quot;yes? &quot;, 5)                    = 5<br>
+read(0,<br>
+<br>
+<br>
+Is there a directive to say that ferret must open .jnl file RO ?<br>
+<br>
+--<br>
+Olivier<br>
+<br>
+<br>
+</blockquote><pre>
+
+
+</pre>
+</blockquote><pre>
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00349" href="msg00349.html">Re: hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</a></strong>
+<ul><li><em>From:</em> Olivier ARCHER</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00318" href="msg00318.html">Ferret open .jnl file rw ?</a></strong>
+<ul><li><em>From:</em> Olivier ARCHER</li></ul></li>
+<li><strong><a name="00323" href="msg00323.html">Re: Ferret open .jnl file rw ?</a></strong>
+<ul><li><em>From:</em> Olivier ARCHER</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00323.html">Re: Ferret open .jnl file rw ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00349.html">Re: hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00323.html">Thread Prev</a>][<a href="msg00349.html">Thread Next</a>][<A HREF="threads.html#00333">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

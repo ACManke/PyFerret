@@ -1,0 +1,181 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: anomalies -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 31 Aug 2004 06:11:28 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0408311856350.29026&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6.0.0.22.0.20040830160407.01c31bc0@localhost -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: anomalies</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00591.html">Thread Prev</a>][<a href="msg00569.html">Thread Next</a>][<A HREF="threads.html#00596">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: anomalies</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: anomalies</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 31 Aug 2004 18:59:07 +0530 (IST)</li>
+<li>Cc: Wendy Wang &lt;<a href="mailto:wwang@DOMAIN.HIDDEN">wwang@xxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00591.html">6.0.0.22.0.20040830160407.01c31bc0@localhost</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Wendy Wang,
+                Ferret is complaining that it can't see a variable
+or time axis in the name &quot;cl&quot;. To find the anomalies the script 
+should be like
+
+           let h_time = h[t=16-jan-1971:16-dec-1980]
+           let h_clim = h_time[gt=month_reg@mod]
+           let h_a    = h_time - h_clim[t=16-jan-1971:16-dec-1980]
+
+Have a look at this FAQ :
+<a  href="http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/daily_climatology.html">http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/daily_climatology.html</a> 
+
+  Here is an example based on the above FAQ but for monthly climatology. 
+As you can see there isn't any problems with spatial averaged data.
+
+!---------example.jnl------------------------------
+
+     use monthly_navy_winds
+
+! Define a &quot;monthly climatological axis&quot;
+
+     define axis/T=0:365.2425/EDGES/NPOINTS=12/T0=1-JAN-0001/UNITS=DAYS/MODULO tclim
+
+! Make the &quot;monthly&quot; climatology using @MOD regridding
+
+     let uclim_12mon = uwnd[GT=tclim@MOD]
+
+! Now the climatology &amp; uwnd are in different time grids but we need
+!   it on the same grid for calculation of anomalies. Since climatology
+!   is on a modulo axis we can directly do it like :
+!       uwind's tstart is 16-JAN-1982 20:00
+!       uwind's tend   is 17-DEC-1992 03:30
+
+     let uclim       = uclim_12mon[T=16-Jan-1982:17-DEC-1992]
+
+! Find the anomaly
+
+     let uanom       = uwnd - uclim
+
+! plotting 
+
+     set reg/X=180/Y=0 
+     plot    uwnd
+     plot/ov uclim
+     plot/ov uanom
+     plot/ov uwnd*0    ! zero line
+  
+     message
+    
+     plot uanom[x=60:70@ave,y=0:10@ave]
+
+!---------------------end of example.jnl---------------------
+
+
+Hope This Helps
+
+With Regards 
+
+Jaison
+
+
+
+
+On Mon, 30 Aug 2004, Wendy Wang wrote:
+
+&gt; Hi ferret_users,
+&gt; 
+&gt; I try to get anomalies:
+&gt; 
+&gt; yes? let h_time=h[t=16-jan-1971:16-dec-1980]
+&gt; yes? let h_clim=h_time[gt=month_reg@mod]
+&gt; yes? let h_a=h-h_clim[gt=cl@asn]
+&gt; 
+&gt; It works fine with original data. But it seems not work with those
+&gt; data averaged or integrated over space:
+&gt; 
+&gt; yes? list h_a
+&gt; **ERROR: unknown defining grid: GT=Cl@ASN
+&gt; 
+&gt; Does anybody know why? Thanks in advance.
+&gt; 
+&gt; Wendy Wang
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00591" href="msg00591.html">anomalies</a></strong>
+<ul><li><em>From:</em> Wendy Wang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00591.html">anomalies</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00569.html">working with JJAS time period of different years</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00591.html">Thread Prev</a>][<a href="msg00569.html">Thread Next</a>][<A HREF="threads.html#00596">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

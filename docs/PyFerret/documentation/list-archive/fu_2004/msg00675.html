@@ -1,0 +1,223 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: 2d&#45;Plot with symbols -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 28 Sep 2004 10:03:15 &#45;0700 -->
+<!--X-Message-Id: 41599995.1090403@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4159460D.90904@giub.unibe.ch -->
+<!--X-Reference: 20040928123200.GA11046@knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: 2d-Plot with symbols</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00674.html">Thread Prev</a>][<a href="msg00676.html">Thread Next</a>][<A HREF="threads.html#00675">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: 2d-Plot with symbols</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hein Zelle &lt;<a href="mailto:zelle@DOMAIN.HIDDEN">zelle@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: 2d-Plot with symbols</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 28 Sep 2004 10:04:21 -0700</li>
+<li>Cc: Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00674.html">20040928123200.GA11046@knmi.nl</a>&gt;</li>
+<li>References: &lt;<a href="msg00673.html">4159460D.90904@giub.unibe.ch</a>&gt; &lt;<a href="msg00674.html">20040928123200.GA11046@knmi.nl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+Here is another method, similar to what Hein does, but using the
+polymark.jnl<br>
+script to draw a whole group of points at once. (see&nbsp; yes? go/help
+polymark for<br>
+details of the script.)&nbsp; This method doesn't let you make each symbol a
+different <br>
+size according to the value of the field,which Hein's method would let
+you do if <br>
+you like.&nbsp; But it's a little simpler. <br>
+<br>
+Because the POLYGON/LINE command does not have the range of colors that
+<br>
+the POLYGON/FILL command does, unfilled shapes cannot represent the
+same <br>
+range of values that filled ones do.&nbsp; But perhaps using POLY/LINE/FILL
+for positive <br>
+and POLY/FILL without the line for negative values would be a way to
+distinguish positive <br>
+and negative differences.&nbsp; I plot the whole field first, so that the
+color key represents <br>
+all the data, then overlay just the positive values with the /LEV
+qualifier to use the same <br>
+colors for the values of the variable, and qualifiers&nbsp; /LINE/FILL to
+outline the polygons. <br>
+<br>
+&nbsp;&nbsp; cancel region<br>
+&nbsp;&nbsp; use etopo120<br>
+&nbsp;&nbsp; palette light_centered<br>
+&nbsp;&nbsp; set window/aspect=`60/80`:axis<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; go basemap x=40:120 y=-20:40<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; ! Create lists of x and y points at all of the grid coordinates,<br>
+&nbsp;&nbsp; ! and also the function value in the region we want.<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; let lon = xsequence(x[gx=rose,x=40:120,y=-20:40] +
+0*y[gy=rose,x=40:120,y=-20:40])<br>
+&nbsp;&nbsp; let lat = xsequence(0*x[gx=rose,x=40:120,y=-20:40] +
+y[gy=rose,x=40:120,y=-20:40])<br>
+&nbsp;&nbsp; let elev = xsequence(rose[x=40:120,y=-20:40])<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; ! Make a mask to distinguish locations of positive values<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; let mask = if elev ge 0 then 1<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; ! First draw all the points with a color key representing the whole
+range<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; go polymark poly/over/key/nolab lon, lat, elev, circle, 0.8<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; ! Overlay just the positive values, with /LINE/FILL to outline <br>
+&nbsp;&nbsp; ! these polygons, and /LEV to keep same color levels <br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; go polymark poly/over/lev/line/fill/nokey/nolab mask*lon, mask*lat,
+elev, circle, 0.8<br>
+&nbsp;&nbsp; <br>
+<br>
+<br>
+Hein Zelle wrote:<br>
+<blockquote type="cite" cite="">
+  <pre wrap="">Nicolas Schneider wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">I have 2-dimensional (x-y) data of temperature differences. I would now 
+like to draw a 2D-plot with symbols instead of filled grid boxes 
+(SHADE). That means that instead of a filled grid box, I would like to 
+draw a symbol reflecting the value in that grid box. Positive 
+temperature differences should be drawn with filled circles with the 
+size depending on the magnitude of the temperature difference. 
+Contrastingly, negative temperature differences should be drawn with 
+open circles, again depending on the magnitude of the difference.
+
+Is this possible with ferret? Where should I look for? Under SHADE 
+commands or PLOT commands?
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+The following does approximately what you want. It's not very pretty,
+I plot the data twice to distinguish between open and closed
+polygons. I find it really looks better if you only use filled
+polygons and let the color distinguish between negative and positive,
+but that's up to you. Look for the POLYGON command in the ferret
+manual for further options and explanation. Producing a circle instead
+of a diamond is left as an excercise for the reader :-)
+
+Hope that helps,
+     Hein Zelle
+
+
+use etopo120
+set region/x=40:120 /y=-20:40
+set window/aspect=`60/80`:axis
+palette light_centered
+go basemap
+
+let xdiamond = tsequence({-1,0,1,0})
+let ydiamond = tsequence({-0,1,0,-1})
+let size1 = if (rose gt 0) then 0.5+abs(rose/10000) else 0
+let size2 = if (rose lt 0) then 0.5+abs(rose/10000) else 0
+
+repeat /i=10:50:2 (repeat /j=26:66:2 (polygon /key /nolab /fill /levels=(-8000,8000,1000) /overlay x[g=rose]+xdiamond*size2, y[g=rose]+ydiamond*size2, rose ; ppl shaset reset))
+
+repeat /i=10:50:2 (repeat /j=26:66:2 (polygon /key /nolab /line /levels=(-8000,8000,1000) /overlay x[g=rose]+xdiamond*size1, y[g=rose]+ydiamond*size1, rose ; ppl shaset reset))
+
+
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">-----------------------------------------------------------------&lt;
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->    Hein Zelle
+    Dept. of Oceographic Research
+    KNMI, The Netherlands
+    work:        <a class="moz-txt-link-abbreviated" href="">zelle@knmi.nl</a>     <a class="moz-txt-link-freetext" href="">http://www.knmi.nl/~zelle</a>
+    private:     <a class="moz-txt-link-abbreviated" href="">hein@icce.rug.nl</a>  <a class="moz-txt-link-freetext" href="">http://www.icce.rug.nl/~hein</a>
+    Phone:       +31 (0)30 2206704
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">-----------------------------------------------------------------&lt;
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->-------------------------------------------------------------- 
+
+Zie ook/see also: <a class="moz-txt-link-freetext" href="">http://www.knmi.nl/maildisclaimer.html</a> 
+ 
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00673" href="msg00673.html">2d-Plot with symbols</a></strong>
+<ul><li><em>From:</em> Nicolas Schneider</li></ul></li>
+<li><strong><a name="00674" href="msg00674.html">Re: 2d-Plot with symbols</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00674.html">Re: 2d-Plot with symbols</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00676.html">Re: 2d-Plot with symbols</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00674.html">Thread Prev</a>][<a href="msg00676.html">Thread Next</a>][<A HREF="threads.html#00675">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

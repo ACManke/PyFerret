@@ -1,0 +1,180 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: why does not it work even after I reshape the varialbes -->
+<!--X-From-R13: Egrir Vnaxva <Egrira.Q.VnaxvaNabnn.tbi> -->
+<!--X-Date: Thu, 1 Apr 2004 14:22:25 &#45;0800 -->
+<!--X-Message-Id: 406C9626.7F4514E3@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY14&#45;F21pEDiOa7ddh0001155e@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: why does not it work even after I reshape the varialbes</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00215.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00216">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: why does not it work even after I reshape the varialbes</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>du hui &lt;<a href="mailto:bjduhui@DOMAIN.HIDDEN">bjduhui@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: why does not it work even after I reshape the varialbes</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Apr 2004 14:22:30 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00215.html">BAY14-F21pEDiOa7ddh0001155e@hotmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Du,
+
+Pardon me if in my quick read of your message I am misunderstanding ....
+
+It looks as if your script is getting needlessly complex.  You'll note that
+the expression you are using
+    let var1=UNEW[d=1,k=5,T=@var]
+does not specify the range along its T axis.  This means that the expression
+still depends upon an awareness of the underlying time axis -- it is through
+that time axis that Ferret knows how date ranges translate into time index
+ranges.  As a result of this dependence on underlying axes expressions like
+    var1 + var2
+should be flagged as having ambiguour time coordinates.
+
+If you specify your coordinates completely and unambiguously, then the
+problems on the time axis should disappear -- as in
+    let var1=UNEW[d=1,k=5,T=1-jan-1980:31-dec-1990@var]
+
+If var1 and var2 have different longitude axes (X) as well, then an expiation
+like &quot;var1+var2&quot; used in
+     FILL/X=47.5E:177.5E/Y=22.50S:22.50N var1+var2
+will also complain of having ambiguous coordinates on the X axis. You must
+resolve the ambiguity by telling Ferret *which* X axis you would like it to be
+using to perform the addition and the plotting.  The simplest solution is to
+use an expression like  &quot;var1 + var2[gx=var1]&quot;.  This tells Ferret to regrid
+var2 along its X axis to match the X axis of var1 before performing the
+addition.
+
+See the Ferret Users' Guide sections on regridding for further explanation.
+
+    - steve
+
+
+
+
+
+du hui wrote:
+
+&gt; I have reshaped the variables I am ploting, but it still does not work
+&gt; the error message is following when i ran it
+&gt;
+&gt; yes? go test.jnl 200
+&gt; USE mm5_lon180.ctrl.nc
+&gt; USE indwp_control.nc
+&gt; use daily_reanal
+&gt; !use rean_daily_tropics_90.nc
+&gt; let n1=792
+&gt; let n2=731
+&gt; let n=730
+&gt; let var1=UNEW[d=1,x=47.5E:177.5E,y=22.5N:22.5S,z=$1,T=@var]
+&gt;  !-&gt; DEFINE VARIABLE
+&gt; var1=UNEW[d=1,x=47.5E:177.5E,y=22.5N:22.5S,z=200,T=@var]
+&gt; let var2=U[d=2,x=47.5E:177.5E,y=22.5N:22.5S,z=$1,T=@var]
+&gt;  !-&gt; DEFINE VARIABLE var2=U[d=2,x=47.5E:177.5E,y=22.5N:22.5S,z=200,T=@var]
+&gt; let var0=u[d=3,x=47.5E:177.5E,y=22.5N:22.5S,z=$1,T=@var]
+&gt;  !-&gt; DEFINE VARIABLE var0=u[d=3,x=47.5E:177.5E,y=22.5N:22.5S,z=200,T=@var]
+&gt; define axis/t=1:1:1 time1
+&gt; Replacing definition of axis TIME1
+&gt;  *** NOTE: grid  used by data set daily_reanal
+&gt;  *** NOTE: Redefinition may alter apparent contents of data set
+&gt; let var1_0=reshape(var1,t[gt=time1])
+&gt;
+&gt; let var2_0=reshape(var2,t[gt=time1])
+&gt; let var0_0=reshape(var0,t[gt=time1])
+&gt;
+&gt; let t1=UNEW[d=1,x=47.5E:177.5E,y=22.5N:22.5S,z=$1,l=1:'n1'@ave]
+&gt;  !-&gt; DEFINE VARIABLE
+&gt; t1=UNEW[d=1,x=47.5E:177.5E,y=22.5N:22.5S,z=200,l=1:'n1'@ave]
+&gt; let t2=U[d=2,x=47.5E:177.5E,y=22.5N:22.5S,z=$1,l=1:'n2'@ave]
+&gt;  !-&gt; DEFINE VARIABLE
+&gt; t2=U[d=2,x=47.5E:177.5E,y=22.5N:22.5S,z=200,l=1:'n2'@ave]
+&gt; let to=u[d=3,x=47.5E:177.5E,y=22.5N:22.5S,z=$1,l=1:'n'@ave]
+&gt;  !-&gt; DEFINE VARIABLE
+&gt; to=u[d=3,x=47.5E:177.5E,y=22.5N:22.5S,z=200,l=1:'n'@ave]
+&gt; let se1=(var1/n1+var0/n)^0.5
+&gt; let tt1=(t1-to)/se1
+&gt; let se2=(var2/n2+var0/n)^0.5
+&gt; let tt2=(t2-to)/se2
+&gt;
+&gt; FILL/X=47.5E:177.5E/Y=22.50S:22.50N var1/n1+var0/n
+&gt;  *** NOTE: Ambiguous coordinates on T axis: VAR1/N1+VAR0/N
+&gt;  **ERROR: illegal limits: VAR0 is not in the range T=783444:802452
+&gt;           Axis extremes are T=0.5:1.5
+&gt; CONTOUR/FILL/X=47.5E:177.5E/Y=22.50S:22.50N var1/n1+var0/n
+&gt; Command file, command group, or REPEAT execution aborted
+&gt;
+&gt; _________________________________________________________________
+&gt; 享用世界上最大的电子邮件系统— MSN Hotmail。  <a  href="http://www.hotmail.com">http://www.hotmail.com</a>
+
+--
+
+Steve Hankin, NOAA/PMEL -- Steven.C.Hankin@noaa.gov
+7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080, FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00215" href="msg00215.html">why does not it work even after I reshape the varialbes</a></strong>
+<ul><li><em>From:</em> du hui</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00215.html">why does not it work even after I reshape the varialbes</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00217.html">What does this error message mean</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00215.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00216">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: irregular box from ij grid to xy grid ... -->
+<!--X-From-R13: [vpx Ecvyynar <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Fri, 10 Sep 2004 12:12:40 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0409101135030.20387&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4F0CD70B&#45;030D&#45;11D9&#45;A99A&#45;000A95A51444@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: irregular box from ij grid to xy grid ...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00617.html">Thread Prev</a>][<a href="msg00619.html">Thread Next</a>][<A HREF="threads.html#00618">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: irregular box from ij grid to xy grid ...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: irregular box from ij grid to xy grid ...</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 10 Sep 2004 12:12:37 -0700 (PDT)</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00616.html">4F0CD70B-030D-11D9-A99A-000A95A51444@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie,
+
+	How to illustrate the domain of a second grid on a graphic
+of a field from another grid is fairly easy if you remove the
+restriction of not writing to/reading from a file. You use something
+similar to the method of your second mail - i.e. creating a polygon.
+How to mask one grid to reflect the extent of another has not come
+to me yet.
+   Here is a demo of overlaying a polygon:
+
+! Demo: overlay polygon to illustrate domain of another grid
+use etopo5
+shade/x=350:370/y=40:50 rose ! this is the &quot;first&quot; grid
+
+! now define a 5x4 grid of points to represent the &quot;other&quot; grid
+def axis/x=1:5:1 xax ; def axis/y=1:4:1 yax
+def grid/x=xax/y=yax grd
+! and define lon,lat so it is a rotated parallelogram
+let d2r=atan(1.)/45 ; let alfa=30
+let cs=cos(d2r*alfa) ; let sn=sin(d2r*alfa)
+let lon=360+x[g=grd]*cs+y[g=grd]*sn
+let lat=45-x[g=grd]*sn+y[g=grd]*cs
+
+! output the lon,lat coords of the outer strip of the grid
+sp rm box.data    ! remove any previous version of the temporary file
+sp touch box.data ! and prepare to append values to it
+! &quot;first&quot; edge : j=1, i=1,2,3,4,5
+repeat/k=1:5 (list/nohead/file=box.data/app/form=(2f8.3) \
+              lon[i=`k`,j=1],lat[i=`k`,j=1])
+! &quot;second&quot; edge : i=5, j=2,3,4
+repeat/k=2:4 (list/nohead/file=box.data/app/form=(2f8.3) \
+              lon[i=5,j=`k`],lat[i=5,j=`k`])
+! &quot;third&quot; edge : j=4, i=4,3,2,1
+repeat/k=2:5 (list/nohead/file=box.data/app/form=(2f8.3) \
+              lon[i=`6-k`,j=4],lat[i=`6-k`,j=4])
+! &quot;last&quot; edge : i=1, j=3,2
+repeat/k=2:4 (list/nohead/file=box.data/app/form=(2f8.3) \
+              lon[i=1,j=`5-k`],lat[i=1,j=`5-k`])
+! actually it wouldn't matter if you duplicated the corners
+
+! read back the polygon box
+file/form=free/var=bx,by box.data
+polygon/o/nolab/line=1 bx,by        ! to surround region with a box, OR
+! polygon/o/pat=lite_vertical bx,by ! to shade region with a pattern
+!----------------------------------------------------------------------
+
+Good luck,
+Mick
+
+|!!! Mick.Spillane@noaa.gov !!!|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00616" href="msg00616.html">irregular box from ij grid to xy grid ...</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00617.html">Re: irregular box from ij grid to xy grid ...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00619.html">POLYGON versus DEFINED REGION</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00617.html">Thread Prev</a>][<a href="msg00619.html">Thread Next</a>][<A HREF="threads.html#00618">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

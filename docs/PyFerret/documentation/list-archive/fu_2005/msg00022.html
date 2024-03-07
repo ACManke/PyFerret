@@ -1,0 +1,203 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Re: Re: change T&#45;axis -->
+<!--X-From-R13: "Dbatmura Unb" <tnbemNfpfvb.np.pa> -->
+<!--X-Date: Thu, 6 Jan 2005 17:16:14 &#45;0800 -->
+<!--X-Message-Id: NSIp9maLn7JFhMJoThD00008232@ns.scsio.ac.cn -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Derived: gif00006.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Re: Re: change T-axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00016.html">Thread Prev</a>][<a href="msg00008.html">Thread Next</a>][<A HREF="threads.html#00022">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Re: Re: change T-axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Jaison Kurian&quot; &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;,  &quot;Ferret&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Re: Re: change T-axis</strong></li>
+<li><strong>From</strong>: <strong>&quot;Rongzhen Gao&quot; &lt;<a href="mailto:gaorz@DOMAIN.HIDDEN">gaorz@xxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 7 Jan 2005 09:19:27 +0800</li>
+<li>Organization: SCSIO</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+
+<DIV>Hi, Jaison, both the example script and mine work.&nbsp; Now for&nbsp;the 
+reference of other users I made a summary shown as below.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>There are two variables with different length, and what i want to do is to 
+make them in equal length. Now there are two kind of method to get it.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>! vars :&nbsp;variable1, N=191 seasons  
+16-apr-1945:16-oct-1992<BR>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+variable2, N=179 seasons  
+16-apr-1948:16-oct-1992<BR>!<BR>----------------------------------Method 
+1:----------------------------------</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; define axis/t=16-apr-1948:16-oct-1992/npoints=179 
+t48to92&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<BR>&nbsp;&nbsp;&nbsp; 
+define grid/t=t48to92 
+gfile&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; file/skip=12/grid=gfile/var=variable1 
+d:\*.asc&nbsp;&nbsp;&nbsp; !&nbsp;&nbsp; data for 1945-1947 is skipped from 
+variable1&nbsp;<BR>&nbsp;&nbsp;&nbsp; file/var=variable2/grid=gfile&nbsp; 
+d:\*.asc</DIV>
+<DIV>----------------------------------Method 
+2::----------------------------------</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp; set data monthly_navy_winds&nbsp; ! dataset 
+available with Ferret</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp; let l_lo =&nbsp; 13&nbsp;&nbsp;&nbsp;&nbsp; ! 
+low&nbsp; value for L&nbsp;&nbsp; <BR>&nbsp;&nbsp;&nbsp;&nbsp; let l_hi = 
+120&nbsp;&nbsp;&nbsp;&nbsp; ! high value for L</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp; let u = uwnd[d=1,l=`l_lo`:`l_hi`]&nbsp; ! extract 
+the subset data<BR>! now extract the time values corresponding to the subset; 
+needed <BR>! only if the original variable is on a calendar time axis</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp; let t_data = T[gt=uwnd,l=`l_lo`:`l_hi`]</DIV>
+<DIV>! get other details about the original time 
+axis<BR>&nbsp;&nbsp;&nbsp;&nbsp; define symbol t_units = 
+`u,r=TUNIT`&nbsp;&nbsp;&nbsp; ! time units 
+(days/hours...)<BR>&nbsp;&nbsp;&nbsp;&nbsp; define symbol t_zero&nbsp; = 
+`u,r=T0`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! Ref. time 
+<BR>&nbsp;&nbsp;&nbsp;&nbsp; define symbol t_cal = GREGORIAN&nbsp; ! JULIAN is 
+also fine&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !Ferret 
+5.5<BR>!&nbsp;&nbsp;&nbsp; define symbol t_cal&nbsp;&nbsp; = 
+`u,r=CALENDAR`&nbsp; ! calendar 
+type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! higher 
+version<BR>&nbsp;<BR>! define a destination time axis with these 
+details<BR>&nbsp;<BR>&nbsp; define 
+axis/t/T0="($t_zero)"/units=($t_units)/CALENDAR=($t_cal)/from_data 
+tsub=t_data<BR>&nbsp;<BR>! suppose your original variable is not on a "CALENDAR" 
+time<BR>! axis, then just after extracting the subset, define an abstract "T" 
+<BR>! axis like<BR>! define axis/t=1:`l_hi-l_lo+1`:1 tsub <BR>! and use this in 
+the following sequence of commands<BR>&nbsp;&nbsp; <BR>! create a new variable 
+"t_stamp"&nbsp; on the destination grid with XYT 
+grid<BR>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+put + Z[gz=u]*0 if needed<BR>&nbsp;&nbsp;&nbsp; let t_stamp = X[gx=u]*0 + 
+Y[gy=u]*0 + T[gt=tsub]&nbsp; ! destination grid</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; let u_t = RESHAPE(u,t_stamp)&nbsp;&nbsp; ! put variable 
+on the destination grid</DIV>
+<DIV>! comparison</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; list/x=60/y=10/l=1:15 u<BR>&nbsp;&nbsp;&nbsp; 
+list/x=60/y=10/l=1:3 u_t</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; plot/x=60/y=10 u_t, u</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>! now you can use u_t ; for u_t "/L=1" ==&gt; first point on time 
+axis</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>!---------end of example.jnl&nbsp; written by 
+Jaison----------------------------
+<HR>
+</DIV>
+<DIV>Hi&nbsp;Gao&nbsp;Rongzhen,</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>1.&nbsp;Regarding&nbsp;example</DIV>
+<DIV>----------------------</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;Which&nbsp;version&nbsp;of&nbsp;Ferret&nbsp;are&nbsp;you&nbsp;using&nbsp;?</DIV>
+<DIV>&nbsp;&nbsp;`u,r=CALENDAR`&nbsp;will&nbsp;work&nbsp;only&nbsp;with&nbsp;the&nbsp;recent&nbsp;versions&nbsp;(5.6/5.7)</DIV>
+<DIV>of&nbsp;Ferret.&nbsp;Otherwise&nbsp;use&nbsp;ncdump&nbsp;to&nbsp;see&nbsp;the&nbsp;calendar&nbsp;type;&nbsp;look&nbsp;for</DIV>
+<DIV>the&nbsp;attribute&nbsp;"calendar=.....",&nbsp;if&nbsp;there&nbsp;is&nbsp;no&nbsp;attribute&nbsp;like&nbsp;that</DIV>
+<DIV>then&nbsp;it&nbsp;is&nbsp;GREGORIAN,&nbsp;so&nbsp;in&nbsp;Ferret&nbsp;do&nbsp;like&nbsp;this</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;define&nbsp;symbol&nbsp;t_cal&nbsp;=&nbsp;GREGORIAN&nbsp;&nbsp;!&nbsp;JULIAN&nbsp;is&nbsp;also&nbsp;fine</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>2.&nbsp;Regarding&nbsp;your&nbsp;script</DIV>
+<DIV>------------------------</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;Without&nbsp;the&nbsp;datasets&nbsp;it&nbsp;is&nbsp;difficult&nbsp;to&nbsp;check&nbsp;your&nbsp;script.&nbsp;Anyway</DIV>
+<DIV>what&nbsp;seems&nbsp;to&nbsp;me&nbsp;is&nbsp;that:</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;both&nbsp;of&nbsp;the&nbsp;datasets&nbsp;are&nbsp;in&nbsp;ascii&nbsp;form,&nbsp;so&nbsp;it&nbsp;is&nbsp;really&nbsp;easy</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;read&nbsp;only&nbsp;the&nbsp;required&nbsp;points&nbsp;(from&nbsp;the&nbsp;bigger&nbsp;dataset)</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rather&nbsp;than&nbsp;reading&nbsp;whole&nbsp;and&nbsp;sub-sizing&nbsp;it&nbsp;in&nbsp;ferret.&nbsp;use</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"SKIP"&nbsp;to&nbsp;skip&nbsp;the&nbsp;first&nbsp;few&nbsp;seasons&nbsp;from&nbsp;the&nbsp;file&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"sst4503-9211s.asc".&nbsp;Skip&nbsp;the&nbsp;first&nbsp;12&nbsp;values&nbsp;from&nbsp;this&nbsp;file</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;read&nbsp;in&nbsp;both&nbsp;the&nbsp;variables&nbsp;to&nbsp;a&nbsp;common&nbsp;grid&nbsp;..like</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(hope&nbsp;your&nbsp;data&nbsp;is&nbsp;in&nbsp;a&nbsp;single&nbsp;column)</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;define&nbsp;axis/t=16-apr-1948:16-oct-1992/npoints=179&nbsp;t48to92</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;define&nbsp;grid/t=t48to92&nbsp;gfile</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file/skip=12/grid=gfile/var=coral&nbsp;d:\p12\seasonal\sst4503-9211s.asc</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file/var=wspd/grid=gfile&nbsp;&nbsp;d:\p12\seasonal\wspd10004803-9211s.asc</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;Have&nbsp;a&nbsp;trial&nbsp;with&nbsp;the&nbsp;attached&nbsp;jnl&nbsp;file&nbsp;(coral.jnl&nbsp;modified&nbsp;version&nbsp;</DIV>
+<DIV>of&nbsp;the&nbsp;script&nbsp;you&nbsp;had&nbsp;send&nbsp;me).</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>With&nbsp;Regards&nbsp;</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Jaison</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>--&nbsp;</DIV>
+<DIV>___________________________________________________</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;Jaison&nbsp;Kurian&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;Centre&nbsp;for&nbsp;Atmospheric&nbsp;and&nbsp;Oceanic&nbsp;Sciences</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;Indian&nbsp;Institute&nbsp;of&nbsp;Science</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;B&nbsp;A&nbsp;N&nbsp;G&nbsp;A&nbsp;L&nbsp;O&nbsp;R&nbsp;E&nbsp;&nbsp;&nbsp;560&nbsp;012</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;Ph:&nbsp;+91-80-3942505</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+91-80-3600450</DIV>
+<DIV>&nbsp;&nbsp;&nbsp;&nbsp;Fax:+91-80-3600865</DIV>
+<DIV>___________________________________________________</DIV>
+<DIV>&nbsp;</DIV>
+<HR>
+
+<p><strong>Attachment:
+<a href="gif00006.gif" ><tt>face-2.gif</tt></a></strong><br>
+<em>Description:</em> GIF image</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00016.html">Fw: Re: Re: change T-axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00008.html">closest distance</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00016.html">Thread Prev</a>][<a href="msg00008.html">Thread Next</a>][<A HREF="threads.html#00022">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

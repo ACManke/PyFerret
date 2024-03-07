@@ -1,0 +1,220 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: with Descriptor file:  ** unknown netCDF error code: &#45;31 -->
+<!--X-From-R13: Egrir Qbhfvaf <pbhfvafNyvzcrg.hzrbpr.znvar.rqh> -->
+<!--X-Date: Fri, 14 May 2004 11:47:03 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.10.10405141417420.6224&#45;100000@limpet.umeoce.maine.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: fc.004c4d19182678913b9aca0000dac611.18267892@umit.maine.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: with Descriptor file:  ** unknown netCDF error code: -31</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00378.html">Thread Prev</a>][<a href="msg00380.html">Thread Next</a>][<A HREF="threads.html#00379">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: with Descriptor file:  ** unknown netCDF error code: -31</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: with Descriptor file:  ** unknown netCDF error code: -31</strong></li>
+<li><strong>From</strong>: <strong>Steve Cousins &lt;<a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 14 May 2004 14:45:39 -0400 (EDT)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;fc.004c4d19182678913b9aca0000dac611.18267892@umit.maine.edu&gt;</li>
+<li>Reply-to: <a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Fri, 14 May 2004, Ansley Manke wrote:
+
+&gt; Your time unit of 2629746 corresponds to monthly data.  (1/12 of 365.2425
+&gt; days).  You have
+&gt; 
+&gt;  S_START =   1,
+&gt;  S_END   =   239,
+&gt;  S_DELTA =   1,
+&gt; 
+&gt; I assume this corresponds to 20 years of data.  But the time axis is 
+&gt; computed
+&gt; using (S_END-S_START-1)/S_DELTA = (239-1)  months.  This is less than
+&gt; 20 years; and that looks to me like it's why you're seeing the error 
+&gt; message,
+&gt; 
+&gt;  WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE
+&gt;  INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY
+&gt; 
+&gt; Following the suggestion of using a DEFINE AXIS command
+&gt; to make the axis that you want, and using its steps to
+&gt; define your axis, if you want:
+&gt; 
+&gt; yes? def
+axis/t=15-jan-1980:15-dec-1999:1/units=months/t0=&quot;15-dec-1979:00:00&quot; tax
+&gt; yes? list t[gt=tax]
+&gt; 
+&gt; Then this suggests thatyou want S_END to be 240.
+
+
+Hi Ansley, 
+
+I gave it a try using 240 and it works!  It is a bit non-intuitive (for me
+anyway) though.  Rather than using (S_END-S_START-1)/S_DELTA I would have
+thought it would be (S_END-S_START+1)/S_DELTA.  I have 239 time slices so
+I would (and did) guess that S_END would be 1 and S_END would be 239.
+At least it works and it is a very easy fix.
+
+Thanks very much,
+
+Steve
+
+
+
+&gt; 
+&gt; Ansley Manke
+&gt; 
+&gt; 
+&gt; Steve Cousins wrote:
+&gt; 
+&gt; &gt;&gt;I have a series of 20 netCDF files, each with 12 time slices (except the
+&gt; &gt;&gt;last file only has 11 time slices). I have a descriptor file to connect
+&gt; &gt;&gt;these:
+&gt; &gt;&gt;
+&gt; &gt;&gt;&amp;FORMAT_RECORD
+&gt; &gt;&gt;D_TYPE	= '  MC',
+&gt; &gt;&gt;D_FORMAT	= '  1C',
+&gt; &gt;&gt;/
+&gt; &gt;&gt;&amp;BACKGROUND_RECORD
+&gt; &gt;&gt;D_TITLE	= 'BIOLOGY',
+&gt; &gt;&gt;D_T0TIME	= '15-dec-1979 00:00:00',
+&gt; &gt;&gt;D_TIME_UNIT	= 2629746.0,
+&gt; &gt;&gt;D_TIME_MODULO	= .false.,
+&gt; &gt;&gt;/
+&gt; &gt;&gt;&amp;MESSAGE_RECORD
+&gt; &gt;&gt;D_MESSAGE     = ' ',
+&gt; &gt;&gt;D_ALERT_ON_OPEN      = F,
+&gt; &gt;&gt;D_ALERT_ON_OUTPUT    = F,
+&gt; &gt;&gt;/
+&gt; &gt;&gt;&amp;EXTRA_RECORD
+&gt; &gt;&gt;/
+&gt; &gt;&gt;&amp;STEPFILE_RECORD
+&gt; &gt;&gt; S_FILENAME    = '/neptune/usr2/pacific-g-46-99/bio.cdf.001',
+&gt; &gt;&gt; S_AUX_SET_NUM   =           0,
+&gt; &gt;&gt; S_START =   1,
+&gt; &gt;&gt; S_END   =   239,
+&gt; &gt;&gt; S_DELTA =   1,
+&gt; &gt;&gt; S_NUM_OF_FILES  =           20,
+&gt; &gt;&gt; S_REGVARFLAG    = '     ',
+&gt; &gt;&gt; S_INDEX = '                       '
+&gt; &gt;&gt;/ 
+&gt; &gt;&gt;&amp;STEPFILE_RECORD
+&gt; &gt;&gt;  S_FILENAME    = '**END OF STEPFILES**'
+&gt; &gt;&gt;/
+&gt; &gt;&gt;
+&gt; &gt;&gt;In ferret I periodically (every 12 slices) get:
+&gt; &gt;&gt;
+&gt; &gt;&gt;	** unknown netCDF error code: -31
+&gt; &gt;&gt;
+&gt; &gt;&gt;Here is an example:
+&gt; &gt;&gt;
+&gt; &gt;&gt;[ferret@rocky server]# ferret
+&gt; &gt;&gt; 	NOAA/PMEL TMAP
+&gt; &gt;&gt; 	FERRET v5.53  
+&gt; &gt;&gt; 	Linux(g77) 2.4.x - 09/26/03
+&gt; &gt;&gt; 	14-May-04 13:02     
+&gt; &gt;&gt;
+&gt; &gt;&gt;yes?  set data &quot;/usr2/fer_dsets/descr/bio-g-80-99.des&quot;
+&gt; &gt;&gt; WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE
+&gt; &gt;&gt; INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY
+&gt; &gt;&gt;yes?  shade/L=1/Z=5/levels=30 co2flx
+&gt; &gt;&gt;yes?  shade/L=12/Z=5/levels=30 co2flx
+&gt; &gt;&gt; ** unknown netCDF error code: -31
+&gt; &gt;&gt;yes?  shade/L=13/Z=5/levels=30 co2flx
+&gt; &gt;&gt;yes?  shade/L=11/Z=5/levels=30 co2flx
+&gt; &gt;&gt;yes?  shade/L=24/Z=5/levels=30 co2flx
+&gt; &gt;&gt; ** unknown netCDF error code: -31
+&gt; &gt;&gt;yes?  shade/L=36/Z=5/levels=30 co2flx
+&gt; &gt;&gt; ** unknown netCDF error code: -31
+&gt; &gt;&gt;yes?  shade/L=48/Z=5/levels=30 co2flx
+&gt; &gt;&gt; ** unknown netCDF error code: -31
+&gt; &gt;&gt;yes?  shade/L=47/Z=5/levels=30 co2flx
+&gt; &gt;&gt;yes?  shade/L=49/Z=5/levels=30 co2flx
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;If I access the file directly (not using the Descriptor file) that
+&gt; &gt;&gt;corresponds to slice 13 I can plot that slice fine.
+&gt; &gt;&gt;
+&gt; &gt;&gt;I can't find what error -31 is.  Anybody have any ideas?
+&gt; &gt;&gt;
+&gt; &gt;&gt;Thanks,
+&gt; &gt;&gt;
+&gt; &gt;&gt;Steve
+&gt; &gt;&gt;
+&gt; &gt;&gt;______________________________________________________________________
+&gt; &gt;&gt; Steve Cousins, Ocean Modeling Group    Email: cousins@umit.maine.edu
+&gt; &gt;&gt; Marine Sciences, 208 Libby Hall        <a  href="http://rocky.umeoce.maine.edu">http://rocky.umeoce.maine.edu</a>
+&gt; &gt;&gt; Univ. of Maine, Orono, ME 04469        Phone: (207) 581-4302
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;  
+&gt; &gt;&gt;
+&gt; &gt;
+&gt; &gt;
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00380" href="msg00380.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00378.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00380.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00378.html">Thread Prev</a>][<a href="msg00380.html">Thread Next</a>][<A HREF="threads.html#00379">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

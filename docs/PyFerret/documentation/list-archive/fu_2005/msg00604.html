@@ -1,0 +1,405 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: FERRET : Re: modulo regridding -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 14 Jun 2005 04:38:30 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0506141707310.32420@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 42A85186.50003@msem.univ&#45;montp2.fr -->
+<!--X-Reference: 42A8826D.2070109@noaa.gov -->
+<!--X-Reference: 42AD8C03.5000005@msem.univ&#45;montp2.fr -->
+<!--X-Reference: 42ADCA85.9060004@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>FERRET : Re: modulo regridding</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00595.html">Thread Prev</a>][<a href="msg00606.html">Thread Next</a>][<A HREF="threads.html#00604">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>FERRET : Re: modulo regridding</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>FERRET : Re: modulo regridding</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 14 Jun 2005 17:11:05 +0530 (IST)</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;,       DELCLAUX Francois &lt;<a href="mailto:francois.delclaux@DOMAIN.HIDDEN">francois.delclaux@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00595.html">42ADCA85.9060004@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00572.html">42A85186.50003@msem.univ-montp2.fr</a>&gt; &lt;<a href="msg00575.html">42A8826D.2070109@noaa.gov</a>&gt;&lt;<a href="msg00590.html">42AD8C03.5000005@msem.univ-montp2.fr</a>&gt; &lt;<a href="msg00595.html">42ADCA85.9060004@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Francois &amp; Ansley,
+                        This is more or less as a reply to the first mail
+from Francois. Few points I want to stress...
+
+   1. you don't have to get the variable on a time axis defined over
+          mid-month dates &quot;just for the sake of finding climatology&quot;.
+          You can safely find the climatology with the data defined on
+          1-st of every month. Suppose you want to get the climatology
+          on mid-month dates...then there is a neat way to get it..please
+          see the example below.
+
+   2. If you know how to define a time axis, then there is no need
+          to use the climatological_axes dataset and &quot;month_reg&quot;
+          ...instead you can define a climatological time axis suitable
+          for your dataset.
+
+   3. Suppose you have monthly data for two years. If what you mean by
+          a climatology for JAN is (JAN_year1 + JAN_year2)/2 then i think
+          the best way is using &quot;abstract&quot; time axis instead of the
+          default calendar axis.
+
+
+ Have a look at the example below...
+
+ Hope This helps
+
+ With Regards
+
+ Jaison
+
+!------------------example.jnl-----------------------
+\ cancel mode verify
+!
+!  let us create a dummy variable defined on 1-st of every month from
+!      JAN-1991 to DEC-1992
+
+    let tdat = TSEQUENCE({1,32,60,91,121,152,182,213,244,274,305,335,366,\
+               397,426,457,487,518,548,579,610,640,671,701})
+    define axis/t/units=days/t0=31-DEC-1990 tmon=tdat
+    let var = sin(t[gt=tmon]/50)
+
+! Now if you want the climatology as JAN_CLIM = ( JAN_1991 + JAN_1992 ) /2
+!   Then the easy way (atleast for me !!!) is to
+!
+!      1. regrid the data to an &quot;abstract&quot; time axis (with same LSIZE)
+!      2. define a modulo abstract climatological axis with 12 points
+!      3. do modulo regridding to above axis to find the climatology
+!      4. define proper calendar climatological time axis
+!      5. assign above calendar time axis to the climatology
+
+   let l_size = `var,r=lend`                    ! step 1
+   define axis/t=1:`l_size`:1   tabs            !   &quot;
+   let var_abs      = var[gt=tabs@ASN]          !   &quot;
+
+   define axis/t=1:12:1/MODULO  tabs_clim       ! step 2
+   let var_abs_clim = var_abs[gt=tabs_clim@MOD] ! step 3
+
+   !  the /modulo present below doesnot have any impact on calculation
+   define axis/t/units=days/T0=31-DEC-0000/MODULO tclim=tdat[l=1:12] ! step 4
+
+   let var_clim = var_abs_clim[gt=tclim@ASN]    ! step 5
+
+! do a cross-check
+
+   list var_clim
+   list/nohead (var[l=1]+var[l=13])/2
+   list/nohead (var[l=2]+var[l=14])/2
+   list/nohead (var[l=3]+var[l=15])/2
+
+! now the climatology is on 1-st of all month..suppose you want to
+!    get it on mid-month dates..then we need a 13th point as 01-JAN
+!    (of next year) for interpolation since the last point now is
+!    01-DEC....
+
+   define axis/t/units=days/T0=31-DEC-0000 t13=tdat[l=1:13]
+   let var_dummy  = var_clim[gt=t13@ASN]
+   let var_dummy1 = IF L[GT=var_dummy] EQ 13 THEN var_dummy[l=1] ELSE var_dummy
+   list var_dummy1
+
+   define axis/t=15-JAN-0001:15-DEC-0001:`365.2425/12`/units=days/\
+          T0=31-DEC-0000/MODULO tclim_mid ! the /modulo here doesnot have
+                                          ! any impact on calculation
+   let var_clim_mid = var_dummy1[gt=tclim_mid]
+
+   plot var_clim_mid, var_clim
+
+! -------------end of example.jnl---------------------------
+
+
+On Mon, 13 Jun 2005, Ansley Manke wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Francois,<br>
+I don't see right now what is happening, but I think we need to use a 
+different idea anyway.  Your data is monthly data at the first of each month. 
+It would be much better to define your own modulo time axis with the 
+coordinates also at the start of each month and create your climatology at 
+the start of each month.<br>
+<br>
+yes? define axis/modulo/t=1-jan-0001:1-dec-0001:`365.2425/12`/units=days 
+m1_reg<br>
+yes?  let divclim1=div[gt=m1_reg@mod]<br>
+<br>
+<br>
+<br>
+DELCLAUX Francois wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ansley,<br>
+Now I understand why the demo described in User Guide is OK.<br>
+Unfortunately, I don't understand why it's not the case for my data.<br>
+Here below is the copy of the ferret output<br>
+Including a time range for the variable beeing regridded with month_reg@lin<br>
+does not change results: this variable is not defined in a correct way.<br>
+If you have some idea ...<br>
+Thanks.<br>
+Francois Delclaux<br>
+<br>
+<br>
+<br>
+umhyd_delclaux% ferret<br>
+        NOAA/PMEL TMAP<br>
+        FERRET v5.40         Linux 2.4.3-12smp - 02/19/02<br>
+        13-Jun-05 14:11 
+yes? use atm_era40.nc<br>
+yes? sh d/v<br>
+     currently SET data sets:<br>
+    1&gt; ./atm_era40.nc  (default)<br>
+  name     title                             I         J         K 
+L<br>
+ PV       Potential vorticity              1:144     1:73      1:2 
+1:540<br>
+             K m**2 kg**-1 s**-1 on grid GNL1 with -0.0001321826 &amp; -32767 
+for mi<br>
+ssing data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  GEO 
+Geopotential                     1:144     1:73      1:2       1:540<br>
+             m**2 s**-2 on grid GNL1 with -3089.586 &amp; -32767 for missing 
+data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  TEMP 
+Temperature                      1:144     1:73      1:2       1:540<br>
+             K on grid GNL1 with 196.2303 &amp; -32767 for missing data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  U        U 
+velocity                       1:144     1:73      1:2       1:540<br>
+             m s**-1 on grid GNL1 with -23.0944 &amp; -32767 for missing data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  V        V 
+velocity                       1:144     1:73      1:2       1:540<br>
+             m s**-1 on grid GNL1 with -31.70974 &amp; -32767 for missing data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  Q 
+Specific humidity                1:144     1:73      1:2       1:540<br>
+             kg kg**-1 on grid GNL1 with 6.80608E-07 &amp; -32767 for missing 
+data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  W 
+Vertical velocity                1:144     1:73      1:2       1:540<br>
+             Pa s**-1 on grid GNL1 with -0.7332675 &amp; -32767 for missing 
+data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  VO 
+Vorticity (relative)             1:144     1:73      1:2       1:540<br>
+             s**-1 on grid GNL1 with -0.00008048117 &amp; -32767 for missing 
+data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  D 
+Divergence                       1:144     1:73      1:2       1:540<br>
+             s**-1 on grid GNL1 with -0.00004415594 &amp; -32767 for missing 
+data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  R 
+Relative humidity                1:144     1:73      1:2       1:540<br>
+             % on grid GNL1 with -4.914274 &amp; -32767 for missing data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375  O3       Ozone 
+mass mixing ratio          1:144     1:73      1:2       1:540<br>
+             kg kg**-1 on grid GNL1 with 9.47E-10 &amp; -32767 for missing data<br>
+             X=1.2W(-1.2):1.2W  Y=91.2S:91.2N  Z=-125:1375    time range: 
+01-SEP-1957 12:00 to 01-AUG-2002 12:00<br>
+ yes?  use climatological_axes<br>
+ *** NOTE: regarding /home/delclaux/ferret/climatological_axes.cdf ...<br>
+ *** NOTE: Climatological axes SEASONAL_REG, MONTH_REG, and MONTH_IRREG 
+defined<br>
+<br>
+! defining a new variable div at one point (x,y,z)<br>
+yes? let div=10e06*d[d=1,k=1,i=10,j=10]<br>
+<br>
+! listing div variable for a 3 year period<br>
+yes? list/t=&quot;01-jan-1960&quot;:&quot;1-dec-1962&quot; div<br>
+             VARIABLE : 10E06*D[D=atm_era40.nc,K=1,I=10,J=10]<br>
+             SUBSET   : 36 points (TIME)<br>
+             LONGITUDE: 22.5E<br>
+             LATITUDE : 67.5S<br>
+             HEIGHT (millibars): 250<br>
+                        22.5E<br>
+                        10<br>
+ 01-JAN-1960 12 / 29:  -0.15<br>
+ 01-FEB-1960 12 / 30:  11.22<br>
+ 01-MAR-1960 12 / 31:   0.16<br>
+ 01-APR-1960 12 / 32:   4.11<br>
+ 01-MAY-1960 12 / 33:   0.63<br>
+ 01-JUN-1960 12 / 34: -10.50<br>
+ 01-JUL-1960 12 / 35:  11.68<br>
+ 01-AUG-1960 12 / 36:   5.09<br>
+ 01-SEP-1960 12 / 37:  -2.97<br>
+ 01-OCT-1960 12 / 38: -11.34<br>
+ 01-NOV-1960 12 / 39:  -4.70<br>
+ 01-DEC-1960 12 / 40:  -0.14<br>
+ 01-JAN-1961 12 / 41:  -1.19<br>
+ 01-FEB-1961 12 / 42:  -6.27<br>
+ 01-MAR-1961 12 / 43:  17.33<br>
+ 01-APR-1961 12 / 44:  -2.21<br>
+ 01-MAY-1961 12 / 45:  -6.09<br>
+ 01-JUN-1961 12 / 46:  -1.26<br>
+ 01-JUL-1961 12 / 47:  23.96<br>
+ 01-AUG-1961 12 / 48: -17.12<br>
+ 01-SEP-1961 12 / 49:  -2.58<br>
+ 01-OCT-1961 12 / 50:  12.22<br>
+ 01-NOV-1961 12 / 51:  -5.44<br>
+ 01-DEC-1961 12 / 52:   2.17<br>
+ 01-JAN-1962 12 / 53:  -3.58<br>
+ 01-FEB-1962 12 / 54:  -8.62<br>
+ 01-MAR-1962 12 / 55:  -3.75<br>
+ 01-APR-1962 12 / 56:  -2.16<br>
+ 01-MAY-1962 12 / 57: -13.72<br>
+ 01-JUN-1962 12 / 58: -15.80<br>
+ 01-JUL-1962 12 / 59:  -3.27<br>
+ 01-AUG-1962 12 / 60: -14.88<br>
+ 01-SEP-1962 12 / 61:  -0.61<br>
+ 01-OCT-1962 12 / 62:  -3.05<br>
+ 01-NOV-1962 12 / 63:  -1.09<br>
+ 01-DEC-1962 12 / 64:  -8.30<br>
+<br>
+! defining a regridded variable divc by interpolation on month_reg axis<br>
+yes?  let divc=div[gt=month_reg, t=&quot;01-SEP-1957&quot;:&quot;01-AUG-2002&quot;]<br>
+<br>
+! listing divc variable<br>
+yes? list/t=&quot;01-jan-1960&quot;:&quot;1-dec-1962&quot; divc<br>
+             VARIABLE : DIV[GT=MONTH_REG, T=&quot;01-SEP-1957&quot;:&quot;01-AUG-2002&quot;]<br>
+             SUBSET   : 36 points (TIME)<br>
+             LONGITUDE: 22.5E<br>
+             LATITUDE : 67.5S<br>
+             HEIGHT (millibars): 250<br>
+                       23E<br>
+                       10<br>
+ 17-DEC-1959 / 23520:....<br>
+ 16-JAN-1960 / 23521:....<br>
+ 15-FEB-1960 / 23522:....<br>
+ 17-MAR-1960 / 23523:....<br>
+ 16-APR-1960 / 23524:....<br>
+ 17-MAY-1960 / 23525:....<br>
+ 16-JUN-1960 / 23526:....<br>
+ 17-JUL-1960 / 23527:....<br>
+ 16-AUG-1960 / 23528:....<br>
+ 16-SEP-1960 / 23529:....<br>
+ 16-OCT-1960 / 23530:....<br>
+ 15-NOV-1960 / 23531:....<br>
+ 16-DEC-1960 / 23532:....<br>
+ 15-JAN-1961 / 23533:....<br>
+ 15-FEB-1961 / 23534:....<br>
+ 17-MAR-1961 / 23535:....<br>
+ 17-APR-1961 / 23536:....<br>
+ 17-MAY-1961 / 23537:....<br>
+ 16-JUN-1961 / 23538:....<br>
+ 17-JUL-1961 / 23539:....<br>
+ 16-AUG-1961 / 23540:....<br>
+ 16-SEP-1961 / 23541:....<br>
+ 16-OCT-1961 / 23542:....<br>
+ 16-NOV-1961 / 23543:....<br>
+ 16-DEC-1961 / 23544:....<br>
+ 16-JAN-1962 / 23545:....<br>
+ 15-FEB-1962 / 23546:....<br>
+ 17-MAR-1962 / 23547:....<br>
+ 17-APR-1962 / 23548:....<br>
+ 17-MAY-1962 / 23549:....<br>
+ 17-JUN-1962 / 23550:....<br>
+ 17-JUL-1962 / 23551:....<br>
+ 17-AUG-1962 / 23552:....<br>
+ 16-SEP-1962 / 23553:....<br>
+ 16-OCT-1962 / 23554:....<br>
+ 16-NOV-1962 / 23555:....<br>
+<br>
+<br>
+<br>
+Ansley Manke a écrit:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Francois,<br>
+When you define the variables for centering, give the variable definitions 
+a time range. When using linear regridding instead of modulo regridding, 
+Ferret tries to regrid to the time range of the modulo axis, which is 
+16-jan-0000 to 16-dec-0000  (do &quot;show axis month_reg&quot; to see this). Since 
+your time data in the range 1957 to 2002 doesn't overlap with the year 
+0000, there is no result. To regrid a time series variable to a modulo 
+axis and have it apply to the time range of the variable,<br>
+<br>
+   let divc = div[gt=month_reg,t=&quot;01-SEP-1957 12:00&quot;:&quot;01-AUG-2002 12:00&quot;]<br>
+<br>
+Modulo time axes are defined to have a time in year 0000 or 0001 for 
+convenience, but this is a case where this choice causes some confusion. 
+I believe this will solve your problem.<br>
+<br>
+Ansley<br>
+<br>
+<br>
+<br>
+</blockquote><pre>
+</pre>
+</blockquote><pre>
+</pre>
+</blockquote><pre>
+--
+___________________________________________________
+
+    Jaison Kurian
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-22932505 Extn. 229
+        +91-80-23600450
+    Fax:+91-80-23600865
+___________________________________________________</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00572" href="msg00572.html">modulo regridding</a></strong>
+<ul><li><em>From:</em> DELCLAUX Francois</li></ul></li>
+<li><strong><a name="00575" href="msg00575.html">Re: modulo regridding</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00590" href="msg00590.html">Re: modulo regridding</a></strong>
+<ul><li><em>From:</em> DELCLAUX Francois</li></ul></li>
+<li><strong><a name="00595" href="msg00595.html">Re: modulo regridding</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00595.html">Re: modulo regridding</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00606.html">Re: modulo regridding</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00595.html">Thread Prev</a>][<a href="msg00606.html">Thread Next</a>][<A HREF="threads.html#00604">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Automate ferret -->
+<!--X-From-R13: Syvmnorgu Rboovaf <Syvmnorgu.RboovafNabnn.tbi> -->
+<!--X-Date: Fri, 21 Jan 2005 08:49:32 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.61.0501210844000.6819@janus.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 006901c4ffb9$c73ddf50$112210ac@SuperStar -->
+<!--X-Reference: 1427.129.171.98.228.1106322291.squirrel@webmail.rsmas.miami.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Automate ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00066.html">Thread Prev</a>][<a href="msg00071.html">Thread Next</a>][<A HREF="threads.html#00067">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Automate ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Rolando S. Balotro&quot; &lt;<a href="mailto:rbalotro@DOMAIN.HIDDEN">rbalotro@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Automate ferret</strong></li>
+<li><strong>From</strong>: <strong>Elizabeth Dobbins &lt;<a href="mailto:Elizabeth.Dobbins@DOMAIN.HIDDEN">Elizabeth.Dobbins@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 21 Jan 2005 08:49:32 -0800 (PST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00065.html">1427.129.171.98.228.1106322291.squirrel@webmail.rsmas.miami.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00063.html">006901c4ffb9$c73ddf50$112210ac@SuperStar</a>&gt;&lt;<a href="msg00065.html">1427.129.171.98.228.1106322291.squirrel@webmail.rsmas.miami.edu</a>&gt;</li>
+<li>Reply-to: <a href="mailto:Elizabeth.Dobbins@DOMAIN.HIDDEN">Elizabeth.Dobbins@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Rolando;<br>
+<br>
+For this type of problem, I've used a shell script that uses ncks in the 
+NCO routines, rather than ferret.  John Hunter just mentioned these in a 
+reply to a question by Yun Li.  The web site is 
+<a  href="http://nco.sourceforge.net/nco.html">http://nco.sourceforge.net/nco.html</a>.  Refer to the manual sections for the 
+exact syntax.<br>
+<br>
+Below is my script for reference.  It copies a bunch of 2D variables, then 
+the top and bottom levels of some 3D variables to a new file.  It 
+generates lots of little files, but you could easily add a line that 
+concatinates the little files together with ncrcat, or just use a ferret 
+descriptor file.<br>
+<br>
+<br>
+<br>
+#!/bin/csh<br>
+<br>
+foreach FILE ( `ls -1 nep3*.nc` )<br>
+  set NEWF=slice_$FILE<br>
+  echo Copying variables from $FILE to $NEWF<br>
+<br>
+  ncks -v ocean_time,Hsbl,zeta,ubar,vbar,sustr,svstr -O $FILE $NEWF<br>
+  ncks -v u,v -F -d s_rho,1 -A  $FILE $NEWF<br>
+  ncrename -v u,ubot -v v,vbot -O $NEWF<br>
+  ncks -v temp,salt,u,v -F -d s_rho,30 -A $FILE $NEWF<br>
+  ncrename -v temp,ttop -v salt,stop -v u,utop -v v,vtop -O $NEWF<br>
+end<br>
+<br>
+<br>
+<br>
+On Fri, 21 Jan 2005, Rolando S. Balotro wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hello All
+
+I have tons of *.nc files to process.
+I need to open them individually and pick a data from a
+selected data point.
+
+Is there a way to automate this?
+For instance open ferret, load the data, extract the data,
+close the data, load another data set, extract and so on.
+
+thanks so many in advance
+roland
+
+
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Dear all,
+
+How to draw a thick line thicker than &quot;thick=3&quot; in a &quot;plot/vs...&quot; command?
+Just like &quot;dark&quot; in &quot;contour&quot; command.
+
+Thanks,
+Jian
+
+****************************************
+Jian Ma
+
+M. S. in Physical Oceanography
+The First Institute of Oceanography
+State Oceanic Administration
+P. R. China
+
+No. 6 Xian-Xia-Ling Road, Qingdao 266061
+Tel: 86-532-8967401
+Fax: 86-532-8967400
+URL: www.fio.org.cn
+****************************************
+</pre>
+</blockquote><pre>
+
+--
+Rolando S. Balotro
+University of Miami
+Rosenstiel School of Marine and Atmospheric Science (RSMAS)
+Division of Meteorology and Physical Oceanography
+4600 Rickenbacker Causeway Miami, FL 33149
+Tel. Number: (1)-305-361-4933
+Email: rbalotro@rsmas.miami.edu
+
+
+
+</pre>
+</blockquote>
+<br>
+*********************<br>
+Elizabeth L. Dobbins<br>
+Research Scientist<br>
+JISAO/PMEL<br>
+phone: (206) 526-4581<br>
+<br>
+&quot;Various forms of jiggery-pokery were used to suit 
+horses to courses.&quot;  -- Michael Burleigh<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00063" href="msg00063.html">How to get a thicker line.</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+<li><strong><a name="00065" href="msg00065.html">Automate ferret</a></strong>
+<ul><li><em>From:</em> Rolando S. Balotro</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00066.html">Re: Automate ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00071.html">Re: Automate ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00066.html">Thread Prev</a>][<a href="msg00071.html">Thread Next</a>][<A HREF="threads.html#00067">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

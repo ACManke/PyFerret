@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: the go land command -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 14 Dec 2004 12:04:13 &#45;0800 -->
+<!--X-Message-Id: 41BF473B.2000808@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 41B9AC05.4000807@bgc&#45;jena.mpg.de -->
+<!--X-Derived: gif00019.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: the go land command</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00901.html">Thread Prev</a>][<a href="msg00913.html">Thread Next</a>][<A HREF="threads.html#00911">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: the go land command</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: the go land command</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 14 Dec 2004 12:04:11 -0800</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00901.html">41B9AC05.4000807@bgc-jena.mpg.de</a>&gt;</li>
+<li>References: &lt;<a href="msg00901.html">41B9AC05.4000807@bgc-jena.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Yogesh,<br>
+It looks as if your variable CO2_T is on a grid with abstract axes,<br>
+where the axis coordinates are simple lists of numbers 1, 2, 3, ... <br>
+The LON and LAT variables have the coordinates in units of degrees <br>
+longitude and latitude.&nbsp; Is that correct?&nbsp; If so, you can create&nbsp;
+longitude<br>
+and latitude axes from variables LON and LAT and put your variable onto
+<br>
+them. Use the @ASN regridding transformation to associate the first X <br>
+coordinate of co2_t with the first longitude, and so on. &nbsp; With the
+plot in <br>
+units of longitude and latitude, the land script should work.&nbsp; Here are
+<br>
+commands you can use:<br>
+<br>
+yes? define axis/x/units=degrees/modulo xlon= lon<br>
+yes? define axis/y/units=degrees ylat = lat<br>
+yes?&nbsp; let co2_t_new = co2_t[gx=xlon@asn, gy=ylat@asn]<br>
+<br>
+yes? shade/nolab co2_t_new<br>
+yes? go land<br>
+<br>
+You can transfer any units or title information from the old<br>
+variable to the new variable with the RETURN keyword and&nbsp; <br>
+let/title= /units=&nbsp; For example, the definition of co2_t_new&nbsp; could be<br>
+<br>
+yes? let/title="`co2_t,return=title`"/units="`co2_t,return=units`" &nbsp;
+co2_t_new = co2_t[gx=xlon@asn, gy=ylat@asn]<br>
+<br>
+Yogesh K. Tiwari wrote:<br>
+<blockquote type="cite" cite="">Hello,
+  <br>
+  <br>
+I have the data like :
+  <br>
+  <br>
+name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L
+  <br>
+&nbsp;LON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Longitude&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:360&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...
+  <br>
+&nbsp;LAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Latitude&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:180&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...
+  <br>
+&nbsp;CO2_T&nbsp;&nbsp;&nbsp; Mean co2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:360&nbsp;&nbsp;&nbsp;&nbsp; 1:180&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...
+  <br>
+  <br>
+When I use the command :-
+  <br>
+  <br>
+shade/nolab co2_t
+  <br>
+  <br>
+it gives the attached plot.
+  <br>
+  <br>
+But the plot X and Y-axis values are 0-360 and 0-180, so
+  <br>
+the 'go land' command not working.
+  <br>
+  <br>
+How to put the 'lon' and 'lat' grid values on co2_t grid,
+  <br>
+so the go land command should work.
+  <br>
+  <br>
+Many thanks for help.
+  <br>
+  <br>
+Regards,
+  <br>
+Yogesh
+  <br>
+  <br>
+  <br>
+  <hr width="90%" size="4"><br>
+  <center><img src="gif00019.gif"></center>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00913" href="msg00913.html">Re: the go land command</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00901" href="msg00901.html">the go land command</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00901.html">the go land command</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00913.html">Re: the go land command</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00901.html">Thread Prev</a>][<a href="msg00913.html">Thread Next</a>][<A HREF="threads.html#00911">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

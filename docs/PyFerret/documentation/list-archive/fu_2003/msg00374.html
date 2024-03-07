@@ -1,0 +1,210 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: bug in interpreter? -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Mon, 12 May 2003 11:42:48 &#45;0700 -->
+<!--X-Message-Id: 3EBFEB81.1E3E98BB@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20030512150416.GA18060@bcw014.knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: bug in interpreter?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00372.html">Thread Prev</a>][<a href="msg00375.html">Thread Next</a>][<A HREF="threads.html#00374">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: bug in interpreter?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hein Zelle &lt;<a href="mailto:zelle@DOMAIN.HIDDEN">zelle@xxxxxxx</a>&gt;,  &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: bug in interpreter?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 12 May 2003 11:44:17 -0700</li>
+<li>References: &lt;<a href="msg00372.html">20030512150416.GA18060@bcw014.knmi.nl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Hein,
+I agree there seems to be a problem in parsing the definition
+of dtdz_anom when Ferret goes to plot it.  Here's a workaround
+that you can use until we track down what is happening. You
+have the three definitions:
+
+  LET dtdz_month = dtdz[gt=hope_month]
+  LET dtdz_clim  = dtdz_month[gt=month_reg@mod]
+  LET  dtdz_anom = dtdz_month - dtdz_clim[gt=dtdz_month@asn]
+
+Note that in the definition of dtdz_anom, you regrid dtdz_clim to the
+grid of dtdz_month. The time axis of dtdz_month is hope_month, so
+you could replace
+
+dtdz_clim[gt=dtdz_month@asn]   with    dtdz_clim[gt=hope_month@asn]
+
+Now you have a simpler definition.  In a similar example I created,
+this fixes the problem.
+
+Ansley Manke
+
+Hein Zelle wrote:
+
+&gt; Very strange ferret behaviour detected. A colleague of mine confirms
+&gt; that he ran into the same problem before, and thinks it is due to too
+&gt; many variables, a too long script, or something similar. Apparently
+&gt; rearranging variables or removing some can fix it.
+&gt;
+&gt; The whole script follows below, I'm just pasting three variable
+&gt; definitions here:
+&gt;
+&gt; let dtdz_month=dtdz[gt=hope_month]
+&gt; let dtdz_clim=dtdz_month[gt=month_reg@mod]
+&gt; let dtdz_anom = dtdz_month - dtdz_clim[gt=dtdz_month@asn]
+&gt;
+&gt; Follows the output from ferret when I run the script.
+&gt;
+&gt; yes? go upwelling-budget
+&gt;   (script runs, no errors visible)
+&gt; yes? set region/x=100w
+&gt; yes? plot dtdz_anom
+&gt;  **ERROR: command syntax: DTDZ_CLIM[GT=D                (error, no plot)
+&gt; yes? plot dtdz_month                                    (no error, plot
+&gt; ok)
+&gt; yes? plot dtdz_anom                                     (no error, plot
+&gt; ok)
+&gt; yes?
+&gt;
+&gt; I'm not doing anything fancy in the definition of dtdz_anom or
+&gt; dtdz_month, they just reference a bunch of other variables. No
+&gt; self-generating code or anything :)
+&gt;
+&gt; Does anyone have an idea what I am running into here? It could be
+&gt; anything from a buffer overrun to a limit in the number of variables
+&gt; reached. Any ideas/solutions are appreciated.
+&gt;
+&gt;          Hein zelle
+&gt;
+&gt; follows the complete upwelling-budget.jnl, the datafile nieuw1.nc is
+&gt; rather huge so I'm not sending it.
+&gt;
+&gt;  ! NOAA/PMEL TMAP
+&gt;  ! FERRET v5.50
+&gt;  ! Linux 2.4.3-12smp - 01/15/03
+&gt;  ! 02-May-03 13:14
+&gt;
+&gt; ! pacific region
+&gt; go pac
+&gt;
+&gt; ! axes
+&gt; use  climatological_axes
+&gt; cancel data 1
+&gt; define axis /t0=15-dec-1989 /t=1:120:1 /unit=months hope_month
+&gt;
+&gt; ! data files
+&gt; use nieuw1.nc
+&gt;
+&gt; ! define variables
+&gt;
+&gt; ! mixed layer depth
+&gt; let mixed = if (k eq 1) then 0 else pt_3[d=1,k=1] - pt_3[d=1]
+&gt;
+&gt; let upwelling_weights=wv * mixed[z=@weq:0.5]
+&gt; let upwelling=upwelling_weights[z=@sum]
+&gt;
+&gt; ! climatology
+&gt; let wv_month=upwelling[gt=hope_month]
+&gt; let wv_clim=wv_month[gt=month_reg@mod]
+&gt; let wv_anom = wv_month - wv_clim[gt=wv_month@asn]
+&gt; let climfold=wv_clim[gt=wv_month@asn]
+&gt;
+&gt; ! dtdz, + climatology
+&gt; let dtdz = 20/pt_3[z=@loc:20]
+&gt;
+&gt; ! climatology
+&gt; let dtdz_month=dtdz[gt=hope_month]
+&gt; let dtdz_clim=dtdz_month[gt=month_reg@mod]
+&gt; let dtdz_anom = dtdz_month - dtdz_clim[gt=dtdz_month@asn]
+&gt; let dtdz_climfold=dtdz_clim[gt=dtdz_month@asn]
+&gt;
+&gt; ! sst budget
+&gt; let wbartbar = climfold*dtdz_climfold
+&gt; let wbartprime = climfold*dtdz_anom
+&gt; let wprimetbar = wv_anom*dtdz_climfold
+&gt; let wprimetprime = wv_anom*dtdz_anom
+&gt; let primesum = wprimetbar + wprimetprime
+&gt;
+&gt; &gt;-----------------------------------------------------------------&lt;
+&gt;     Hein Zelle
+&gt;     Dept. of Oceographic Research
+&gt;     KNMI, The Netherlands
+&gt;     work:        zelle@knmi.nl     <a  href="http://www.knmi.nl/~zelle">http://www.knmi.nl/~zelle</a>
+&gt;     private:     hein@icce.rug.nl <a  href="http://www.icce.rug.nl/~hein">http://www.icce.rug.nl/~hein</a>
+&gt;     Phone:       +31 (0)30 2206704
+&gt; &gt;-----------------------------------------------------------------&lt;
+&gt; --------------------------------------------------------------
+&gt; Zie ook/see also: <a  href="http://www.knmi.nl/maildisclaimer.html">http://www.knmi.nl/maildisclaimer.html</a>
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00375" href="msg00375.html">Re: bug in interpreter?</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00372" href="msg00372.html">bug in interpreter?</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00372.html">bug in interpreter?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00375.html">Re: bug in interpreter?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00372.html">Thread Prev</a>][<a href="msg00375.html">Thread Next</a>][<A HREF="threads.html#00374">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

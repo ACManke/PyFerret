@@ -1,0 +1,146 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Strange zonal mean difference plotting -->
+<!--X-From-R13: Uyraa Qneire <Uyraa.QneireNngz.pu.pnz.np.hx> -->
+<!--X-Date: Tue, 28 Oct 2003 07:14:41 &#45;0800 -->
+<!--X-Message-Id: p05111b04bbc42e699fd8@[10.0.1.2] -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Derived: gif00013.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Strange zonal mean difference plotting</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00781.html">Thread Prev</a>][<a href="msg00784.html">Thread Next</a>][<A HREF="threads.html#00782">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Strange zonal mean difference plotting</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Strange zonal mean difference plotting</strong></li>
+<li><strong>From</strong>: <strong>Glenn Carver &lt;<a href="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 28 Oct 2003 15:09:00 +0000</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Dear All,<br>
+<br>
+I wanted to produce a difference plot of a zonal mean field from two 
+different model runs (which should be identical). Unfortunately I've 
+been getting some odd results from ferret, which I have in part 
+traced to a small problem with one of the netcdf files but I still 
+don't fully understand what's going on.<br>
+<br>
+What also bothers me in particular was how easy it was to produce the 
+wrong plot with little warning from Ferret. When one thinks about how 
+little students think about what they are doing... !<br>
+<br>
+In detail. I have two netcdf files. It turns out one has a slight 
+error in that there is a loss of precision in the longitude axes. So 
+I get for the last longitudes:<br>
+ 11.3W / 63:  348.7497<br>
+ 5.6W  / 64:  354.3747<br>
+<br>
+instead of:<br>
+ 11.2W / 63:  348.7500<br>
+ 5.6W  / 64:  354.3750<br>
+<br>
+The crucial difference is that ferret sees the first longitudes as 
+non-cyclic. This seems to be causing problems. For a variable 'o3', 
+if I do a zonal mean difference by:<br>
+<br>
+fill (o3[d=1,x=@ave] - o3[d=2,x=@ave])*1.e6<br>
+<br>
+I get the plot shown top left in the attached gif image. What I find 
+odd is that if I take the difference the other way:<br>
+<br>
+fill (o3[d=2,x=@ave] - o3[d=1,x=@ave])*1.e6<br>
+<br>
+I get the plot shown top right.  Note that this plot is NOT simply 
+the -ve of the first. Ferret has obviously regridded the data 
+differently somehow and got a completely different (and wrong) answer 
+(again).<br>
+<br>
+In both cases I get a &quot;NOTE&quot; from Ferret about ambiguous grids. 
+However, where I have an issue with this is that it should at least 
+be a warning or error. If ferret doesn't know how to handle the 
+different grids or has to make an assumption I would like to see more 
+feedback from the program. In this particular case I knew what to 
+expect. That may not always be the case.<br>
+<br>
+To get around the different grids I then did:<br>
+  let o3b = o3[d=2,g=o3[d=1]@asn]<br>
+using the ASN transform to put it index-by-index on the same grid. If 
+I now take the zonal mean difference:<br>
+<br>
+fill (o3[d=1,x=@ave] - o3b[x=@ave])*1.e6<br>
+<br>
+I now get the plot shown bottom left - which is what I would expect 
+and agrees with plots I've done of each particular model level.<br>
+<br>
+Interestingly GrADS is also producing an incorrect plot (and 
+different again!). We're still trying to understand that one.<br>
+<br>
+Whilst I think I understand what Ferret is doing, my issue really is 
+that there is not enough feedback from the program to warn that what 
+it's about to do may produce an incorrect plot. Granted I get a note 
+about the ambiguous longitude coordinates but that's all it is, just 
+a note, not a warning or an extended note to say how the ambiguous 
+grid will be handled.<br>
+<br>
+Would be interested to hear other opinions!<br>
+<br>
+ Glenn<br>
+<p><strong>Attachment:
+<a href="gif00013.gif" ><tt>ferret.gif</tt></a></strong><br>
+<em>Description:</em> GIF image</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00781.html">eof arguments</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00784.html">Re: Strange zonal mean difference plotting</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00781.html">Thread Prev</a>][<a href="msg00784.html">Thread Next</a>][<A HREF="threads.html#00782">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

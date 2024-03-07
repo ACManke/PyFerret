@@ -1,0 +1,292 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: small graphics in Ferret -->
+<!--X-From-R13: Bngevpx Pebpxznaa <Bngevpx.PebpxznaaNprn.se> -->
+<!--X-Date: Thu, 18 Nov 2004 04:18:19 &#45;0800 -->
+<!--X-Message-Id: 419C930A.6080001@cea.fr -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 200411172138.iAHLcdMM007613@ferret.pmel.noaa.gov -->
+<!--X-Reference: 002c01c4cd54$e80f99e0$2306b280@pcmario -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: small graphics in Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00818.html">Thread Prev</a>][<a href="msg00820.html">Thread Next</a>][<A HREF="threads.html#00819">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: small graphics in Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: small graphics in Ferret</strong></li>
+<li><strong>From</strong>: <strong>Patrick Brockmann &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 18 Nov 2004 13:18:18 +0100</li>
+<li>In-reply-to: &lt;<a href="msg00818.html">002c01c4cd54$e80f99e0$2306b280@pcmario</a>&gt;</li>
+<li>References: &lt;<a href="msg00817.html">200411172138.iAHLcdMM007613@ferret.pmel.noaa.gov</a>&gt; &lt;<a href="msg00818.html">002c01c4cd54$e80f99e0$2306b280@pcmario</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Mario Germano wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">In reply to Billy Kessler, it is also possible (and more straightforward) to<br>
+use the -batch option, to produce a postscript file:<br>
+for instance:<br>
+   &gt; ferret -batch filename.ps<br>
+   &gt; yes? ....all your plot commands ....<br>
+   &gt; quit<br>
+Mario<br>
+<br>
+ 
+<br>
+</blockquote>Hi all,<br>
+<br>
+I have attached a script called ps2gif to transfom ps to gif at a 
+specified size.<br>
+My favorite combinaison of commands is then:<br>
+<br>
+ferret -server -batch file.ps -script file.jnl arg1 arg2<br>
+ps2gif -v -g 200xc file.ps<br>
+<br>
+You have then produced a gif image of 200 pixels width and a height set<br>
+by the ratio you have decided when used the command yes?set 
+window/aspect=ratio<br>
+<br>
+Note, that you will have to modify pageheight and pagewidth according to 
+the ratio set.<br>
+<br>
+Hope that can help<br>
+<br>
+Patrick<br>
+<br>
+<br>
+<pre>#!/bin/ksh
+#
+# Author: Patrick Brockmann
+# Contact: Patrick.Brockmann@ipsl.jussieu.fr
+# $Date: 2004/09/01 14:05:28 $
+# $Name: FAST_570_1_0 $
+# $Revision: 1.1.1.6 $
+# History:
+# Modification:
+#
+
+#---------------------------------------------
+geometry_tocalculate='x'
+geometry_size=800
+rotate_command='none'
+verbose=0
+option_outputname=0
+#---------------------------------------------
+# pageheight and pagewidth values of the postscript file are obtained from following command:
+# gs -q -dNOPAUSE -dBATCH -sDEVICE=pnmraw -sOutputFile=- file.ps | pnmcrop | pnmfile
+# They reflect the ratio set by the command set window/aspect 
+# The following values reflect the A4 ratio ie 210/296 set by 
+# the scrip page_new whitch uses the line set window/aspect=`296/210`
+
+pageheight=540
+pagewidth=384
+
+#---------------------------------------------
+while [ $# -ne 0 ]
+do
+        case $1 in
+        -h|--help|-help)
+                echo &quot;----------------------------------------------------------------------------&quot;
+                echo &quot;Usage: ps2gif [-v] [-h] [-g {xsize}x{ysize}] [-o fileout.gif] filein.ps&quot;
+                echo
+                echo &quot;Description:&quot;
+                echo &quot;   Convert a postscript file to a gif image file.&quot;
+                echo
+                echo &quot;   Here is a typical ferret script:&quot;
+                echo &quot;   	go page_new 1 1&quot;
+                echo &quot;   	set viewport 1&quot;
+                echo &quot;   	use levitus_climatology&quot;
+                echo &quot;   	shade temp[k=1]&quot;
+                echo &quot;   	exit&quot;
+                echo &quot;   The postscript will be generated with:&quot;
+                echo &quot;   	ferret -server -batch ex.ps &lt; ex.jnl&quot;
+                echo &quot;   The gif image will be generated with:&quot; 
+                echo &quot;   	ps2gif -o ex.gif ex.ps&quot;
+                echo
+                echo &quot;   ps2gif is a shell script based on gs from <a  href="http://www.cs.wisc.edu/~ghost,&quot">http://www.cs.wisc.edu/~ghost,&quot</a>;
+                echo &quot;   pnmfile, pnmcrop, pnmflip from <a  href="http://netpbm.sourceforge.net/">http://netpbm.sourceforge.net/</a> and&quot;
+                echo &quot;   convert d'ImageMagick from <a  href="http://www.imagemagick.org/.&quot">http://www.imagemagick.org/.&quot</a>;
+                echo
+                echo &quot;   The postscript is converted with gs to a pnmraw 24 bits image.&quot; 
+                echo &quot;   Then, the pnmraw 24 bits image is converted to a 8 bits gif image&quot; 
+                echo &quot;   using convert (compiled with the --enable-lzw=yes option).&quot;
+                echo
+                echo &quot;        ps ------&gt; pnmraw -----------&gt; pnmraw -----------&gt; gif&quot;
+                echo &quot;            (gs)           (pnmcrop)           (convert)&quot;  
+                echo &quot;                           (pnmflip)&quot;  
+                echo
+                echo &quot;Arguments:&quot;
+                echo &quot;   filein.ps: Postscript file must have .ps in name.&quot;
+                echo
+                echo &quot;Options:&quot;
+                echo &quot;   -h, --help, -help&quot;
+                echo &quot;       Print this manual.&quot;
+                echo
+                echo &quot;   -v, --verbose&quot;
+                echo &quot;       Informations are printed on standard output.&quot;
+                echo
+                echo &quot;   -g, --geometry&quot;
+                echo &quot;       Examples:&quot; 
+                echo &quot;       -g cx800 for a portrait postscript (go page_new ...)&quot;
+                echo &quot;                defining a height of 800 pixels and&quot;
+                echo &quot;                a width calculated following the A4 page size ratio.&quot;
+                echo &quot;       -g 800xc for a landscape postscript (go page_new -l ...)&quot;
+                echo &quot;                defining a width of 800 pixels and&quot; 
+                echo &quot;                a height calculated following the A4 page size ratio.&quot;
+                echo &quot;       Default is -g cx800&quot;
+                echo
+	        echo &quot;   -o, --output fileout.gif&quot;
+                echo &quot;       The name of the output gif file&quot;
+                echo &quot;       Default name is built by replacing .ps extension by .gif&quot;
+                echo &quot;       from the input ps file&quot;
+                echo
+		echo &quot;----------------------------------------------------------------------------&quot;
+                exit ;;
+        -g|--geometry)
+                geometry_xsize=`echo $2 | cut -dx -f1`
+                geometry_ysize=`echo $2 | cut -dx -f2`
+		if [ $geometry_xsize = 'c' ] ; then
+			geometry_tocalculate='x'
+			geometry_size=$geometry_ysize
+			rotate_command='none'
+		elif [ $geometry_ysize = 'c' ] ; then
+			geometry_tocalculate='y'
+			geometry_size=$geometry_xsize
+			rotate_command='pnmflip -r270'
+		fi
+                shift 2 ;;
+        -o|--output)
+		option_outputname=1
+                fileout=$2
+                shift 2 ;;
+        -v|--verbose)
+                verbose=1
+                shift ;;
+        -*)
+                ps2gif -h
+                exit ;;
+        *)
+                break ;;
+
+        esac
+done
+
+if [ $# -ne 1 ] ; then
+        ps2gif -h
+        exit
+fi
+
+if [ $option_outputname -eq 0 ] ; then
+	fileout=`basename $1 .ps`.gif
+fi
+
+#---------------------------------------------
+function PRINT {
+if [ $verbose -eq 1 ] ; then
+   echo &quot;$1&quot; 
+fi;
+}
+
+#---------------------------------------------
+filein=$1
+
+PRINT &quot;*********************************&quot;
+PRINT &quot;ps2gif informations&quot;
+
+case $geometry_tocalculate in
+    'x')
+	PRINT &quot;y geometry set; x geometry calculated&quot;
+        ysize=${geometry_size}
+        xsize=`echo &quot;${ysize} ${pagewidth} ${pageheight}&quot; | awk '{printf(&quot;%.0f\n&quot;, $1*$2/$3)}'`
+	xresol=`echo &quot;${xsize} ${pagewidth}&quot; | awk '{printf(&quot;%.3f\n&quot;, 72*$1/$2)}'`
+	yresol=`echo &quot;${ysize} ${pageheight}&quot; | awk '{printf(&quot;%.3f\n&quot;, 72*$1/$2)}'`
+
+	PRINT &quot;xsize=${xsize} ysize=${ysize}&quot;
+	PRINT &quot;xresol=${xresol} yresol=${yresol}&quot; ;;
+
+    'y')
+	PRINT &quot;x geometry set; y geometry calculated&quot;
+        xsize=${geometry_size}
+        ysize=`echo &quot;${xsize} ${pagewidth} ${pageheight}&quot; | awk '{printf(&quot;%.0f\n&quot;, $1*$2/$3)}'`
+	xresol=`echo &quot;${xsize} ${pageheight}&quot; | awk '{printf(&quot;%.3f\n&quot;, 72*$1/$2)}'`
+	yresol=`echo &quot;${ysize} ${pagewidth}&quot; | awk '{printf(&quot;%.3f\n&quot;, 72*$1/$2)}'`
+
+	PRINT &quot;xsize=${xsize} ysize=${ysize}&quot;
+	PRINT &quot;xresol=${xresol} yresol=${yresol}&quot; ;;
+
+esac
+
+if [ &quot;$rotate_command&quot; != 'none' ] ; then 
+	PRINT &quot;gs -q -dNOPAUSE -dBATCH -sDEVICE=pnmraw -r${xresol}x${yresol} -sOutputFile=- $filein | pnmcrop | $rotate_command | convert - $fileout&quot;
+	(gs -q -dNOPAUSE -dBATCH -sDEVICE=pnmraw -r${xresol}x${yresol} -sOutputFile=- $filein | pnmcrop | $rotate_command | convert - $fileout) &gt; /dev/null 2&gt;&amp;1
+else
+	PRINT &quot;gs -q -dNOPAUSE -dBATCH -sDEVICE=pnmraw -r${xresol}x${yresol} -sOutputFile=- $filein | pnmcrop | convert - $fileout&quot;
+	(gs -q -dNOPAUSE -dBATCH -sDEVICE=pnmraw -r${xresol}x${yresol} -sOutputFile=- $filein | pnmcrop | convert - $fileout) &gt; /dev/null 2&gt;&amp;1
+fi
+
+PRINT &quot;*********************************&quot;
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00817" href="msg00817.html">Re: small graphics in Ferret</a></strong>
+<ul><li><em>From:</em> Billy Kessler</li></ul></li>
+<li><strong><a name="00818" href="msg00818.html">Re: small graphics in Ferret</a></strong>
+<ul><li><em>From:</em> Mario Germano</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00818.html">Re: small graphics in Ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00820.html">Regridding in space and time</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00818.html">Thread Prev</a>][<a href="msg00820.html">Thread Next</a>][<A HREF="threads.html#00819">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Line thickness in postscript output -->
+<!--X-From-R13: Pvyyl Yrffyre <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Mon, 23 May 2005 14:29:14 &#45;0700 -->
+<!--X-Message-Id: 200505232129.j4NLTEaF021342@ferret.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Line thickness in postscript output</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00472.html">Thread Prev</a>][<a href="msg00489.html">Thread Next</a>][<A HREF="threads.html#00474">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Line thickness in postscript output</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Line thickness in postscript output</strong></li>
+<li><strong>From</strong>: <strong>Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 23 May 2005 14:29:14 -0700 (PDT)</li>
+<li>Cc: <a href="mailto:billy.kessler@DOMAIN.HIDDEN">billy.kessler@xxxxxxxx</a></li>
+<li>Reply-to: Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Many people have commented that the line weights in the postscript output from Fprint are very thin, 
+and don't necessarily print well in journals. Using thick lines (plot/line=[7 to 18]) is very 
+effective for screen viewing, but does not translate into equivalently thick lines in postscript.
+
+The reason for this is that Fprint makes lines 1-6 with postscript line weight 1, lines 7-12 weight 
+2 and lines 13-18 weight 3. But weights 2 and 3 are only slightly thicker than weight 1.
+
+Here is a (unix) script that will fix this. Use it after making a plot, using any of the Ferret 
+lines 1-18. Recall that to make a postscript metafile, you must:
+
+yes? set mode meta  ! set only once; cancel with &quot;can mode meta&quot;
+yes? plot ....
+yes? ppl clsplt     ! close the metafile
+
+This will produce a file metafile.plt. Then make postscript:
+
+&gt; Fprint -o filename.ps metafile.plt   
+
+(use the Fprint options &quot;-l cps&quot; for color, &quot;-l ps&quot; for b/w solids and dashes)
+
+Now, create an executable file (suppose you call it &quot;fix-line-wt&quot;) containing the code:
+----------------------------------------------------------------
+# script to increase line weights of Ferret output
+sed 's_3.000000 lw_6.000000 lw_g' &lt; $1.ps &gt;! foo; \mv foo $1.ps
+sed 's_2.000000 lw_4.000000 lw_g' &lt; $1.ps &gt;! foo; \mv foo $1.ps
+sed 's_1.000000 lw_2.000000 lw_g' &lt; $1.ps &gt;! foo; \mv foo $1.ps
+----------------------------------------------------------------
+
+Then:
+
+&gt; fix-line-wt filename
+
+The result will overwrite filename.ps, having doubled the thickness of all the lines.
+
+An alternative is to edit the postscript directly. It is actually easy. Postscript line weight 
+changes are given by commands of the form:
+
+1.000000 lw    ! indicates line weight 1 (ferret lines 1-6)
+
+(Try &quot;grep lw filename.ps&quot;). Just edit the number. No big deal. I find that the doubling produced by 
+the above script is a pretty good adjustment, but you can make lines of any thickness this way.
+
+And it's always a good idea to remove those metafiles once you've used them! They can get pretty 
+big!
+
+Billy K
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00489" href="msg00489.html">Re: Line thickness in postscript output</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00472.html">Sve as *.tif file.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00489.html">Re: Line thickness in postscript output</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00472.html">Thread Prev</a>][<a href="msg00489.html">Thread Next</a>][<A HREF="threads.html#00474">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: mean or cumul on time axis -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 2 Aug 2004 16:11:38 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0408030448500.28379&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1243B3C9&#45;E20E&#45;11D8&#45;959B&#45;000A95A51444@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: mean or cumul on time axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00536.html">Thread Prev</a>][<a href="msg00537.html">Thread Next</a>][<A HREF="threads.html#00540">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: mean or cumul on time axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: mean or cumul on time axis</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 3 Aug 2004 04:52:43 +0530 (IST)</li>
+<li>Cc: Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;,  Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00536.html">1243B3C9-E20E-11D8-959B-000A95A51444@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie &amp; Ansley,
+                     I just want to add few more points to the discussion.
+Suppose we have 6 hrly data. If we want to calculate cumulative sum and 
+average for a day and if we know which all initial time points(6hrly) 
+should contribute to a particular destination time point(daily), then 
+define the daily time axis according to that.
+
+Here is an example :
+
+6hrly time axis &amp; data
+
+  yes? define axis/t=&quot;01-SEP-1993:18&quot;:&quot;04-SEP-1993:06&quot;:6/units=hours t6hr
+  yes? let var = L[GT=t6hr]
+  yes? list var
+                  VARIABLE : L[GT=T6HR]
+                  SUBSET   : 11 points (TIME)
+      01-SEP-1993 18:00 /  1:   1.00
+      02-SEP-1993 00:00 /  2:   2.00
+      02-SEP-1993 06:00 /  3:   3.00
+      02-SEP-1993 12:00 /  4:   4.00
+      02-SEP-1993 18:00 /  5:   5.00
+      03-SEP-1993 00:00 /  6:   6.00
+      03-SEP-1993 06:00 /  7:   7.00
+      03-SEP-1993 12:00 /  8:   8.00
+      03-SEP-1993 18:00 /  9:   9.00
+      04-SEP-1993 00:00 / 10:  10.00
+      04-SEP-1993 06:00 / 11:  11.00
+  yes?
+
+Now which all values will contribute to a daily mean ?
+
+                day 1                    day2
+         &lt;-----------------&gt;     &lt;-----------------&gt;     &lt;------
+                  9                       9 
+                  |                       |
+   |-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+   18    0     6     12    18    0     6     12    18    0     6
+  01/SEP                                                      04/SEP
+
+Say, daily data for 02/SEP/1993 should be defined by data at
+   02/SEP/1993:00hrs,06hrs,12hrs &amp; 18 hrs then the mean time for
+that day is 09hrs. Likewise for 03/SEP/1993 also. That is data at
+01/SEP/1993:18hrs &amp; data at 04/SEP/1993:00hrs,06hrs will be skipped
+from the calculation. In this case define the &quot;daily&quot; time axis 
+follows (please note that it is defined only for 09hrs on 02/SEp &amp; 
+03/SEP)
+
+  yes? define axis/t=&quot;02-SEP-1993:09&quot;:&quot;03-SEP-1993:09&quot;:24/units=hours tdly
+  yes? let vardly = var[gt=tdly@ave]                    
+  yes? let varcum = var[gt=tdly@sum]                    
+  yes? list varcum, vardly
+               TIME: 01-SEP-1993 21:00 to 03-SEP-1993 21:00
+   Column  1: VARCUM is VAR[GT=TDLY@SUM]
+   Column  2: VARDLY is VAR[GT=TDLY@AVE]
+                     VARCUM VARDLY
+  02-SEP-1993 09 / 1:  14.00  3.500
+  03-SEP-1993 09 / 2:  30.00  7.500
+  yes?
+
+As we can see 
+
+ daily cumul: data(9hrs) = [data(00hrs)+data(06hrs)+data(12hrs)+data(18hrs)]
+ ------------
+ 02-SEP-1993 09  varcum  = [     2     +    3      +    4      +     5     ] = 14
+ 03-SEP-1993 09  varcum  = [     6     +    7      +    8      +     9     ] = 30
+
+ daily mean : data(9hrs) = [data(00hrs)+data(06hrs)+data(12hrs)+data(18hrs)]/4
+ ------------
+ 02-SEP-1993 09  vardly  = 14/4 = 3.5 
+ 03-SEP-1993 09  cardly  = 30/4 = 7.5
+
+
+Thus, the definition of daily time axis should be accurate if you want to 
+get the exact mean/sum.
+
+With Regards 
+
+Jaison
+
+
+
+
+On Fri, 30 Jul 2004, Emilie Vanvyve wrote:
+
+&gt; Hi Ansley,
+&gt; 
+&gt; Thanks for the documentation! I'll inform you if I encounter again  
+&gt; strange results with Ferret on Mac.
+&gt; 
+&gt; I read that link and I understand there may be different weights with  
+&gt; @ave, when grid boxes do not have the same area or when months are not  
+&gt; considered as equal (weight ≠ 1/12 when taking into account their own  
+&gt; respective length).
+&gt; But in my case, as I consider just one grid box and as I try to compute  
+&gt; a mean or cumul on days from 6 hourly data (so I should not have  
+&gt; different weight as it may be the case for months), how can I do?
+&gt; 
+&gt; If I try to see &quot;my&quot; weights as in  
+&gt; <a  href="http://www.ferret.noaa.gov/Ferret/FAQ/analysis/">http://www.ferret.noaa.gov/Ferret/FAQ/analysis/</a> 
+&gt; regridding_with_ave.html, it seems to be ok as I get a 0.5 weight for  
+&gt; 12-hourly average and a 0.25 weight for 24-hourly average (from  
+&gt; originally 6-hourly data). However, I don't really catch the way Ferret  
+&gt; puts up with &quot;time-boundary data&quot;.
+&gt; I'm sorry to insist, but I still do not understand how exactly Ferret  
+&gt; computed the average in my previous example.
+&gt; Here follow two examples. The first one is about weights, the second  
+&gt; one is my previous example.
+&gt; 
+&gt; Emilie
+&gt; 
+&gt; 
+&gt; SEE WEIGHTS
+&gt; 
+&gt; work@El Nino ~/Library/Ferret/go/zut &gt; ferret
+&gt;          NOAA/PMEL TMAP
+&gt;          FERRET v5.50
+&gt;          apple-darwin6.3 - 02/08/03
+&gt;          30-Jul-04 11:12
+&gt; 
+&gt; ! DEFINE THE VARIABLE 'VAR' (= 1 every 12 hours, 0 else)
+&gt; 
+&gt; yes? define axis/t=&quot;1-sep-1993 00:00&quot;:&quot;3-SEP-1993 00:00&quot;:6/units=hours  
+&gt; t6h
+&gt; yes? let var = if L[gt=t6h] eq 1 or L[gt=t6h] eq 5 or L[gt=t6h] eq 9  
+&gt; then 1 else 0
+&gt; yes? list var
+&gt;               VARIABLE : IF L[GT=T6H] EQ 1 OR L[GT=T6H] EQ 5 OR  
+&gt; L[GT=T6H] EQ 9 THEN 1 ELSE 0
+&gt;               SUBSET   : 9 points (TIME)
+&gt;   01-SEP-1993 00:00 / 1:  1.000
+&gt;   01-SEP-1993 06:00 / 2:  0.000
+&gt;   01-SEP-1993 12:00 / 3:  0.000
+&gt;   01-SEP-1993 18:00 / 4:  0.000
+&gt;   02-SEP-1993 00:00 / 5:  1.000
+&gt;   02-SEP-1993 06:00 / 6:  0.000
+&gt;   02-SEP-1993 12:00 / 7:  0.000
+&gt;   02-SEP-1993 18:00 / 8:  0.000
+&gt;   03-SEP-1993 00:00 / 9:  1.000
+&gt; 
+&gt; ! DEFINE NEW TIME AXIS FOR REGRIDDING (12 and 24 hours)
+&gt; 
+&gt; yes? define axis/t=&quot;1-sep-1993 00:00&quot;:&quot;3-SEP-1993 00:00&quot;:12/units=hours  
+&gt; t12h
+&gt; yes? define axis/t=&quot;1-sep-1993 00:00&quot;:&quot;3-SEP-1993 00:00&quot;:24/units=hours  
+&gt; t24h
+&gt; 
+&gt; ! 12 HOURLY-AVERAGE
+&gt; 
+&gt; yes? list var[gt=t12h@ave]
+&gt;               VARIABLE : IF L[GT=T6H] EQ 1 OR L[GT=T6H] EQ 5 OR  
+&gt; L[GT=T6H] EQ 9 THEN 1 ELSE 0
+&gt;                          regrid: 12 hour on T@AVE
+&gt;               SUBSET   : 5 points (TIME)
+&gt;   01-SEP-1993 00:00 / 1:  0.6667
+&gt;   01-SEP-1993 12:00 / 2:  0.0000
+&gt;   02-SEP-1993 00:00 / 3:  0.5000
+&gt;   02-SEP-1993 12:00 / 4:  0.0000
+&gt;   03-SEP-1993 00:00 / 5:  0.6667
+&gt; 
+&gt; ! 24 HOURLY-AVERAGE
+&gt; 
+&gt; yes? list var[gt=t24h@ave]
+&gt;               VARIABLE : IF L[GT=T6H] EQ 1 OR L[GT=T6H] EQ 5 OR  
+&gt; L[GT=T6H] EQ 9 THEN 1 ELSE 0
+&gt;                          regrid: 24 hour on T@AVE
+&gt;               SUBSET   : 3 points (TIME)
+&gt;   01-SEP-1993 00 / 1:  0.4000
+&gt;   02-SEP-1993 00 / 2:  0.2500
+&gt;   03-SEP-1993 00 / 3:  0.4000
+&gt; 
+&gt; 
+&gt; PREVIOUS EXAMPLE
+&gt; 
+&gt;   If the data are:
+&gt;    01-SEP-1993 00:00 / 1: 1.00
+&gt;   01-SEP-1993 06:00 / 2: 2.00
+&gt;   01-SEP-1993 12:00 / 3: 3.00
+&gt;   01-SEP-1993 18:00 / 4: 4.00
+&gt;   02-SEP-1993 00:00 / 5: 5.00
+&gt;   02-SEP-1993 06:00 / 6: 6.00
+&gt;   02-SEP-1993 12:00 / 7: 7.00
+&gt;   02-SEP-1993 18:00 / 8: 8.00
+&gt;   03-SEP-1993 00:00 / 9: 9.00
+&gt;   03-SEP-1993 06:00 / 10: 10.00
+&gt;   03-SEP-1993 12:00 / 11: 11.00
+&gt;   03-SEP-1993 18:00 / 12: 12.00
+&gt;   04-SEP-1993 00:00 / 13: 13.00
+&gt; 
+&gt;   I would assume to get those numbers for the average:
+&gt;    (instead of xxxxx shows the results given by Ferret)
+&gt; 
+&gt;   t12h@ave
+&gt; 
+&gt;    01-SEP-1993 00:00 / 1: ( 1.00 + 2.00) /2  = 1.50 instead of  1.33
+&gt;   01-SEP-1993 12:00 / 2: ( 3.00 + 4.00) /2  = 3.50             3.00
+&gt;   02-SEP-1993 00:00 / 3: ( 5.00 + 6.00) /2  = 5.50             5.00
+&gt;   02-SEP-1993 12:00 / 4: ( 7.00 + 8.00) /2  = 7.50             7.00
+&gt;   03-SEP-1993 00:00 / 5: ( 9.00 + 10.00) /2 = 9.50             9.00
+&gt;   03-SEP-1993 12:00 / 6: (11.00 + 12.00) /2 = 11.50           11.00
+&gt;   04-SEP-1993 00:00 / 7: (13.00 + ? ) /2    = ?               12.67
+&gt; 
+&gt;   t1d@ave
+&gt; 
+&gt;    01-SEP-1993 00:00 / 1: ( 1.00 + 2.00 + 3.00 + 4.00) /4    = 2.50  
+&gt; instead of  1.80
+&gt;   02-SEP-1993 00:00 / 3: ( 5.00 + 6.00 + 7.00 + 8.00) /4    = 6.50        
+&gt;        5.00
+&gt;   03-SEP-1993 00:00 / 5: ( 9.00 + 10.00 + 11.00 + 12.00) /4 = 10.50       
+&gt;        9.00
+&gt;   04-SEP-1993 00:00 / 7: (13.00 + ? ) /4                    = ?           
+&gt;       12.20
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; Le 29 juil. 2004, à 22:19, Ansley Manke a écrit :
+&gt; 
+&gt; &gt;  Hi Emile,
+&gt; &gt;  I'm sending this back to the Users' List so the discussion is  
+&gt; &gt; available to
+&gt; &gt;  everyone.
+&gt; &gt;
+&gt; &gt;  I don't know why you were seeing the incorrect results earlier.   
+&gt; &gt; Please let
+&gt; &gt;  us know if anything like that happens in the future.  When Ferret uses
+&gt; &gt;  @AVG  it looks at the size of the &quot;boxes&quot; along the axis and applies a
+&gt; &gt;  weighting factor based on the portion of the box on the source axis  
+&gt; &gt; that
+&gt; &gt;  overlaps the box on the destination axis.  Some of this is discussed  
+&gt; &gt; in the
+&gt; &gt;  FAQ,
+&gt; &gt; <a  href="http://www.ferret.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html">http://www.ferret.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html</a>
+&gt; &gt;
+&gt; &gt;  I hope that it has enough explanation to answer your question.  I  
+&gt; &gt; also find
+&gt; &gt;  that studying the output of commands like these are helpful in  
+&gt; &gt; understanding
+&gt; &gt;  what the commands are doing:
+&gt; &gt;
+&gt; &gt;  yes? list t[gt=var], tbox[gt=var], tboxlo[gt=var], tboxhi[gt=var]
+&gt; &gt;  yes? list t[gt=var12h], tbox[gt=var12h], tboxlo[gt=var12h],  
+&gt; &gt; tboxhi[gt=var]
+&gt; &gt;
+&gt; &gt;  Emilie Vanvyve wrote:
+&gt; &gt;
+&gt; &gt; Hi Ansley,
+&gt; &gt;
+&gt; &gt;  Thanks for the rapidity of the answer! That's something I really  
+&gt; &gt; appreciate with the Ferret users list!!
+&gt; &gt;
+&gt; &gt;  Here are some technical informations: I run Ferret on an  
+&gt; &gt; Apple-Macintosh platform (Mac OS 10.3.4). It is the 5.50 version that  
+&gt; &gt; I got from the link on the Ferret website towards Mac OS. Ferret  
+&gt; &gt; welcomes me with:
+&gt; &gt;  NOAA/PMEL TMAP
+&gt; &gt;  FERRET v5.50
+&gt; &gt;  apple-darwin6.3 - 02/08/03
+&gt; &gt;  29-Jul-04 09:29
+&gt; &gt;
+&gt; &gt;  But, I just have tried your script right now on this platform (Mac,  
+&gt; &gt; Ferret 5.50) and a Linux one (Linux 2.4.3, Ferret 5.51), I have gotten  
+&gt; &gt; the same numbers as you this time. In a way, that's a good news, but I  
+&gt; &gt; really do not understand why it has changed since yesterday. I am 100%  
+&gt; &gt; sure of what I did and sent you. It can not have been confusion with  
+&gt; &gt; previous variables I could had defined or something like this, as I  
+&gt; &gt; quitted Ferret and reopened it to get what I sent you.
+&gt; &gt;
+&gt; &gt;  On the other hand, there is still something I do not understand in  
+&gt; &gt; the results we both get now. The average does not seem to me to be an  
+&gt; &gt; average and the sum a sum.
+&gt; &gt;
+&gt; &gt;  If the data are as previously:
+&gt; &gt;  01-SEP-1993 00:00 / 1: 1.00
+&gt; &gt;  01-SEP-1993 06:00 / 2: 2.00
+&gt; &gt;  01-SEP-1993 12:00 / 3: 3.00
+&gt; &gt;  01-SEP-1993 18:00 / 4: 4.00
+&gt; &gt;  02-SEP-1993 00:00 / 5: 5.00
+&gt; &gt;  02-SEP-1993 06:00 / 6: 6.00
+&gt; &gt;  02-SEP-1993 12:00 / 7: 7.00
+&gt; &gt;  02-SEP-1993 18:00 / 8: 8.00
+&gt; &gt;  03-SEP-1993 00:00 / 9: 9.00
+&gt; &gt;  03-SEP-1993 06:00 / 10: 10.00
+&gt; &gt;  03-SEP-1993 12:00 / 11: 11.00
+&gt; &gt;  03-SEP-1993 18:00 / 12: 12.00
+&gt; &gt;  04-SEP-1993 00:00 / 13: 13.00
+&gt; &gt;
+&gt; &gt;  I would assume to get those numbers for the average and the sum:
+&gt; &gt;
+&gt; &gt;  t12h@ave
+&gt; &gt;
+&gt; &gt;  01-SEP-1993 00:00 / 1: ( 1.00 + 2.00) /2 = 1.50 instead of 1.33
+&gt; &gt;  01-SEP-1993 12:00 / 2: ( 3.00 + 4.00) /2 = 3.50 3.00
+&gt; &gt;  02-SEP-1993 00:00 / 3: ( 5.00 + 6.00) /2 = 5.50 5.00
+&gt; &gt;  02-SEP-1993 12:00 / 4: ( 7.00 + 8.00) /2 = 7.50 7.00
+&gt; &gt;  03-SEP-1993 00:00 / 5: ( 9.00 + 10.00) /2 = 9.50 9.00
+&gt; &gt;  03-SEP-1993 12:00 / 6: (11.00 + 12.00) /2 = 11.50 11.00
+&gt; &gt;  04-SEP-1993 00:00 / 7: (13.00 + ? ) /2 = ? 12.67
+&gt; &gt;
+&gt; &gt;  t1d@ave
+&gt; &gt;
+&gt; &gt;  01-SEP-1993 00:00 / 1: ( 1.00 + 2.00 + 3.00 + 4.00) /4 = 2.50 instead  
+&gt; &gt; of 1.80
+&gt; &gt;  02-SEP-1993 00:00 / 3: ( 5.00 + 6.00 + 7.00 + 8.00) /4 = 6.50 5.00
+&gt; &gt;  03-SEP-1993 00:00 / 5: ( 9.00 + 10.00 + 11.00 + 12.00) /4 = 10.50 9.00
+&gt; &gt;  04-SEP-1993 00:00 / 7: (13.00 + ? ) /4 = ? 12.20
+&gt; &gt;
+&gt; &gt;  t12h@sum
+&gt; &gt;
+&gt; &gt;  01-SEP-1993 00:00 / 1: ( 1.00 + 2.00) = 3.00 instead of 2.00
+&gt; &gt;  01-SEP-1993 12:00 / 2: ( 3.00 + 4.00) = 7.00 6.00
+&gt; &gt;  02-SEP-1993 00:00 / 3: ( 5.00 + 6.00) = 11.00 10.00
+&gt; &gt;  02-SEP-1993 12:00 / 4: ( 7.00 + 8.00) = 15.00 14.00
+&gt; &gt;  03-SEP-1993 00:00 / 5: ( 9.00 + 10.00) = 19.00 18.00
+&gt; &gt;  03-SEP-1993 12:00 / 6: (11.00 + 12.00) = 23.00 22.00
+&gt; &gt;  04-SEP-1993 00:00 / 7: (13.00 + ? ) = ? 19.00
+&gt; &gt;
+&gt; &gt;  t1d@sum
+&gt; &gt;
+&gt; &gt;  01-SEP-1993 00:00 / 1: ( 1.00 + 2.00 + 3.00 + 4.00) = 10.00 instead  
+&gt; &gt; of 4.50
+&gt; &gt;  02-SEP-1993 00:00 / 3: ( 5.00 + 6.00 + 7.00 + 8.00) = 26.00 20.00
+&gt; &gt;  03-SEP-1993 00:00 / 5: ( 9.00 + 10.00 + 11.00 + 12.00) = 10.50 36.00
+&gt; &gt;  04-SEP-1993 00:00 / 7: (13.00 + ? ) = ? 30.50
+&gt; &gt;
+&gt; &gt;  If that's not the purpose of @ave and @sum, how could I then do with  
+&gt; &gt; Ferret the cumul and mean I have reproduced here above?
+&gt; &gt;  Hoping it is possible,
+&gt; &gt;  best regards,
+&gt; &gt;
+&gt; &gt;  Emilie
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;  Le 28 juil. 2004, à 19:35, Ansley Manke a écrit :
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;  Hi Emilie,
+&gt; &gt;  Thank you for sending this example.  What version of Ferret are you  
+&gt; &gt; running, and on
+&gt; &gt;  what operating system?  The results you are seeing are clearly  
+&gt; &gt; wrong.  When I run
+&gt; &gt;  your script, I see the following results (first I list the script,  
+&gt; &gt; then the results.  I get these
+&gt; &gt;  same results on both our Solaris and Linux machines with Ferret  
+&gt; &gt; version 5.6):
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;  ! ----------------- regridtime.jnl -----------------
+&gt; &gt;  ! Create dummy variable
+&gt; &gt;  define axis/t=&quot;1-sep-1993 00:00&quot;:&quot;4-SEP-1993 00:00&quot;:6/units=hours t6h
+&gt; &gt;  let var = L[gt=t6h]
+&gt; &gt;  list var
+&gt; &gt;
+&gt; &gt;  ! Regrid to 12-hour and to 1-day with @sum
+&gt; &gt;
+&gt; &gt;  define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993 00:00&quot;:12/units=hours  
+&gt; &gt; t12h
+&gt; &gt;  let var12h = var[gt=t12h@ave]
+&gt; &gt;  list var12h
+&gt; &gt;
+&gt; &gt;  define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993 00:00&quot;:1/units=days t1d
+&gt; &gt;  let var1d = var[gt=t1d@ave]
+&gt; &gt;  list var1d
+&gt; &gt;
+&gt; &gt;  ! Regrid to 12-hour and to 1-day with @sum
+&gt; &gt;
+&gt; &gt;  define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993 00:00&quot;:12/units=hours  
+&gt; &gt; t12h
+&gt; &gt;  let var12h = var[gt=t12h@sum]
+&gt; &gt;  list var12h
+&gt; &gt;
+&gt; &gt;  define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993 00:00&quot;:1/units=days t1d
+&gt; &gt;  let var1d = var[gt=t1d@sum]
+&gt; &gt;  list var1d
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;  Here is the output
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;  yes? ! ----------------- regridtime.jnl -----------------
+&gt; &gt;  yes? ! Create dummy variable
+&gt; &gt;  yes? define axis/t=&quot;1-sep-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:6/units=hours t6h
+&gt; &gt;  yes? let var = L[gt=t6h]
+&gt; &gt;  yes? list var
+&gt; &gt;               VARIABLE : L[GT=T6H]
+&gt; &gt;               SUBSET   : 13 points (TIME)
+&gt; &gt;   01-SEP-1993 00:00 /  1:   1.00
+&gt; &gt;   01-SEP-1993 06:00 /  2:   2.00
+&gt; &gt;   01-SEP-1993 12:00 /  3:   3.00
+&gt; &gt;   01-SEP-1993 18:00 /  4:   4.00
+&gt; &gt;   02-SEP-1993 00:00 /  5:   5.00
+&gt; &gt;   02-SEP-1993 06:00 /  6:   6.00
+&gt; &gt;   02-SEP-1993 12:00 /  7:   7.00
+&gt; &gt;   02-SEP-1993 18:00 /  8:   8.00
+&gt; &gt;   03-SEP-1993 00:00 /  9:   9.00
+&gt; &gt;   03-SEP-1993 06:00 / 10:  10.00
+&gt; &gt;   03-SEP-1993 12:00 / 11:  11.00
+&gt; &gt;   03-SEP-1993 18:00 / 12:  12.00
+&gt; &gt;   04-SEP-1993 00:00 / 13:  13.00
+&gt; &gt;
+&gt; &gt;  yes? ! Regrid to 12-hour and to 1-day with @sum
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:12/units=hours t12h
+&gt; &gt;  yes? let var12h = var[gt=t12h@ave]
+&gt; &gt;  yes? list var12h
+&gt; &gt;               VARIABLE : VAR[GT=T12H@AVE]
+&gt; &gt;               SUBSET   : 7 points (TIME)
+&gt; &gt;   01-SEP-1993 00:00 / 1:   1.33
+&gt; &gt;   01-SEP-1993 12:00 / 2:   3.00
+&gt; &gt;   02-SEP-1993 00:00 / 3:   5.00
+&gt; &gt;   02-SEP-1993 12:00 / 4:   7.00
+&gt; &gt;   03-SEP-1993 00:00 / 5:   9.00
+&gt; &gt;   03-SEP-1993 12:00 / 6:  11.00
+&gt; &gt;   04-SEP-1993 00:00 / 7:  12.67
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:1/units=days t1d
+&gt; &gt;  yes? let var1d = var[gt=t1d@ave]
+&gt; &gt;  yes? list var1d
+&gt; &gt;               VARIABLE : VAR[GT=T1D@AVE]
+&gt; &gt;               SUBSET   : 4 points (TIME)
+&gt; &gt;   01-SEP-1993 00 / 1:   1.80
+&gt; &gt;   02-SEP-1993 00 / 2:   5.00
+&gt; &gt;   03-SEP-1993 00 / 3:   9.00
+&gt; &gt;   04-SEP-1993 00 / 4:  12.20
+&gt; &gt;
+&gt; &gt;  yes? ! Regrid to 12-hour and to 1-day with @sum
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:12/units=hours t12h
+&gt; &gt;  yes? let var12h = var[gt=t12h@sum]
+&gt; &gt;  yes? list var12h
+&gt; &gt;               VARIABLE : VAR[GT=T12H@SUM]
+&gt; &gt;               SUBSET   : 7 points (TIME)
+&gt; &gt;   01-SEP-1993 00:00 / 1:   2.00
+&gt; &gt;   01-SEP-1993 12:00 / 2:   6.00
+&gt; &gt;   02-SEP-1993 00:00 / 3:  10.00
+&gt; &gt;   02-SEP-1993 12:00 / 4:  14.00
+&gt; &gt;   03-SEP-1993 00:00 / 5:  18.00
+&gt; &gt;   03-SEP-1993 12:00 / 6:  22.00
+&gt; &gt;   04-SEP-1993 00:00 / 7:  19.00
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:1/units=days t1d
+&gt; &gt;  yes? let var1d = var[gt=t1d@sum]
+&gt; &gt;  yes? list var1d
+&gt; &gt;               VARIABLE : VAR[GT=T1D@SUM]
+&gt; &gt;               SUBSET   : 4 points (TIME)
+&gt; &gt;   01-SEP-1993 00 / 1:   4.50
+&gt; &gt;   02-SEP-1993 00 / 2:  20.00
+&gt; &gt;   03-SEP-1993 00 / 3:  36.00
+&gt; &gt;   04-SEP-1993 00 / 4:  30.50
+&gt; &gt;
+&gt; &gt;  ! -----------------
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;  Emilie Vanvyve wrote:
+&gt; &gt;
+&gt; &gt;  Hello!
+&gt; &gt;
+&gt; &gt;  I need some help to regrid data on time. I have 6-hourly  
+&gt; &gt; precipitation values and I'd like to have the cumul and the mean on 1  
+&gt; &gt; day. I have tried by defining a new time axis and regridding the data  
+&gt; &gt; using gt=my_new_time_axis@sum and @ave. Ferret obviously computes  
+&gt; &gt; something, the time axis of my new variable is correct, but I'm a bit  
+&gt; &gt; perplex about the results Ferret gives me.
+&gt; &gt;
+&gt; &gt;  Here is an example with a dummy variable.
+&gt; &gt;
+&gt; &gt;  yes? list var
+&gt; &gt;  SUBSET : 13 points (TIME)
+&gt; &gt;  01-SEP-1993 00:00 / 1: 1.00
+&gt; &gt;  01-SEP-1993 06:00 / 2: 2.00
+&gt; &gt;  01-SEP-1993 12:00 / 3: 3.00
+&gt; &gt;  01-SEP-1993 18:00 / 4: 4.00
+&gt; &gt;  02-SEP-1993 00:00 / 5: 5.00
+&gt; &gt;  02-SEP-1993 06:00 / 6: 6.00
+&gt; &gt;  02-SEP-1993 12:00 / 7: 7.00
+&gt; &gt;  02-SEP-1993 18:00 / 8: 8.00
+&gt; &gt;  03-SEP-1993 00:00 / 9: 9.00
+&gt; &gt;  03-SEP-1993 06:00 / 10: 10.00
+&gt; &gt;  03-SEP-1993 12:00 / 11: 11.00
+&gt; &gt;  03-SEP-1993 18:00 / 12: 12.00
+&gt; &gt;  04-SEP-1993 00:00 / 13: 13.00
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:12/units=hours t12h
+&gt; &gt;  yes? let var12h = var[gt=t12h@ave]
+&gt; &gt;  yes? list var12h
+&gt; &gt;  VARIABLE : VAR[GT=T12H@AVE]
+&gt; &gt;  SUBSET : 7 points (TIME)
+&gt; &gt;  01-SEP-1993 00:00 / 1: 1.000
+&gt; &gt;  01-SEP-1993 12:00 / 2: 2.000
+&gt; &gt;  02-SEP-1993 00:00 / 3: 3.000
+&gt; &gt;  02-SEP-1993 12:00 / 4: 4.000
+&gt; &gt;  03-SEP-1993 00:00 / 5: 5.000
+&gt; &gt;  03-SEP-1993 12:00 / 6: 6.000
+&gt; &gt;  04-SEP-1993 00:00 / 7: 7.000
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:1/units=days t1d
+&gt; &gt;  yes? let var1d = var[gt=t1d@ave]
+&gt; &gt;  yes? list var1d
+&gt; &gt;  VARIABLE : VAR[GT=T1D@AVE]
+&gt; &gt;  SUBSET : 4 points (TIME)
+&gt; &gt;  01-SEP-1993 00 / 1: 1.333
+&gt; &gt;  02-SEP-1993 00 / 2: 3.000
+&gt; &gt;  03-SEP-1993 00 / 3: 5.000
+&gt; &gt;  04-SEP-1993 00 / 4: 6.667
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:12/units=hours t12h
+&gt; &gt;  yes? let var12h = var[gt=t12h@sum]
+&gt; &gt;  yes? list var12h
+&gt; &gt;  VARIABLE : VAR[GT=T12H@SUM]
+&gt; &gt;  SUBSET : 7 points (TIME)
+&gt; &gt;  01-SEP-1993 00:00 / 1: 1.000
+&gt; &gt;  01-SEP-1993 12:00 / 2: 2.000
+&gt; &gt;  02-SEP-1993 00:00 / 3: 3.000
+&gt; &gt;  02-SEP-1993 12:00 / 4: 4.000
+&gt; &gt;  03-SEP-1993 00:00 / 5: 5.000
+&gt; &gt;  03-SEP-1993 12:00 / 6: 6.000
+&gt; &gt;  04-SEP-1993 00:00 / 7: 7.000
+&gt; &gt;
+&gt; &gt;  yes? define axis/t=&quot;01-SEP-1993 00:00&quot;:&quot;4-SEP-1993  
+&gt; &gt; 00:00&quot;:1/units=days t1d
+&gt; &gt;  yes? let var1d = var[gt=t1d@sum]
+&gt; &gt;  yes? list var1d
+&gt; &gt;  VARIABLE : VAR[GT=T1D@SUM]
+&gt; &gt;  SUBSET : 4 points (TIME)
+&gt; &gt;  01-SEP-1993 00 / 1: 2.00
+&gt; &gt;  02-SEP-1993 00 / 2: 6.00
+&gt; &gt;  03-SEP-1993 00 / 3: 10.00
+&gt; &gt;  04-SEP-1993 00 / 4: 10.00
+&gt; &gt;  yes?
+&gt; &gt;
+&gt; &gt;  Where am I wrong?
+&gt; &gt;
+&gt; &gt;  Thanks for any clue!
+&gt; &gt;
+&gt; &gt;  Emilie
+&gt; &gt;
+&gt; &gt;  ____________________________________________________________
+&gt; &gt;  Emilie VANVYVE
+&gt; &gt;  Physicist, PhD student
+&gt; &gt;
+&gt; &gt;  Université catholique de Louvain (UCL)
+&gt; &gt;  Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+&gt; &gt;  Chemin du Cyclotron, 2
+&gt; &gt;  1348 Louvain-la-Neuve (Belgium)
+&gt; &gt;  Phone : +32-(0)10-473300
+&gt; &gt;  Fax : +32-(0)10-474722
+&gt; &gt;  E-mail : vanvyve@astr.ucl.ac.be
+&gt; &gt;  Web : www.astr.ucl.ac.be
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; ____________________________________________________________
+&gt; &gt;  Emilie VANVYVE
+&gt; &gt;  Physicist, PhD student
+&gt; &gt;
+&gt; &gt;  Université catholique de Louvain (UCL)
+&gt; &gt;  Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+&gt; &gt;  Chemin du Cyclotron, 2
+&gt; &gt;  1348 Louvain-la-Neuve (Belgium)
+&gt; &gt;  Phone : +32-(0)10-473300
+&gt; &gt;  Fax : +32-(0)10-474722
+&gt; &gt;  E-mail : vanvyve@astr.ucl.ac.be
+&gt; &gt;  Web : www.astr.ucl.ac.be
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; ____________________________________________________________
+&gt; Emilie VANVYVE
+&gt; Physicist, PhD student
+&gt; 
+&gt; Université catholique de Louvain (UCL)
+&gt; Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+&gt; Chemin du Cyclotron, 2
+&gt; 1348 Louvain-la-Neuve (Belgium)
+&gt; Phone : +32-(0)10-473300
+&gt; Fax : +32-(0)10-474722
+&gt; E-mail : vanvyve@astr.ucl.ac.be
+&gt; Web : www.astr.ucl.ac.be
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00536" href="msg00536.html">Re: mean or cumul on time axis</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00536.html">Re: mean or cumul on time axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00537.html">Geostropgic velocity</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00536.html">Thread Prev</a>][<a href="msg00537.html">Thread Next</a>][<A HREF="threads.html#00540">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

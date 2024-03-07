@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: automatically symbol definitions -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Thu, 21 Aug 2003 10:33:43 &#45;0700 -->
+<!--X-Message-Id: 3F4502B4.98BC1193@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 5.1.0.14.0.20030821173159.00a737f8@mail.flinders.edu.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: automatically symbol definitions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00561.html">Thread Prev</a>][<a href="msg00564.html">Thread Next</a>][<A HREF="threads.html#00562">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: automatically symbol definitions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hemerson Tonin &lt;<a href="mailto:hemer.tonin@DOMAIN.HIDDEN">hemer.tonin@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: automatically symbol definitions</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 21 Aug 2003 10:34:45 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00561.html">5.1.0.14.0.20030821173159.00a737f8@mail.flinders.edu.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Hemerson,
+<br>I don't know that I see what is causing the error message, but here
+<br>are a few suggestions for you to try to debug your script:
+<p>- Using the symbol names max and min could cause confusion
+<br>with the keywords Ferret already uses&nbsp; for the MAX and MIN
+<br>functions and transformations.&nbsp; This does not seem to be the
+<br>problem however, it's more a matter of programming style.
+<p>- As you are developing a script, use the SHOW SYMBOL,
+<br>SHOW VARIABLE and LIST commands to see what values
+<br>your definitions are taking on. You can take those commands out
+<br>later.&nbsp; Leave off the /QUIET qualifier until later, when your
+script
+<br>is working.&nbsp; Execute your script line by line so you can look
+at the
+<br>results of each command before continuing.&nbsp; Taking your commands,
+<br>I'll add some suggested commands using capital letters to make them
+<br>easier to see.
+<blockquote>define symbol var1 $1%AAA%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+!my variable
+<br>define symbol var2 $2%BBB%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !parameter
+1 - computed from my variable
+<br>define symbol var3 $3%CCC%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !parameter
+2 - computed from my variable
+<p>SHOW SYMBOL var1
+<br>SHOW SYMBOL var2
+<br>SHOW SYMBOL var3
+<p>let template1=if AAA[l=@max] ge BBB then AAA[l=@max] else BBB
+<br>LIST template1
+<p>define symbol axmax $4%template1%
+<br>SHOW SYMBOL axmax
+<p>let template2=if AAA[l=@min] le CCC then AAA[l=@min] else CCC
+<br>define symbol axmin $5%template2%
+<br>LIST template2
+<br>SHOW SYMBOL axmin
+<p>plot/vlim=($min):($max)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ($var1)</blockquote>
+I do see one thing you need to do differently; define the axmin and
+<br>axmax variables with grave quotes on the template variable to force
+<br>them to be evaluated.&nbsp; (See Ch1 Sec 4 on Command Syntax for
+<br>more on this; look up "grave accent, syntax" in the Users Guide).
+<blockquote>define symbol axmax $4%`template1`%
+<br>define symbol axmin $5%`template2`%</blockquote>
+Otherwise you are just assigning axmax the string
+<p>Hemerson Tonin wrote:
+<blockquote TYPE=CITE>Hi Ferreters
+<p>I am trying to design a journal that adjust itself as better as possible
+to
+<br>plot my results.
+<p>The basic journal compute some parameters (statistical stuff - not showed)
+<br>and when I try to plot them, some parameters have not appear due VLIM.
+In
+<br>sum, I have intend to define symbols automatically (inside the journal)
+<br>that will give these limits.
+<p>Below is part of my plot journal sequence.
+<p>define symbol var1 $1%AAA%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !my variable
+<br>define symbol var2 $2%BBB%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !parameter
+1 - computed from my variable
+<br>(result from expression - single value)
+<br>define symbol var3 $3%CCC%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !parameter
+2 - computed from my variable
+<br>(result from expression - single value)
+<p>! AAA[l=@max] may be bigger, equal or&nbsp; smaller than BBB
+<br>! AAA[l=@min] may be bigger, equal or&nbsp; smaller than CCC
+<br>! BBB is bigger than CCC
+<p>let/quiet template1=if AAA[l=@max] ge BBB then AAA[l=@max] else BBB;define
+<br>symbol max $4%template1%
+<br>let/quiet template2=if AAA[l=@min] le CCC then AAA[l=@min] else CCC;define
+<br>symbol min $5%template2%
+<p>! above, only to determine which values are my limits and defining as
+<br>symbol (Can I afford to do this ???)
+<br>! and then
+<p>plot/vlim=($min):($max)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ($var1)
+<br>plot/ov/colour=red/nolabels ($var2)
+<br>plot/ov/colour=red/nolabels ($var3)
+<p>! The sequence of variable plotted doesn't matter
+<p>! The big problem is: ferret cannot understand my symbols "min" and
+"max".
+<br>It has returned a message:
+<p>&nbsp; !-> plot/vlim=mi:ma&nbsp; AAA
+<br>&nbsp; **ERROR: command syntax: mi
+<p>Can anyone help me ???
+<p>Tonin, H. E.
+<br>School of Chemistry, Physics and Earth Sciences
+<br>Flinders University
+<br>Adelaide - Australia</blockquote>
+--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00561" href="msg00561.html">automatically symbol definitions</a></strong>
+<ul><li><em>From:</em> Hemerson Tonin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00561.html">automatically symbol definitions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00564.html">log plot/scaling question</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00561.html">Thread Prev</a>][<a href="msg00564.html">Thread Next</a>][<A HREF="threads.html#00562">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

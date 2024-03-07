@@ -1,0 +1,276 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: RE: Big data file and limit on storage for coordinates -->
+<!--X-From-R13: "[pQnaa, [vxr" <zppnaaNzonev.bet> -->
+<!--X-Date: Wed, 16 Mar 2005 14:26:43 &#45;0800 -->
+<!--X-Message-Id: 4563BD9694236148B04C5A220ADBD48B0145B981@stratus.shore.mbari.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>RE: Big data file and limit on storage for coordinates</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00258.html">Thread Prev</a>][<a href="msg00260.html">Thread Next</a>][<A HREF="threads.html#00259">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: Big data file and limit on storage for coordinates</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;'Ansley Manke'&quot; &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>RE: Big data file and limit on storage for coordinates</strong></li>
+<li><strong>From</strong>: <strong>&quot;McCann, Mike&quot; &lt;<a href="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 16 Mar 2005 14:27:05 -0800</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Ansley,
+
+Thank you for the explanation and suggestions.
+
+To create this data set I first establish an hourly time axis that encompasses all the deployments, e.g.:  
+
+ DEFINE AXIS/T=&quot;21-AUG-1989 00:00 &quot;:&quot;21-OCT-2004 20:00&quot;:3600/T0=&quot;01-JAN-1970 00:00:00&quot;/UNITS=seconds TIME_HR
+
+Then I process data from each deployment (apply QC flags, grid to hourly), and then append to the netcdf file, e.g. for our last deployment (some relevant commands):
+
+ DEFINE AXIS/T=&quot;07-NOV-2003 20:00&quot;:&quot;21-OCT-2004 20:00&quot;:600/T0=&quot;01-JAN-1970 00:00:00&quot;/UNITS=seconds TIME_ORG
+ DEFINE AXIS/T=&quot;07-NOV-2003 20:00&quot;:&quot;21-OCT-2004 20:00&quot;:3600/T0=&quot;01-JAN-1970 00:00:00&quot;/UNITS=seconds TIME_HR
+ LET SALINITY_1 = missing(SALINITY_FLAG, -9999)
+ LET SALINITY_1F = IF SALINITY_1 EQ 0 THEN 1
+ LET SALINITY_2 = SALINITY * SALINITY_1F
+ DEFINE VARIABLE SALINITY_ORG = SALINITY_2[gt=TIME_ORG@MAX,gz=DEPTH_TS_HR@LIN,gy=LATITUDE_TS_HR,gx=LONGITUDE_TS_HR]
+ DEFINE VARIABLE SALINITY_HR = SALINITY_ORG[gt=TIME_HR@AVE,gz=DEPTH_TS_HR@LIN,gy=LATITUDE_TS_HR,gx=LONGITUDE_TS_HR]
+ SET VAR/TITLE=&quot;Hourly Salinity&quot;/UNITS=&quot;&quot; SALINITY_HR
+ LIST/FORMAT=CDF/FILE=&quot;hourlyM1.nc&quot;/APPEND/T=&quot;07-NOV-2003 18:00&quot;:&quot;21-OCT-2004 19:30&quot; SALINITY_HR
+
+Without digging further I suspect that a gap is created such that Ferret removes the 'point_spacing = &quot;even&quot;' attribute on TIME_HR.  Perhaps the 'T=...' option on the LIST command above may be confusing things (these time limits are the limits of the deployment data).  Perhaps it would be best to remove this as the SALINITY_HR variable is already on an hourly grid.  I will try removing it.
+
+Anyway, I used the NCO command ncatted to add the 'point_spacing = &quot;even&quot;' attribute back to TIME_HR:
+
+ ncatted -O -h -a point_spacing,TIME_HR,c,c,&quot;even&quot; hourlyM1.nc
+
+and now Ferret can process the data in the file.
+
+Thanks to everyone who responded.  It's good to know that with my data now properly metadata attributed I am nowhere near any limits within Ferret.
+
+-Mike
+
+&gt; -----Original Message-----
+&gt; From: Ansley Manke [<a  href="mailto:ansley.b.manke@noaa.gov">mailto:ansley.b.manke@noaa.gov</a>]
+&gt; Sent: Wednesday, March 16, 2005 12:16 PM
+&gt; To: McCann, Mike
+&gt; Cc: ferret_users
+&gt; Subject: Re: Big data file and limit on storage for coordinates
+&gt; 
+&gt; 
+&gt; Hi Mike,
+&gt; It's the irregular time axis that's causing this message.  
+&gt; For all the 
+&gt; irregular axes that are in use, Ferret stores all the axis 
+&gt; coordinates, 
+&gt; plus the location of the boundaries between the coordinates.  You're 
+&gt; running into the limit on that storage. Sometimes because of 
+&gt; the way a 
+&gt; dataset is created, it has an irregular time axis, even 
+&gt; though the time 
+&gt; interval is regular -- if say,  missing data is represented 
+&gt; by a gap in 
+&gt; the time coordinates rather than a regular time axis with 
+&gt; missing data 
+&gt; values. If you can rework your data to be stored on a 
+&gt; regularly-spaced 
+&gt; time axis, that would do the trick.
+&gt; 
+&gt; What Ferret does with this data is to create a 
+&gt; regularly-spaced abstract 
+&gt; L axis, so in fact you can use the data, perhaps using Ferret 
+&gt; to change 
+&gt; the time axis.  When I open the URL you have in  your 
+&gt; message, I see the 
+&gt; error message you quote, but Ferret does open the dataset.  
+&gt; It creates a 
+&gt; dependent variable out of the time coordinates, called 
+&gt; time_hr, and it 
+&gt; puts the file variables on the abstract L axis of the same 
+&gt; length.  Here 
+&gt; are some ways to look at the data. (the output of the 
+&gt; commands is below)
+&gt; 
+&gt;   use 
+&gt; &quot;<a  href="http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/ho">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/ho</a>
+&gt; urlyM1.nc&quot;
+&gt;   show data
+&gt;   sh grid AIR_TEMPERATURE_HR
+&gt; 
+&gt;   ! Look at the time axis of a variable; it is an abstract L axis
+&gt;   list/l=1:5 t[gt=AIR_TEMPERATURE_HR]
+&gt; 
+&gt;   ! Look at the time coordinates in variable time_hr, and delta-time
+&gt;   list/l=1:5/format=(2f15.1) time_hr, time_hr[L=@ddf]
+&gt; 
+&gt; 
+&gt; yes? use 
+&gt; &quot;<a  href="http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/ho">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/ho</a>
+&gt; urlyM1.nc&quot;
+&gt;  **TMAP ERR: limit on storage for coordinates has been reached
+&gt;              MAX= 250000
+&gt; ...
+&gt; yes? sho data
+&gt;      currently SET data sets:
+&gt;     1&gt; 
+&gt; <a  href="http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hou">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hou</a>
+&gt; rlyM1.nc  
+&gt; (default)
+&gt;  name     title                             I         J       
+&gt;   K         L
+&gt;  TIME_HR                                   ...       ...      
+&gt;  ...       
+&gt; 1:132981
+&gt;        (invalid coordinate axis)
+&gt;  AIR_TEMPERATURE_HR
+&gt;           Hourly air_temperature           1:1       1:1      
+&gt;  1:1       
+&gt; 1:132981
+&gt;  RELATIVE_HUMIDITY_HR
+&gt;           Hourly Relative Humidity         1:1       1:1      
+&gt;  1:1       
+&gt; 1:132981
+&gt; ...
+&gt; 
+&gt; yes? show grid AIR_TEMPERATURE_HR
+&gt;     GRID GLR2
+&gt;  name       axis              # pts   start                end
+&gt;  LONGITUDE_MET_HR LONGITUD      1mr   122.03W              122.03W
+&gt;  LATITUDE_MET_HR LATITUDE       1 r   36.75N               36.75N
+&gt;  DEPTH_MET_HR DEPTH (m)         1 r-  3.5                  3.5
+&gt;  TIME_HR   T               132981 r   1                    132981
+&gt; 
+&gt; yes?   ! Look at the time axis of a variable; it is an abstract L axis
+&gt; yes? list/l=1:5 t[gt=AIR_TEMPERATURE_HR]
+&gt;              VARIABLE : T
+&gt;                         axis TIME_HR
+&gt;              DATA SET : Hourly Gridded OASIS Mooring M1 Observations
+&gt;              FILENAME : hourlyM1.nc
+&gt;              FILEPATH : 
+&gt; <a  href="http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/</a>
+&gt;              SUBSET   : 5 points (T)
+&gt;  1   / 1:  1.000
+&gt;  2   / 2:  2.000
+&gt;  3   / 3:  3.000
+&gt;  4   / 4:  4.000
+&gt;  5   / 5:  5.000
+&gt; 
+&gt; yes? ! Look at the time coordinates in variable time_hr, and 
+&gt; delta-time
+&gt; yes? list/l=1:5/format=(2f15.1) time_hr, time_hr[L=@ddf]
+&gt;              DATA SET: 
+&gt; <a  href="http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM1.nc">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM1.nc</a>
+&gt;              Hourly Gridded OASIS Mooring M1 Observations
+&gt;              T: 0.5 to 5.5
+&gt;  Column  1: TIME_HR is TIME_HR (SECONDS since 1970-01-01 
+&gt; 00:00:00)(invalid coordinate axis)
+&gt;  Column  2: TIME_HR[T=@DDF] is TIME_HR (SECONDS since 1970-01-01 
+&gt; 00:00:00)(invalid coordinate axis - forward derivative on T)
+&gt;     619660800.0         3584.0
+&gt;     619664384.0         3584.0
+&gt;     619667968.0         3648.0
+&gt;     619671616.0         3584.0
+&gt;     619675200.0         3584.0
+&gt; 
+&gt; The other potential pitfall I see with this data is that Ferret uses 
+&gt; single precision to store  data variables.  (It uses double precision 
+&gt; for coordinates, but here we have changed from coordinates to 
+&gt; a single 
+&gt; precision variable.)   You might want to use a time origin 
+&gt; closer to the 
+&gt; time range of the data, or use units other than seconds.
+&gt; 
+&gt; 
+&gt; Ansley
+&gt; 
+&gt; McCann, Mike wrote:
+&gt; 
+&gt; &gt;Hello,
+&gt; &gt;
+&gt; &gt;I have a data set of mooring data that I have had difficulty 
+&gt; creating for Ferret ever since we recovered our last 
+&gt; deployment.  I append each deployment after gridding to an 
+&gt; hourly time axis.  There are 2 depth axes: a 0:5:500 for the 
+&gt; adcp data (DEPTH_HR) and a 12 element irregular axis for the 
+&gt; microcat data (DEPTH_TS_HR).  The time series is now 15 years 
+&gt; long and I'm wondering if I am now bumping into a limit 
+&gt; inside of Ferret.
+&gt; &gt;
+&gt; &gt;I get this error when I try and load into Ferret:
+&gt; &gt;
+&gt; &gt;yes? use 
+&quot;<a  href="http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM1.nc&quot">http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM1.nc&quot</a>;
+&gt; **TMAP ERR: limit on storage for coordinates has been reached
+&gt;             MAX= 250000
+&gt;
+&gt;I am able to plot the data using ncBrowse, so I think the data set is O.K. (e.g. no dis-ordered time dimension).  I am planning to use an aggregation server to simplify the generation of this data set, but am concerned that even if I do that Ferret would still not be able to use the data.  Have I reached a reached a limit?  Does anyone have any suggestions?
+&gt;
+&gt;Thanks in advance,
+&gt;Mike
+&gt;
+&gt;--
+&gt;Mike McCann 
+&gt;Software Engineer
+&gt;Monterey Bay Aquarium Research Institute
+&gt;7700 Sandholdt Road
+&gt;Moss Landing, CA 95039-9644
+&gt;Voice: 831.775.1769  Fax: 831.775.1736 <a  href="http://www.mbari.org">http://www.mbari.org</a>
+&gt;
+&gt;  
+&gt;
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00258.html">Re: Big data file and limit on storage for coordinates</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00260.html">previous version of FERRET</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00258.html">Thread Prev</a>][<a href="msg00260.html">Thread Next</a>][<A HREF="threads.html#00259">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

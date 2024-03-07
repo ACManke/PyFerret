@@ -1,0 +1,171 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] array subset assignment after smoothing -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 3 Oct 2005 09:51:42 &#45;0700 -->
+<!--X-Message-Id: 4341619E.8040205@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 434081D4.9030801@jcu.edu.au -->
+<!--X-Reference: 7d49c5547afd561b75968bddcdc829f2@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] array subset assignment after smoothing</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00909.html">Thread Prev</a>][<a href="msg00911.html">Thread Next</a>][<A HREF="threads.html#00910">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] array subset assignment after smoothing</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] array subset assignment after smoothing</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 03 Oct 2005 09:51:42 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00909.html">7d49c5547afd561b75968bddcdc829f2@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00908.html">434081D4.9030801@jcu.edu.au</a>&gt; &lt;<a href="msg00909.html">7d49c5547afd561b75968bddcdc829f2@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+In a slight variation of this, an expression like<br>
+<br>
+   let hsmo = if hsmo_a then hsmo_a else h<br>
+<br>
+is often better replaced by<br>
+<br>
+   let hsmo = MISSING(hsmo_a, h)<br>
+<br>
+Which has the advantage that if there are values of 0 in hsmo_a, the 
+first expression will not retain them as valid data (because 0 is false 
+in the IF statement!)  but the expression using MISSING will keep zero 
+as a valid value. A simple example:<br>
+<br>
+  yes? ! Define a couple of variables<br>
+  yes? let aa = IF (i-j) LT 4 then (i-j)<br>
+  yes? let bb = i+j<br>
+<br>
+  yes? ! aa is 0 along the diagonal, missing in one corner<br>
+  yes? shade/i=1:5/j=1:5 aa<br>
+<br>
+  yes? ! this expression has missing values where aa is 0<br>
+  yes? shade/i=1:5/j=1:5 if aa then aa<br>
+<br>
+  yes? ! replaces aa with bb where aa is 0<br>
+  yes? shade/i=1:5/j=1:5 if aa then aa else bb<br>
+<br>
+  yes? ! keeps aa intact with its 0's, replacing the missing value<br>
+  yes? shade/i=1:5/j=1:5 missing(aa, bb)<br>
+<br>
+<br>
+William S. Kessler wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">let hsmo_a = h[x=4:221@shn:7,y=4:142@shn:7]<br>
+let hsmo = if hsmo_a then hsmo_a else h<br>
+<br>
+(Actually the dimensions of hsmo1 are always the same as h, but it has 
+blank values at the edges.)<br>
+<br>
+Since the above will likely lead to funny contours at the edges, 
+perhaps a better technique would be to taper the smoothing:<br>
+let hsmo7 = h[x=4:221@shn:7,y=4:142@shn:7]<br>
+let hsmo5 = h[x=4:221@shn:5,y=4:142@shn:5]<br>
+let hsmo3 = h[x=4:221@shn:3,y=4:142@shn:3]<br>
+<br>
+let h1 = if hsmo3 then hsmo3 else h<br>
+let h2 = if hsmo5 then hsmo5 else h1<br>
+let hsmo = if hsm07 then hsmo7 else h2<br>
+<br>
+Billy K<br>
+<br>
+On Oct 2, 2005, at 5:56 PM, John Luick wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">If I smooth a data set with:<br>
+let hsmo = h[x=4:221@shn:7,y=4:142@shn:7]<br>
+then hsmo loses the outer three rows and columns of the original h, 
+ie it is six rows and six columns smaller than h.<br>
+But I need an array whose dimensions are the same as h - the values 
+in the outer rows and columns can be identical to h (ie unsmoothed), 
+but not all '_' symbols.<br>
+Can this be done? I tried variations on xact, asn, etc. but no joy 
+(only unjoy).<br>
+p.s., am I just getting old, or is the ferret syntax really strange? 
+I've used GMT, GrADS, Matlab, Tecplot, NCAR - you name it - and I'm 
+finding ferret the least intuitive of all. Is it worth learning to 
+think like a ferret?<br>
+Thanks,<br>
+John (trying ferret out for a specific purpose)<br>
+(and if you are a long-lost friend: &quot;hi!&quot;)<br>
+<br>
+<br>
+</blockquote><pre>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@noaa.gov
+Tel: 206-526-6221
+Fax: 206-526-6744
+Home page: <a  href="http://www.pmel.noaa.gov/~kessler">http://www.pmel.noaa.gov/~kessler</a>
+
+</pre>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00908" href="msg00908.html">[ferret_users] array subset assignment after smoothing</a></strong>
+<ul><li><em>From:</em> John Luick</li></ul></li>
+<li><strong><a name="00909" href="msg00909.html">Re: [ferret_users] array subset assignment after smoothing</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00909.html">Re: [ferret_users] array subset assignment after smoothing</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00911.html">[ferret_users] creating a natCdf</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00909.html">Thread Prev</a>][<a href="msg00911.html">Thread Next</a>][<A HREF="threads.html#00910">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

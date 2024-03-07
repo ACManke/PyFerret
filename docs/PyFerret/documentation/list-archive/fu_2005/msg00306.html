@@ -1,0 +1,222 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to calculate the annual average -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 1 Apr 2005 12:12:54 &#45;0800 -->
+<!--X-Message-Id: 424DAB46.5000308@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.GSO.4.44+UNC.0504011311270.17443&#45;100000@dali.gphys.unc.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to calculate the annual average</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00305.html">Thread Prev</a>][<a href="msg00307.html">Thread Next</a>][<A HREF="threads.html#00306">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to calculate the annual average</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ming Yang &lt;<a href="mailto:myang@DOMAIN.HIDDEN">myang@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to calculate the annual average</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 01 Apr 2005 12:12:54 -0800</li>
+<li>Cc: Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00305.html">Pine.GSO.4.44+UNC.0504011311270.17443-100000@dali.gphys.unc.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00305.html">Pine.GSO.4.44+UNC.0504011311270.17443-100000@dali.gphys.unc.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ming,<br>
+The time axis for your data must have calendar information on it after
+all.&nbsp; You can define your yearly time axis using the attributes of the
+input data set:<br>
+<br>
+<pre wrap="">yes? use cresum001710.sst.nc
+yes? show axis `sst,return=taxis`
+yes? say `sst,return=tunits`
+yes? say `sst,return=tstart`
+
+Then use the information these commands give to define your yearly axis. For example, if tstart was 5-jan-1989, then the axis might be:
+
+
+yes? define axis/t=6:4800:12/units=months/t0="15-jan-1989" yearaxis</pre>
+<br>
+<br>
+Ming Yang wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <pre wrap="">Hi, Ansley
+   Thank you for your reply. I try your approach, but still there are
+problems. Here is what I got
+
+yes? use cresum001710.sst.nc
+yes? show data
+     currently SET data sets:
+    1&gt; ./cresum001710.sst.nc  (default)
+ name     title                             I         J         K        L
+ SST      Sea surface temperature          1:144     1:72      ...      1:4800
+yes? define axis/t=6:4800:12  yearaxis
+yes? let sst_year = sst[gt=yearaxis@ave]
+yes? list/file="cresum001710.sst.a.nc" sst_year
+ **ERROR: regridding: only @ASN regridding between calendar and
+          non-calendar axes: SST
+
+   What this means?
+
+Ming
+
+
+On Fri, 1 Apr 2005, Ansley Manke wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi Ming,
+When the time series is done in terms of index value, you caon compute
+the annual averages like this:
+
+  define axis/t=6:4800:12  yearaxis
+  let sst_year = sst[gt=yearaxis@ave]
+
+The output axis is in the same units (which is just the index value, but
+you can think of it as months).  I start with 6 so that the averages are
+taken over the first 12 points, then 13 through 24, and so on.  To test
+what this is doing, here is an example where I make up some data, where
+the variable has the value of the index.
+
+   yes? def axis/t=1:4800:1 tmonth
+   yes? def axis/t=6:4800:12 tyear
+
+   yes? let tt =  t[gt=tmonth]
+   yes? let ttyear = tt[gt=tyear@ave]
+
+   yes? list/l=1:5 ttyear
+             VARIABLE : TT[GT=TYEAR@AVE]
+             SUBSET   : 5 points (T)
+    6    / 1:   6.26
+    18   / 2:  18.00
+    30   / 3:  30.00
+    42   / 4:  42.00
+    54   / 5:  54.00
+
+The first value is different from the expected 6 because the first
+averaging interval in T (t=1 to 12)  is taken from the start of the time
+axis, 0.5,  to 12, so the weighting factor is 11.5. The start of the
+axis is t=0.5 not 0. The second interval (t=12 to 24) takes the average
+from 12 to 24, so the weighting is 12.
+
+We can also see this if we compute unweighted average computed by taking
+the transformation @SUM and dividing by the number of good data, @NGD:
+
+   yes? let ttsum = tt[gt=tyear@sum]
+   yes? let ttcount = tt[gt=tyear@ngd]
+   yes? let ttyear = ttsum/ttcount
+   yes? list/l=1:5 ttsum, ttcount, ttyear
+                T: 0 to 60
+    Column  1: TTSUM is TT[GT=TYEAR@SUM]
+    Column  2: TTCOUNT is TT[GT=TYEAR@NGD]
+    Column  3: TTYEAR is TTSUM/TTCOUNT
+             TTSUM TTCOUNT TTYEAR
+   6    / 1:   72.0   11.50   6.26
+   18   / 2:  216.0   12.00  18.00
+   30   / 3:  360.0   12.00  30.00
+   42   / 4:  504.0   12.00  42.00
+   54   / 5:  648.0   12.00  54.00
+
+
+
+Ming Yang wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Hi, Ansley
+  After I reading the FAQ, I still cannot figure out how to compute the
+annual average. It is probably because my data set is different from the
+example listed in the FAQ. Here is the basical information of my dataset
+yes? use cresum001710.sst.nc
+yes? show data
+    currently SET data sets:
+   1&gt; ./cresum001710.sst.nc  (default)
+name     title                       I         J         K      L
+SST      Sea surface temperature    1:144     1:72      ...   1:4800
+
+  I think the difference is that in my dataset the grid is defines as
+IJKL instead of XYZT. And also the L axis is not based on any calendars.
+Basically what I want to do is to calculate the average values for every
+12 Ls so that to the transformed data has 400 points in L axis. Do you
+know what is the best way for me to do so? Thank you for your help.
+
+
+Ming
+
+
+
+      </pre>
+    </blockquote>
+    <pre wrap="">
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00305" href="msg00305.html">Re: How to calculate the annual average</a></strong>
+<ul><li><em>From:</em> Ming Yang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00305.html">Re: How to calculate the annual average</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00307.html">How to regrid the data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00305.html">Thread Prev</a>][<a href="msg00307.html">Thread Next</a>][<A HREF="threads.html#00306">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

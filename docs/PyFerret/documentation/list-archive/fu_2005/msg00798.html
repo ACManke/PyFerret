@@ -1,0 +1,156 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] choose little/big endian for stream binaryoutput -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Thu, 18 Aug 2005 14:54:22 &#45;0700 -->
+<!--X-Message-Id: 20050818.115417.74751278.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4304EBBB.4040402@gmail.com -->
+<!--X-Reference: 4304EDA0.3030200@noaa.gov -->
+<!--X-Reference: 1124397772.3425.8.camel@caveenjt42 -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] choose little/big endian for stream binaryoutput</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00797.html">Thread Prev</a>][<a href="msg00802.html">Thread Next</a>][<A HREF="threads.html#00798">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] choose little/big endian for stream binaryoutput</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] choose little/big endian for stream binaryoutput</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 18 Aug 2005 11:54:17 -1000 (HST)</li>
+<li>In-reply-to: &lt;<a href="msg00797.html">1124397772.3425.8.camel@caveenjt42</a>&gt;</li>
+<li>References: &lt;<a href="msg00795.html">4304EBBB.4040402@gmail.com</a>&gt;&lt;<a href="msg00796.html">4304EDA0.3030200@noaa.gov</a>&gt;&lt;<a href="msg00797.html">1124397772.3425.8.camel@caveenjt42</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi there,
+
+| Under UNIX (LINUX) one can use the dd utilily to swap bytes:
+| 
+|   dd if=in_file of=out_file conv=swab
+| 
+| This might be a solution.
+
+I haven't tried this, but I suspect that it will work only
+for binary files consisting of 2-byte objects.
+
+A 4-byte floating point number, for example, which has a memory
+layout of &quot;|b0|b1|b2|b3|&quot; is stored on the disk as
+&quot;|b3|b2|b1|b0|&quot;, if I remember correctly.  So, you have to swap
+four bytes as a group, whereas the dd command swaps only
+neighboring two bytes.
+
+I heard there's a version of dd that has another swap option
+for 2-, 4-, 8-byte objects:
+
+   <a  href="http://www.research.att.com/~gsf/man/man1/dd.html">http://www.research.att.com/~gsf/man/man1/dd.html</a>
+
+The standard dd on Linux doesn't, unfortunately.
+
+I don't know of any universal solution to the endianness conversion
+problem.  I'm attaching my little quick &amp; dirty C++ program to convert
+binary files consisting of 4-byte objects only.  You can easily change
+it for 8-byte objects.  This program is slow, I warn you.
+(If there's sufficient demands, I could considerably speed it up.)
+
+Ryo
+===== endian4.cc ====================
+// endian4.cc: convert 4-byte little endian to big endian (and vice versa)
+//
+// This is a pre-ANSI C++ program.  You may need to change
+// &lt;iostream.h&gt; to &lt;iostream&gt;, cin to std::cin, and cout to std::cout .
+
+#include &lt;iostream.h&gt;
+
+typedef unsigned char uchar;
+
+inline
+void swap(uchar&amp; a, uchar&amp; b)
+{
+   const uchar tmp = a;
+   a = b;
+   b = tmp;
+}
+
+inline
+void endian4(uchar* buf)
+{
+   swap(buf[0], buf[3]);
+   swap(buf[1], buf[2]);
+}
+
+
+int main()
+{
+   uchar buf[4];
+   for (;;) {
+      cin.read(buf, sizeof(buf));
+      endian4(buf);
+      if (!cin) break;
+      cout.write(buf, sizeof(buf));
+   }
+}
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00795" href="msg00795.html">[ferret_users] choose little/big endian for stream binary output</a></strong>
+<ul><li><em>From:</em> David Wang</li></ul></li>
+<li><strong><a name="00796" href="msg00796.html">Re: [ferret_users] choose little/big endian for stream binary output</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00797" href="msg00797.html">Re: [ferret_users] choose little/big endian for stream binaryoutput</a></strong>
+<ul><li><em>From:</em> James Caveen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00797.html">Re: [ferret_users] choose little/big endian for stream binaryoutput</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00802.html">Re: [ferret_users] choose little/big endian for stream binary output</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00797.html">Thread Prev</a>][<a href="msg00802.html">Thread Next</a>][<A HREF="threads.html#00798">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

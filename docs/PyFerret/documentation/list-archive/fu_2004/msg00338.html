@@ -1,0 +1,230 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: trajectory plot + colorbar -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 27 Apr 2004 13:22:10 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0404240449040.28932&#45;200000@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 40892424.2080707@mpch&#45;mainz.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: trajectory plot + colorbar</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00331.html">Thread Prev</a>][<a href="msg00342.html">Thread Next</a>][<A HREF="threads.html#00338">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: trajectory plot + colorbar</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Michael Traub &lt;<a href="mailto:mtraub@DOMAIN.HIDDEN">mtraub@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: trajectory plot + colorbar</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 24 Apr 2004 05:18:58 +0530 (IST)</li>
+<li>Cc: Ferret users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00331.html">40892424.2080707@mpch-mainz.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Michael,
+              You can use &quot;PPL SHAKEY&quot; to turn your color key. Refer 
+user manual Appendix C Sec2.12 SHAKEY to find the usage. The trick is
+to interchange yposition_low &amp; yposition_high ( to turn vertical, default
+color key) in SHAKEY. For example...
+
+	yes? use coads_climatology
+	yes? set reg/l=1/x=30:120/y=-30:30
+	yes? fill sst         ! to make a plot and get the values for 
+	yes? ppl list shakey  !   arguments of default shakey   
+        
+	         DO KEY  ORIENT  LAB SIZE  LAB INC  LAB DIG  LAB LEN
+        	      1       1      0.00        0        3        9
+
+	
+	         DEFAULT KEY POSITIONING
+	         X LO     X HI     Y LO     Y HI
+	         9.45     9.71     1.40     7.40
+        yes? fill/set sst    ! to make a plot with &quot;reversed&quot;  color key     
+        yes? ppl shakey ,,,,,,,,7.40,1.40  ! changing only y_values 
+        yes? ppl fill  
+
+  Here (as attachment) is a modified version of the &quot;polymark.jnl&quot;, with 
+an additional option for shakey as 7th argument. You can give the arguments for 
+shakey as 7th argument to this new jnl file but should be enclosed in double 
+quotes like;
+ 
+ GO polymark_new poly/over/key/levels=(-15,30,5)  xpts,ypts,sst,circle, 0.5,&quot;,,,,,,,,7.4,1.4&quot;
+
+Hope this helps....
+
+With Regards 
+
+Jaison
+
+
+On Fri, 23 Apr 2004, Michael Traub wrote:
+
+&gt; Hi,
+&gt; 
+&gt; I try to plot trajectories (lon vs. lat and colored the pressure 
+&gt; height!) with following command
+&gt; 
+&gt; GO polymark POLY/OVER/NOLAB/KEY/LEVELS=&quot;(200,1000,100)&quot; LON+360 LAT 
+&gt; PRESS/100 circle 0.2)
+&gt; 
+&gt; How can I turn the colorbar, so that 200 is at the top of the colorbar 
+&gt; and 1000 is at the bottom??
+&gt; 
+&gt; Thanks in advance
+&gt; 
+&gt; Michael
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+</pre>
+<pre>\cancel mode verify
+! polymark_new.jnl
+! 4/99 *sh* and *jd*
+! 10/00 *sh* bug fix to scaling algorithm
+!
+! Description: Plot symbols colored by values of a variable along a track
+
+! Usage:                  $1        $2    $3     $4      $5      $6      $7
+! Yes?	GO polymark polygon_command xpts ypts [values] [shape] [scale] [shakey]
+! $1 - the plot command with qualifiers (eg POLYGON/OVER/KEY)
+! $2 - X coordinates of track 
+! $3 - Y coordinates of track 
+! $4 - variable whose values will be plotted along the track (eg SST)
+! $5 - shape of the symbol, as defined by polyshape.jnl 
+! $6 - scale the values by this factor (optional, default 1)
+! $7 - ppl shakey arguments to control the color key orientn. and labelling
+!                 in &quot;double quotes&quot; like &quot;1,1,0,0,3,9,9.5,9.8,7.4,1.4&quot;
+!                    or &quot;,,,,,,,,7.4,1.4&quot;
+!                 after making a dummy plot, use &quot;PPL LIST SHAKEY&quot; to
+!                     see the default values
+!  
+!      shape names include:
+!           triangle           delta           square
+!           diamond            pentagon        hexagon
+!           circle             star            plus
+!           ex
+
+! examples
+!       GO polymark polygon/over/key lon, lat, sst, diamond, 0.5,&quot;,,,,,,,,7.4,1.4&quot;
+
+! In detail, set cruise track and plot on a map:
+!       yes? LET xpts = 180 + 50*COS(2*3.14*I[I=1:50]/60)
+!       yes? LET ypts = 15  + 20*SIN(2*3.14*I[I=1:50]/60)
+!       yes? LET sst = 25 - ypts + RANDN(ypts)
+
+!       yes? GO basemap x=120:250 Y=25s:65n 20
+!
+!       yes? GO polymark polygon/over/key/title=&quot;SST&quot;  xpts,ypts,sst,ex, 0.5 
+
+
+! argument check
+QUERY/IGNORE $1&quot;&lt;usage: yes? GO polymark polygon_command xpts ypts [values] [shape] [scale]&quot;
+QUERY/IGNORE $2&quot;&lt;usage: yes? GO polymark polygon_command xpts ypts [values] [shape] [scale]&quot;
+QUERY/IGNORE $3&quot;&lt;usage: yes? GO polymark polygon_command xpts ypts [values] [shape] [scale]&quot;
+
+! save the input expressions into simple variable definitions
+LET/QUIET PLMxpoly = ($2)
+LET/QUIET PLMypoly = ($3)
+LET/QUIET PLMpolydata = $4&quot;0&quot;
+
+! determine the orientation of the data (and check that it is 1D or a point)
+DEFINE SYMBOL PLMax `PLMxpoly,return=shape`
+DEFINE SYMBOL PLMpoly_ax ($PLMax&quot;|PT&gt;Z|X&gt;Z|Y&gt;Z|Z&gt;Y|T&gt;Z|&lt;error: data is not a point or line&quot;)
+
+! units/inch scale factors
+LET/QUIET PLMdefault_scale =$6&quot;1&quot; *  0.1
+LET/QUIET PLMx_correction = PLMdefault_scale*((($xaxis_max))-(($xaxis_min)))/($ppl$xlen)
+LET/QUIET PLMy_correction = PLMdefault_scale*((($yaxis_max))-(($yaxis_min)))/($ppl$ylen)
+
+! optionally create the polygon coordinates, xpolyshape, ypolyshape
+! else check that the coordinates exist
+IF $5&quot;0|*&gt;1&quot; THEN
+   GO polyshape $5
+ELSE
+   LOAD xpolyshape, ypolyshape  ! THESE MUST BE DEFINED BY GO polyshape
+ENDIF
+
+! make sure that the polygon coordinates are along the correct axis
+! and correct the coordinates for unequal axis scaling and user scale factor 
+LET/QUIET PLMxpolymark = ($PLMpoly_ax)SEQUENCE(xpolyshape) * PLMx_correction
+LET/QUIET PLMypolymark = ($PLMpoly_ax)SEQUENCE(ypolyshape) * PLMy_correction
+
+$1/coord_ax=($PLMpoly_ax)/set_up  PLMxpoly+PLMxpolymark, PLMypoly+PLMypolymark, PLMpolydata
+ppl shakey $7&quot; &quot;
+ppl fillpol/over
+
+cancel symbol PLM*
+cancel variable PLM*
+set mode/last verify
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00331" href="msg00331.html">trajectory plot + colorbar</a></strong>
+<ul><li><em>From:</em> Michael Traub</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00331.html">trajectory plot + colorbar</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00342.html">Re: trajectory plot + colorbar</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00331.html">Thread Prev</a>][<a href="msg00342.html">Thread Next</a>][<A HREF="threads.html#00338">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

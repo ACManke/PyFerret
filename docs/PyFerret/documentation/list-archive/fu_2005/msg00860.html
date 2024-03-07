@@ -1,0 +1,182 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] grouping variables from an ensemble into a singlenetcdf file -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 7 Sep 2005 09:36:41 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0509072159280.30950@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1126091893.16472.34.camel@eld098.desktop.frd.metoffice.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] grouping variables from an ensemble into a singlenetcdf file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00859.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00860">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] grouping variables from an ensemble into a singlenetcdf file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Arribas, Alberto&quot; &lt;<a href="mailto:alberto.arribas@DOMAIN.HIDDEN">alberto.arribas@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] grouping variables from an ensemble into a singlenetcdf file</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 7 Sep 2005 22:08:00 +0530 (IST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00859.html">1126091893.16472.34.camel@eld098.desktop.frd.metoffice.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00859.html">1126091893.16472.34.camel@eld098.desktop.frd.metoffice.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Alberto,
+             It can be done easily in Ferret bye defining a grid with 16
+K levels and appending the K=2 variable from each ensemble file to this
+new grid. For details please see the example below. To run this example
+you may need to modify the input filename (it must have been easier if
+you send the output of &quot;show data&quot; command for any of the input files).
+If you face any problem with the example given below, mail back with
+the names of your first few (say 2 or 3) files.
+
+ Please find the details in the example.  Hope this helps
+
+ With Regards
+
+ Jaison
+
+!-------------example.jnl----------------------------------
+\ cancel mode verify
+!
+! open first input data set
+
+     use ensemble_1.nc    ! put the proper filename here
+
+! define the output grid
+
+     define axis/z=1:16:1/units=ensemble  zensm ! you will ge some warning
+                                                ! messages associated with this
+                                                ! units...
+     let gout = x[gx=ht,d=1]*0 + y[gy=ht,d=1]*0 + z[gz=zensm]*0 + t[gt=ht,d=1]*0
+
+! extract HT of K=2 on to the output grid
+
+     let ht_k2 = ht[d=1,k=2] + gout
+
+! save the new variable as K=1 in the output file (open the output file
+!   such that it should have room for 16 levels but only one level is
+!   written now...)
+
+     set var/title=&quot;My variable : K=2 level&quot;/units=&quot;meters&quot; ht_k2
+     sp rm -f ensemble_k2_all.nc
+     save/file=ensemble_k2_all.nc/KLIMITS=1:16/K=1/quiet/CLOBBER ht_k2
+
+! repeat it for other ensembles/input files
+
+     REPEAT/RANGE=2:16:1/name=nn (;\
+       define symbol en = `nn`    ;\
+       cancel data 1              ;\
+       use ensemble_($en).nc      ;\
+       let ht_k2 = ht[d=1,k=2] + gout ;\
+       save/file=ensemble_k2_all.nc/K=($en)/quiet/APPEND ht_k2 ;\
+      )
+
+! if you want to preserve the same name &quot;HT&quot; in the output file...
+
+     cancel var/all ; cancel data/all
+     use ensemble_k2_all.nc
+     let ht = ht_k2[d=1]            ! just rename the variable
+     set var/title=&quot;My variable : K=2 level&quot;/units=&quot;meters&quot; ht
+     sp rm -f ensemble_k2_all16.nc
+     set memory/size=100mb          ! default memory may not be suffient
+     save/file=ensemble_k2_all16.nc/quiet/APPEND ht
+
+! remove the unwanted files
+
+     sp rm -f ensemble_k2_all.nc
+!
+!-------------end of example.jnl------------------------------------------
+
+
+
+On Wed, 7 Sep 2005, Arribas, Alberto wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Dear ferreters,
+
+I have a set of 16 files from an ensemble run which all contain the same
+variables. For example:
+
+name     title         I           J        K         L
+HT       Height      1:288     1:217     1:4      1:13
+
+I need to extract HT for k=2 (a certain height) for the all 16 files and
+group it into a single file, therefore producing something like this:
+
+name     title        I           J        K         L
+HT       Height      1:288     1:217    1:16       1:13
+
+in which the index k now refers to each ensemble member but all the
+other index remain the same.
+
+Could somebody give me advice on how to do this?
+
+Thanks,
+Alberto
+
+
+-----
+Alberto Arribas   Ensemble Research Scientist
+Met Office   FitzRoy Road   Exeter   Devon   EX1 3PB   UK
+Tel: +44 (0)1392 886518   Fax: +44 (0)1392 885681
+E-mail: alberto.arribas@metoffice.gov.uk   <a  href="http://www.metoffice.gov.uk">http://www.metoffice.gov.uk</a>
+
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00859" href="msg00859.html">[ferret_users] grouping variables from an ensemble into a single netcdf file</a></strong>
+<ul><li><em>From:</em> Arribas, Alberto</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00859.html">[ferret_users] grouping variables from an ensemble into a single netcdf file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00859.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00860">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

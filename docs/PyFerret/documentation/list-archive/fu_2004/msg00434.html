@@ -1,0 +1,190 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: regridding problem axis listings -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 9 Jun 2004 11:22:17 &#45;0700 -->
+<!--X-Message-Id: 40C7555B.2060200@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.44.0406090904470.29592&#45;100000@bgs -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: regridding problem axis listings</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00432.html">Thread Prev</a>][<a href="msg00435.html">Thread Next</a>][<A HREF="threads.html#00434">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: regridding problem axis listings</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Bob Smith &lt;<a href="mailto:Bob.Smith@DOMAIN.HIDDEN">Bob.Smith@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: regridding problem axis listings</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 09 Jun 2004 11:22:19 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>, Bill Stern &lt;<a href="mailto:Bill.Stern@DOMAIN.HIDDEN">Bill.Stern@xxxxxxxx</a>&gt;,  Matthew Harrison &lt;<a href="mailto:Matthew.Harrison@DOMAIN.HIDDEN">Matthew.Harrison@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00432.html">Pine.LNX.4.44.0406090904470.29592-100000@bgs</a>&gt;</li>
+<li>References: &lt;<a href="msg00432.html">Pine.LNX.4.44.0406090904470.29592-100000@bgs</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Bob,<br>
+Thanks for supplying more information. The missing first value would<br>
+correctly show up for a linear interpolation (the default regridding 
+method).<br>
+That method uses the coordinates from the source axis, TIME, interpolated<br>
+to the points on the destination axis, T2.  There is no way to interpolate<br>
+16-AUG backwards to 14-AUG since there is no point on axis TIME<br>
+before 16-AUG.<br>
+<br>
+The @NRST regridding transformation uses the same logic.  It chooses the 
+point<br>
+on the source axis nearest to the point on the destination axis, 
+requiring that there<br>
+be points on the source axis on both sides of the destination point.. 
+Your first<br>
+coordinate on the source axis 16-AUG and so the way this is implemented 
+Ferret<br>
+doesn't have a way to go backward to 14-AUG.  I agree that one would expect<br>
+Ferret to match the point if the grid cells overlap.  I'll look into 
+what it would take<br>
+to change this.<br>
+<br>
+The @AVE transformation will give you an August value, since it uses 
+weighting<br>
+from partial grid cells.<br>
+<br>
+Ansley Manke<br>
+<br>
+Bob Smith wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Regridding over years<br>
+       Fellow ferreters, I'm having a problem regridding from our orignial time<br>
+coordinate to a new one. The original data represents a series of six month aug-jan<br>
+runs from 1991-2001. The new time coordinate extends from aug 15 1991 to jul 14 2001<br>
+When we do the transformation the first august point is dropped. 
+<br>
+yes? sho/l=1:12 ax t2<br>
+name       axis              # pts   start                end<br>
+T2        TIME               121 r   14-AUG-1991 00:00    13-AUG-2001 12:00<br>
+T0 = 15-JAN-1901<br>
+CALENDAR = JULIAN<br>
+  Axis span (to cell edges) = 121<br>
+<br>
+      L     T                   TBOX      TBOXLO                TSTEP (MONTHS(JULIAN))<br>
+      1&gt;  14-AUG-1991 00:00:00  1         29-JUL-1991 18:45:00  1086.916<br>
+      2&gt;  13-SEP-1991 10:30:00  1         29-AUG-1991 05:15:00  1087.916<br>
+      3&gt;  13-OCT-1991 21:00:00  1         28-SEP-1991 15:45:00  1088.916<br>
+      4&gt;  13-NOV-1991 07:30:00  1         29-OCT-1991 02:15:00  1089.916<br>
+      5&gt;  13-DEC-1991 18:00:00  1         28-NOV-1991 12:45:00  1090.916<br>
+      6&gt;  13-JAN-1992 04:30:00  1         28-DEC-1991 23:15:00  1091.916<br>
+      7&gt;  12-FEB-1992 15:00:00  1         28-JAN-1992 09:45:00  1092.916<br>
+      8&gt;  14-MAR-1992 01:30:00  1         27-FEB-1992 20:15:00  1093.916<br>
+      9&gt;  13-APR-1992 12:00:00  1         29-MAR-1992 06:45:00  1094.916<br>
+     10&gt;  13-MAY-1992 22:30:00  1         28-APR-1992 17:15:00  1095.916<br>
+     11&gt;  13-JUN-1992 09:00:00  1         29-MAY-1992 03:45:00  1096.916<br>
+     12&gt;  13-JUL-1992 19:30:00  1         28-JUN-1992 14:15:00  1097.916<br>
+yes? sho/l=1:12 ax time<br>
+name       axis              # pts   start                end<br>
+TIME      TIME                60 i   16-AUG-1991 12:00    16-JAN-2001 12:00<br>
+T0 = 01-JAN-1991 00:00:00<br>
+CALENDAR = JULIAN<br>
+  Axis span (to cell edges) = 3471.75<br>
+<br>
+      L     T                   TBOX      TBOXLO                TSTEP (days)<br>
+      1&gt;  16-AUG-1991 12:00:00  30.5      01-AUG-1991 06:00:00    227.5<br>
+      2&gt;  16-SEP-1991 00:00:00  30.5      31-AUG-1991 18:00:00    258<br>
+      3&gt;  16-OCT-1991 12:00:00  30.5      01-OCT-1991 06:00:00    288.5<br>
+      4&gt;  16-NOV-1991 00:00:00  30.5      31-OCT-1991 18:00:00    319<br>
+      5&gt;  16-DEC-1991 12:00:00  30.75     01-DEC-1991 06:00:00    349.5<br>
+      6&gt;  16-JAN-1992 12:00:00  122       01-JAN-1992 00:00:00    380.5<br>
+      7&gt;  16-AUG-1992 12:00:00  121.75    02-MAY-1992 00:00:00    593.5<br>
+      8&gt;  16-SEP-1992 00:00:00  30.5      31-AUG-1992 18:00:00    624<br>
+      9&gt;  16-OCT-1992 12:00:00  30.5      01-OCT-1992 06:00:00    654.5<br>
+     10&gt;  16-NOV-1992 00:00:00  30.5      31-OCT-1992 18:00:00    685<br>
+     11&gt;  16-DEC-1992 12:00:00  30.75     01-DEC-1992 06:00:00    715.5<br>
+     12&gt;  16-JAN-1993 12:00:00  121.5     01-JAN-1993 00:00:00    746.5<br>
+yes? list /x=120E/y=5N ($varb)_ens_mn[l=1:12],($varb)_ens_mn2[l=1:12]<br>
+!-&gt; list /x=120E/y=5N precip_ens_mn[l=1:12],precip_ens_mn2[l=1:12]<br>
+WARNING: Listed variables have ambiguous coordinates on axes: T<br>
+            LONGITUDE: 118.8E<br>
+            LATITUDE: 5N<br>
+Column  1: PRECIP_ENS_MN[T=01-AUG-1991 06:00:02-MAY-1993 12:00] is PRECIP[D=1991aug2001jan.precip]/NUM_ENS*86400<br>
+Column  2: PRECIP_ENS_MN2[T=29-JUL-1991 18:45:29-JUL-1992 00:45] is PRECIP_ENS_MN[GT=T2@NRST]<br>
+     PRECIP_EPRECIP_E 
+L /  1:    5.84    ....<br>
+L /  2:    4.04    4.04<br>
+L /  3:   10.22   10.22<br>
+L /  4:    1.49    1.49<br>
+L /  5:    6.88    6.88<br>
+L /  6:   13.63   13.63<br>
+L /  7:    8.69   13.63<br>
+L /  8:    8.00   13.63<br>
+L /  9:    9.81   13.63<br>
+L / 10:    9.17    8.69<br>
+L / 11:    4.83    8.69<br>
+L / 12:    5.16    8.69<br>
+<br>
+<br>
+       Any thoughts on why the first point is being dropped. Any help would be 
+most appreciative. 
+<br>
+ 
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00432" href="msg00432.html">regridding problem axis listings</a></strong>
+<ul><li><em>From:</em> Bob Smith</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00432.html">regridding problem axis listings</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00435.html">Continuous colorbar</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00432.html">Thread Prev</a>][<a href="msg00435.html">Thread Next</a>][<A HREF="threads.html#00434">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

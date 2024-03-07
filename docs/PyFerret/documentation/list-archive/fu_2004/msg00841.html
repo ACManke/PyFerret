@@ -1,0 +1,271 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: your mail : extracting data at given points -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Tue, 23 Nov 2004 12:45:51 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0411240157470.21330&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41A37CFB.8050201@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: your mail : extracting data at given points</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00839.html">Thread Prev</a>][<a href="msg00836.html">Thread Next</a>][<A HREF="threads.html#00841">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: your mail : extracting data at given points</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: your mail : extracting data at given points</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 24 Nov 2004 02:14:32 +0530 (IST)</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;,  Sudheer Joseph &lt;<a href="mailto:sjo_cma@DOMAIN.HIDDEN">sjo_cma@xxxxxxxxxxx</a>&gt;,  jagadishkarmacharya &lt;<a href="mailto:j_karmacharya@DOMAIN.HIDDEN">j_karmacharya@xxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00839.html">41A37CFB.8050201@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ansley,
+            Yes, you are right, SAMPLEXY works fine for irregular axis
+if it is not flagged as MODULO. Actually it was SAMPLEIJ which fails for
+irregular axis/axes even when the axis/axes are not flagged as MODULO.
+I came to this when tried SAMPLEIJ as an alternative for SAMPLEXY : while  
+we have to sample &quot;only on&quot; grid points and one axis is irregular and 
+MODULO (the querry from Jagadish few days back). The solution is to define
+a regular &quot;index&quot; axis so that the I or/and J indices remains the same as 
+in the original grid, define an intermediate variable defined over this 
+regular axis, then use this intermediate variable for sampling (since i 
+or/and j positions remains same, we will get the data sampled at the 
+desired points itself).
+
+ Here is an example....
+
+ With Regards 
+
+ Jaison 
+
+!-----sampleij_irreg.jnl-----------------
+\ cancel mode verify
+
+! create some data defined on an &quot;irregular&quot; axis (say ..X)
+
+   let xdata = XSEQUENCE({0,5,10,15,20,25,30,40,50,60,70,80,90})
+   define axis/x/from_data xirreg=xdata 
+   define axis/y=1:13:1    yreg
+   let var = x[gx=xirreg]/10 + y[gy=yreg]/10 
+
+   LET ipts = XSEQUENCE({2,9,13})   
+   LET jpts = XSEQUENCE({3,4,12})   
+  
+   LET var_ij = SAMPLEIJ(var,ipts, jpts)
+
+   list var_ij
+
+   list/nohead var[i=2,j=3], var[i=9,j=4], var[i=13,j=12]
+
+! failed !!!! what about regular axis ?? just do @ASN to a regular
+!    abstract axis so that the &quot;i&quot; index remains the same (1 to 13).
+
+    define axis/x=1:13:1 xreg
+    let var_reg = var[gx=xreg@ASN]
+    
+    LET var_reg_ij =  SAMPLEIJ(var_reg,ipts, jpts)
+
+    list var_reg_ij
+
+!----end of sampleij_irreg.jnl------------------
+
+ 
+
+On Tue, 23 Nov 2004, Ansley Manke wrote:
+
+&gt; Hi Sudheer and Jaison,
+&gt; The SAMPLEXY function works fine if the data is on irregular axes, but it
+&gt; does have the restriction that if the axis is MODULO then it must be 
+&gt; REGULAR.
+&gt; (I imagine this restriction could be lifted with some clever 
+&gt; programming, but we
+&gt; have not yet made the function that smart.)
+&gt; 
+&gt; Ansley
+&gt; 
+&gt; Jaison Kurian wrote:
+&gt; 
+&gt; &gt;Hi Sudheer,
+&gt; &gt;            You can use SAMPLEXY function to sample a variable 
+&gt; &gt;at desired lat-lon locations. From the usermanual 
+&gt; &gt;(Ch3 Sec2.3.34.  SAMPLEXY )
+&gt; &gt;
+&gt; &gt;   SAMPLEXY(DAT_TO_SAMPLE,XPTS,YPTS) Returns data sampled at a 
+&gt; &gt;   set of (X,Y) points, using linear interpolation. 
+&gt; &gt;  
+&gt; &gt;   SAMPLEXY is a &quot;grid-changing&quot; function; its output grid is 
+&gt; &gt;   different from the input arguments.  Therefore it is best 
+&gt; &gt;   to use explicit limits on the first argument rather than a 
+&gt; &gt;   SET REGION command.
+&gt; &gt;
+&gt; &gt; I think SAMPLEXY works well only for regular (equaly spaced)
+&gt; &gt;X &amp; Y axis (especially if the LONGITUDE axis is flagged as 
+&gt; &gt;MODULO). Anyway if you are planning to use Levitus Climatology
+&gt; &gt;you don't have to worry about this. 
+&gt; &gt;
+&gt; &gt; Please have a look at the example given below.
+&gt; &gt;
+&gt; &gt; Hope this helps
+&gt; &gt;
+&gt; &gt; With Regards 
+&gt; &gt;
+&gt; &gt; Jaison
+&gt; &gt;
+&gt; &gt;...........samplexy_lev.dat...........
+&gt; &gt;LAT   LON
+&gt; &gt;===   ===
+&gt; &gt; 9.0  68.4
+&gt; &gt;10.2  72.6
+&gt; &gt; 8.5  70.2
+&gt; &gt; 7.2  65.5
+&gt; &gt;...............................
+&gt; &gt;!---------samplexy_lev.jnl-----------
+&gt; &gt;
+&gt; &gt;! open climatology dataset
+&gt; &gt;
+&gt; &gt;      set data levitus_climatology
+&gt; &gt;
+&gt; &gt;! open ascii file containing lat-lon points
+&gt; &gt;!    use &quot;/SKIP&quot; to skip header lines if any
+&gt; &gt;
+&gt; &gt;      file/skip=2/var=&quot;lat,lon&quot;  samplexy_lev.dat
+&gt; &gt;
+&gt; &gt;! do the sampling using SAMPLEXY function
+&gt; &gt;
+&gt; &gt;      let temp_lev = SAMPLEXY(temp[d=1], lon[d=2], lat[d=2])
+&gt; &gt;
+&gt; &gt;      list/k=1:5 temp_lev
+&gt; &gt;
+&gt; &gt;! assign proper title and units if you are saving this to a file
+&gt; &gt;
+&gt; &gt;      set var/title=&quot;Temperature Extracted from Levitus Climatology&quot;/\
+&gt; &gt;               units=&quot;^oC&quot;  temp_lev
+&gt; &gt;      set var/title=&quot;Latitude  of data points&quot;/units=latitudes  lat
+&gt; &gt;      set var/title=&quot;Longitude of data points&quot;/units=longitudes lon
+&gt; &gt; 
+&gt; &gt;      sp rm -f samplexy_lev.nc
+&gt; &gt;      save/file=samplexy_lev.nc/append temp_lev
+&gt; &gt;      save/file=samplexy_lev.nc/append lon,lat
+&gt; &gt;
+&gt; &gt;!-----------------------------------------------
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;On Tue, 23 Nov 2004, Sudheer Joseph wrote:
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; &gt;&gt;Dear Users ,
+&gt; &gt;&gt;                 Is there any way to extract data from a netcdf file at 
+&gt; &gt;&gt;specicifed( irregular) lat lon positions read from a file,
+&gt; &gt;&gt;essentially I needed the following
+&gt; &gt;&gt;file/var= lat,lon      ll.dat
+&gt; &gt;&gt;get temperature data from levitus data.cdf @  lat log
+&gt; &gt;&gt;
+&gt; &gt;&gt;is there a method to get this data form the specified lat  lon
+&gt; &gt;&gt;thanks,
+&gt; &gt;&gt;sudheer
+&gt; &gt;&gt;
+&gt; &gt;&gt;***************************************
+&gt; &gt;&gt;Dr. Sudheer Joseph
+&gt; &gt;&gt;Indian National Centre for Ocean Information Services
+&gt; &gt;&gt;Gajularamaram B.O., IDA Jeedeemetla S.O.
+&gt; &gt;&gt;Via Pragathi Nagar, Kukatpally, Hyderabad
+&gt; &gt;&gt;Pin:5000 55
+&gt; &gt;&gt;Tel:+91-40-23044600(R)
+&gt; &gt;&gt;Tel:+91-40-9440832534(Mobile)
+&gt; &gt;&gt;Tel:+91-40-25503595(O)
+&gt; &gt;&gt;Fax:+91-40-25503596(O)
+&gt; &gt;&gt;E-mail:sjo@rediffmail.com;
+&gt; &gt;&gt;callsjo@yahoo.com;
+&gt; &gt;&gt;sjo@incois.gov.in.
+&gt; &gt;&gt;Web- <a  href="http://oppamthadathil.tripod.com">http://oppamthadathil.tripod.com</a>
+&gt; &gt;&gt;***************************************
+&gt; &gt;&gt;
+&gt; &gt;&gt;_________________________________________________________________
+&gt; &gt;&gt;NRIs - Free money transfer to India. Fly to India for free!  
+&gt; &gt;&gt;<a  href="http://acm.bridgeovertw.com/hdfc/qr/landingpage/sep04/index.htm?sitecode=610">http://acm.bridgeovertw.com/hdfc/qr/landingpage/sep04/index.htm?sitecode=610</a>|394 
+&gt; &gt;&gt;Apply Now.
+&gt; &gt;&gt;
+&gt; &gt;&gt;    
+&gt; &gt;&gt;
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00839" href="msg00839.html">Re: your mail : extracting data at given points</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00839.html">Re: your mail : extracting data at given points</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00836.html">map projection in Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00839.html">Thread Prev</a>][<a href="msg00836.html">Thread Next</a>][<A HREF="threads.html#00841">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

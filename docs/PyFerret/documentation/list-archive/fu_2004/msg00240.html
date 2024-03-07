@@ -1,0 +1,218 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: LIST command -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 5 Apr 2004 09:08:08 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0404052131430.30592&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3E95CF11&#45;86FC&#45;11D8&#45;A236&#45;000A95A51444@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: LIST command</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00239.html">Thread Prev</a>][<a href="msg00243.html">Thread Next</a>][<A HREF="threads.html#00240">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: LIST command</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: LIST command</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 05 Apr 2004 21:43:45 +0530 (IST)</li>
+<li>Cc: Ferret users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00239.html">3E95CF11-86FC-11D8-A236-000A95A51444@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie,
+                Hope all you want is to include the information about the 
+pressure level along with the data. Here is an example....
+
+ suppose the dimension is along depth axis ie Z-axis
+ ( for simplicity /file=filename is dropped from list command)
+
+ yes? define axis/z=50:500:50  pres  
+ yes? let temp = Z[gz=pres]/-10  ! variable with 1d grid
+ yes? list temp                  ! without format
+             VARIABLE : Z[GZ=PRES]/-10
+             SUBSET   : 10 points (Z)
+ 50    /  1:  -5.00
+ 100   /  2: -10.00
+ 150   /  3: -15.00
+ 200   /  4: -20.00
+ 250   /  5: -25.00
+ 300   /  6: -30.00
+ 350   /  7: -35.00
+ 400   /  8: -40.00
+ 450   /  9: -45.00
+ 500   / 10: -50.00
+yes? list/format=(2f7.2)  Z[gz=pres],temp ! with format , for pressure 
+                                          ! level values you have to 
+					  ! specify the grid
+             Z: 25 to 525
+ Column  1: Z is Z (axis PRES)
+ Column  2: TEMP is Z[GZ=PRES]/-10
+  50.00  -5.00
+ 100.00 -10.00
+ 150.00 -15.00
+ 200.00 -20.00
+ 250.00 -25.00
+ 300.00 -30.00
+ 350.00 -35.00
+ 400.00 -40.00
+ 450.00 -45.00
+ 500.00 -50.00
+
+ Since you had used 'i' along with 'temp' it seems your dimension(1D)
+ is along abstract axis I ( ie. coordinate axis X) in that case
+
+ list/format(2f7.2) X[gx=temp], temp
+
+Hope this helps
+
+With regards 
+
+Jaison 
+
+
+On Mon, 5 Apr 2004, Emilie Vanvyve wrote:
+
+&gt; Hello !
+&gt; 
+&gt; I try to list a variable and put the result into a file. Say this 
+&gt; variable is called &quot;temp&quot; and has 1 dimension (vertically : 10 pressure 
+&gt; levels : 50 hPa, 100 hPA, 150 hPa, ..., 500 hPa).
+&gt; 
+&gt; When I do this :
+&gt; 
+&gt; define symbol filename = list.dat
+&gt; list/append/file=($filename) temp
+&gt; 
+&gt; I get something like this :
+&gt; 
+&gt; 50     /  1: -65.65
+&gt; 100    /  2: -63.50
+&gt; 150    /  3: -60.37
+&gt; 200    /  4: -58.62
+&gt; 250    /  5: -54.09
+&gt; 300    /  6: -48.06
+&gt; 350    /  7: -41.80
+&gt; 400    /  8: -35.56
+&gt; 450    /  9: -29.70
+&gt; 500    / 10: -24.40
+&gt; 
+&gt; If I want to use the format (because indeed I will have 11 temp-like 
+&gt; variables to list in columns) and I do this :
+&gt; 
+&gt; define symbol filename = list.dat
+&gt; list/append/file=($filename)/format=(f7.2) i, temp
+&gt; 
+&gt; I get something like this :
+&gt; 
+&gt; J /  1:   1.00 -65.65
+&gt; J /  2:   2.00 -63.50
+&gt; J /  3:   3.00 -60.37
+&gt; J /  4:   4.00 -58.62
+&gt; J /  5:   5.00 -54.09
+&gt; J /  6:   6.00 -48.06
+&gt; J /  7:   7.00 -41.80
+&gt; J /  8:   8.00 -35.56
+&gt; J /  9:   9.00 -29.70
+&gt; J / 10:  10.00 -24.40
+&gt; 
+&gt; ... and I have lost the information about the pressure-levels values 
+&gt; (50, 100, ..., 500 hPa).
+&gt; 
+&gt; So, how can I get back the &quot;values&quot; of my pressure levels included in 
+&gt; my i-axis ? My pressure levels do not appear in my data file as a 
+&gt; standard variable, they are included in the vertical axis (I have 
+&gt; called i here) and I don't really want to introduce them in my data 
+&gt; file as a variable.
+&gt; 
+&gt; Thanks for any help !!!
+&gt; 
+&gt; Emilie V.
+&gt; 
+&gt; ____________________________________________________________
+&gt; Emilie VANVYVE
+&gt; Physicist, PhD student
+&gt; 
+&gt; Université catholique de Louvain (UCL)
+&gt; Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+&gt; Chemin du Cyclotron, 2
+&gt; 1348 Louvain-la-Neuve (Belgium)
+&gt; Phone : +32-(0)10-473300
+&gt; Fax : +32-(0)10-474722
+&gt; E-mail : vanvyve@astr.ucl.ac.be
+&gt; Web : www.astr.ucl.ac.be
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00239" href="msg00239.html">LIST command</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00239.html">LIST command</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00243.html">Re: LIST command</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00239.html">Thread Prev</a>][<a href="msg00243.html">Thread Next</a>][<A HREF="threads.html#00240">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

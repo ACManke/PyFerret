@@ -1,0 +1,140 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: reading multiple datasets from a single ascii file -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Thu, 10 Apr 2003 11:19:25 &#45;0700 -->
+<!--X-Message-Id: 3E95B5D6.E52EDCDE@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.44.0304080813230.5133&#45;100000@itchy -->
+<!--X-Reference: 3E95A51B.9931BBA5@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: reading multiple datasets from a single ascii file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00300.html">Thread Prev</a>][<a href="msg00293.html">Thread Next</a>][<A HREF="threads.html#00301">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: reading multiple datasets from a single ascii file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Knox &lt;<a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: reading multiple datasets from a single ascii file</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 10 Apr 2003 11:20:07 -0700</li>
+<li>References: &lt;<a href="msg00292.html">Pine.LNX.4.44.0304080813230.5133-100000@itchy</a>&gt;&lt;<a href="msg00300.html">3E95A51B.9931BBA5@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Steve again,
+<br>A conversation here brought up some more ideas which I
+<br>thought I'd pass along.&nbsp; You could use the shift operator
+<br>in doing the kind of thing I showed in the last message, to have
+<br>the indices start at 1.
+<p>Another idea which I like, as it makes the Ferret code simpler,
+<br>is to use unix soft links to give the data several file names, and
+<br>then read these as different data sets using the SET DATA/GRID
+<br>qualifier to get just the amount in each set.
+<p>The file twosets.dat has these lines:
+<p><tt>3</tt>
+<br><tt>1 2 3</tt>
+<br><tt>4 5 6</tt>
+<br><tt>7 8 9</tt>
+<br><tt>4</tt>
+<br><tt>1 2 3</tt>
+<br><tt>4 5 6</tt>
+<br><tt>7 8 9</tt>
+<br><tt>10 11 12</tt>
+<p>> ln - s twosets.dat headers.dat
+<br>> ln -s twosets.dat set1.dat
+<br>> ln -s twosets.dat set2.dat
+<p>> ferret
+<br>! Read the whole file to get the headers; the size of each data
+<br>! set.&nbsp; Find the lines where v2 is missing. These are the header
+lines.
+<p>yes? file/var=v1,v2,v3/form=delim/type=numeric/delim=" " headers.dat
+<br>yes? list&nbsp; v1,v2,v3
+<br>yes? let headers = if missing(v2,-999) eq -999 then v1
+<br>yes? list headers
+<p>! Compress the header values.&nbsp; Include the dataset name, as we
+<br>! will be coming back to use this list again.
+<p>yes? let headers = compressi( if missing(v2[d=headers.dat],-999) eq
+-999 then v1[d=headers.dat])
+<br>yes? list headers
+<p>! Define an axis and grid for the first set.
+<p>yes? def axis/x=1:`headers[i=1]`:1 xax1
+<br>yes? def grid/x=xax1 grid1
+<p>! Skip the first header line, read the data
+<p>yes? let nskip1 = 1
+<p>yes? file/skip=`nskip1`/grid=grid1/var="v1_1,v1_2,v1_3" set1.dat
+<br>yes? list v1_1,v1_2,v1_3
+<p>! Define an axis and grid for the second set.
+<p>yes? def axis/x=1:`headers[i=2]`:1 xax2
+<br>yes? def grid/x=xax2 grid2
+<p>! Skip the first header line, plus the first set and the second header
+line
+<p>yes? let nskip2 = nskip1 + headers[i=1] + 1
+<br>yes? file/skip=`nskip2`/grid=grid2/var="v2_1,v2_2,v2_3" set2.dat
+<br>yes? list v2_1,v2_2,v2_3
+<p>yes? show data
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00292" href="msg00292.html">reading multiple datasets from a single ascii file</a></strong>
+<ul><li><em>From:</em> Steve Knox</li></ul></li>
+<li><strong><a name="00300" href="msg00300.html">Re: reading multiple datasets from a single ascii file</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00300.html">Re: reading multiple datasets from a single ascii file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00293.html">How to shade and interpolate a scattered data file ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00300.html">Thread Prev</a>][<a href="msg00293.html">Thread Next</a>][<A HREF="threads.html#00301">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

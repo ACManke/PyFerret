@@ -1,0 +1,133 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Progressive vector diagram -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Sat, 18 Jan 2003 13:23:12 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.GSO.4.33.0301181203430.11541&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 009201c2beed$ceb10730$2201a8c0@server.cic.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Progressive vector diagram</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00041.html">Thread Prev</a>][<a href="msg00044.html">Thread Next</a>][<A HREF="threads.html#00042">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Progressive vector diagram</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Mathieu Valois &lt;<a href="mailto:mvalois.safege@DOMAIN.HIDDEN">mvalois.safege@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Progressive vector diagram</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 18 Jan 2003 13:23:10 -0800 (PST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00041.html">009201c2beed$ceb10730$2201a8c0@server.cic.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Sat, 18 Jan 2003, Mathieu Valois wrote:
+&gt; I would like to know how to plot progressive vector diagrams using current meters data.
+&gt; Many thanks.
+
+Hi Mathieu,
+	The easiest way is to use @rsum, a running (cumulative) sum of the
+variable it is used with, as in u[l=@rsum] if u is a function of time.
+For example if we had hourly velocity data (u,v) in units of cm/sec and a
+time axis in units of hours then 3600*u[l=@rsum]/100 would give the x-axis
+sum in meters at each point in the time interval. Likewise for the
+y-axis component and the result could be plotted with plot/vs .
+	If you have a start location (x0,y0) in meters then it and the
+summed u and v (shifted in time by one step) that I think you need. Try
+the following demo and see if it makes sense
+
+! define the time axis for three days of hourly data
+def axis/t=&quot;1-jan-2003:00:00&quot;:&quot;3-jan-2003:23:00&quot;:1/t0=&quot;1-jan-2003:00:00&quot;
+                                                  /units=hours tax
+! now dream up a (u,v) series - a mix of semidiurnal and diurnal tides ...
+let semid=2*3.14159/12.42 ; let diurn=2*3.14159/24.00
+let u=cos(semid*time)+0.5*sin(diurn*time)
+let v=0.5*sin(semid*time)+cos(diurn*time)
+! ... and the sums in meters assuming u,v in cm/s
+let usum=3600*u[l=@rsum]/100 ; let vsum=3600*v[l=@rsum]/100
+list/l=1:5 time,u,v,usum,vsum
+!                        TIME      U      V   USUM   VSUM
+!01-JAN-2003 00:00 / 1:  0.000  1.000  1.000   36.0   36.0
+!01-JAN-2003 01:00 / 2:  1.000  1.004  1.208   72.1   79.5
+!01-JAN-2003 02:00 / 3:  2.000  0.780  1.290  100.2  125.9
+!01-JAN-2003 03:00 / 4:  3.000  0.407  1.206  114.9  169.4
+!01-JAN-2003 04:00 / 5:  4.000 -0.004  0.950  114.7  203.5
+! but (36,36) is where it should be at the END of the first hour so if
+! we set x0,y0 as the starting location then the positions at the listed
+! times should be given by
+let xpos=if(l eq 1)then x0 else x0+usum[l=@shf:-1]
+let ypos=if(l eq 1)then y0 else y0+vsum[l=@shf:-1]
+
+let x0=100 ; let y0=200
+plot/vs/line=2/l=1:72 xpos,ypos
+! mark the start point
+label `x0` `y0` 0 0 0.1 @p4Start
+
+That apart from details line scaling the x and y axes the same or
+perhaps rescaling for a chart overlay should do it I think. Hope this
+helps.
+Mick Spillane
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00041" href="msg00041.html">Progressive vector diagram</a></strong>
+<ul><li><em>From:</em> Mathieu Valois</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00041.html">Progressive vector diagram</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00044.html">Mac OS X</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00041.html">Thread Prev</a>][<a href="msg00044.html">Thread Next</a>][<A HREF="threads.html#00042">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

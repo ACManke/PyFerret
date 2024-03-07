@@ -1,0 +1,173 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: calcualte correlation -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 17 Dec 2004 09:09:53 &#45;0800 -->
+<!--X-Message-Id: 41C312A8.50602@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: NS918oWo7w0nGEbJ8Mq00002064@ns.scsio.ac.cn -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: calcualte correlation</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00914.html">Thread Prev</a>][<a href="msg00918.html">Thread Next</a>][<A HREF="threads.html#00915">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: calcualte correlation</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>=?GB2312?B?uN/I2dXk?= &lt;<a href="mailto:gaorz@DOMAIN.HIDDEN">gaorz@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: calcualte correlation</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 17 Dec 2004 09:08:56 -0800</li>
+<li>Cc: Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00914.html">NS918oWo7w0nGEbJ8Mq00002064@ns.scsio.ac.cn</a>&gt;</li>
+<li>References: &lt;<a href="msg00914.html">NS918oWo7w0nGEbJ8Mq00002064@ns.scsio.ac.cn</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Gao,
+Have you looked at the variance.jnl script? It defines a number of
+variables Perhaps you can
+use it as a starting point to write your own script for the
+lag-correlation coefficient.
+
+yes? go/help variance.jnl
+
+These are the variables that are defined, for two series which are in
+variables P and Q:
+
+let/quiet/title=&quot;VARIANCE OF P&quot; P_VAR = P_DSQ[l=@ave]
+let/quiet/title=&quot;VARIANCE OF Q&quot; Q_VAR = Q_DSQ[l=@ave]
+let/quiet/title=&quot;VARIANCE OF P WHEN Q PRESENT&quot; P_VAR_MASK =
+P_DSQ_MASK[l=@ave]
+let/quiet/title=&quot;VARIANCE OF Q WHEN P PRESENT&quot; Q_VAR_MASK =
+Q_DSQ_MASK[l=@ave]
+let/quiet/title=&quot;COVARIANCE OF P AND Q&quot; COVAR = PQ_DSQ[l=@ave]
+let/quiet/title=&quot;CORRELATION OF P AND Q&quot; CORREL= COVAR /
+(P_VAR_MASK*Q_VAR_MASK)^.5
+
+
+Ansley
+
+互蕃寇 wrote:
+
+&gt;Dear All,
+&gt;
+&gt;Now i hvae two time series,one is seasonal mean and the other is monthly mean. Now i want to calculate simutaneous and lag-correlation coefficient between them. Does anyone know how to obtain it by Ferret?
+&gt;ANy suggestions will be appreciated.
+&gt; 
+&gt;
+&gt;	
+&gt;
+&gt;　　　　　　　　Gao Rongzhen
+&gt;　　　　　　　　gaorz@scsio.ac.cn
+&gt;　　　　　　　　　　2004-12-16
+&gt;
+&gt;  
+&gt;
+</pre>
+<pre>\CANCEL MODE VERIFY
+! updated 10/93 for Ferret V3.01
+! updated 6/99 to handle bad data - SIM
+
+! Description:  define FERRET variables for covariance and correlation
+
+! example:
+!   yes? SET DATA coads_climatology
+!   yes? LET p = sst[x=180,y=0]; LET q = airt[x=180,y=0]
+!   yes? GO variance
+!   yes? list p, q
+
+SAY ... Variance and Covariance: Instructions:
+SAY Use the LET/QUIET command to define the variable(s) P (and Q) as
+SAY your variable(s) of interest (e.g. yes? LET/QUIET P = u[x=180,y=0])
+SAY The variance of P will be variable P_VAR  (Q --&gt; Q_VAR)
+SAY The covariance will be COVAR The correlation will be CORREL.
+SAY Type GO VAR_N to obtain n/n+1 statistical correction factor
+SAY ...
+
+! deviations, squared deviations, cross deviations
+let/quiet P_AVE = P[L=@ave]
+let/quiet Q_AVE = Q[L=@ave]
+let/quiet P_DEV = P - P_AVE
+let/quiet Q_DEV = Q - Q_AVE
+let/quiet MASK_PQ = p*q-p*q + 1 	! always 1 or &quot;missing&quot;
+let/quiet P_MASK = P*MASK_PQ
+let/quiet Q_MASK = Q*MASK_PQ
+let/quiet P_DSQ = P_DEV * P_DEV
+let/quiet Q_DSQ = Q_DEV * Q_DEV
+let/quiet P_AVE_MASK = P_MASK[l=@ave]
+let/quiet Q_AVE_MASK = Q_MASK[l=@ave]
+let/quiet P_DEV_MASK = P_MASK - P_AVE_MASK
+let/quiet Q_DEV_MASK = Q_MASK - Q_AVE_MASK
+let/quiet P_DSQ_MASK = P_DEV_MASK*P_DEV_MASK
+let/quiet Q_DSQ_MASK = Q_DEV_MASK*Q_DEV_MASK
+let/quiet PQ_DSQ= P_DEV_MASK * Q_DEV_MASK     ! also = P_DEV*Q_DEV
+
+! variances, covariances
+let/quiet/title=&quot;VARIANCE OF P&quot;          P_VAR = P_DSQ[l=@ave]
+let/quiet/title=&quot;VARIANCE OF Q&quot;          Q_VAR = Q_DSQ[l=@ave]
+let/quiet/title=&quot;VARIANCE OF P WHEN Q PRESENT&quot; P_VAR_MASK = P_DSQ_MASK[l=@ave]
+let/quiet/title=&quot;VARIANCE OF Q WHEN P PRESENT&quot; Q_VAR_MASK = Q_DSQ_MASK[l=@ave]
+let/quiet/title=&quot;COVARIANCE OF P AND Q&quot;  COVAR = PQ_DSQ[l=@ave]
+let/quiet/title=&quot;CORRELATION OF P AND Q&quot; CORREL= COVAR / (P_VAR_MASK*Q_VAR_MASK)^.5
+
+SET MODE/LAST VERIFY
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00914" href="msg00914.html">calcualte correlation</a></strong>
+<ul><li><em>From:</em> =?gb2312?B?uN/I2dXk?=</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00914.html">calcualte correlation</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00918.html">draw grids in the map.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00914.html">Thread Prev</a>][<a href="msg00918.html">Thread Next</a>][<A HREF="threads.html#00915">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

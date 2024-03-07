@@ -1,0 +1,223 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Harmonic analysis -->
+<!--X-From-R13: Pvyyl Yrffyre <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Sat, 11 Dec 2004 14:43:56 &#45;0800 -->
+<!--X-Message-Id: 200412112243.iBBMhtMI019996@ferret.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Harmonic analysis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00905.html">Thread Prev</a>][<a href="msg00916.html">Thread Next</a>][<A HREF="threads.html#00906">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Harmonic analysis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Harmonic analysis</strong></li>
+<li><strong>From</strong>: <strong>Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 11 Dec 2004 14:43:55 -0800 (PST)</li>
+<li>Reply-to: Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Here is the script that does hramonics of any time series,
+including ones with partial years and blanks.
+
+It is important to note that the mean resulting from this
+script is not the simple mean, but a least-squares fit to
+
+f(t) = C + Asin(wt) + Bcos(wt)
+
+where C is the mean (and A and B the usual harmonic coefficients).
+In some cases C will be a better estimate of the mean. For example,
+suppose you have a time series with many summer samples but few
+winter ones. The simple mean will be weighted towards summer, but
+this script will find the mean assuming that the data are best
+fitted with the harmonic function as well. This also means that
+the fitted mean C will change if you are finding different harmonics.
+Use with thought!
+
+A useful check is to plot the original data overlaid with the
+reconstruction (variable recon... produced by this script) to
+make sure that everything is copacetic.
+
+Billy K
+---------------------------------------------------------
+\canc mode verify
+! Description: finds any annual harmonic. Does not plot, just sets up.
+! allows partial years or blanks within years.
+! fits f(t) = C + Asin(wt) + Bcos(wt) -&gt; make amplitude and phase
+! makes unique name for tunits,omirad (if different vars, then have problems)
+! arg1=variable name
+! arg2=harmonic number wanted
+! arg3=number of timesteps used
+! arg4=number of days in a year (default=365.2425)
+!    -&gt; deals with various length years (may be 360 or 365.25 days, etc)
+
+! need this so ferret knows what &quot;t&quot; is
+set grid $1
+
+! number of timesteps to be used
+define symbol nts$1 `$3`
+
+! set frequency
+let/q tunits$1=t
+! tunits[l=1@ddf] = 1/number of sec in time axis unit (ferret does deriv in sec)
+! therefore tunits[l=1@ddf]*86400 = 1 if time axis in days, = 86400 if in sec
+let/q om1$1_$2= $2 / ($4&quot;365.2425&quot; * tunits$1[l=1@ddf]*86400)
+
+let/q pi=4.*atan(1.)
+let/q om1rad$1_$2=2.*pi*om1$1_$2
+
+! terms which are products of trig terms and data
+let/q dat$1=$1
+let/q ysin$1_$2 =dat$1*(sin(om1rad$1_$2*t))
+let/q sumys$1_$2=ysin$1_$2[l=1:($nts$1)@sum]
+let/q ycos$1_$2=dat$1*(cos(om1rad$1_$2*t))
+let/q sumyc$1_$2=ycos$1_$2[l=1:($nts$1)@sum]
+let/q sumy$1_$2=dat$1[l=1:($nts$1)@sum]
+
+! trig terms alone (non-zero for partial years)
+let/q oneorzero$1=if dat$1 then 1 else 0
+let/q ss$1_$2=oneorzero$1*sin(om1rad$1_$2*t)
+let/q ssum$1_$2=ss$1_$2[l=1:($nts$1)@sum]
+let/q cc$1_$2=oneorzero$1*cos(om1rad$1_$2*t)
+let/q csum$1_$2=cc$1_$2[l=1:($nts$1)@sum]
+let/q ssq$1_$2=oneorzero$1*(sin(om1rad$1_$2*t))^2
+let/q ssqsum$1_$2=ssq$1_$2[l=1:($nts$1)@sum]
+let/q csq$1_$2=oneorzero$1*(cos(om1rad$1_$2*t))^2
+let/q csqsum$1_$2=csq$1_$2[l=1:($nts$1)@sum]
+let/q cs$1_$2=oneorzero$1*cos(om1rad$1_$2*t)*sin(om1rad$1_$2*t)
+let/q cssum$1_$2=cs$1_$2[l=1:($nts$1)@sum]
+
+! find A, B, C algebraically
+let/q ng$1=dat$1[l=1:($nts$1)@ngd]
+! break up calculation to avoid long lines
+let/q q1=sumys$1_$2-sumy$1_$2*ssum$1_$2/ng$1
+let/q q2=(sumyc$1_$2-sumy$1_$2*csum$1_$2/ng$1)
+let/q q3=(cssum$1_$2-csum$1_$2*ssum$1_$2/ng$1)
+let/q q4=(csqsum$1_$2-csum$1_$2^2/ng$1)
+let/q q5=(ssqsum$1_$2-ssum$1_$2^2/ng$1)
+let/q qq$1_$2=(q1-q2*q3/q4)/q5
+let/q r1=sumyc$1_$2-sumy$1_$2*csum$1_$2/ng$1
+let/q r2=(sumys$1_$2-sumy$1_$2*ssum$1_$2/ng$1)
+let/q r3=(cssum$1_$2-ssum$1_$2*csum$1_$2/ng$1)
+let/q r4=(ssqsum$1_$2-ssum$1_$2^2/ng$1)
+let/q r5=(csqsum$1_$2-csum$1_$2^2/ng$1)
+let/q rr$1_$2=(r1-r2*r3/r4)/r5
+let/q p1=(cssum$1_$2-ssum$1_$2*csum$1_$2/ng$1)^2
+let/q p2=(csqsum$1_$2-csum$1_$2^2/ng$1)
+let/q p3=(ssqsum$1_$2-ssum$1_$2^2/ng$1)
+let/q pp$1_$2=p1/(p2*p3)
+
+!let/q 
+qq$1_$2=(sumys$1_$2-sumy$1_$2*ssum$1_$2/ng$1-(sumyc$1_$2-sumy$1_$2*csum$1_$2/ng$1)*(cssum$1_$2-csum$
+1_$2*ssum$1_$2/ng$1)/(csqsum$1_$2-csum$1_$2^2/ng$1))/(ssqsum$1_$2-ssum$1_$2^2/ng$1)
+!let/q 
+rr$1_$2=(sumyc$1_$2-sumy$1_$2*csum$1_$2/ng$1-(sumys$1_$2-sumy$1_$2*ssum$1_$2/ng$1)*(cssum$1_$2-ssum$
+1_$2*csum$1_$2/ng$1)/(ssqsum$1_$2-ssum$1_$2^2/ng$1))/(csqsum$1_$2-csum$1_$2^2/ng$1)
+!let/q 
+pp$1_$2=(cssum$1_$2-ssum$1_$2*csum$1_$2/ng$1)^2/((csqsum$1_$2-csum$1_$2^2/ng$1)*(ssqsum$1_$2-ssum$1_
+$2^2/ng$1))
+let/q aa$1_$2=qq$1_$2/(1-pp$1_$2)
+let/q bb$1_$2=rr$1_$2/(1-pp$1_$2)
+! c will be the simple mean if all years are complete
+! else it will be the &quot;true&quot; mean: fit includes mean
+let/q ccc$1_$2=(sumy$1_$2-aa$1_$2*ssum$1_$2-bb$1_$2*csum$1_$2)/ng$1
+
+! make amplitude and phase (also make phase 0:360)
+let/q phi$1_$2=(360./(2.*pi))*atan2(aa$1_$2,bb$1_$2)
+let/q phi$1_$2b=if (phi$1_$2 GE 0) then phi$1_$2 else phi$1_$2+360
+let/q amp$1_$2=(aa$1_$2^2+bb$1_$2^2)^.5
+
+! reconstruct a time series from the harmonic component
+let/q recon$1_$2=ccc$1_$2+aa$1_$2*sin(om1rad$1_$2*t)+bb$1_$2*cos(om1rad$1_$2*t)
+
+! add definitions of mean and residual after mean and harmonic
+let/q mean$1 = dat$1[l=1:($nts$1)@ave]
+let/q resid$1_$2 = dat$1 - mean$1 - recon$1_$2
+
+! add calculation of variance fraction
+let/q var$1 = dat$1[l=1:($nts$1)@var]
+let/q vfrac$1_$2 = 100*((amp$1_$2^2)/2)/var$1
+
+! make good names for definition info below
+define symbol dol1 $1
+define symbol dol2 $2
+
+say 
+say Have defined:
+say mean($dol1) = mean (fn of x,y,z)
+say aa($dol1)_($dol2),bb($dol1)_($dol2) = harmonic coefficients (fn of x,y,z)
+say ccc($dol1)_($dol2) = simple mean if all years are complete, else the fitted mean
+say amp($dol1)_$2 = harmonic amplitude (fn of x,y,z)
+say phi($dol1)_$2,phi($dol1)_$2b = phase (-180:180 and 0:360 (b)) (fn of x,y,z)
+say recon($dol1)_$2 = reconstructed time series (fn of x,y,z,t)
+say resid($dol1)_$2 = residual after mean and harmonic (fn of x,y,z,t) 
+say vfrac($dol1)_($dol2) = variance fraction (percent) (fn of x,y,z)
+say
+say Note - phase is relative to T0 of the original datas time axis!!
+say ---&gt;&gt;&gt; sho axis [name of time axis]. Check T0.
+say
+
+set mode/last verify
+
+
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00905.html">Re: Harmonic analysis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00916.html">Re: Harmonic analysis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00905.html">Thread Prev</a>][<a href="msg00916.html">Thread Next</a>][<A HREF="threads.html#00906">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

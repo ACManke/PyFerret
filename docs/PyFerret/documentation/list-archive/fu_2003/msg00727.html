@@ -1,0 +1,346 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: overlay of sampling locations -->
+<!--X-From-R13: Qlaql Qunaqyre <ppunaqyreNjubv.rqh> -->
+<!--X-Date: Wed, 8 Oct 2003 08:11:58 &#45;0700 -->
+<!--X-Message-Id: 3F842936.BB1B936A@whoi.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>overlay of sampling locations</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00726.html">Thread Prev</a>][<a href="msg00729.html">Thread Next</a>][<A HREF="threads.html#00727">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>overlay of sampling locations</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:cchandler@DOMAIN.HIDDEN">cchandler@xxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>overlay of sampling locations</strong></li>
+<li><strong>From</strong>: <strong>Cyndy Chandler &lt;<a href="mailto:cchandler@DOMAIN.HIDDEN">cchandler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Oct 2003 11:11:50 -0400</li>
+<li>Organization: Woods Hole Oceanographic Institution</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello ferreters,
+
+I'm trying to overlay some sampling locations on a map of the world, and
+would appreciate some help ...
+
+I was successful at doing an overlay plot of some sampling locations on
+a map of the world with region /x=-180:180/y=-90:90 but I wanted to make
+the map edge at 100E (because of the distribution of my data), and can't
+figure out how to do an overlay plot on that 100W centric base map
+(/x=100E:100E).  The base map looks fine, but the sampling location data
+is still geing plotted on an x=-180:180 axis.
+
+I've played around with various offsets to the longitudes of my sampling
+locations, but all such attempts were unsuccesful, I think because that
+longitude axis is not modulo.
+
+I've attached the ferret script and sampling location datafile.
+
+Can anyone tell me what I'm missing here?
+
+Thanks much, Cyndy
+</pre>
+<pre>! Make map of world 
+! add lon, lat data points as red dots
+! (modified from FUG and LAS FAQ scripts)
+! 031007.clc.
+!
+! Usage:
+! ferret  [ -gif after interactive mode messing about ]
+!         [ -gif creates better res gif image ]
+!   go map_sed_trap
+!
+! Product:
+!  creates map_sed_trap.gif
+! 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! set up environment
+!
+set mem/size=60
+set win/size=.5
+
+! world topo data source
+! etopo60  first, then etopo20 for final image
+!
+!use etopo20
+use etopo60
+!show data/all
+
+! color the whole world beautiful
+! 
+palette dark_land_sea
+!set region/x=-180:180/y=-90:90  ... this one works
+! but next one is better view for trap site distribution
+! make the world begin in ... Bangkok
+set region/x=100E:100E/y=-90:90
+! set region/x=100:460/y=-90:90   .. this made the map I wanted, but
+! how to adjust trap_lon? +280 (0:360 + 100 = 100:460)
+
+! set up for Plate Caree map of the world
+!
+go mp_plate_caree
+set grid rose
+
+! Adjust the window aspect ratio
+!
+go mp_aspect
+
+! Create the underlay map
+!
+shade/nokey/lev=(-10500,-5500,5000)(-5500,0,500)(0,2000,250)(2000,6000,1000)/nolab rose, x_page, y_page
+
+! Lyme prevention: tics begone
+!
+ppl size ($ppl$xlen),($ppl$ylen)
+ppl axlen ($ppl$xlen),($ppl$ylen)
+ppl origin 0,0
+shade/nokey/lev=(-10500,-5500,5000)(-5500,0,500)(0,2000,250)(2000,6000,1000)/nolab rose, x_page, y_page
+
+! Get the trap lon and lat location data
+!
+file/var=&quot;trap_lat,trap_lon&quot; trap_locs.dat
+
+! mess with the data as needed
+!
+! convert longitudes from -180:180 to 0:360 degrees
+!let lon = trap_lon + 180
+! convert longitudes from -180:180 to 100:460 degrees
+!let lon = trap_lon + 280
+! convert longitudes to 100W centric world
+!let lon = trap_lon[x=100E:100E]
+!list lon[I=1:137]
+!
+let lat = trap_lat
+let lon = trap_lon
+
+
+! Plot the locations
+! as small red dots (lox pox)
+! use Map projection version of polymark.jnl
+!     for working with map projection scripts
+!
+go mp_polymark POLY/OVER/NOLAB/NOAXES/NOKEY/PALETTE=red lon, lat, , circle, 0.5
+
+! save plot to gif file
+!
+frame/file=map_sed_trap.gif
+</pre>
+<pre>78.86	1.37
+78.90	6.70
+74.58	-6.73
+70.00	-1.96
+69.50	10.00
+65.52	-0.10
+75.86	11.47
+73.00	19.00
+47.72	-20.87
+33.82	-21.02
+32.73	-70.82
+23.20	-63.98
+32.08	-64.25
+13.50	-54.00
+1.80	-11.13
+-2.18	-9.90
+70.00	0.00
+72.50	-8.00
+68.00	-12.66
+25.30	-79.50
+54.58	-21.15
+47.83	-19.50
+47.82	-19.75
+33.15	-21.98
+31.55	-24.67
+29.13	-15.43
+28.00	-21.98
+24.55	-22.83
+21.98	-25.23
+21.15	-20.68
+20.92	-19.75
+19.00	-20.17
+11.48	-21.03
+31.54	-55.92
+-5.00	-25.00
+-8.00	-28.00
+-20.05	9.16
+-20.00	-10.00
+16.00	60.00
+14.00	64.00
+15.00	68.00
+17.45	89.60
+15.23	89.17
+13.15	84.37
+4.46	87.30
+17.69	58.85
+17.40	58.80
+17.21	59.59
+15.10	61.50
+10.00	65.01
+-76.49	-177.87
+-73.54	176.89
+-74.50	180.00
+-66.16	-168.67
+-63.15	-169.90
+-60.28	-170.06
+-56.90	-170.17
+-53.03	-174.73
+-57.00	-37.00
+-62.26	-57.53
+-62.44	-34.76
+-64.92	-2.50
+-50.67	68.60
+-50.09	5.77
+-54.34	-3.34
+-64.90	-2.56
+-47.00	141.50
+-51.00	141.50
+-61.55	150.45
+-42.00	178.50
+-44.00	178.50
+58.00	179.00
+53.00	149.00
+9.00	-140.00
+5.00	-140.00
+2.00	-140.00
+0.00	-140.00
+-2.00	-140.00
+-5.00	-140.00
+-12.00	-135.00
+50.00	-145.00
+49.00	-138.00
+1.04	138.94
+11.06	140.14
+42.19	-127.58
+41.55	-132.00
+39.49	-127.69
+47.97	-128.10
+42.09	-125.77
+6.57	-92.77
+8.83	-103.98
+15.00	-151.00
+0.00	175.16
+7.93	175.01
+34.42	177.74
+30.00	175.00
+37.40	174.95
+46.12	175.03
+4.13	136.28
+1.22	160.57
+39.67	132.40
+53.50	-177.00
+49.00	-174.00
+5.35	-81.88
+12.83	-103.90
+34.17	141.98
+27.88	-111.66
+26.03	-110.92
+34.23	-120.03
+33.55	-118.50
+18.47	116.02
+14.60	115.10
+5.01	138.83
+12.01	134.29
+44.07	155.03
+15.00	175.02
+22.75	-158.00
+51.50	165.00
+45.00	165.00
+45.00	-177.00
+36.73	-122.05
+40.50	142.48
+40.46	146.03
+30.03	174.98
+13.00	175.00
+40.00	145.43
+46.82	162.12
+27.00	127.00
+25.00	127.00
+77.50	-150.00
+78.00	-132.00
+79.39	-102.65
+42.73	8.52
+42.25	32.62
+43.18	32.02
+43.00	34.00
+42.35	37.57
+</pre>
+<pre>begin:vcard 
+n:Chandler;Cyndy
+tel;cell:508-274-0283
+tel;fax:508-457-2161
+tel;home:508-540-4957
+tel;work:508-289-2765
+x-mozilla-html:TRUE
+url:<a  href="http://usjgofs.whoi.edu/general_info/data_management.html">http://usjgofs.whoi.edu/general_info/data_management.html</a>
+org:Department of Marine Chemistry and Geochemistry;Woods Hole Oceanographic Institution
+adr:;;MS 43;Woods Hole;MA;02543;USA
+version:2.1
+email;internet:cchandler@whoi.edu
+title:US JGOFS Data Management Office
+note;quoted-printable:Office: GEOSECS room 14=3B =0D=0AHours: M-F 8:30-4:00
+x-mozilla-cpt:usjgofs.whoi.edu;-13472
+fn:Cyndy Chandler
+end:vcard
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00730" href="msg00730.html">Re: overlay of sampling locations</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00729" href="msg00729.html">Re: overlay of sampling locations</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00726.html">memory size calculation</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00729.html">Re: overlay of sampling locations</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00726.html">Thread Prev</a>][<a href="msg00729.html">Thread Next</a>][<A HREF="threads.html#00727">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

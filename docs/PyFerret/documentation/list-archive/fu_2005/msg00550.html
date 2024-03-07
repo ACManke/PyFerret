@@ -1,0 +1,235 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: ascii import -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 6 Jun 2005 04:56:47 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0506061727010.12702@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 4292D9B9.7000007@palmod.uni&#45;bremen.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: ascii import</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00478.html">Thread Prev</a>][<a href="msg00479.html">Thread Next</a>][<A HREF="threads.html#00550">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: ascii import</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: ascii import</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 6 Jun 2005 17:29:50 +0530 (IST)</li>
+<li>Cc: Joerg Franke &lt;<a href="mailto:joerg.franke@DOMAIN.HIDDEN">joerg.franke@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00478.html">4292D9B9.7000007@palmod.uni-bremen.de</a>&gt;</li>
+<li>References: &lt;<a href="msg00478.html">4292D9B9.7000007@palmod.uni-bremen.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Joerg,
+          Your mail went unanswered (in the forum)...may be
+nobody like this ascii files!!!!
+
+          It is assumed that in the original ascii file, for
+all depth levels, data exists only for the &quot;common latitude
+points&quot;.
+          It is not easy to read your ascii data &quot;as is&quot; in
+Ferret since there are comments between the data. So first
+step is get rid of those comments and save &quot;only the data&quot; to
+an intermediate file and open/read this file in Ferret. Say
+your original ascii file (ascii_read.dat) is like
+
+# Meridional streamfunction (Sv)
+# Depth level = 1
+# latitude depth global ocean Atlantic Ocean Indo-Pacific Ocean
+90.00 6.00 -999.999 -999.999 -999.999
+88.20 6.00    0.0      0.0   -999.999
+86.40 6.00   10.0     20.0     30.0
+# Depth level = 2
+# latitude depth global ocean Atlantic Ocean Indo-Pacific Ocean
+90.00 18.00 -999.999 -999.999 -999.999
+88.20 18.00    0.0       0.0  -999.999
+86.40 18.00   40.0      50.0    60.0
+
+then use linux commnad &quot;sed&quot; to delete all lines with a &quot;#&quot; in
+the first column :
+
+[user@machine]$ sed -e '/^#/d' ./ascii_read.dat &gt; junk.dat
+
+Now junk.dat will look like :
+
+90.00 6.00 -999.999 -999.999 -999.999
+88.20 6.00    0.0      0.0   -999.999
+86.40 6.00   10.0     20.0     30.0
+90.00 18.00 -999.999 -999.999 -999.999
+88.20 18.00    0.0       0.0  -999.999
+86.40 18.00   40.0      50.0    60.0
+
+Now junk.dat have only two Z-points  ==&gt; 6 &amp; 18
+              &amp;      thrre Y-points  ==&gt; 86.4, 88.2 &amp; 90.0
+
+Again there is a problem....the latitudes are in the decreasing
+order ..but Ferret needs it in the increasing order....
+The following Ferret script will fix all these problems and will
+read the data on to proper Y-Z grid...
+
+
+! modify the points to zax or yax as required..but the values
+!    should be in the &quot;INCREASING&quot; order !!!
+
+     define axis/z/units=meters    zax=ZSEQUENCE({6,18})
+     define axis/y/units=latitudes yax=YSEQUENCE({86.4,88.2,90.0})
+     define grid/z=zax/y=yax gfile
+
+! read in the data (the modified one)
+
+     FILE/grid=gfile/var=&quot;ylat,zdep,gl,at,in&quot; junk.dat
+
+! to get data in the increasing order of latitude...sample it
+!    in the reverse order of J
+
+     let j_size = `y[gy=yax],r=jend`       ! number of lat points
+     let rev_j  = (j_size + 1) - j[gy=yax] ! reverse J indices
+
+     let gl_rev = SAMPLEJ(gl,rev_j) ! sample it in reverse order
+     let at_rev = SAMPLEJ(at,rev_j) !           &quot;
+     let in_rev = SAMPLEJ(in,rev_j) !           &quot;
+
+     let global   = gl_rev[gy=yax@ASN] ! assign proper lat/Y axis
+     let atlantic = at_rev[gy=yax@ASN] !       &quot;
+     let indo_pac = in_rev[gy=yax@ASN] !       &quot;
+
+     set var/bad=-999.999 global       ! set missing value
+     set var/bad=-999.999 atlantic     !       &quot;
+     set var/bad=-999.999 indo_pac     !       &quot;
+
+! now the variables global, atlantic, indo_pac are on proper
+!     YZ grid...assign &quot;title&quot; and &quot;units&quot;
+
+     set var/title=&quot;Something in Global Ocean&quot;/units=&quot;ppt&quot;    global
+     set var/title=&quot;Something in Atlantic Ocean&quot;/units=&quot;ppt&quot;  atlantic
+     set var/title=&quot;Something in Indo-Pacific Ocean&quot;/units=&quot;ppt&quot; indo_pac
+
+     list atlantic
+
+! save the required variables to a NetCDF file for future use..
+!     strongly recommended !!!!!
+
+     ! sp rm -f myfile.nc
+     ! save/file=myfile.nc/append global,atlantic,indo_pac
+
+! after these you can delete the intermediate ascii file &quot;junk.dat&quot;
+
+     sp rm -f junk.dat
+
+! end of Ferret Script
+
+
+
+Hope This Helps
+
+With Regards
+
+Jaison
+
+
+
+On Tue, 24 May 2005, Joerg Franke wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi ferreters,<br>
+I want to use an ascii file wich looks like the following:<br>
+<br>
+# Meridional streamfunction (Sv)<br>
+# Depth level =   1<br>
+# latitude   depth    global ocean        Atlantic Ocean      Indo-Pacific 
+Ocean<br>
+     90.00      6.00       -999.999            -999.999            -999.999 
+88.20      6.00        0.00000             0.00000            -999.999<br>
+     86.40      6.00      -0.409342E-001      -0.409342E-001       -999.999<br>
+...<br>
+# Depth level =   2<br>
+# latitude   depth    global ocean        Atlantic Ocean      Indo-Pacific 
+Ocean<br>
+     90.00     18.00       -999.999            -999.999            -999.999<br>
+     88.20     18.00        0.00000             0.00000            -999.999<br>
+     86.40     18.00      -0.409342E-001      -0.409342E-001       -999.999<br>
+     84.60     18.00      -0.231117           -0.231117            -999.999 
+...<br>
+<br>
+I managed to read the data into 5 different variables (FILE/VAR=&quot;...) but of 
+cause I only want the 3. - 5. column as a variable and the 1. column as 
+y-coordinate (J-axis) and the 2. column as z-coordinate (k-axis). How can I 
+import the data correctly.<br>
+<br>
+Thanks in advance<br>
+Cheers<br>
+Jörg<br>
+<br>
+</blockquote><pre>
+--
+___________________________________________________
+
+    Jaison Kurian
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-22932505 Extn. 229
+        +91-80-23600450
+    Fax:+91-80-23600865
+___________________________________________________</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00478" href="msg00478.html">ascii import</a></strong>
+<ul><li><em>From:</em> Joerg Franke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00478.html">ascii import</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00479.html">shakey and color labels</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00478.html">Thread Prev</a>][<a href="msg00479.html">Thread Next</a>][<A HREF="threads.html#00550">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

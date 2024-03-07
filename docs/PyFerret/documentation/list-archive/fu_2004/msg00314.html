@@ -1,0 +1,222 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How do I deal with variables without dimension -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sat, 17 Apr 2004 11:22:18 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0404172230140.21762&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20040416231226.18950.qmail@web80706.mail.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How do I deal with variables without dimension</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00313.html">Thread Prev</a>][<a href="msg00315.html">Thread Next</a>][<A HREF="threads.html#00314">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How do I deal with variables without dimension</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: How do I deal with variables without dimension</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 17 Apr 2004 22:35:02 +0530 (IST)</li>
+<li>Cc: Erwan Monier &lt;<a href="mailto:erwanmonier@DOMAIN.HIDDEN">erwanmonier@xxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00313.html">20040416231226.18950.qmail@web80706.mail.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Erwan,
+           
+	 According to your script, if we are listing 'R' your final 
+variable; you will get something like this, 
+
+	VARIABLE : R_XMEAN[Y=1:10@AVE]
+             X        : n to nn    &lt;== n &lt; nn
+             Y        : m to mm    &lt;== m &lt; mm
+             Z        : 1 
+             T        : p to pp   &lt;== p &lt; pp
+
+     To a netcdf you can write/appened only along an axis. While
+writing to netcdf file inside a repeat loop,  everytime R will come
+with the same dimesions ie, a range for X,Y &amp; T and &quot;Z=1&quot; for Z-axis...
+ie. &quot;Z&quot; (or rather abstract index k) will be &quot;1&quot;. It is not at all
+increasing. So you will get only one value in the netcdf file after the 
+complesion of repeat loop.
+
+	To appened along Z axis we need to &quot;impose&quot; the required dimension
+to the variable &quot;R&quot;. Have a look at the section in ferret manual;
+
+	Ch10 Sec2. SIMPLE CONVERSIONS USING FERRET 
+	Example 4--mulltiple slabs 
+
+Here is a sample method in the same formulation as yours.
+
+As a comment :  &quot;repeat&quot; bussiness will be easier with the dummy repeat 
+index in  the new version of ferret (fer5.6).
+
+autocorrel.jnl : journal file which finds corr. for a dummy variable
+repeat_autocorr.jnl : journal file to call autocorrel.jnl within a repeat
+                        loop and write the reusult to netcd file
+
+------------- autocorrel.jnl-------------
+\ cancel mode verify
+define axis/x=1:10:1 xax    ! to get a variable with x,y,z,t dimensions
+define axis/y=1:10:1 yax
+define axis/t=1:10:1 tax
+define axis/z=1:1:1 zax
+
+define grid/x=xax/y=yax/z=zax/t=tax grd
+
+let var = sin(X[g=grd]) + cos(Y[g=grd]) + (Z[g=grd]) + sin(T[g=grd])
+
+! fill/l=1 var
+
+let/quiet p = var[x=1:10,y=1:10,z=1,t=1:10@shf:0]  
+let/quiet q = var[x=1:10,y=1:10,z=1,t=1:10@shf:$1]
+go variance
+let R_xmean = CORREL[y=1:10,x=1:10@AVE]
+let R = R_xmean[y=1:10@AVE]
+!----------------------------------------
+
+---------------repeat_autocorr.jnl----------------
+\ cancel mode verify
+
+let num = 9 ! end value(index) of repeat loop
+
+define axis/z=1:`num`:1 kdummy  ! Z-axis with as many points we want
+                                ! &quot;znew&quot; axis in the repeat loop imposes
+	                        ! successive Z values in &quot;kdummy&quot; axis to
+	                        ! corresponding &quot;R&quot; usin @asn regridding
+                                ! &quot;klimits&quot; : for details refer user manual
+repeat/i=1:`num` ( ;\
+	go erwan_go `i` ;\ 
+        define axis/z=`i`:`i`:1 znew  ;\
+        let R_1 = R[gz=znew@asn]  ;\
+        let R_new = R_1[gz=kdummy] ;\
+        save/klimits=1:`num`/k=`i`/file=output.nc/append R_new  ;\
+        )
+!-----------------------------------------------
+
+
+
+
+On Fri, 16 Apr 2004, Erwan Monier wrote:
+
+&gt; Hi ferret users,
+&gt; 
+&gt; I have daily mean wind velocity maps for several
+&gt; months and I am working on calculating the
+&gt; autocorrelation averaged on the whole grid, for
+&gt; different lags in order to plot the mean
+&gt; autocorrelation as a function of the lag. To do so, I
+&gt; have written a script which computes the mean
+&gt; autocorrelation for a specific lag. That script named
+&gt; autocorrel.jnl works fine :
+&gt; 
+&gt; USE &quot;../obs_era_uv.ctrl.nc&quot;
+&gt; let
+&gt; p=UMEAN[d=1,x=20.00E:107.50E,y=22.50S:22.50N,z=200,T=&quot;01-AUG-1990&quot;:&quot;31-jul-1992&quot;@shf:0]
+&gt; let
+&gt; q=UMEAN[d=1,x=20.00E:107.50E,y=22.50S:22.50N,z=200,T=&quot;01-AUG-1990&quot;:&quot;31-jul-1992&quot;@shf:$1]
+&gt; go variance
+&gt; let
+&gt; R_xmean=CORREL[y=22.50S:22.50N,x=20.00E:107.50E@AVE]
+&gt; let R=R_xmean[y=22.50S:22.50N@AVE]
+&gt; 
+&gt; Then I have another script which makes a loop over all
+&gt; the lags I need and calls the previous script. Then
+&gt; it's supposed to write the autocorrelation in a netcdf
+&gt; file. Here is the script :
+&gt; 
+&gt; repeat/i=1:$1 (go autocorrel
+&gt; `i`;save/file=output_autocorrel.nc/append `i`,R)
+&gt; 
+&gt; My problem is that I only get the autocorrelation of
+&gt; the last lag written down : it seems my script writes
+&gt; over the previous output data. I guess it is because
+&gt; the variable R has no time dimension (and even no
+&gt; dimension at all).
+&gt; 
+&gt; So my question is : How can you add a dimension to a
+&gt; variable. Especially as I only have 1 value of
+&gt; autocorrelation each step, it's not a list.
+&gt; 
+&gt; If you have any other way to get an output file with
+&gt; the autocorrelation and its corresponding lag, I would
+&gt; be really glad to hear your advice.
+&gt; 
+&gt; Thanks
+&gt; 
+&gt; Erwan
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00313" href="msg00313.html">How do I deal with variables without dimension</a></strong>
+<ul><li><em>From:</em> Erwan Monier</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00313.html">How do I deal with variables without dimension</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00315.html">Data download</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00313.html">Thread Prev</a>][<a href="msg00315.html">Thread Next</a>][<A HREF="threads.html#00314">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

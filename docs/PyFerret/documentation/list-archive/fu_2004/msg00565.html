@@ -1,0 +1,194 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: poly&#45;vector in hammer projection -->
+<!--X-From-R13: Pblva Vhnat <uhnat_oblvaNlnubb.pbz> -->
+<!--X-Date: Wed, 18 Aug 2004 11:52:41 &#45;0700 -->
+<!--X-Message-Id: 20040818185236.56436.qmail@web41201.mail.yahoo.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>poly-vector in hammer projection</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00562.html">Thread Prev</a>][<a href="msg00566.html">Thread Next</a>][<A HREF="threads.html#00565">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>poly-vector in hammer projection</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>poly-vector in hammer projection</strong></li>
+<li><strong>From</strong>: <strong>Boyin Huang &lt;<a href="mailto:huang_boyin@DOMAIN.HIDDEN">huang_boyin@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 18 Aug 2004 11:52:36 -0700 (PDT)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Ferreters:
+
+I used demo script for poly-vector plot, which is
+originally in mp_stereographic_north projection.
+
+After I changed it into hammer projection, all vectors
+were moved to one longitude, and longitude and
+latitude lines were also shifted thogh the shape looks
+OK.
+
+What is wrong with the code attached in e2.jnl
+
+In a simpler case, I tried to plot vectors only using
+different spatial region, an error message was given
+as follows:
+inconsistent sizes of data regions: Y axis
+ERIDIAN_ANGLE has 546 points (J=001:546)
+          expression has 600 points (J=001:600)
+
+Can we simply ignore the third argument when calling
+polygon?
+
+The code is attached in e3.jnl
+
+------------------------------------
+!e2.jnl:
+USE coads_climatology
+
+SET REGION/X=131:181/Y=21:61/L=5
+!LET mp_central_meridian = (131+181)/2
+!LET mp_standard_parallel = (60+20)/2
+
+!GO mp_stereographic_north  `mp_central_meridian`
+`mp_standard_parallel`
+go mp_hammer
+
+!SET GRID uwnd
+GO mp_grid uwnd
+GO mp_grid vwnd
+GO mp_grid slp
+GO mp_aspect
+
+FILL/NOAXIS/NOKEY/PAL=inverse_grayscale/TITLE=&quot;Winds
+Colored by Pressure&quot; slp, x_page,y_page
+GO mp_fland 20 black
+
+LET x_vec = X[GX=uwnd,X=131:181] +
+0*Y[GY=uwnd,Y=21:61]
+LET y_vec = 0*X[GX=uwnd,X=131:181] +
+Y[GY=uwnd,Y=21:61]
+LET u_vec = uwnd[X=131:181,Y=21:61,L=5]
+LET v_vec = vwnd[X=131:181,Y=21:61,L=5]
+
+GO mp_poly_vectors x_vec y_vec u_vec v_vec 3 &quot;arrow&quot;
+
+LET press = YSEQUENCE(slp[X=131:181,Y=21:61,L=5])
+POLYGON/OVER/NOAX/NOLAB/KEY/LINE/PAL=rainbow
+mp_x_arrow, mp_y_arrow, press
+
+GO mp_graticule 131 181 12.5 21 61 10 1
+
+--------------------------------------------------
+!e3.jnl
+
+USE coads_climatology
+
+SET REGION/X=121:181/Y=21:61/L=1
+
+go mp_hammer
+GO mp_grid uwnd
+GO mp_grid vwnd
+GO mp_grid slp
+GO mp_aspect
+
+LET x_vec = X[GX=uwnd,X=121:181] +
+0*Y[GY=uwnd,Y=21:61]
+LET y_vec = 0*X[GX=uwnd,X=121:181] +
+Y[GY=uwnd,Y=21:61]
+LET u_vec = uwnd[X=121:181,Y=21:61,L=1]
+LET v_vec = vwnd[X=121:181,Y=21:61,L=1]
+
+GO poly_vectors x_vec y_vec u_vec v_vec 5 &quot;arrow&quot;
+
+LET press = YSEQUENCE(slp[X=121:181,Y=21:61,L=1])
+POLYGON/OVER/NOAX/NOLAB/KEY/LINE/PAL=rainbow
+mp_x_arrow, mp_y_arrow, press
+
+poly_arrow_key &quot;winds&quot;, &quot;5 m/s&quot;
+
+
+CAN VAR/ALL
+CAN REGION
+
+
+
+
+
+
+=====
+Boyin Huang
+The Center for Research on the Changing Earth System (CRCES)
+10211 Wincopin Circle, Suite 240
+Columbia, Maryland 21044
+Tel. 410-992-5300/19 (O), 410-461-9339(H) 
+Fax. 410-992-5944, Email. byh@crces.org 
+<a  href="http://byh.crces.org">http://byh.crces.org</a>
+
+
+		
+__________________________________
+Do you Yahoo!?
+Yahoo! Mail - 50x more storage than other providers!
+<a  href="http://promotions.yahoo.com/new_mail">http://promotions.yahoo.com/new_mail</a>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00566" href="msg00566.html">Re: poly-vector in hammer projection</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00562.html">how to fill a climatology</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00566.html">Re: poly-vector in hammer projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00562.html">Thread Prev</a>][<a href="msg00566.html">Thread Next</a>][<A HREF="threads.html#00565">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

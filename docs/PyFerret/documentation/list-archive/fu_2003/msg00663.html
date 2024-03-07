@@ -1,0 +1,161 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to make ferret handle a variable number of arguments? -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Tue, 16 Sep 2003 11:47:17 &#45;0700 -->
+<!--X-Message-Id: 3F675B20.75123832@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3F674BC9.10100@cs.dal.ca -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to make ferret handle a variable number of arguments?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00662.html">Thread Prev</a>][<a href="msg00664.html">Thread Next</a>][<A HREF="threads.html#00663">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to make ferret handle a variable number of arguments?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Chi Ding &lt;<a href="mailto:chi@DOMAIN.HIDDEN">chi@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to make ferret handle a variable number of arguments?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 16 Sep 2003 11:49:05 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00662.html">3F674BC9.10100@cs.dal.ca</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+Yes, you should be able to do this.  Often an easy way to
+deal with arguments to a script is to have a second script
+which does the real work, in this case, the plotting.  For this
+very simple example you could just issue the plot command in
+place of the call to the journal file do_plot, but I show how to
+use a plot script because in general your plot would take
+more than one command to plot.
+
+! callplot.jnl
+! Reads the number of sensors and passes inputs to the plot script.
+
+LET numsensors = $1
+IF `numsensors GE 1` THEN GO do_plot $2
+
+IF `numsensors GT 1` THEN
+  REPEAT/I=2:`numsensors` (GO do_plot $`I+1` /OVERLAY)
+ENDIF
+EXIT
+
+
+Where do_plot.jnl has just the commands to plot the variable.
+In general, this script would be more complex than just a single
+line.
+! do_plot.jnl
+! Arguments
+!   $1 the variable to plot
+!   $2 arguments to the plot command e.g. /overlay
+
+PLOT/THICK$2&quot; &quot; $1   ! these are the arguments to do_plot.jnl
+EXIT
+
+
+Then you could run all of this as follows:
+
+yes? let var1 = sin(x[x=1:100]/5)
+yes? let var2 = sin(x[x=1:100]/6)
+yes? let var3 = sin(x[x=1:100]/7)
+yes? let var4 = sin(x[x=1:100]/8)
+yes? let var5 = sin(x[x=1:100]/9)
+yes? go callit 5 var1 var2 var3 var4 var5
+
+ I hope this example will get you started.
+
+Ansley Manke
+
+
+Chi Ding wrote:
+
+&gt; Dear Ferret users
+&gt; I'm building a web site for mooring data where the user can select a
+&gt; variable number of sensors ( up to 10 )
+&gt; and draw the plots for each sensor in one picture. Ferret is the backend
+&gt; application for my site.
+&gt; I'm wondering how to make ferret process a variable number of arguments?
+&gt; This is essential to
+&gt; me since the user can select different number of sensors.
+&gt; I'm gonna try it in this way before I find a better solution. As the
+&gt; maximum number of sensors is 10, so I can fix the number of sensors
+&gt; passed to ferret to be a constant number 10. I will pass the selected
+&gt; sensor names and missing values for the rest to the ferret script. For
+&gt; examples, if the user selected &quot; salinity&quot; and &quot;temperature&quot;, I will
+&gt; pass them and 8 missing values. Then the ferret script can check the
+&gt; arguments and plot accordingly.
+&gt; I'm wondering whether it is possible to pass the actual selected number
+&gt; of sensors plus the sensor names to ferret, then the ferret script can
+&gt; check the first arguement, i.e. the actual selected number, and
+&gt; accordingly plot the sensors. For example, if the user selected &quot;
+&gt; salinity&quot; and &quot;temperature&quot;, I will pass &quot;2&quot;, &quot;salinity&quot; and
+&gt; &quot;temperature&quot; instead of 10 sensor names.
+&gt; I'm looking forward to any suggestion.
+&gt; Thanks a lot, Ding
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00662" href="msg00662.html">How to make ferret handle a variable number of arguments?</a></strong>
+<ul><li><em>From:</em> Chi Ding</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00662.html">How to make ferret handle a variable number of arguments?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00664.html">TMAP ERR: limit on storage for coordinates has been reached</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00662.html">Thread Prev</a>][<a href="msg00664.html">Thread Next</a>][<A HREF="threads.html#00663">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

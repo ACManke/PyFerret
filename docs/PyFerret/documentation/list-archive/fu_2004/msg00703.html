@@ -1,0 +1,133 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: shift or extend data -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Wed, 6 Oct 2004 09:55:01 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0410060835120.12230&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: F7241BB7&#45;177F&#45;11D9&#45;B5D2&#45;000A95A51444@astr.ucl.ac.be -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: shift or extend data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00702.html">Thread Prev</a>][<a href="msg00706.html">Thread Next</a>][<A HREF="threads.html#00703">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: shift or extend data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: shift or extend data</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 6 Oct 2004 09:54:56 -0700 (PDT)</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00702.html">F7241BB7-177F-11D9-B5D2-000A95A51444@astr.ucl.ac.be</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Emilie,
+
+My first thought was to use the @sbx transformation, as for example
+	let spread = 9*v[l=@sbx:9]
+where v is a function that is non-zero only at noon.  It works fine
+EXCEPT near the ends where @sbx puts missing values.
+
+A better idea may be to use @fnr to spread the noon values to a range
+of hours. The first step is to isolate the noon values and force all
+others to be MISSING. Then apply @fnr (the nearest neighbor transform)
+with 0 assigned to missing points
+
+Mick
+
+Example:
+! Define a test series of noon values
+def axis/t=&quot;6-jan-2004:04:00&quot;:&quot;19-jan-2004:22:00&quot;:2 \
+        /t0=&quot;1-jan-2004:00:00&quot;/units=hours tax
+def grid/t=tax grd
+let v=int(10*randu(t[g=grd])) ! random integers at all times
+! define hour of day (assuming t0 begins at 00:00)
+let hour=mod(t[g=grd],24)
+! pick off the noon values and make all other values missing
+let noon=if(mod(hour,24) eq 12)then v
+! define the spread region about noon
+let spread=if(hour ge 4 and hour le 20)then noon[l=@fnr] else 0
+! check the result
+list v,noon,spread
+
+!-------------------------------------------------------------------
+On Wed, 6 Oct 2004, Emilie Vanvyve wrote:
+&gt; Let's have a variable 'var' with 12 values corresponding to each 2
+&gt; hours of a day. They are 0 always, except at noon where it equals 4.
+&gt;
+&gt; I would like to extend my non-zero value to all other time steps,
+&gt; except some:
+&gt; 0h:	0
+&gt; 2h:	0
+&gt; 4h:	4
+&gt; 6h:	4
+&gt; 8h:	4
+&gt; 10h:	4
+&gt; 12h:	4
+&gt; 14h:	4
+&gt; 16h:	4
+&gt; 18h:	4
+&gt; 20h:	4
+&gt; 22h:	0
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00702" href="msg00702.html">shift or extend data</a></strong>
+<ul><li><em>From:</em> Emilie Vanvyve</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00702.html">shift or extend data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00706.html">getting a specific value and its associated depth in a Z-profile</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00702.html">Thread Prev</a>][<a href="msg00706.html">Thread Next</a>][<A HREF="threads.html#00703">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Ambiguous coordinates on T axis -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Thu, 2 Oct 2003 12:15:55 &#45;0700 -->
+<!--X-Message-Id: 3F7C79F4.22D0F93A@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 3F7AE79A.4020109@nrel.colostate.edu -->
+<!--X-Reference: 3F7C65B0.1385A863@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Ambiguous coordinates on T axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00714.html">Thread Prev</a>][<a href="msg00716.html">Thread Next</a>][<A HREF="threads.html#00715">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Ambiguous coordinates on T axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Knox &lt;<a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Ambiguous coordinates on T axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 02 Oct 2003 12:18:12 -0700</li>
+<li>References: &lt;<a href="msg00712.html">3F7AE79A.4020109@nrel.colostate.edu</a>&gt; &lt;<a href="msg00714.html">3F7C65B0.1385A863@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi again Steve,
+<br>I take back the first part of my previous answer.&nbsp; The calculation:
+<p>yes? shade/T="01-JAN-1994":"12-DEC-1994" \
+<br>&nbsp; aglt[D=1,L=@AVE]-aglt[D=2,L=@AVE]
+<p>does not in general compute the average from 01-JAN-1994 to
+<br>12-DEC-1994 of the two variables and subtract them.&nbsp; You
+<br>always need to specify the region for each variable separately
+<br>in square brackets to get the calculation right, or regrid one dataset
+<br>to the time axis of the other before doing the computation
+<p>yes? shade aglt[D=1,T="01-JAN-1994":"12-DEC-1994"@AVE]- \
+<br>&nbsp;&nbsp;&nbsp; aglt[D=2,T="01-JAN-1994":"12-DEC-1994"@AVE]
+<p>or
+<br>yes? let algt2 = algt[d=2,gt=algt[d=1]]
+<br>yes? shade/T="01-JAN-1994":"12-DEC-1994" \
+<br>&nbsp;&nbsp;&nbsp;&nbsp; aglt[D=1,L=@AVE]-aglt2[L=@AVE]
+<p>Try this: make up a couple of time series variables on two
+<br>different time axes, and use MODE DIAGNOSTIC to see what
+<br>Ferret makes of the calculation. Look at the lines that start with
+<br>"doing -->" to see that the average for variable a is correct, but
+<br>the averaging for variable b does not have the right time range.
+<br>Ferret cannot make sense of the command.
+<p><tt>yes? def axis/t="1-jan-1990":"31-dec-1990":1/units=days tday</tt>
+<br><tt>yes? def axis/t="1-jan-1989":"31-dec-1994":7/units=days tweek</tt><tt></tt>
+<p><tt>yes? let a = sin(t[gt=tday]/10) * t[gt=tday]/100</tt>
+<br><tt>yes? let b = cos(t[gt=tweek]/20)* (1-t[gt=tweek]/100)</tt><tt></tt>
+<p><tt>yes? plot a&nbsp;&nbsp; ! Plot the variables to load them into memory</tt>
+<br><tt>yes? plot b</tt><tt></tt>
+<p><tt>yes? set mode diag</tt>
+<br><tt>yes? list/t="1-jan-1990":"31-dec-1990" a[l=@ave] - b[l=@ave]</tt><tt></tt>
+<p><tt>&nbsp;dealloc&nbsp; dynamic grid (G002)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NORMAL&nbsp;&nbsp;&nbsp; NORMAL&nbsp;&nbsp;&nbsp; NORMAL&nbsp;&nbsp;&nbsp;
+TWEEK</tt>
+<br><tt>&nbsp;getgrid EX#1&nbsp;&nbsp;&nbsp;&nbsp; C:&nbsp; 5 I:&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp; 1&nbsp; J:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp; 1&nbsp;
+K:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp; 1&nbsp; L:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;
+1</tt>
+<br><tt>&nbsp;*** NOTE: Ambiguous coordinates on T axis: A[L=@AVE] - B[L=@AVE]</tt>
+<br><tt>&nbsp;allocate dynamic grid (G001)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NORMAL&nbsp;&nbsp;&nbsp; NORMAL&nbsp;&nbsp;&nbsp; NORMAL&nbsp;&nbsp;&nbsp;
+TDAY</tt>
+<br><tt>&nbsp;strip limits reconciliation : EX#1</tt>
+<br><tt>&nbsp;eval&nbsp;&nbsp;&nbsp; EX#1&nbsp;&nbsp;&nbsp;&nbsp; C:&nbsp;
+5 I: -111 -111&nbsp; J: -111 -111&nbsp; K: -111 -111&nbsp; L:&nbsp;&nbsp;&nbsp;
+1&nbsp; 365</tt>
+<br><tt>&nbsp;strip --> A[T=01-JAN-199000:00:31-DEC-199000:00@AVE,D=0]</tt>
+<br><tt>&nbsp;found&nbsp;&nbsp; A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+M:&nbsp; 3 I: -111 -111&nbsp; J: -111 -111&nbsp; K: -111 -111&nbsp; L:&nbsp;&nbsp;&nbsp;
+1&nbsp; 365</tt>
+<br><tt>&nbsp;doing --> A[T=01-JAN-199000:00:31-DEC-199000:00@AVE,D=0]</tt>
+<br><tt>&nbsp;strip --> B[T=01-JAN-198900:00:31-DEC-198900:00@AVE,D=0]</tt>
+<br><tt>&nbsp;found&nbsp;&nbsp; B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+M:&nbsp; 4 I: -111 -111&nbsp; J: -111 -111&nbsp; K: -111 -111&nbsp; L:&nbsp;&nbsp;&nbsp;
+1&nbsp; 314</tt>
+<br><tt>&nbsp;doing --> B[T=01-JAN-198900:00:31-DEC-198900:00@AVE,D=0]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+VARIABLE : A[L=@AVE] - B[L=@AVE]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+TIME&nbsp;&nbsp;&nbsp;&nbsp; : 01-</tt>JAN-1990 00:00 to 31-DEC-1990 00:00
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -0.1186
+<br>&nbsp;
+<br>&nbsp;
+<p>Ansley Manke wrote:
+<blockquote TYPE=CITE>Hi Steve,
+<br>When you do a calculation over time when there are two different
+<br>time axes involved in the expression, Ferret gives this informational
+<br>message just to let you know that the two time averages are different.
+<br>It's using each variable's time axis and is doing the calculation you
+<br>expected. You could make it absolutely clear what you're doing by
+<br>specifying the time interval as a qualifier for each variable, in square
+<br>brackets.&nbsp; (I use the backslash continuation character here)
+<p>yes? shade aglt[D=1,T="01-JAN-1994":"12-DEC-1994"@AVE]- \
+<br>aglt[D=2,T="01-JAN-1994":"12-DEC-1994"@AVE]
+<p>See "region" in the Users Guide index; this is the third way to specify
+<br>a region and is almost always the best way to be sure you're doing
+<br>what you think you're doing. And, this is also the way to do it if
+you
+<br>want to compare averages over two different time intervals:
+<p>yes? shade aglt[D=1,T="01-Jan-1994":"12-Jun-1994"@AVE]- \
+<br>aglt[D=2,T="13-Jun-1994":"12-Dec-1994"@AVE]
+<p>Ansley Manke
+<p>Steve Knox wrote:
+<p>> How can I avoid this ambiguity on the time axis when I'm dealing with
+2
+<br>> datasets?
+<br>> I guess it's confused since it dosen't know which T axis to average
+over.
+<br>> In this case the time periods are the same so the ambiguity doesn't
+<br>> matter, but if I want
+<br>> to specify&nbsp; different time periods in each dataset how can I
+do this?
+<br>>
+<br>> yes? use agltHistoric.cdf
+<br>> yes? use agltCENT.cdf
+<br>> yes? shade/T="01-JAN-1994":"12-DEC-1994" aglt[D=1,L=@AVE]-aglt[D=2,L=@AVE]
+<br>>
+<br>> *** NOTE: Ambiguous coordinates on T axis: AGLT[D=1,L=@AVE]-AGLT[D=2,L=@AVE]
+<br>>
+<br>> Thanks for any help on this.
+<br>>
+<br>> Steve Knox
+<br>> NREL
+<br>> Colorado State University
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00716" href="msg00716.html">Re: Ambiguous coordinates on T axis</a></strong>
+<ul><li><em>From:</em> Xiaobiao Xu</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00712" href="msg00712.html">Ambiguous coordinates on T axis</a></strong>
+<ul><li><em>From:</em> Steve Knox</li></ul></li>
+<li><strong><a name="00714" href="msg00714.html">Re: Ambiguous coordinates on T axis</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00714.html">Re: Ambiguous coordinates on T axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00716.html">Re: Ambiguous coordinates on T axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00714.html">Thread Prev</a>][<a href="msg00716.html">Thread Next</a>][<A HREF="threads.html#00715">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

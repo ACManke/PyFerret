@@ -1,0 +1,210 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to output day of the year out of a netcdf file? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 10 Nov 2003 15:22:17 &#45;0800 -->
+<!--X-Message-Id: 3FB01DC6.5040404@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3FAFE254.3090606@cs.dal.ca -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to output day of the year out of a netcdf file?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00810.html">Thread Prev</a>][<a href="msg00818.html">Thread Next</a>][<A HREF="threads.html#00811">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to output day of the year out of a netcdf file?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Chi Ding &lt;<a href="mailto:chi@DOMAIN.HIDDEN">chi@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to output day of the year out of a netcdf file?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 10 Nov 2003 15:22:46 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00810.html">3FAFE254.3090606@cs.dal.ca</a>&gt;</li>
+<li>References: &lt;<a href="msg00810.html">3FAFE254.3090606@cs.dal.ca</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Ding,<br>
+There are functions which will let you list the days, though<br>
+it is a little roundabout to get it.<br>
+<br>
+We'll look at these two functions, which relate time to the<br>
+default origin of time axes in Ferret.  If your time axis has<br>
+a different time origin, that is fine.<br>
+<br>
+yes? SHOW FUNCTION DAYS1900TOYMDHMS<br>
+DAYS1900TOYMDHMS(day1900)<br>
+   Convert Julian day to values y,m,d,h,m,s on k=1,...,6<br>
+   day1900: Julian day counted from 1-jan-1900 (none)<br>
+<br>
+yes? SHOW FUNCTION DATE1900<br>
+DATE1900(formatted date)<br>
+   Convert a date into Julian days since 1-Jan-1900<br>
+   formatted date: dd-MMM-yy or dd-MMM-yyyy  (e.g. &quot;20-Dec-00&quot;) (none) 
+(STRING)<br>
+<br>
+! As an example, look at this data, part of  the Ferret distribution.<br>
+! Use the RETURN keyword to get the time origin and the time units.<br>
+<br>
+ yes? USE monthly_navy_winds<br>
+<br>
+ yes? SAY `uwnd,RETURN=T0`<br>
+  !-&gt; MESSAGE/CONTINUE 14-JAN-1980 14:00:00 
+ 14-JAN-1980 14:00:00<br>
+<br>
+yes? SAY `uwnd,RETURN=TUNITS`<br>
+  !-&gt; MESSAGE/CONTINUE hour<br>
+ hour<br>
+<br>
+! The units are hours, so define a variable dividing the time<br>
+! coordinates to represent time in days.<br>
+<br>
+yes? LET tdays = T[GT=time]/24<br>
+yes? LIST/L=1:5 tdays<br>
+            VARIABLE : T[GT=TIME]/24<br>
+            SUBSET   : 5 points (TIME)<br>
+ 16-JAN-1982 / 1:  733.2<br>
+ 16-FEB-1982 / 2:  763.7<br>
+ 18-MAR-1982 / 3:  794.1<br>
+ 18-APR-1982 / 4:  824.6<br>
+ 18-MAY-1982 / 5:  855.0<br>
+<br>
+! List part of the output of the DAYS1900TOYMDHMS function.  The<br>
+! output is yes, month, day, hour, minute, second for each time, where<br>
+! datevar[k=1] is the year, datevar[k=2] is the month, and so on.<br>
+! I add DATE1900(&quot;`uwnd,RETURN=T0`&quot;) so that the argument to<br>
+! the function DAYS1900TOYMDHMS is in days since 1-jan-1900.<br>
+<br>
+yes? LET  datevar = DAYS1900TOYMDHMS(tdays +  DATE1900(&quot;`uwnd,RETURN=T0`&quot;) )<br>
+yes? LIST/l=1:5 datevar<br>
+!-&gt; LIST/l=1:5 DAYS1900TOYMDHMS(tdays +  DATE1900(&quot;14-JAN-1980 14:00:00&quot;) )<br>
+          VARIABLE : DAYS1900TOYMDHMS(TDAYS +  DATE1900(&quot;14-JAN-1980 
+14:00:00&quot;) )<br>
+            SUBSET   : 6 by 5 points (Z-TIME)<br>
+                     1      2      3      4      5      6   
+                     1      2      3      4      5      6<br>
+16-JAN-1982 / 1:  1982.     1.    16.     6.     0.     0.<br>
+16-FEB-1982 / 2:  1982.     2.    15.    16.    30.     0.<br>
+18-MAR-1982 / 3:  1982.     3.    18.     3.     0.     0.<br>
+18-APR-1982 / 4:  1982.     4.    17.    13.    30.     0.<br>
+18-MAY-1982 / 5:  1982.     5.    18.     0.     0.     0.<br>
+<br>
+!Or, what you wanted, was the fractional day of the year, the<br>
+!day, plus hours, minutes, and seconds as a fraction of the day.<br>
+!(I have used the backslash continuation character in this long command.<br>
+<br>
+<br>
+yes? LIST/L=1:5 datevar[k=3] + datevar[k=4]/24 + \<br>
+     datevar[k=5]/(24*60) + datevar[k=6]/(24*60*60)<br>
+            VARIABLE : DATEVAR[K=3] + DATEVAR[K=4]/24 +        
+DATEVAR[K=5]/(24*60) + DATEVAR[K=6]/(24*60*60)<br>
+            SUBSET   : 5 points (TIME)<br>
+            Z        : 3<br>
+ 16-JAN-1982 / 1:  16.25<br>
+ 16-FEB-1982 / 2:  15.69<br>
+ 18-MAR-1982 / 3:  18.12<br>
+ 18-APR-1982 / 4:  17.56<br>
+ 18-MAY-1982 / 5:  18.00<br>
+<br>
+<br>
+<br>
+Ansley Manke<br>
+<br>
+<br>
+Chi Ding wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi ferret users<br>
+     I need to output ascii data out of netcdf<br>
+files and the time values needs to be in &quot;day of<br>
+the year&quot; format, say &quot;221.24&quot;.<br>
+     When I use commands like this<br>
+list/clobber/noheader/file=&quot;test2.txt&quot;/t=&quot;01-JUN-2003&quot;:&quot;01-JUL-2003&quot; 
+air_temperature,<br>
+the output is like<br>
+01-JUN-2003 00:00 / 244:   9.19<br>
+01-JUN-2003 01:00 / 245:   8.47<br>
+01-JUN-2003 02:00 / 246:   8.33<br>
+01-JUN-2003 03:00 / 247:   8.41<br>
+01-JUN-2003 04:00 / 248:   8.12<br>
+01-JUN-2003 05:00 / 249:   7.75<br>
+01-JUN-2003 06:00 / 250:   7.41<br>
+01-JUN-2003 07:00 / 251:   7.56<br>
+01-JUN-2003 08:00 / 252:   7.44<br>
+01-JUN-2003 09:00 / 253:   7.27<br>
+01-JUN-2003 10:00 / 254:   7.15<br>
+01-JUN-2003 11:00 / 255:   7.27<br>
+01-JUN-2003 12:00 / 256:   7.70<br>
+<br>
+         I'm wondering how to print the time in day of the year  using 
+ferret?<br>
+Or is there other way to convert &quot;01-JUN-2003 01:00&quot; to day of the year?<br>
+Ferret or other languages are all ok.<br>
+    Thanks a lot, Ding<br>
+<br>
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00818" href="msg00818.html">Re: How to output day of the year out of a netcdf file?</a></strong>
+<ul><li><em>From:</em> Chi Ding</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00810" href="msg00810.html">How to output day of the year out of a netcdf file?</a></strong>
+<ul><li><em>From:</em> Chi Ding</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00810.html">How to output day of the year out of a netcdf file?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00818.html">Re: How to output day of the year out of a netcdf file?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00810.html">Thread Prev</a>][<a href="msg00818.html">Thread Next</a>][<A HREF="threads.html#00811">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

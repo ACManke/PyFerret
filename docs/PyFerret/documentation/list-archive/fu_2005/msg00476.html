@@ -1,0 +1,217 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: write cdf file using a list of selected indices -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 23 May 2005 16:48:52 &#45;0700 -->
+<!--X-Message-Id: 42926BE3.5020105@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 2c66a264e3.264e32c66a@pmel.noaa.gov -->
+<!--X-Reference: 4288D76B.9080009@noaa.gov -->
+<!--X-Reference: 428CB777.20F5C6E0@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: write cdf file using a list of selected indices</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00476">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: write cdf file using a list of selected indices</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: write cdf file using a list of selected indices</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 23 May 2005 16:48:51 -0700</li>
+<li>Cc: Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;,       Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;428CB777.20F5C6E0@noaa.gov&gt;</li>
+<li>References: &lt;<a href="msg00428.html">2c66a264e3.264e32c66a@pmel.noaa.gov</a>&gt; &lt;<a href="msg00429.html">4288D76B.9080009@noaa.gov</a>&gt; &lt;428CB777.20F5C6E0@noaa.gov&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+
+<title></title>
+Hi all,<br>
+Last week Billy wrote with a question about selecting a set of profiles
+at some particular times.&nbsp; Here's a quick couple of examples showing
+how COMPRESSL and COMPRESSL_BY work:<br>
+<br>
+COMPRESSL compresses each level along the time axis.&nbsp; So, it takes
+data in Z (across) and T (down) that looks like this<br>
+<pre> JAN-1990 / 1:   ....   ....
+ JAN-1991 / 2:  1.000  2.000
+ JAN-1992 / 3:  3.000   ....
+ DEC-1992 / 4:  4.000  5.000
+ DEC-1993 / 5:  6.000   ....
+ JAN-1995 / 6:   ....  7.000
+ JAN-1996 / 7:   ....   ....
+ DEC-1996 / 8:   ....  8.000
+
+and turns it into this, losing track of which values occur at the same time.
+
+ 1   / 1:  1.000  2.000
+ 2   / 2:  3.000  5.000
+ 3   / 3:  4.000  7.000
+ 4   / 4:  6.000  8.000
+ 5   / 5:   ....   ....
+ 6   / 6:   ....   ....
+ 7   / 7:   ....   ....
+ 8   / 8:   ....   ....
+
+</pre>
+Here's a short example of COMPRESSL_BY. First I'll create and list the
+values of a simple variable in Z and T.&nbsp; Then we'll sample at a set of
+times, <br>
+<tt><br>
+yes?&nbsp; ! create a 2-D variable in Z and T<br>
+<br>
+yes? let var = {,,1,2,3,,4,5,6,,,7,,,,8}<br>
+yes? def axis/z=1:2:1/units=meters zax<br>
+yes? def axis/t=1-jan-1990:1-jan-1998:1/units=years tax<br>
+yes? let shapevar&nbsp; = z[gz=zax] + t[gt=tax]<br>
+yes? let var2d = reshape(var, shapevar)<br>
+<br>
+yes? list var2d<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : RESHAPE(VAR, SHAPEVAR)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 2 by 8 points (Z (METERS)-TIME)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2<br>
+&nbsp;JAN-1990 / 1:&nbsp;&nbsp; ....&nbsp;&nbsp; ....<br>
+&nbsp;JAN-1991 / 2:&nbsp; 1.000&nbsp; 2.000<br>
+&nbsp;JAN-1992 / 3:&nbsp; 3.000&nbsp;&nbsp; ....<br>
+&nbsp;DEC-1992 / 4:&nbsp; 4.000&nbsp; 5.000<br>
+&nbsp;DEC-1993 / 5:&nbsp; 6.000&nbsp;&nbsp; ....<br>
+&nbsp;JAN-1995 / 6:&nbsp;&nbsp; ....&nbsp; 7.000<br>
+&nbsp;JAN-1996 / 7:&nbsp;&nbsp; ....&nbsp;&nbsp; ....<br>
+&nbsp;DEC-1996 / 8:&nbsp;&nbsp; ....&nbsp; 8.000<br>
+<br>
+&nbsp; ! Define a mask to choose the 3rd, 4th, and 8th element in L<br>
+&nbsp; ! Notice how the result is on an abstract axis L= 1,2,3, ...<br>
+&nbsp; ! with the first result at the first point we asked for <br>
+&nbsp; ! (e.g. compressed in L)<br>
+<br>
+yes? let tmask = tsequence({,,1,1,,,,1})<br>
+<br>
+yes? list compressl_by(var2d, tmask)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : COMPRESSL_BY(VAR2D, TMASK)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 2 by 8 points (Z (METERS)-T)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2<br>
+&nbsp;1&nbsp;&nbsp; / 1:&nbsp; 3.000&nbsp;&nbsp; ....<br>
+&nbsp;2&nbsp;&nbsp; / 2:&nbsp; 4.000&nbsp; 5.000<br>
+&nbsp;3&nbsp;&nbsp; / 3:&nbsp;&nbsp; ....&nbsp; 8.000<br>
+&nbsp;4&nbsp;&nbsp; / 4:&nbsp;&nbsp; ....&nbsp;&nbsp; ....<br>
+&nbsp;5&nbsp;&nbsp; / 5:&nbsp;&nbsp; ....&nbsp;&nbsp; ....<br>
+&nbsp;6&nbsp;&nbsp; / 6:&nbsp;&nbsp; ....&nbsp;&nbsp; ....<br>
+&nbsp;7&nbsp;&nbsp; / 7:&nbsp;&nbsp; ....&nbsp;&nbsp; ....<br>
+&nbsp;8&nbsp;&nbsp; / 8:&nbsp;&nbsp; ....&nbsp;&nbsp; ....</tt><br>
+<pre>
+</pre>
+In Billy's example, he would just use&nbsp; COMPRESSL_BY (temp, ytrack)&nbsp;
+assuming that the variable ytrack is on a Z axis.<br>
+<br>
+<br>
+<blockquote type="cite" cite="">
+  <blockquote type="cite">
+    <pre wrap="">
+
+William S Kessler wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">I have a large cdf file consisting of a (z,t) temperature grid with
+associated (time-index-only) grids of lats, lons and julian dates. I
+have defined a subset of these, which are defined by a latitude flag
+(ytrack) existing or not:
+
+let tempsi = if ytrack then temp  ! only exists at selected ytrack
+let lonsi = if ytrack then lon
+let latsi = if ytrack then lat
+let julsi = if ytrack then jul
+
+I want to write just the selected ones to a new cdf file.
+COMPRESSL works fine for the three 1-d variables, but not for the (z,t)
+temperature grid, because the temperature profiles are not all of the
+same depth range (as a result COMPRESSL pushes all of them to lower
+indices at each depth and does not keep profiles intact). How can I SAVE
+(ideally all in a single cdf file) just the temp, lon, lat and jul data
+that exist?
+
+By the way, the description of COMPRESSI_BY in the documentation does
+not give enough information for me to figure out what this does.
+
+Billy K
+
+
+
+      </pre>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!---->
+
+
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00428" href="msg00428.html">write cdf file using a list of selected indices</a></strong>
+<ul><li><em>From:</em> William S Kessler</li></ul></li>
+<li><strong><a name="00429" href="msg00429.html">Re: write cdf file using a list of selected indices</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00429.html">Re: write cdf file using a list of selected indices</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00430.html">Fw: poly_vectors.jnl</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00476">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

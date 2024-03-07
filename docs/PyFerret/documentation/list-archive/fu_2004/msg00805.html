@@ -1,0 +1,218 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Custom line colors -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 12 Nov 2004 18:08:58 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0411130747360.18205&#45;101001@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 200411122155.iACLsxMM030949@ferret.pmel.noaa.gov -->
+<!--X-Derived: gif00015.gif -->
+<!--X-Derived: ps00000.ps -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Custom line colors</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00804.html">Thread Prev</a>][<a href="msg00806.html">Thread Next</a>][<A HREF="threads.html#00805">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Custom line colors</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Custom line colors</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 13 Nov 2004 07:52:33 +0530 (IST)</li>
+<li>Cc: Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;, &lt;<a href="mailto:ldewitt@DOMAIN.HIDDEN">ldewitt@xxxxxxxxxxxxx</a>&gt;,  &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;, &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00804.html">200411122155.iACLsxMM030949@ferret.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Lynn, Mick &amp; Billy,
+               The line color problem seems to happen
+only when
+
+  1. Ferret is run as 'ferret -gif' OR  
+  2. Ferret's graphical window (X-window) is resized 
+       (using the maximize button at top-right corner
+        of the window or by dragging at the corner of
+        the x-window using mouse)
+
+ In other cases, lines look fine..even with the &quot;same
+pen number&quot; (first argument to PPL COLOR) for all of the
+defined colors. So this problem may be associated with
+some feature of the X-windows.
+
+ For gif output we can use FRAME/FILE option (remember
+don't start Ferret as 'ferret -gif'). Otherwise run 
+ferret in metafile mode for getting output in ps format.
+...we are free to define as many colors as we want !!!
+
+ I made the attached figures by slightly modifing 
+Lynn's script ( I repeated the 8 defined colors in the
+same order but with different values for j) as given
+here
+
+! test_colors1.jnl
+!--------------------
+    ppl color,$2,$3,$4,$5
+    plot/i=1:100/over/color=$2/line/nolabel \
+               sin(3.14*i/100)-$1/100
+
+! call_test_colors1.jnl (both gif &amp; ps output from the
+!----------------------  same script)
+! 
+\ cancel mode verify
+
+     set mode meta
+
+     set wind/size=.45
+
+! Plot one black line to start
+
+     plot/i=1:100/color=1/line/nolabel sin(3.14*i/100)
+
+! Defined colors (please note that only &quot;3&quot; is used
+!                  as the color/pen number)
+
+     repeat/j=1:5   go test_colors1 `j` 3 100   0   0 
+     repeat/j=6:10  go test_colors1 `j` 3 100  50   0
+     repeat/j=11:15 go test_colors1 `j` 3 100 100   0
+     repeat/j=16:20 go test_colors1 `j` 3   0  40   0
+     repeat/j=21:25 go test_colors1 `j` 3   0   0 100
+     repeat/j=26:30 go test_colors1 `j` 3  40  60  60
+     repeat/j=31:35 go test_colors1 `j` 3  80   0 100
+     repeat/j=36:40 go test_colors1 `j` 3  80  60 100
+     repeat/j=41:45 go test_colors1 `j` 3 100   0   0  
+     repeat/j=46:50 go test_colors1 `j` 3 100  50   0 
+     repeat/j=51:55 go test_colors1 `j` 3 100 100   0 
+     repeat/j=56:60 go test_colors1 `j` 3   0  40   0 
+     repeat/j=61:65 go test_colors1 `j` 3   0   0 100 
+     repeat/j=66:70 go test_colors1 `j` 3  40  60  60 
+     repeat/j=71:75 go test_colors1 `j` 3  80   0 100 
+     repeat/j=76:80 go test_colors1 `j` 3  80  60 100 
+
+! output
+
+     sp rm -f line_color.gif
+     FRAME/FILE=line_color.gif
+     
+     sp rm -f line_color.ps
+     cancel mode meta ; ppl clsplt
+     sp Fprint -l cps -R -o line_color.ps metafile.plt
+     sp rm -f metafile.plt* 
+
+     exit
+
+!--------end of call_test_colors1.jnl--------------
+
+
+Hope This Helps
+
+With Regards 
+
+Jaison
+
+On Fri, 12 Nov 2004, Billy Kessler wrote:
+
+&gt; I have been able to use a system something like Mick's, that works.
+&gt; I don't have time to write a simple example, but here is the guts
+&gt; of code that makes and uses 6 colors plus black, and has altered
+&gt; the colors, too (see attached plot). pen 2 is reused in this plot
+&gt; to make an ugly yellow.
+&gt; 
+&gt; plot/set/nolab/vs/line=1/sym=27/l=212:272/hli=-3:4:1/vli=-25:18:5 nino3smrg,z20av ! black
+&gt; ...
+&gt; ppl plot
+&gt; plot/nolab/vs/line=2/sym=27/l=177:212/over nino3smrg,z20av	! red
+&gt; plot/nolab/vs/line=3/sym=27/l=158:177/over nino3smrg,z20av	! green
+&gt; plot/nolab/vs/line=4/sym=27/l=143:158/over nino3smrg,z20av	! blue
+&gt; ppl color,5,0,70,70
+&gt; plot/nolab/vs/line=5/sym=27/l=89:143/over nino3smrg,z20av	! darker cyan
+&gt; ppl color,6,70,0,70
+&gt; plot/nolab/vs/line=6/sym=27/l=33:89/over nino3smrg,z20av	! darker magenta
+&gt; ppl color,2,70,70,0						! reuse pen 2
+&gt; plot/nolab/vs/line=2/sym=27/l=1:33/over nino3smrg,z20av		! yellowish
+&gt; 
+&gt; Gotta run, but this worked for me. Maybe a difference from Mick's
+&gt; scheme is that I reset the color BEFORE each plot/over statement,
+&gt; not between PLOT/SET and PLOT/OVER. And one essential is to reset
+&gt; all the colors between each plot:
+&gt; 
+&gt; ppl color,2,100,0,0; ppl color,5,0,100,100; ppl color,6,100,0,100
+&gt; 
+&gt; Billy K
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+</pre>
+<p><strong>Attachment:
+<a href="gif00015.gif" ><tt>line_color.gif</tt></a></strong><br>
+<em>Description:</em> GIF image</p>
+<p><strong>Attachment:
+<a href="ps00000.ps" ><tt>line_color.ps</tt></a></strong><br>
+<em>Description:</em> PostScript document</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00804" href="msg00804.html">Re: Custom line colors</a></strong>
+<ul><li><em>From:</em> Billy Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00804.html">Re: Custom line colors</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00806.html">Re: Custom line colors</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00804.html">Thread Prev</a>][<a href="msg00806.html">Thread Next</a>][<A HREF="threads.html#00805">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: overlaying years without regrid ? -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 5 Jul 2004 13:37:53 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0407060203020.505&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.4.33.0407050924120.8548&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: overlaying years without regrid ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00493.html">Thread Prev</a>][<a href="msg00499.html">Thread Next</a>][<A HREF="threads.html#00496">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: overlaying years without regrid ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: overlaying years without regrid ?</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 6 Jul 2004 02:13:57 +0530 (IST)</li>
+<li>Cc: Domingos Urbano &lt;<a href="mailto:dfurbano@DOMAIN.HIDDEN">dfurbano@xxxxxxxxx</a>&gt;,  MickSpillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00493.html">Pine.GSO.4.33.0407050924120.8548-100000@heron.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+     In Ferret, Time axis always requires special consideration.
+Many data sets come with time points defined on a  particular time 
+of the day like 12hrs instead of 00hrs and also the data frequency 
+might be 2days or more instead of daily. In this case setting/specifying 
+the time region as /t=01-jan-year:31-dec-year will not make sure that 
+the time axis of the delivered plot will start exactly at jan-1 of 
+that year and end at dec-31 of the same year. In this case the we 
+should be carefull with the viewport.
+For example :
+
+    def axis/t=&quot;1-jan-1981:12&quot;:&quot;31-dec-1984:12&quot;:10/units=days tax
+    def grid/t=tax grd
+    let v=sin(6.14*t[g=grd]/350)
+
+    plot/t=&quot;01-jan-1981:12&quot;:&quot;31-dec-1981:12&quot; v  ! now time axis is fine. 
+                                                ! it starts on 01-jan-1981 and
+                                                ! ends on 31-dec-1981
+    plot/t=&quot;01-jan-1982:12&quot;:&quot;31-dec-1982:12&quot; v  ! now the time axis starts on
+                                                ! 01-jan-1982 and ends on 
+                                                ! 31-jan-1983
+    ! specify time reg without hours
+    plot/t=&quot;01-jan-1982&quot;:&quot;31-dec-1982&quot;  v   ! now time axis starts on 01-dec-1981  
+                                            ! ends on 31-jan-1983 !!!!
+
+    list/t=&quot;01-jan-1982:12&quot;:&quot;31-dec-1982:12&quot; v
+
+        06-JAN-1982 12 / 38: -0.4737
+        16-JAN-1982 12 / 39: -0.6202
+        ............................
+        22-DEC-1982 12 / 73: -0.3432
+        01-JAN-1983 12 / 74: -0.5019 
+
+    list/t=&quot;01-jan-1982&quot;:&quot;31-dec-1982&quot; v
+ 
+        27-DEC-1981 12 / 37: -0.3128
+        06-JAN-1982 12 / 38: -0.4737
+        ............................
+        22-DEC-1982 12 / 73: -0.3432
+        01-JAN-1983 12 / 74: -0.5019
+
+ It appears that the range for data at time &quot;01-JAN-1983:12&quot; is from 
+&quot;28-dec-1982:12&quot; to &quot;06-jan-1983:12&quot;. So if the specified region ends at
+a time = or &gt; 28-dec-1982:12 then the data for t=&quot;01-JAN-1983:12&quot; also 
+gets plotted and thus JAN-1983 also included in the time axis.
+
+So if somebody is using this viewport method to plot time series for 
+different years, they should take care to set/specify the time region so 
+that for every year the delivered plot will be defined over the Jan-Dec of the 
+respective year.
+
+With Regards 
+
+Jaison
+
+
+
+On Mon, 5 Jul 2004, Mick Spillane wrote:
+
+&gt; &gt; Is there any way to overlay in a single plot different years without
+&gt; &gt; using regrid?
+&gt; &gt; I have one time series of 4 years and neet to overlay them.
+&gt; 
+&gt; Hi Domingos,
+&gt; 	While I don't understand why you wish to exclude regridding from
+&gt; the options, here is one way to do it - plot each year in overlapping
+&gt; viewports.
+&gt; Good luck,
+&gt; Mick
+&gt; !--------------------------------------------------------------------
+&gt; ! define demo function ...
+&gt; def axis/t=1-jan-1981:31-dec-1984:1/units=days tax
+&gt; def grid/t=tax grd
+&gt; let v=sin(6.14*t[g=grd]/350)
+&gt; ! ... and see what it looks like
+&gt; plot v
+&gt; 
+&gt; ! make 4 identical viewports, using your favorite method; for example
+&gt; ppl size 10 8 ; ppl axlen 8 6 ; ppl origin 1 1
+&gt; def view/size=1/orig=0,0/clip=1,1 view1
+&gt; def view/size=1/orig=0,0/clip=1,1 view2
+&gt; def view/size=1/orig=0,0/clip=1,1 view3
+&gt; def view/size=1/orig=0,0/clip=1,1 view4
+&gt; 
+&gt; ! plot year#1
+&gt; set view view1
+&gt; plot/nolab/set/t=1-jan-1981:31-dec-1981/line=1 v
+&gt; ppl txlint,,0    ! suppress YEAR in the axis label
+&gt; ppl yaxis,-1.1,1.2,0.1  ! set y-axis to fit all years (if necessary)
+&gt; ppl plot
+&gt; label/nouser 0.2 5.0 -1 0 0.2 @p1@sr1981  ! add label to identify year#1
+&gt; !plot year#2
+&gt; set view view2
+&gt; plot/nolab/set/t=1-jan-1982:31-dec-1982/line=2 v
+&gt; ppl axset,0,0,0,0   ! suppress top, bottom, left, right axis drawing
+&gt; ppl yaxis,-1.1,1.2,0.1  ! force the common y-axis to apply
+&gt; ppl plot
+&gt; label/nouser 0.2 4.5 -1 0 0.2 @p2@sr1982  ! add label to identify year#2
+&gt; ! plot year#3
+&gt; set view view3
+&gt; plot/nolab/set/t=1-jan-1983:31-dec-1983/line=3 v
+&gt; ppl axset,0,0,0,0   ! suppress top, bottom, left, right axis drawing
+&gt; ppl yaxis,-1.1,1.2,0.1  ! force the common y-axis to apply
+&gt; ppl plot
+&gt; label/nouser 0.2 4.0 -1 0 0.2 @p3@sr1983  ! add label to identify year#3
+&gt; ! plot year#4
+&gt; set view view4
+&gt; plot/nolab/set/t=1-jan-1984:31-dec-1984/line=4 v
+&gt; ppl axset,0,0,0,0   ! suppress top, bottom, left, right axis drawing
+&gt; ppl yaxis,-1.1,1.2,0.1  ! force the common y-axis to apply
+&gt; ppl plot
+&gt; label/nouser 0.2 3.5 -1 0 0.2 @p4@sr1984  ! add label to identify year#4
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00499" href="msg00499.html">Re: overlaying years without regrid ?</a></strong>
+<ul><li><em>From:</em> Mick Spillane</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00493" href="msg00493.html">Re: overlaying years without regrid ?</a></strong>
+<ul><li><em>From:</em> Mick Spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00493.html">Re: overlaying years without regrid ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00499.html">Re: overlaying years without regrid ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00493.html">Thread Prev</a>][<a href="msg00499.html">Thread Next</a>][<A HREF="threads.html#00496">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: bug in mp_graticule -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Wed, 29 Sep 2004 15:10:03 &#45;0700 -->
+<!--X-Message-Id: 415B329F.7040304@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.44.0409300305010.25032&#45;100000@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: bug in mp_graticule</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00685.html">Thread Prev</a>][<a href="msg00687.html">Thread Next</a>][<A HREF="threads.html#00686">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: bug in mp_graticule</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: bug in mp_graticule</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 29 Sep 2004 15:09:35 -0700</li>
+<li>Cc: Ferret Users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;,  Muyin Wang &lt;<a href="mailto:muyin.wang@DOMAIN.HIDDEN">muyin.wang@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00685.html">Pine.LNX.4.44.0409300305010.25032-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>References: &lt;<a href="msg00685.html">Pine.LNX.4.44.0409300305010.25032-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jaison,
+Thanks for the suggestion to replace REPEAT/K= with
+REPEAT/RANGE in the mp_graticule scripts. This is just
+the kind of thing that REPEAT/RANGE was introduced to
+address.  We'll do that before the next Ferret release.
+
+Ansley Manke
+
+Jaison Kurian wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Muyin,<br>
+          To make stereographic plots we need to &quot;set grid my_variable&quot; &amp;<br>
+this will load the information about abstract axis &quot;K&quot; of the variable along<br>
+with other axis. In mp_graticule.jnl (ferret/go dir.) one repeat loop is 
+defined as &quot;repeat/k=2:5&quot;. So when we use a variable with the size of abstract<br>
+axis &quot;K&quot; as 1 (as in your case [Z=1]) Ferret will complain that the size of 
+abstract axis &quot;K&quot; set by the &quot;set grid my_variable&quot; is 1 ..so any value of &quot;k&quot;<br>
+greater than 1 ( set by the `k` in DEFINE VARIABLE/quiet mp_xaxdel = mp_xdel/`k`;<br>
+inside the repeat loop) is not possible. You can get rid of this problem 
+as described below. 
+<br>
+NOTE : 
+I think the repeat loops in the go files (provided with Ferret 5.6 and 5.7) 
+can be changed to REPEAT/RANGE to avoid this kind of problems. 
+<br>
+ Method.1 
+ --------<br>
+     If your Ferret version is 5.6 or 5.7 use &quot;REPEAT/RANGE=2:5&quot; instead of 
+          &quot;REPEAT/k=2:5&quot; in mp_graticule.jnl (ferret/go dir.). So you need to<br>
+           change line 137  from<br>
+ repeat/k=2:5 (if `mp_xaxdel gt 1` then let/quiet mp_xaxdel = mp_xdel/`k`)<br>
+              to<br>
+ repeat/range=2:5 (if `mp_xaxdel gt 1` then let/quiet mp_xaxdel = mp_xdel/`repcount`)  
+     To know more about REPEAT/RANGE plese see 
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Documentation/Release_Notes/v56.html#repeat_range">http://ferret.pmel.noaa.gov/Ferret/Documentation/Release_Notes/v56.html#repeat_range</a><br>
+     In this case you can use &quot;[Z=1]&quot; variable as it is without any problem.<br>
+<br>
+ Method.2<br>
+ --------<br>
+     If your Ferret version is older one (and if you don't wamt to upgrade it )<br>
+     then you can remove the information about &quot;K&quot; or rather &quot;Z&quot; axis from the 
+         variable since it does have only one value over this axis. Define a 
+         dummy variable with same X-Y grid as the variable then use &quot;RESHAPE&quot; 
+         function to wrap the variable to this X-Y grid. 
+          
+        let xy_stamp = x[gx=myvar]*0 + y[gy=myvar]*0<br>
+        let myvar_xy = RESHAPE(my_var,xy_stamp)<br>
+<br>
+        Then use this new variable in &quot;set grid&quot;. Please note that you can use<br>
+          either the new variable or the old one itself in the &quot;SHADE&quot; or &quot;FILL&quot;<br>
+          command since the &quot;set grid&quot; loads the information about the abstract<br>
+          axes.<br>
+<br>
+    Before saving the variable[Z=1] to a file also you can use the RESHAPE function<br>
+       (variable[Z=1:1@ave] will remove the information about &quot;Z&quot; axis).<br>
+<br>
+ Example (method.2)<br>
+---------------------<br>
+!  Let us make some dummy data defined as over [Z=1] to work with<br>
+!<br>
+   use levitus_climatology<br>
+   let temp_extr = temp[z=1] !!!! let temp_extr = temp[z=1:1@ave]<br>
+                                ! will remove the &quot;Z axis&quot; 
+   ! you can do the &quot;Z axis removal&quot; using &quot;reshape&quot; also..<br>
+   !  let  let xy_stamp = x[gx=temp]*0 + y[gy=temp]*0<br>
+   !  let temp_ex  = RESHAPE(temp_extr,xy_stamp) 
+   !  save/file=temp_extr.nc/append temp_extr<br>
+<br>
+   save/file=temp_extr.nc/append temp_extr<br>
+   cancel data 1 ; cancel var/all<br>
+   set data temp_extr.nc<br>
+   ! if Z axis exits ..remove it now<br>
+   let xy_stamp = x[gx=temp_extr]*0 + y[gy=temp_extr]*0   
+   let temp_ex  = RESHAPE(temp_extr,xy_stamp)<br>
+   set grid temp_ex 
+   set region/x=0:360/y=00:90<br>
+   go mp_stereographic_north<br>
+   shade/lev=(-5,30,2) temp_ex, x_page, y_page 
+   ! or  shade/lev=(-5,30,2) temp_extr, x_page, y_page<br>
+   go my_mp_graticule 0 360 30 0 90 15<br>
+   go mp_fland 120 black 
+<br>
+Hope This helps<br>
+<br>
+With Regards<br>
+<br>
+Jaison 
+<br>
+<br>
+On Tue, 28 Sep 2004, Muyin Wang wrote:<br>
+<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em"><pre>Hi, Ansley:
+I am trying to use stereographic_north projection to do some contour
+plots. When the plot is done, I'd like to add &quot;mp_graticule&quot; to the plot.
+However, the mp_graticule works for 3D data or 2D data, but not the ones I
+extracted of a 2D data with z=1 dimension from a 3D data set.
+The error message looks like this:
+
+**ERROR: illegal limits: &quot;K&quot; is not in the range K=2
+         Axis extremes are K=1
+DEFINE VARIABLE/quiet mp_xaxdel = mp_xdel/`k`
+Command file, command group, or REPEAT execution aborted
+
+Is there a way to work around this?
+Thanks,
+Muyin
+
+
+
+</pre>
+</blockquote><pre>
+
+</pre>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00685" href="msg00685.html">Re: bug in mp_graticule</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00685.html">Re: bug in mp_graticule</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00687.html">Re: bug in mp_graticule</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00685.html">Thread Prev</a>][<a href="msg00687.html">Thread Next</a>][<A HREF="threads.html#00686">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

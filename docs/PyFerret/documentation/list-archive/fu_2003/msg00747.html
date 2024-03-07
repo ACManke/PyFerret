@@ -1,0 +1,156 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: how to read the lon&#38;lat from the dat file and use them to plotgraph? -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Fri, 17 Oct 2003 08:03:32 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0310170724240.10606&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: DMEDIOFNICBMEBACNLOHGEEOCAAA.li.li@umb.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how to read the lon&amp;lat from the dat file and use them to plotgraph?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00746.html">Thread Prev</a>][<a href="msg00748.html">Thread Next</a>][<A HREF="threads.html#00747">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how to read the lon&amp;lat from the dat file and use them to plotgraph?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Li Li &lt;<a href="mailto:li.li@DOMAIN.HIDDEN">li.li@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how to read the lon&amp;lat from the dat file and use them to plotgraph?</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 17 Oct 2003 08:03:29 -0700 (PDT)</li>
+<li>Cc: UsersFerret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00746.html">DMEDIOFNICBMEBACNLOHGEEOCAAA.li.li@umb.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Lily,
+	You say that your extra file has values of lon, lat, xdis, and
+ydis which might suggest that you are dealing with a curvilinear grid
+where xlon is not the same for all points in the netCDF file with a
+given value of xdis.  This might require a different approach than what
+follows which is for the case where both the xdis/ydis and lon/lat
+grids are rectangular (but not necessarily eveny spaced).
+
+Converting between rectangular grids
+
+Step 1: From your lon,lat,xdis,ydis file extract the NX points on your
+        longitude axis (NX is the same as the number of xdis values)
+	I'll assume these longitudes are in east longitude convention
+	so the file &quot;longitudes.d&quot; might contain NX records
+		170.0   &lt;- 170E
+		172.5
+		177.0
+		185.0
+		...
+		207.0   &lt;- 207E or 153W
+	of regularly or irregularly-spaced monotonically increasing
+	values.
+Step 2: Do the same for latitude so that you get another file &quot;latitude.d&quot;
+	with NY values, for example
+		-10.0   &lt;- 10S
+		 -5.0
+		 -2.0
+		  0.0
+		  2.0
+		  5.0
+		 10.0   &lt;- 10N
+
+Step 3: Open a ferret session
+	! open the longitude file ...
+	file/form=free/var=lon/units=longitude longitude.d
+	! ... and define an x-axis based on the values there
+	def axis/x/from_data/name=xax lon[d=1]
+	! do the same to create a y-axis
+	file/form=free/var=lat/units=latitude latitude.d
+	def axis/y/from_data/name=yax lat[d=2]
+
+	! now open your netcdf data file which has an NX by NY
+	! grid in the horizontal, but perhaps depth and time axes
+	! which don't need to be changed.
+
+	use myNetcdfFile.nc
+
+	! Suppose this data file has a variable V. We now make
+	! a new grid based on V but with new x and y-axes xax and yax
+
+	def grid/like=V[d=3]/x=xax/y=yax gnew
+
+	! now make a new version of V on the longitude-latitude grid
+
+	let Vnew = V[d=3,g=gnew,gx=@asn,gy=@asn]
+
+Step 4: Now if you plot or shade Vnew the x and y axes will be in
+	longitude and latitude units.
+
+Apologies if the answer above does not correspond to your situation
+(perhaps you are in a non-rectangular axis situation). If you are
+then there are ways to handle that too - you may find help in the
+archives under curvilinear mapping, or rephrase your question.
+
+Good luck,
+Mick
+
+|____Mick.Spillane@noaa.gov____|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00746" href="msg00746.html">how to read the lon&amp;lat from the dat file and use them to plot graph?</a></strong>
+<ul><li><em>From:</em> Li Li</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00746.html">how to read the lon&amp;lat from the dat file and use them to plot graph?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00748.html">[no subject]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00746.html">Thread Prev</a>][<a href="msg00748.html">Thread Next</a>][<A HREF="threads.html#00747">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

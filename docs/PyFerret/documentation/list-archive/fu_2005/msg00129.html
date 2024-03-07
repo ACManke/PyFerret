@@ -1,0 +1,152 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: log axis -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Wed, 9 Feb 2005 11:53:41 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0502091059130.22942&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.61.0502091113590.5933@lesh.agron.iastate.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: log axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00127.html">Thread Prev</a>][<a href="msg00128.html">Thread Next</a>][<A HREF="threads.html#00129">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: log axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&lt;<a href="mailto:jimmyc@DOMAIN.HIDDEN">jimmyc@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: log axis</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 9 Feb 2005 11:53:40 -0800 (PST)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00127.html">Pine.LNX.4.61.0502091113590.5933@lesh.agron.iastate.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi James,
+	It's been a few years since I've done shade or fill with
+one or more log axes.  The advent of curvilinear shade and fill
+suggest another avenue that may suit your situation where you
+need something like an inverse log axis in Z.
+	Here is a demo of what I have in mind. Hope it helps,
+Mick
+
+!-----demos use of curvi-coord fill for inverse log axis --------
+! define a pressure level sampling axis ...
+let plevs=zsequence({20,50,100,200,500,600,700,800,900,1000})
+def axis/z/name=zax/from_data plevs
+! ... and a horizontal axis
+def axis/x=150w:100w:5/units=longitude xax
+! and combine them to make the sample grid
+def grid/x=xax/z=zax grd
+
+! define an x,z function to be filled ...
+let v=i[g=grd]+k[g=grd]
+! ... and 2-d variables for the sample grid
+let xx=x[g=grd]+0*z[g=grd]
+let zz=z[g=grd]+0*x[g=grd]
+
+set view upper
+fill/nolab v
+plot/vs/o/nolab/sym=3 xx,zz
+label/nouser 4 2 0 0 0.1 @srSimple fill of v(x,z)
+! two complaints 1) plot is upsidedown since 1000hPa is surface
+!                2) linear axis misrepresents sampling density
+message
+
+set view lower
+fill/nolab v,xx,(-1)*log(zz)
+plot/vs/o/nolab/sym=3 xx,(-1)*log(zz)
+label/nouser 4 2 0 0 0.1 @srFill of v(x,z) vs inverse log(z)
+! the two issues above are resolved but new complaints might be
+! 3) the geographic labeling of x-axis is lost
+! 4) the vertical axis labels do not show units of hPa
+message
+
+! issue 3 is easily resolved
+fill/nolab/set v,xx,(-1)*log(zz)
+ppl xfor,(i3,''lone'')           ! note two single quotes are needed
+ppl fill
+plot/vs/o/nolab/sym=3 xx,(-1)*log(zz)
+label/nouser 4 2 0 0 0.1 @srFill v(x,z), inverse log(z), nice x-labs
+
+! issue 4) requires blanking out the actual vertical axis labels
+!          and the substitution of user generated ones. here is
+!          a quick and dirty one using the actual &quot;plevs&quot;. It is
+!          off by half the character height in the vertical, but
+!          with a bit if thought one could get it right.
+message
+
+fill/nolab/set v,xx,(-1)*log(zz)
+ppl xfor,(i3,''lone'')           ! note two single quotes are needed
+ppl axlabp,,0 ; ppl tics,,,0.01,0.01
+ppl fill
+plot/vs/o/nolab/sym=3 xx,(-1)*log(zz)
+repeat/k=1:10 (label `x[g=grd,i=1]` `(-1)*log(plevs)` \
+                      1 0 0.05 @sr`plevs` @ma60)
+label/nouser 4 2 0 0 0.1 @srFill v(x,z), inverse log(z), custom z-labs
+
+!---------------------------------------------------------------
+
+|!!! Mick.Spillane@noaa.gov !!!|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00127" href="msg00127.html">log axis</a></strong>
+<ul><li><em>From:</em> jimmyc</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00127.html">log axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00128.html">Time axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00127.html">Thread Prev</a>][<a href="msg00128.html">Thread Next</a>][<A HREF="threads.html#00129">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

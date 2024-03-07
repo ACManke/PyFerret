@@ -1,0 +1,175 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: plotting data in a separate directory -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 31 Mar 2004 09:12:50 &#45;0800 -->
+<!--X-Message-Id: 406AFC19.1080308@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.44.0404010233260.29969&#45;100000@caos.iisc.ernet.in -->
+<!--X-Reference: 723c7pyw80.fsf@tindved.ii.uib.no -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: plotting data in a separate directory</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00211.html">Thread Prev</a>][<a href="msg00213.html">Thread Next</a>][<A HREF="threads.html#00212">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: plotting data in a separate directory</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Helge Avlesen &lt;<a href="mailto:avle@DOMAIN.HIDDEN">avle@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: plotting data in a separate directory</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 31 Mar 2004 09:12:57 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00211.html">723c7pyw80.fsf@tindved.ii.uib.no</a>&gt;</li>
+<li>References: &lt;<a href="msg00210.html">Pine.LNX.4.44.0404010233260.29969-100000@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00211.html">723c7pyw80.fsf@tindved.ii.uib.no</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Helge,<br>
+Jaison's suggestion got you most of the way there.  You have defined<br>
+a symbol with the data set path and were able to use it to open the<br>
+data set, but then the define variable[d=($results)] statement fails. 
+This is because in Ferret the &quot;data set name&quot; which you can refer to in<br>
+a [d= ] does not include the path, but only the file name.  So, when you<br>
+define variables xg and zg, you could use<br>
+<br>
+DEFINE VARIABLE xg=xcoo[d=($LABEL)]<br>
+<br>
+Alternatively, there are a couple of useful arguments to the RETURN<br>
+keyword which might come in handy as you manage the data sets. 
+Once you have opened the file, you could do something like this. 
+(I'll also show another way to use the symbols.  You can do it without<br>
+defining the symbol qts):<br>
+<br>
+define symbol DIR=data<br>
+define symbol LABEL=test2-grid.data<br>
+file/var=xcoo,zcoo/grid=grid1 &quot;./($dir)/($label)&quot;<br>
+<br>
+let dnum = `xcoo,return=dsetnum`<br>
+!-&gt; DEFINE VARIABLE dnum = 1<br>
+<br>
+let xg = xcoo[d=`dnum`]<br>
+let vg = zcoo[d=`dnum`]<br>
+<br>
+! OR, use the result of RETURN=dsetname<br>
+<br>
+let dname = &quot;`xcoo,return=dsetname`&quot;  ! a string variable<br>
+!-&gt; DEFINE VARIABLE datname = &quot;test2.data&quot;<br>
+<br>
+let xg = xcoo[d=`dname`]<br>
+let vg = zcoo[d=`dname`]<br>
+<br>
+<br>
+yes? go plot<br>
+define symbol DIR=data<br>
+define symbol LABEL=test2<br>
+define symbol qts = \&quot;<br>
+define symbol RESULTS=($qts).\/($DIR)\/($LABEL).data($qts)<br>
+!-&gt; define symbol RESULTS=&quot;./data/test2.data&quot;<br>
+define symbol VGRID=($qts).\/($DIR)\/($LABEL)-grid.data($qts)<br>
+!-&gt; define symbol VGRID=&quot;./data/test2-grid.data&quot;<br>
+define axis/x=1:2:1 xaxis<br>
+define axis/y=1:2:1 yaxis<br>
+define grid/x=xaxis/y=yaxis grid1<br>
+file/var=xcoo,zcoo/grid=grid1 ($VGRID)<br>
+!-&gt; SET DATA/EZ/var=xcoo,zcoo/grid=grid1 &quot;./data/test2-grid.data&quot;<br>
+let xg=xcoo[d=($VGRID)]<br>
+!-&gt; DEFINE VARIABLE xg=xcoo[d=&quot;./data/test2-grid.data&quot;]<br>
+let zg=zcoo[d=($VGRID)]<br>
+!-&gt; DEFINE VARIABLE zg=zcoo[d=&quot;./data/test2-grid.data&quot;]<br>
+file/var=dill,sal,temp/grid=grid1 ($RESULTS)<br>
+!-&gt; SET DATA/EZ/var=dill,sal,temp/grid=grid1 &quot;./data/test2.data&quot;<br>
+shade dill,xg,yg<br>
+<br>
+**ERROR: unknown data set: D=&quot;./data/test2-grid.data&quot;<br>
+<br>
+<br>
+<br>
+Helge Avlesen wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Jaison Kurian wrote<br>
+| 	yes? use &quot;/home/DATA/mydata.dat&quot;    ! full path<br>
+|                                             !   or<br>
+|         yes? use &quot;./DATA/mydata.dat&quot;        ! relative to current dir.<br>
+|<br>
+|<br>
+|   To use your present sript, define a new variable like;<br>
+|<br>
+|         yes? define symbol qts = \&quot;<br>
+<br>
+nope, doesn't work... your suggestion is the same as just using double<br>
+quotes directly which I tried before.<br>
+<br>
+ferret reads the data ok, but the let command adds a couple of &quot; that<br>
+leads to a failure later.<br>
+<br>
+ 
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00213" href="msg00213.html">Re: plotting data in a separate directory</a></strong>
+<ul><li><em>From:</em> Helge Avlesen</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00210" href="msg00210.html">Re: plotting data in a separate directory</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00211" href="msg00211.html">Re: plotting data in a separate directory</a></strong>
+<ul><li><em>From:</em> Helge Avlesen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00211.html">Re: plotting data in a separate directory</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00213.html">Re: plotting data in a separate directory</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00211.html">Thread Prev</a>][<a href="msg00213.html">Thread Next</a>][<A HREF="threads.html#00212">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

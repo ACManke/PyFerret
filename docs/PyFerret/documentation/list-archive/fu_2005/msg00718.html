@@ -1,0 +1,147 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] Re: plotting numerical values of all points on map -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Mon, 1 Aug 2005 09:36:31 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0508010816390.3433&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 404dc1f905073123246187ec05@mail.gmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] Re: plotting numerical values of all points on map</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00716.html">Thread Prev</a>][<a href="msg00916.html">Thread Next</a>][<A HREF="threads.html#00718">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: plotting numerical values of all points on map</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Audrey Eun &lt;<a href="mailto:audreyeun@DOMAIN.HIDDEN">audreyeun@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: plotting numerical values of all points on map</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 1 Aug 2005 09:36:30 -0700 (PDT)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00716.html">404dc1f905073123246187ec05@mail.gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Mon, 1 Aug 2005, Audrey Eun wrote:
+&gt; I've tried:
+&gt; let xx=x[g=V]; let yy=y[g=V]
+&gt; REPEAT/X=103:105 (REPEAT/Y=2:4 (LET xyvalue=PT[L=1,K=1,X=`XX`,Y=`YY`];
+&gt; LABEL/OVERLAY `XX`,`YY`,-1,0,0,0.06 &quot;`xyvalue`&quot;))
+
+Hi Audrey,
+	I wrote in haste and should have been more explicit or given
+a complete demo..
+The commands
+	let xx=x[g=V]; let yy=y[g=V]
+tell ferret to define xx and yy as the x-axis and y-axis values of
+the grid of a variable named V.  In your case it appears that
+you are dealing with a variable named PT and so you would use
+	let xx=x[g=PT]; let yy=y[g=PT]
+At this point you could check that you have what you expect by
+	list/x=103:105 xx
+which should give all the grid points between these axis limits, and
+likewise for yy.
+
+There is another error in what you attempted - there is ome too many
+arguments in your &quot;label&quot; command, which when I tested it results in
+virtually invisible labels. I suspect you didn't intend the second
+zero. The syntax is
+	label xval yval align rot size text
+and the /over is not necessary.
+
+Finally there is an oversight, which I didn't notice until I ran a
+test. Normally I only use &quot;repeat/i=&quot; rather than &quot;repeat/x=&quot; so
+don't need an increment. There is nothing in &quot;repeat/x=103:105&quot; that
+tells ferret that &quot;x&quot; is the axis of the variable PT so it defaults
+to the increment 1. You need &quot;repeat/x=103:105:0.083333&quot; or to look
+at the output of &quot;show grid/x PT&quot; and decide the range of &quot;i&quot; you
+desire (and likewise for j).
+
+Here is a complete demo - try it out as it works as is for me.
+Mick
+
+! define x,y axes like yours with dummy z,t axes
+def axis/x=103:105/npoints=25 xax ; def axis/y=2:4/npoints=25 yax
+def axis/z=1:1:1 zax ; def axis/t=1:1:1 tax
+
+! define a grid (in your case the grid comes from the dataset I suspect)
+def grid/x=xax/y=yax/z=zax/t=tax grd
+
+! now define a function on this grid
+let PT=x[g=grd]+y[g=grd]+0*(z[g=grd]+t[g=grd])-100
+! and the axis variables
+let xx=x[g=PT] ; let yy=y[g=PT]
+
+! make an underlay plot
+shade/nolab PT[k=1,l=1]
+
+! and add the labels (2 figures after decimal in this case)
+REPEAT/X=103:105:0.083333 (REPEAT/Y=2:4:0.083333 \
+  (LET xyvalue=int(100*PT[L=1,K=1,X=`XX`,Y=`YY`])/100; \
+  LABEL `XX` `YY` -1 0 0.06 &quot;`xyvalue`&quot;))
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00916" href="msg00916.html">[ferret_users] speed up PLOT/VS x,y?</a></strong>
+<ul><li><em>From:</em> hengkek</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00716" href="msg00716.html">[ferret_users] Re: plotting numerical values of all points on map</a></strong>
+<ul><li><em>From:</em> Audrey Eun</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00716.html">[ferret_users] Re: plotting numerical values of all points on map</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00916.html">[ferret_users] speed up PLOT/VS x,y?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00716.html">Thread Prev</a>][<a href="msg00916.html">Thread Next</a>][<A HREF="threads.html#00718">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

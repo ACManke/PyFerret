@@ -1,0 +1,145 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: masking of land data -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Wed, 2 Mar 2005 08:33:40 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0503020723300.10609&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 422578EC.1050301@bgc&#45;jena.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: masking of land data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00204.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00205">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: masking of land data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: masking of land data</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 2 Mar 2005 08:33:38 -0800 (PST)</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00204.html">422578EC.1050301@bgc-jena.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Wed, 2 Mar 2005, Yogesh K. Tiwari wrote:
+
+&gt; How to mask the land  data to see the monthly
+&gt; variation(time series) at only ocean and vice versa.
+
+Hi Yogesh,
+	What you need to do is to access one of the bathymetry files
+and use it to define a land/sea mask ON THE SAME GRID as your dataset.
+Try the following ... good luck,
+Mick
+
+
+!-------- demo of land/sea mask generation -----------
+
+! FERRET SESSION 1 - make a fake dataset in a lat-lon region
+def axis/x=100e:160e:1/units=longitude xax
+def axis/y=50s:10s:1/units=latitude yax
+def grid/x=xax/y=yax grd
+let v=randu(x[g=grd]+y[g=grd])
+save/file=mydata.nc v
+quit                      ! end the ferret session
+
+! FERRET SESSION 2
+! 1) read in the datafile (with no mask of its own) ...
+use mydata.nc
+shade v
+
+! 2) pick a bathymetry file (a bit finer than your data grid)
+use etopo20
+
+! 3) see how it looks ...
+shade/o/pal=grey if(rose ge 0)then 1
+
+! 4) give a name to the grid of the variable you want to examine
+def grid/like=v[d=1] grd
+
+! 5) regrid &quot;rose&quot; to the grid of your variable and check it out
+let myrose=rose[d=2,g=grd]
+shade/o/pal=black if(myrose ge 0)then 1
+
+! 6) define the mask and use it to define vland ...
+let land=if(myrose ge 0)then 1 else 0
+let vland=if(land eq 1)then v[d=1]
+shade vland
+
+! 7) ... and vsea
+let vsea=if(land eq 0)then v[d=1]
+shade vsea
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00252" href="msg00252.html">Character</a></strong>
+<ul><li><em>From:</em> Wendy Wang</li></ul></li>
+<li><strong><a name="00218" href="msg00218.html">Re: masking of land data(problem solved)</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+<li><strong><a name="00217" href="msg00217.html">Re: masking of land data</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00204" href="msg00204.html">masking of land data</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00204.html">masking of land data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00217.html">Re: masking of land data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00204.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00205">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

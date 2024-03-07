@@ -1,0 +1,175 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Redhat Fedora Core 2 Install -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sat, 25 Sep 2004 15:58:03 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409260422170.25708&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.44.0409232222420.17739&#45;100000@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Redhat Fedora Core 2 Install</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00664.html">Thread Prev</a>][<a href="msg00666.html">Thread Next</a>][<A HREF="threads.html#00671">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Redhat Fedora Core 2 Install</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Redhat Fedora Core 2 Install</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 26 Sep 2004 04:31:44 +0530 (IST)</li>
+<li>Cc: &quot;Arthur M. Greene&quot; &lt;<a href="mailto:amg13@DOMAIN.HIDDEN">amg13@xxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;Pine.LNX.4.44.0409232222420.17739-100000@caos.iisc.ernet.in&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Paul,
+                  For me Ferret5.7 is running without any problem (OS is 
+Fedora Core 2). As Arthur suggested, this &quot;symbolic link&quot; is missing from your 
+/usr/lib. 
+  
+    1. It seems that libstdc++-libc6.2-2.so.3 is a symbolic link to 
+             libstdc++-3-libc6.2-2-2.10.0.so
+
+       Here is what i got..
+
+[jaison@swathi]$ locate libstdc++-libc6.2-2.so.3
+/usr/lib/libstdc++-libc6.2-2.so.3
+[jaison@swathi]$
+[jaison@swathi]$ ls -l /usr/lib/libstdc++-libc6.2-2.so.3
+lrwxrwxrwx  1 root root 31 Sep  9 12:52 /usr/lib/libstdc++-libc6.2-2.so.3 -&gt; libstdc++-3-libc6.2-2-2.10.0.so*
+[jaison@swathi]$
+
+     I think you can just make a link as required &amp; it will solve your problem.
+
+     Try (as root)
+
+     ln -s /usr/lib/libstdc++-3libc6.2-2-2.10.0.so /usr/lib/libstdc++-libc6.2-2.so.3
+
+     or  you can download the required rpm file and install it. The rpm file is   
+  
+[jaison@swathi]$
+[jaison@swathi]$ rpm -q --whatprovides /usr/lib/libstdc++-libc6.2-2.so.3
+compat-libstdc++-7.3-2.96.126
+[jaison@swathi]$
+
+ This rpm file is available at :
+    
+<a  href="http://download.fedora.us/fedora/fedora/latest/i386/RPMS.os/compat-libstdc++-7.3-2.96.126.i386.rpm">http://download.fedora.us/fedora/fedora/latest/i386/RPMS.os/compat-libstdc++-7.3-2.96.126.i386.rpm</a>
+
+
+ Hope This Helps
+
+ With Regards
+
+ Jaison
+
+
+
+&gt; Hello,
+&gt; 
+&gt; I tried to install Ferret on a i386 (Piv) running Redhat Fedora.
+&gt; Everything seemed to go well with the install but when I try to run 
+Ferret
+&gt; I get the following error.  Can anyone suggest a fix?
+&gt; 
+&gt; /usr/local/ferret/bin/./ferret: error while loading shared libraries:
+&gt; libstdc++-libc6.2-2.so.3: cannot open shared object file: No such file 
+or
+&gt; directory
+&gt; 
+&gt; Many thanks,
+&gt; Paul
+&gt; 
+
+1. Why does your path to ferret have a dot in it? Ferret apparently is
+trying to open, so perhaps this doesn't matter, but it's a bit strange
+(to me, anyway) to see such a path. The dot does not appear to serve any
+function here. Anyhow...
+
+2. First, verify that the missing library isn't anywhere on your system,
+by issuing &quot;locate libstdc++-libc6.2-2.so.3&quot; (don't type the quotes). It
+is part of a package named &quot;compat-libstdc++&quot;, so you can also check if
+this package is installed, by issuing &quot;rpm -q compat-libstdc++&quot;. If it
+is not, you'll have to go find and install it, as well as any packages
+on which it depends. This can be done conveniently using yum (issue &quot;man
+yum&quot; or &quot;info yum&quot; to find out how). On my system (also Fedora Core II)
+it is present, possibly because I included gcc and various extensions to
+it when I installed FC2. It lives in /usr/lib.
+
+3. If it _is_ present on your system, someone else will have to figure
+out why ferret can't find it. Perhaps ferret_paths needs to be sourced
+(and properly configured) -- but /usr/lib does not appear to be
+mentioned in ferret_paths, so /usr/lib is probably one of the standard
+locations where ferret looks for shared objects.
+
+Cheers,
+
+AMG
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00664.html">Re: Redhat Fedora Core 2 Install</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00666.html">Question about Making NaN..</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00664.html">Thread Prev</a>][<a href="msg00666.html">Thread Next</a>][<A HREF="threads.html#00671">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

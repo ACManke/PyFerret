@@ -1,0 +1,234 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Time series of temperature as a function of month of maximumlixed layer depth -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Wed, 30 Mar 2005 13:05:44 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0503301028170.3780&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20050330101520.GA22360@hector.lodyc.jussieu.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Time series of temperature as a function of month of maximumlixed layer depth</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00290.html">Thread Prev</a>][<a href="msg00300.html">Thread Next</a>][<A HREF="threads.html#00299">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Time series of temperature as a function of month of maximumlixed layer depth</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot; Audine Laurian ( Alban Lazar) &quot; &lt;<a href="mailto:Audine.Laurian@DOMAIN.HIDDEN">Audine.Laurian@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Time series of temperature as a function of month of maximumlixed layer depth</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 30 Mar 2005 13:05:43 -0800 (PST)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;20050330101520.GA22360@hector.lodyc.jussieu.fr&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Wed, 30 Mar 2005,  Audine Laurian ( Alban Lazar)  wrote:
+&gt; I have a monthly temperature field over 55 years ...
+&gt;
+&gt; I can compute the month of maximum MLD using @weq but then I have to
+&gt; specify the time region (a: beginning of current year; b: end of
+&gt; current year) when I do &quot;integrand[l=a:b@sum]&quot;. But a and b change with
+&gt; a period of 12 months.
+&gt;
+&gt; Is there an easy way of computing a new time axis consisting of 55
+&gt; values, each of them being the month of maximum MLD of year i, i=1:55?
+&gt;
+
+Hi Audine,
+	Perhaps the RESHAPE function would solve your difficulty. By
+converting your dataset from a time series of temperature profiles
+to a month,year grid of profiles then in searching each year for the
+month of maximum MLD you would have a fixed range 1:12 to search.
+
+	The RESHAPE function uses Fortran order in distributing the
+data to the new grid. So you need to be careful in designing the
+month,year grid. Rather than a mass of definitions, I find it easier
+to write out intermediate results to new files so that I can check
+the progress of my calculation at each major stage and know that the
+next round of definitions is not going to undo or foul up something
+done previously.
+
+	With these thoughts in mind, here is an example that may give
+you some ideas to add to your own. Hope it helps; I know working on
+the demo gave me a better feeling for RESHAPE, and what happened when
+I wrote out the RESHAPEd data was quite unexpected (see !!! below).
+	Good luck,
+	      Mick
+
+----------------------------------------------------------------------
+STEP 0 : A sample dataset - 55 years of monthly temperature profiles
+         at depths z=0:100:1 meters
+
+def axis/t=15-jan-1950:15-dec-2005/npoints=660 tax
+def axis/depth/z=0:100:1 zax
+def grid/z=zax/t=tax grd
+! use tanh function to represent thermocline with random center depth
+! z0 and half thickness dz. t0 is the random temperature at z0
+let z0=50+10*randn(t[g=grd])
+let dz=10+5*randu(t[g=grd])
+let t0=20+randn(t[g=grd])
+let arg=(z[g=grd]-z0)/dz
+let expa=exp(arg)
+let/title=&quot;Temperature&quot; v=t0-(expa-1/expa)/(expa+1/expa)
+
+! take a look at the profiles ...
+plot/l=1/hlim=15:25/nolab v
+repeat/l=2:660 (plot/o/nolab/line=1 v)
+! ... then save this test data file
+save/file=Audine1.nc v
+quit
+
+STEP 1 : RESHAPE the data in the real data file or the one produced
+         in STEP 0 above.
+
+use Audine1.nc
+show grid/all v
+! the incoming data is on a Z-T grid where Z=0:100:1 is the depth and
+! l=1:660 are the 55 years of monthly data. The Fortran order has Z
+! varying fastest then T. We want to RESHAPE the data to put time on
+! a month,year (12x55) grid but preserve the &quot;depth&quot; axis. Because of
+! Fortran order we have to assign X (or Y) to represent depth, then
+! Y (or Z) to represent Month and the third index to represent Year.
+def axis/x=0:100:1 depth
+def axis/y=1:12:1  month
+def axis/t=1950:2004:1 year
+let outgrid=x[gx=depth]+y[gy=month]+t[gt=year]
+let/title=&quot;Temperature&quot; vr=reshape(v,outgrid)
+sho grid/all vr
+! check that all is well by plotting profile ... v[L=27] should be the
+! same as vr[j=3,t=1952]
+plot v[L=27]
+plot/o/vs vr[j=3,t=1952],x[g=vr]
+! notice that, because of the reshaping, plot/vs was necessary for overlay
+! But all looks well so ...
+save/file=Audine2.nc vr
+quit
+
+!!! Something interesting happened here - I had set up the &quot;depth&quot; axis
+!!! of the reshaped data to be along X. But, at least in FERRET v5.70,
+!!! ferret did me a favour when it wrote Audine2.nc . It reassigned
+!!! the axes so that Z is the depth axis again! Perhaps this was due
+!!! to the axis names I chose, but any way it a plus. However it is
+!!! something to check when you read back your RESHAPEd data ... are
+!!! the axes what you expect.
+!!! NOTE TO SELF: Could this treatment by ferret solve the issue where
+!!! reshaping monthly data to z(1:12) by t(year range) loses the nice
+!!! formatting of date in year vs month plots?
+
+Try this with your version of ferret
+use Audine1.nc
+use Audine2.nc
+sho data
+plot v[d=1,l=27]
+plot/o/sym=3 vr[j=3,l=3] ! no need for the &quot;clunky&quot; plot/vs
+
+
+STEP 3: Now with the reshaped data file we want to design a mask that
+        represents the month, in each year, that has the maximum MLD.
+	How to define the mixed layer depth (MLD) is a matter of choice,
+        based on the data of course.
+	Just for convenience, and not implying that this is a good
+	choice, let me define (for my evenly spaced test data) the MLD
+        as the depth where the temperature gradient is most negative.
+
+use Audine1.nc
+use Audine2.nc
+sho data
+let/title=&quot;Temp Gradient&quot; dtdz=vr[z=@ddc]
+let/title=&quot;Steepest Gradient&quot; dtdz0=dtdz[z=@min]
+let/title=&quot;MLD Mask&quot; mmld=if(dtdz eq dtdz0)then z[g=vr]
+let/title=&quot;MLD&quot; mld=mmld[z=@max]  ! pick off the only non-missing value
+! for example
+plot v[d=1,l=27] ; plot/o/sym=3 vr[j=3,l=3] ! the March 1952 profile
+list mld[j=3,l=3] ! for my test data this gives MLD=41m
+plot/o/vs/sym=18/line=2 vr[j=3,l=3,z=41],41
+
+! So far so good. Although you would probably substitute a better
+! definition of what MLD should be, let us stay with this for the demo.
+! We can now shade MLD
+shade mld
+
+! and the next step is to design a mask so as to pick off, for each
+! year, the month with the largest MLD
+let/title=&quot;Max MLD&quot; mldx=mld[j=@max]
+let/title=&quot;Month Mask&quot; mmask=if(mld eq mldx)then j[g=vr]
+let/title=&quot;Month&quot; month=mmask[j=@max]
+plot/o/vs/sym=18/line=13 t[g=vr],month
+
+! now is the point at which you would want to do your calculation
+! for the chosen profile in each year. As an example let me define
+! vr[z=@sum] as a &quot;heat content&quot;. Using &quot;month&quot; as a mask to set
+! all but the chosen profile to missing value I can defile
+let/title=&quot;Masked Profile&quot; vm=if(j[g=vr] eq month)then vr
+let/title=&quot;Selected Profile&quot; vs=vm[j=@sum]
+shade vs  ! shades the selected profile from each year
+let/title=&quot;Heat Content&quot; hc=vs[z=@sum]
+plot hc   ! plots this crude measure of heat content
+
+! final check ... the selected profile for the year 1951 should
+! match the &quot;raw data&quot; profile for the appropriate month. For me ...
+list month[t=1951]
+! gives April (4) so the time index in the original dataset should
+! be (1951-1950-1)*12+4=16 , the 16th profile in the series
+plot v[d=1,l=16]
+plot/o/sym=3 vs[t=1951]   ! the profiles coincide
+list v[d=1,l=16,z=@sum]
+list hc[t=1951]           ! the heat contents agree
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00290.html">Define axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00300.html">plotting IPCC stfmmc properly</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00290.html">Thread Prev</a>][<a href="msg00300.html">Thread Next</a>][<A HREF="threads.html#00299">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

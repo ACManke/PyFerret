@@ -1,0 +1,209 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: with Descriptor file:  ** unknown netCDF error code: &#45;31 -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 14 May 2004 11:08:38 &#45;0700 -->
+<!--X-Message-Id: 40A50B25.7060207@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.10.10405141240100.6224&#45;100000@limpet.umeoce.maine.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: with Descriptor file:  ** unknown netCDF error code: -31</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00376.html">Thread Prev</a>][<a href="msg00379.html">Thread Next</a>][<A HREF="threads.html#00378">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: with Descriptor file:  ** unknown netCDF error code: -31</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: with Descriptor file:  ** unknown netCDF error code: -31</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 14 May 2004 11:08:37 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00374.html">Pine.LNX.4.10.10405141240100.6224-100000@limpet.umeoce.maine.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00374.html">Pine.LNX.4.10.10405141240100.6224-100000@limpet.umeoce.maine.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Steve,<br>
+The errror -31 comes from an attempt to read a time step that appears<br>
+to Ferret to fall after the end of one cdf file and before the start of the<br>
+next. The way a time axis is constructed when you use a descriptor file<br>
+is that Ferret uses the information in the descriptor file to build a 
+regularly<br>
+spaced time axis, using the delta value given in the descriptor.  This<br>
+can be inconsistent with what is in the files if you don't have everything<br>
+lined up quite right.<br>
+<br>
+Your time unit of 2629746 corresponds to monthly data.  (1/12 of 365.2425<br>
+days).  You have<br>
+<br>
+S_START =   1,<br>
+S_END   =   239,<br>
+S_DELTA =   1,<br>
+<br>
+I assume this corresponds to 20 years of data.  But the time axis is 
+computed<br>
+using (S_END-S_START-1)/S_DELTA = (239-1)  months.  This is less than<br>
+20 years; and that looks to me like it's why you're seeing the error 
+message,<br>
+<br>
+WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE<br>
+INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY<br>
+<br>
+Following the suggestion of using a DEFINE AXIS command<br>
+to make the axis that you want, and using its steps to<br>
+define your axis, if you want:<br>
+<br>
+yes? def axis/t=15-jan-1980:15-dec-1999:1/units=months/t0=&quot;15-dec-1979:00:00&quot; tax<br>
+yes? list t[gt=tax]<br>
+<br>
+Then this suggests thatyou want S_END to be 240.<br>
+<br>
+Ansley Manke<br>
+<br>
+<br>
+Steve Cousins wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">I have a series of 20 netCDF files, each with 12 time slices (except the<br>
+last file only has 11 time slices). I have a descriptor file to connect<br>
+these:<br>
+<br>
+&amp;FORMAT_RECORD<br>
+D_TYPE	= '  MC',<br>
+D_FORMAT	= '  1C',<br>
+/<br>
+&amp;BACKGROUND_RECORD<br>
+D_TITLE	= 'BIOLOGY',<br>
+D_T0TIME	= '15-dec-1979 00:00:00',<br>
+D_TIME_UNIT	= 2629746.0,<br>
+D_TIME_MODULO	= .false.,<br>
+/<br>
+&amp;MESSAGE_RECORD<br>
+D_MESSAGE     = ' ',<br>
+D_ALERT_ON_OPEN      = F,<br>
+D_ALERT_ON_OUTPUT    = F,<br>
+/<br>
+&amp;EXTRA_RECORD<br>
+/<br>
+&amp;STEPFILE_RECORD<br>
+S_FILENAME    = '/neptune/usr2/pacific-g-46-99/bio.cdf.001',<br>
+S_AUX_SET_NUM   =           0,<br>
+S_START =   1,<br>
+S_END   =   239,<br>
+S_DELTA =   1,<br>
+S_NUM_OF_FILES  =           20,<br>
+S_REGVARFLAG    = '     ',<br>
+S_INDEX = '                       '<br>
+/ 
+&amp;STEPFILE_RECORD<br>
+ S_FILENAME    = '**END OF STEPFILES**'<br>
+/<br>
+<br>
+In ferret I periodically (every 12 slices) get:<br>
+<br>
+	** unknown netCDF error code: -31<br>
+<br>
+Here is an example:<br>
+<br>
+[ferret@rocky server]# ferret<br>
+	NOAA/PMEL TMAP<br>
+	FERRET v5.53  
+	Linux(g77) 2.4.x - 09/26/03<br>
+	14-May-04 13:02     
+<br>
+yes?  set data &quot;/usr2/fer_dsets/descr/bio-g-80-99.des&quot;<br>
+WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE<br>
+INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY<br>
+yes?  shade/L=1/Z=5/levels=30 co2flx<br>
+yes?  shade/L=12/Z=5/levels=30 co2flx<br>
+** unknown netCDF error code: -31<br>
+yes?  shade/L=13/Z=5/levels=30 co2flx<br>
+yes?  shade/L=11/Z=5/levels=30 co2flx<br>
+yes?  shade/L=24/Z=5/levels=30 co2flx<br>
+** unknown netCDF error code: -31<br>
+yes?  shade/L=36/Z=5/levels=30 co2flx<br>
+** unknown netCDF error code: -31<br>
+yes?  shade/L=48/Z=5/levels=30 co2flx<br>
+** unknown netCDF error code: -31<br>
+yes?  shade/L=47/Z=5/levels=30 co2flx<br>
+yes?  shade/L=49/Z=5/levels=30 co2flx<br>
+<br>
+<br>
+If I access the file directly (not using the Descriptor file) that<br>
+corresponds to slice 13 I can plot that slice fine.<br>
+<br>
+I can't find what error -31 is.  Anybody have any ideas?<br>
+<br>
+Thanks,<br>
+<br>
+Steve<br>
+<br>
+______________________________________________________________________<br>
+Steve Cousins, Ocean Modeling Group    Email: cousins@umit.maine.edu<br>
+Marine Sciences, 208 Libby Hall        <a  href="http://rocky.umeoce.maine.edu">http://rocky.umeoce.maine.edu</a><br>
+Univ. of Maine, Orono, ME 04469        Phone: (207) 581-4302<br>
+<br>
+<br>
+ 
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00374" href="msg00374.html">with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+<ul><li><em>From:</em> Steve Cousins</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00376.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00379.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00376.html">Thread Prev</a>][<a href="msg00379.html">Thread Next</a>][<A HREF="threads.html#00378">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

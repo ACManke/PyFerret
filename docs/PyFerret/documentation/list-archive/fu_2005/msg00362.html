@@ -1,0 +1,161 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: RE: How can I draw a single color bar for multi&#45;panelplots? -->
+<!--X-From-R13: Ivyyvnz E Yrffyre <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 20 Apr 2005 08:45:58 &#45;0700 -->
+<!--X-Message-Id: 39b953d6a0.3d6a039b95@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: RE: How can I draw a single color bar for multi-panelplots?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00358.html">Thread Prev</a>][<a href="msg00364.html">Thread Next</a>][<A HREF="threads.html#00362">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: RE: How can I draw a single color bar for multi-panelplots?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: RE: How can I draw a single color bar for multi-panelplots? </strong></li>
+<li><strong>From</strong>: <strong>William S Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 20 Apr 2005 08:45:58 -0700</li>
+<li>Cc: &lt;<a href="mailto:Yun.Li@DOMAIN.HIDDEN">Yun.Li@xxxxxxxx</a>&gt;, &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>A recent Ferret improvement makes it much easier to define
+custom viewports. The DEF VI/AXES qualifier means that the
+viewports are given in fractions of the total page. To my
+mind that is much more intuitive than the old way, which 
+assumes an unknown (to the user) amount of white space
+around the plot box that makes it very difficult to guess
+how several boxes fit on a page.
+
+Typically, I would say that a plotting region with a color
+key needs borders of about 10% of the page on the bottom,
+10-15% between panels in the vertical, 15-18% on the top for
+the title, 5% on the left and between the panels horizontally, 
+and 8% on the right for the colorbar.
+
+For example, here's definitions for a 3-wide and 2-high 
+set of panels:
+
+def vi/axes/x=.05,.31/y=.52,.82 topleft
+def vi/axes/x=.36,.62/y=.52,.82 topmid
+def vi/axes/x=.67,.93/y=.52,.82 topright
+def vi/axes/x=.05,.31/y=.1,.4 botleft
+def vi/axes/x=.36,.62/y=.1,.4 botmid
+def vi/axes/x=.67,.93/y=.1,.4 botright
+
+Of course I would always remove the automatic labels with
+the /NOLAB qualifier on PLOT, FILL, CONTOUR for this,
+otherwise those labels will run over onto other panels.
+The automatic labels are needed for quick-looks, but when
+making plots to show, they are a distraction and take up
+way too much white space that should be used for the plot.
+
+Billy K
+
+----- Original Message -----
+From: &lt;Mick.Spillane@noaa.gov&gt;
+Date: Wednesday, April 20, 2005 8:05 am
+Subject: RE: How can I draw a single color bar for multi-panel plots? 
+
+&gt; Hi Yun,
+&gt;    The overlap of the panels on the right is not a problem,
+&gt; but the result of using the viewports &quot;ll, lr, ul, ur&quot; without
+&gt; taking extra steps to control how the axes are located within
+&gt; each.  Usually when producing a multi-panel plot like this I
+&gt; define my own viewports to eliminate the white space between the
+&gt; panels. The tool I find convenient in designing viewports is called
+&gt; &quot;viewdef&quot; and can be found in the Mail Archives (search for viewdef).
+&gt; Or you could read about &quot;define viewport&quot; in the manual.
+&gt; 
+&gt;    Alternatively, for a quick look at how altering other
+&gt; properties of the plot can improve the situation try inserting the
+&gt; plotplus command &quot;ppl axlen,4.5&quot; before my previous demo after each
+&gt; &quot;set view ul&quot;. This shortens the length of the x-axis (from the
+&gt; default value that &quot;ll, lr, ul, ur&quot; assign) to 4.5 inches.
+&gt; 
+&gt; !------ REVISED demo of a shared color bar -------
+&gt; 
+&gt; ppl axset,0,0,0,0   ! turn off all axes
+&gt; 
+&gt; set view full       ! this will be for the desired color bar
+&gt; ! choose a 2-d variable to shade with value outside color bar range
+&gt; shade/nolab/i=1:8/j=1:6/lev=(100,2200,100) 0*(i+j)
+&gt; 
+&gt; ppl axset,1,1,1,1   ! turn axes back on
+&gt; 
+&gt; set view ul ; ppl axlen,4.5 ! reduce the x-axis length
+&gt; shade/nolab/i=1:8/j=1:6/lev=(100,2200,100)/nokey 50*(i+j)
+&gt; set view ur ; ppl axlen,4.5
+&gt; shade/nolab/i=1:8/j=1:6/lev=(100,2200,100)/nokey 75*(i+j)
+&gt; set view ll ; ppl axlen,4.5
+&gt; shade/nolab/i=1:8/j=1:6/lev=(100,2200,100)/nokey 100*(i+j)
+&gt; set view lr ; ppl axlen,4.5
+&gt; shade/nolab/i=1:8/j=1:6/lev=(100,2200,100)/nokey 150*(i+j)
+&gt; !---------------------------------------------------------
+&gt; 
+&gt; Good luck,
+&gt; Mick
+&gt; 
+&gt; |!!! Mick.Spillane@noaa.gov !!!|
+&gt; |__Room 2070 Bldg#3 NOAA/PMEL__|
+&gt; |____Phone_:_(206)526-6780_____|
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00358.html">How can I draw a single color bar for multi-panel plots?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00364.html">metafile problems in Win32 Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00358.html">Thread Prev</a>][<a href="msg00364.html">Thread Next</a>][<A HREF="threads.html#00362">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

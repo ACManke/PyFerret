@@ -1,0 +1,285 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Regridding in space and time -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 18 Nov 2004 11:13:02 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0411190031420.12401&#45;200000@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 003601c4cd75$ec8c9380$6401a8c0@marisaxksv08sd -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Regridding in space and time</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00820.html">Thread Prev</a>][<a href="msg00824.html">Thread Next</a>][<A HREF="threads.html#00823">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Regridding in space and time</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Regridding in space and time</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 19 Nov 2004 00:58:27 +0530 (IST)</li>
+<li>Cc: Chis Konig &lt;<a href="mailto:konigc@DOMAIN.HIDDEN">konigc@xxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00820.html">003601c4cd75$ec8c9380$6401a8c0@marisaxksv08sd</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Chris,
+           You reached there almost...but missed few points. I modified 
+your script (see the attachment:scat2grid.jnl, using the data 
+sample_data.txt)  to get proper time dimension for the variable based on 
+following details...
+
+     1. Your data is repeating for the common X-Y locations for 5 time
+          points ( 1990- 3/31, 4/30, 5/21, 6/14 &amp;  6/21). But the lat-lon
+          point &quot;80.50  -67.75&quot; exists only for &quot;1990 03 31&quot;. If this  
+          point is skipped we are left with 107 spacial points and 5 time
+          points ==&gt; 107*5 = 535 values (or lines in the data file). 
+          Now read the variable in Ferret like...
+
+   define axis/x=1:107:1 xscat        ! spatial points  
+   define axis/t=1:5:1   tscat        ! time points
+   define grid/x=xscat/t=tscat gscat           
+   file/grid=gscat/var=..............
+
+    2. to define a time axis choose only the five values from year, month 
+          &amp; day (skip all the repeated values). Get the time values using
+          days1900 function, define a time axis..assign to the variable 
+          using @ASN regridding.
+
+   3.  Use this new variable in scat2grid function. Now the variable is 
+         2D but one of the dimention is time. So you have to give only
+         the common lat and lon points as the arguments to the scat2grid.
+ 
+       Define the final destination grid such that it is within the limits
+         of the original data. Dont forget to use the /UNITS attribute
+         while defining latitude or longitude axis
+
+   4.  Define a climatological monthly time  axis then regrid to this
+        usin @MODULO regridding to get the climatology.
+
+ Please go through the modified script..if anything need to be 
+explained..let me know.
+
+ As a &quot;bonus&quot; you can see how to use &quot;POLYGON&quot; command to look at the 
+original data in a spatial plot without any interpolation/extrapolation.
+
+
+ Hope this helps
+
+ With Regards
+
+ Jaison 
+
+
+On Thu, 18 Nov 2004, Chis Konig wrote:
+
+&gt; Hi there,
+&gt; 
+&gt; I have data that came in 2D-fields at irregular times, i.e. it is 
+&gt; unevenly spaced in time (weekly - monthly) and space (i.e. 2D but was 
+&gt; not on a lon-lat-grid). I'd like to make a climatology with monthly 
+&gt; means etc. from it.
+&gt; 
+&gt; Unless there is an elegant way of doing that all at once (3D 
+&gt; regridding?) I think I have to achieve this in two steps (but correct me 
+&gt; if I'm wrong):
+&gt; 
+&gt; - First regrid it in space onto a lon-lat-grid for each time step.
+&gt; - Secondly regrid it over time, i.e. make monthly averages etc.
+&gt; 
+&gt; I might prefer a two-stepped approach anyway as it gives me more 
+&gt; control, e.g. different types of interpolation for space and time.
+&gt; 
+&gt; The data is in ASCII and in the form:
+&gt; 
+&gt; yr mo dy lat lon var
+&gt; 
+&gt; An example file can be found here: 
+&gt; <a  href="http://math.nyu.edu/~konigc/sample_data/sample_data.txt">http://math.nyu.edu/~konigc/sample_data/sample_data.txt</a>
+&gt; 
+&gt; The first three variables (time) are non-decreasing but identical for 
+&gt; several hundreds to thousands data points (all the data from one field).
+&gt; 
+&gt; That's how far I got:
+&gt; 
+&gt; !!!!!!!!!!!!!!!!!!!!!!!!
+&gt; 
+&gt; define axis/x=1:1000:1 x_temp
+&gt; define grid/x=x_temp g_temp
+&gt; file/var=&quot;yr,mo,dy,lat,lon,var&quot;/grid=g_temp sample_data.txt
+&gt; 
+&gt; let gregday = days1900(yr,mo,dy)
+&gt; 
+&gt; define axis/x=-75:-55:0.25 xax
+&gt; define axis/y=79:83:0.25 yax
+&gt; !Those axes would be different for the total data.
+&gt; 
+&gt; let var_2=scat2gridgauss_XY(lon,lat,var,x[gx=xax],y[gy=yax],0.5,0.5,2,2)
+&gt; !OR
+&gt; let var_2=scat2gridlaplace_XY(lon,lat,var,x[gx=xax],y[gy=yax],5,2)
+&gt; 
+&gt; shade var_2
+&gt; go land
+&gt; 
+&gt; !!!!!!!!!!!!!!!!!!!!!!!!
+&gt; 
+&gt; My problems with that approach:
+&gt; 
+&gt; - I lose the time dimension in the regridding process.
+&gt; - The data is confined to the ocean. But with scat2gridXXX the 
+&gt; information 'spills' onto the land. Is there a possibility to use a 
+&gt; simpler interpolation (nearest neighbour, linear...)?
+&gt; 
+&gt; Thanks for any help!
+&gt; 
+&gt; Chris
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+</pre>
+<pre>!  
+! delete the line containing data for 1990 03 31 80.50  -67.75  
+!   to bring all days to a common scattered points
+!
+      define axis/x=1:107:1 xscat   ! data points  
+      define axis/t=1:5:1   tscat   ! time points
+
+      define grid/x=xscat/t=tscat gscat
+ 
+      file/var=&quot;yr,mo,dy,lat,lon,var&quot;/grid=gscat sample_data.txt
+
+      ! let us have a cross check  
+      list/y=5 var
+ 
+      !  get all the 5 dates  
+
+      let yr_5  =  yr[i=1] ! values need only for I=1,L=1:5     
+      let mo_5  =  mo[i=1] !     &quot;
+      let dy_5  =  dy[i=1] !     &quot;
+  
+      list yr_5, mo_5, dy_5
+
+      let gregday = days1900(yr_5,mo_5,dy_5)
+      
+      define axis/t/t0=&quot;01-JAN-1900:00&quot;/units=days/from_data t5day=gregday
+      list t[gt=t5day]
+
+      ! get the variable onto the time grid instead of Y
+
+      let var_t    = var[GT=t5day@ASN]         
+
+      plot/l=5 var_t
+
+message
+
+! now do the scat2grid
+!      choose min &amp; max for defining the axes so that those
+!      values are within the actual range
+
+      let lat_1D = lat[l=1]  ! we need only the 107 common values 
+      let lon_1D = lon[l=1]  ! we need only the 107 common values
+
+      define axis/x=-61.5:-67.5:0.25/units=longitudes xlon  
+      define axis/y=80.5:81.75:0.25/units=latitudes ylat
+
+      let var_2=scat2gridgauss_XY(lon_1D,lat_1D,var_t,x[gx=xlon],y[gy=ylat],0.125,0.125,2,2)
+
+      fill/l=1 var_2
+      plot /ov/vs/color=7 lon[l=1],lat[l=1]
+      go land
+
+!  no you can define a monthly climatological axis (if needed..because now
+!     you have one value per month)..and make the climatology using var_t
+
+!      let us see what &quot;polygon&quot; can do
+
+ message
+
+      let xpts = XSEQUENCE(lon[l=1,i=1:107])  
+      let ypts = XSEQUENCE(lat[l=1,i=1:107])
+
+      let dxp=0.2 ; let bx=ysequence({`(-1)*dxp`,`dxp`,`dxp`,`(-1)*dxp`})
+      let dzp=0.05 ; let bz=ysequence({`dzp`,`dzp`,`(-1)*dzp`,`(-1)*dzp`})
+
+      polygon bx+xpts,bz+ypts,var_t[l=1]
+      plot /ov/vs lon[l=1],lat[l=1]
+      go land
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00827" href="msg00827.html">Re: Regridding in space and time</a></strong>
+<ul><li><em>From:</em> Chris Konig</li></ul></li>
+<li><strong><a name="00824" href="msg00824.html">Re: Regridding in space and time</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00820" href="msg00820.html">Regridding in space and time</a></strong>
+<ul><li><em>From:</em> Chis Konig</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00820.html">Regridding in space and time</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00824.html">Re: Regridding in space and time</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00820.html">Thread Prev</a>][<a href="msg00824.html">Thread Next</a>][<A HREF="threads.html#00823">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

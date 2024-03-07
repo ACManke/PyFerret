@@ -1,0 +1,361 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Plotting Satellite Wind Vectors -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 19 Oct 2005 13:49:34 &#45;0700 -->
+<!--X-Message-Id: 4356B15D.6040603@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 200510191802.j9JI2eJ24955@mailer.fsu.edu -->
+<!--X-Derived: gif00062.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Plotting Satellite Wind Vectors</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00951.html">Thread Prev</a>][<a href="msg00953.html">Thread Next</a>][<A HREF="threads.html#00952">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Plotting Satellite Wind Vectors</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Guimond &lt;<a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Plotting Satellite Wind Vectors</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 19 Oct 2005 13:49:33 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00951.html">200510191802.j9JI2eJ24955@mailer.fsu.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00951.html">200510191802.j9JI2eJ24955@mailer.fsu.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Steve,<br>
+(Steve had written me separately and attached the gif image he's 
+getting, which I'll add to this message.)<br>
+<br>
+Some general debugging ideas for figuring out what the script is doing 
+with your data: look at the locations of the points, try the script with 
+just a few vectors, and fiddle with the parameter that determines vector 
+skipping.  (In each step you'd re-issue a &quot;GO basemap&quot; command to 
+restart the plot.)<br>
+<br>
+  ! Look at the locations alone<br>
+  yes? go basemap X=40w:10e y=0:30N 5<br>
+  yes? plot/over/vs/sym  lon, lat<br>
+<br>
+! draw just the first few vectors<br>
+  yes? go plot_vectors u[i=1:20], v[i=1:20], lon[i=1:20], lat[i=1:20]<br>
+<br>
+! Try the same thing, with the &quot;skip&quot; argument specified<br>
+  yes? go plot_vectors u[i=1:20], v[i=1:20], lon[i=1:20], lat[i=1:20]  5<br>
+<br>
+In doing some simple tests, I see a problem with the way the SKIP is 
+implemented.  This line is incorrect:<br>
+<br>
+  def sym PV_nbvectors=`PV_u,return=iend - PV_u,return=istart`<br>
+<br>
+It should be replaced by these two lines:<br>
+<br>
+  let PV_nv = `PV_u,return=iend` - `PV_u,return=istart` + 1<br>
+  def sym PV_nbvectors=`PV_nv`<br>
+<br>
+I've changed our copy of the script, so it'll be corrected in the next 
+release. For now you will need to make your own copy with this change in 
+it, or change it in your system FER_GO directory if you have access to 
+that. I've attached the corrected version to this email.<br>
+<br>
+To change the line type you can make your own local copy of the script, 
+and modify the POLYGON commands, for example you could add the qualifier 
+/THICK<br>
+<br>
+You'll have to scale the vectors yourself before calling the script.  
+Just multiplying the components by the same factor will properly scale 
+them, since the components have the same units.  As in any vector plot, 
+you should think about the aspect ratio and perhaps set it so one 
+component of the vectors isn't stretched more than the other. Try 
+plotting constant vectors to see the effect:<br>
+<br>
+ yes? go plot_vectors 0*u, 1+0*v, lon, lat<br>
+<br>
+ yes? go plot_vectors 1+0*u, 0*v, lon, lat<br>
+<br>
+ yes? go plot_vectors 1+0*u, 1+0*v, lon, lat<br>
+<br>
+Ansley<br>
+<br>
+Steve Guimond wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hello Ferreters:<br>
+  I have been trying to plot QuikSCAT wind vectors from a file of<br>
+lat,lon,u,v.  They are of 
+course on an irregular grid and thus I have been trying to use the<br>
+plot_vectors.jnl script.  
+However, when I plot my vectors I seem to be unable to alter the<br>
+&quot;thickness&quot; of the plot 
+and skip every 10th vector.  In addition, the length of the vectors are<br>
+much too large and I 
+am unaware of how to alter their size.  As you can see from the attached<br>
+image, the 
+vectors are very messy and oriented wrong.  I used:<br>
+<br>
+yes? go plot_vectors u v lon lat 10 fill<br>
+<br>
+ Has anyone had success with plotting irregular satellite winds with<br>
+FERRET?  I am aware 
+of a script or two associated with the FAST deposit, but wondered if<br>
+anyone has had luck 
+with these scripts.<br>
+<br>
+Thanks for any responses,<br>
+Steve<br>
+*****************************************<br>
+Stephen R. Guimond<br>
+Graduate Research Assistant<br>
+Center for Ocean-Atmospheric Prediction Studies 
+*****************************************<br>
+<br>
+<br>
+<br>
+ 
+<br>
+</blockquote><p><a href="gif00062.gif" ><img src="gif00062.gif" alt="GIF image"></a></p>
+<pre>\cancel mode verify
+
+!**************************************************************
+! Description: plot over vectors 
+!<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00513.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2000/msg00513.html</a>
+! Usage: go plot_vectors u v lon lat [skip] [fill]
+!                  
+!
+! Notes:  default skip = 1 (all vectors)
+!         u = zonal wind component
+!         v = meridional wind component
+!         lon = starting longitude of the vector 
+!         lat = starting latitude of the vector 
+!         Those arguments can be either 2D or 1D
+!        
+!         u, v, lon, lat can be either vectors or arrays
+!
+!         A vector key could be added but the scale is the 
+!         same as the previous plot.
+!
+! Example: use monthly_navy_winds.cdf
+!          go basemap &quot; &quot; &quot; &quot; &quot; &quot; &quot; &quot;  hollow
+!          go plot_vectors UWND[l=1] VWND[l=1] x[g=UWND]*y[g=UWND]*0+x[g=UWND]
+! x[g=UWND]*y[g=UWND]*0+y[g=UWND]
+!
+!          go basemap &quot; &quot; &quot; &quot; &quot; &quot; &quot; &quot;  hollow
+!          go plot_vectors UWND[l=1] VWND[l=1] x[g=UWND]*y[g=UWND]*0+x[g=UWND]
+! x[g=UWND]*y[g=UWND]*0+y[g=UWND] 10
+!
+!          go basemap &quot; &quot; &quot; &quot; &quot; &quot; &quot; &quot;  hollow
+!          go plot_vectors UWND[l=1] VWND[l=1] x[g=UWND]*y[g=UWND]*0+x[g=UWND]
+! x[g=UWND]*y[g=UWND]*0+y[g=UWND] 10 fill
+!
+!          go basemap &quot; &quot; &quot; &quot; &quot; &quot; &quot; &quot;  hollow
+!          let XPOS = {50,130,240,300,140,90,200,210,110,70}
+!          let YPOS = {10,-50,40,20,-10,0,40,70,-35,50}
+!          let U = {10,3,-12,8,15,6,-8,9,17,-8}
+!          let V = {-3,5,7,2,-3,10,-15,11,9,-12}
+!          go plot_vectors U V XPOS YPOS &quot; &quot; fill 
+!
+! Calls:
+!
+! Author: Patrick Brockmann
+! Contact: brock@lsce.saclay.cea.fr
+!
+! Creation: October 2000
+! Version: 1.0
+! History:
+! Modification:
+!
+! Ansley Manke October 2005 modify the definition of PV_nbvectors
+!                           and restore Patricks original arrow size of 0.3
+!**************************************************************
+
+query/ignore $1%&lt;Use: go plot_vectors u v lon lat [skip] [fill]%
+query/ignore $2%&lt;Use: go plot_vectors u v lon lat [skip] [fill]% 
+query/ignore $3%&lt;Use: go plot_vectors u v lon lat [skip] [fill]% 
+query/ignore $4%&lt;Use: go plot_vectors u v lon lat [skip] [fill]% 
+
+if `$5%1% lt 1` then
+        message/continue &quot;Error\! Must have option skip &gt; 0&quot;
+        exit
+endif
+
+!**************************************************************
+def sym PV_PI = 3.14159265
+def sym PV_DEG2RAD = `($PV_PI)/180`
+
+!**************************************************************
+
+
+let PV_u=xsequence (($1))
+let PV_v=xsequence (($2))
+let PV_lon=xsequence (($3))
+let PV_lat=xsequence (($4))
+
+! def sym PV_nbvectors=`PV_u,return=iend - PV_u,return=istart`
+let PV_nbv = `PV_u,return=iend` - `PV_u,return=istart` + 1
+def sym PV_nbvectors=`PV_nbv`
+
+!say `($PV_nbvectors)`
+
+!-----------------------
+! Select 1 vector on $5 (default = all)
+let PV_select0=mod(i[i=1:($PV_nbvectors)]-1,`$5%1%`) + 1 
+let PV_select1=if PV_select0 eq 1 then 1
+
+let PV_u1 = PV_u * PV_select1
+let PV_v1 = PV_v * PV_select1
+let PV_lon1 = PV_lon * PV_select1
+let PV_lat1 = PV_lat * PV_select1
+
+!-----------------------
+! take into account ratio (= ratioworld * ratioviewp)
+! to respect in everye case the head angle choosen 
+!-----------------------
+def sym PV_ratioworld = `(($YAXIS_MAX) - ($YAXIS_MIN))/(($XAXIS_MAX) - ($XAXIS_MIN))`
+def sym PV_ratioviewp = `($PPL$XLEN)/($PPL$YLEN)`
+def sym PV_ratio = `($PV_ratioworld)*($PV_ratioviewp)`
+! say ($PV_ratioworld) ($PV_ratioviewp) ($PV_ratio) 
+
+!-----------------------
+! vector points
+!           e 
+!         / | \
+!        a -|- b
+!           | 
+!           | 
+!           | 
+!           s 
+!-----------------------
+def sym PV_head_size = 0.3                        ! in percentage
+!def sym PV_head_size = 0.1                        !*ACM* 
+def sym PV_head_angle = `30*($PV_DEG2RAD)`            ! in degrees
+let PV_size = 0.1* ($PV_head_size) * (PV_u1^2 + (PV_v1/($PV_ratio))^2)^.5
+let PV_alpha = atan2(PV_v1/($PV_ratio),PV_u1)
+
+!-- point a
+let PV_headlon_a0 = cos(PV_alpha - ($PV_head_angle)) * PV_size * 1/cos(($PV_head_angle))
+let PV_headlat_a0 = sin(PV_alpha - ($PV_head_angle)) * PV_size * 1/cos(($PV_head_angle))
+
+let PV_headlon_a1 = PV_lon1 + PV_u1 - PV_headlon_a0  
+let PV_headlat_a1 = PV_lat1 + PV_v1 - PV_headlat_a0 * ($PV_ratio) 
+
+!-- point b
+let PV_headlon_b0 = sin(PV_alpha + ($PV_head_angle) - ($PV_PI)/2) * PV_size * 1/cos(($PV_head_angle))
+let PV_headlat_b0 = cos(PV_alpha + ($PV_head_angle) - ($PV_PI)/2) * PV_size * 1/cos(($PV_head_angle))
+
+let PV_headlon_b1 = PV_lon1 + PV_u1 + PV_headlon_b0 
+let PV_headlat_b1 = PV_lat1 + PV_v1 - PV_headlat_b0 * ($PV_ratio)
+
+!-- make the polygon vectors 
+let PV_dum = PV_u*0 + j[j=1:6]
+
+!-----------------------
+! normal vectors or filled head vectors
+if $6%false|fill&gt;true|*&gt;false% then
+
+  ! head filled in black
+  !-- gather points (pt_s--pt_e--pt_a--pt_b--pt_e--pt_s) 
+  let PV_headlon0 = if PV_dum eq 1 then PV_lon1 else PV_dum
+  let PV_headlon1 = if PV_dum eq 2 then PV_lon1+PV_u1 else PV_headlon0
+  let PV_headlon2 = if PV_dum eq 3 then PV_headlon_a1 else PV_headlon1
+  let PV_headlon3 = if PV_dum eq 4 then PV_headlon_b1 else PV_headlon2
+  let PV_headlon4 = if PV_dum eq 5 then PV_lon1+PV_u1 else PV_headlon3
+  let PV_headlon5 = if PV_dum eq 6 then PV_lon1 else PV_headlon4
+
+  let PV_headlat0 = if PV_dum eq 1 then PV_lat1 else PV_dum
+  let PV_headlat1 = if PV_dum eq 2 then PV_lat1+PV_v1 else PV_headlat0
+  let PV_headlat2 = if PV_dum eq 3 then PV_headlat_a1 else PV_headlat1
+  let PV_headlat3 = if PV_dum eq 4 then PV_headlat_b1 else PV_headlat2
+  let PV_headlat4 = if PV_dum eq 5 then PV_lat1+PV_v1 else PV_headlat3
+  let PV_headlat5 = if PV_dum eq 6 then PV_lat1 else PV_headlat4
+
+  polygon/nolab/over/pal=black/line/fill PV_headlon5, PV_headlat5, i[i=1:($PV_nbvectors)] 
+
+else
+
+  ! normal vectors
+  !-- gather points (pt_s--pt_e--pt_a--pt_e--pt_b--pt_e) 
+  let PV_headlon0 = if PV_dum eq 1 then PV_lon1 else PV_dum
+  let PV_headlon1 = if PV_dum eq 2 then PV_lon1+PV_u1 else PV_headlon0
+  let PV_headlon2 = if PV_dum eq 3 then PV_headlon_a1 else PV_headlon1
+  let PV_headlon3 = if PV_dum eq 4 then PV_lon1+PV_u1 else PV_headlon2
+  let PV_headlon4 = if PV_dum eq 5 then PV_headlon_b1 else PV_headlon3
+  let PV_headlon5 = if PV_dum eq 6 then PV_lon1+PV_u1 else PV_headlon4
+
+  let PV_headlat0 = if PV_dum eq 1 then PV_lat1 else PV_dum
+  let PV_headlat1 = if PV_dum eq 2 then PV_lat1+PV_v1 else PV_headlat0
+  let PV_headlat2 = if PV_dum eq 3 then PV_headlat_a1 else PV_headlat1
+  let PV_headlat3 = if PV_dum eq 4 then PV_lat1+PV_v1 else PV_headlat2
+  let PV_headlat4 = if PV_dum eq 5 then PV_headlat_b1 else PV_headlat3
+  let PV_headlat5 = if PV_dum eq 6 then PV_lat1+PV_v1 else PV_headlat4
+
+  polygon/nolab/over/line PV_headlon5, PV_headlat5, i[i=1:($PV_nbvectors)] 
+
+endif
+!-----------------------
+
+!**************************************************************
+! cancel sym PV_*
+! cancel var PV_* 
+
+!**************************************************************
+set mode/last verify
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00951" href="msg00951.html">[ferret_users] Plotting Satellite Wind Vectors</a></strong>
+<ul><li><em>From:</em> Steve Guimond</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00951.html">[ferret_users] Plotting Satellite Wind Vectors</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00953.html">Re: [ferret_users] Plotting Satellite Wind Vectors</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00951.html">Thread Prev</a>][<a href="msg00953.html">Thread Next</a>][<A HREF="threads.html#00952">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

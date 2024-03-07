@@ -1,0 +1,223 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: radius and cutoff values in  scat2gridgauss_xy  command -->
+<!--X-From-R13: Egrir Vnaxva <Egrira.Q.VnaxvaNabnn.tbi> -->
+<!--X-Date: Wed, 9 Feb 2005 12:33:16 &#45;0800 -->
+<!--X-Message-Id: 420A65C0.C75A4598@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 200502072027.j17KRwN3014075@ferret.pmel.noaa.gov -->
+<!--X-Reference: 420A70B6.4050800@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: radius and cutoff values in  scat2gridgauss_xy  command</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00131.html">Thread Prev</a>][<a href="msg00141.html">Thread Next</a>][<A HREF="threads.html#00132">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: radius and cutoff values in  scat2gridgauss_xy  command</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: radius and cutoff values in  scat2gridgauss_xy  command</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 09 Feb 2005 11:34:24 -0800</li>
+<li>Cc: Billy Kessler &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>,  <a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00123.html">200502072027.j17KRwN3014075@ferret.pmel.noaa.gov</a>&gt; &lt;<a href="msg00131.html">420A70B6.4050800@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+
+
+excellent addition to the suite of functions!
+<p>Ansley Manke wrote:
+<blockquote TYPE=CITE>Hi all,
+<br>Billy suggested a set of functions which return the number of scattered
+<br>points that will fall in each grid cell of the output grid, if they
+are interpolated
+<br>onto that grid with one of the SCAT2GRID functions. I've gone ahead
+<br>and put together this set of functions. They'll be relased with future
+Ferret
+<br>releases, but they're available as external functions which you can
+download now.
+<p>A tar file containing these functions is linked to the "objective analysis"
+demo
+<br>web page, at
+<br><a href="" class="moz-txt-link-freetext">http://www.ferret.noaa.gov/Ferret/Demos/objective_analysis_demo/objective_analysis_demo.html#gridding_nobs_functions</a>
+<p>The functions are SCATGRID_NOBS_XY, SCATGRID_NOBS_YZ,
+<br>etc. Briefly, they are called as follows:
+<p>&nbsp;&nbsp; yes? LET a = SCATGRID_NOBS_XY(xpts, ypts, xout, yout)
+<p>where xpts and ypts are the coordinates of the scattered points to be
+gridded, and
+<br>xout and yout are variables which have the X and Y axes of the output
+grid.
+<br>The result is on the xout, yout grid and at each x,y contains a count
+of the
+<br>scattered points in that output grid cell. This count is independent
+of the gridding
+<br>function that may be called in a separate step (Gaussian or Laplace
+method); it
+<br>relates the set of scattered locations to the grid we will interpolate
+them onto.
+<p>Ansley
+<blockquote type="cite"
+ cite="">
+<pre wrap="">Hello Yogesh -
+
+First, I'm not exactly sure what you mean by "radius" in your
+example, since there is no such argument to the SCAT2GRIDGAUSS*
+functions.
+
+But I assume that you mean the arguments XSCALE and YSCALE,
+which control the width of the Gaussian function used to do
+the mapping.
+
+However, there is no direct way to implement your rule:
+SCAT2GRIDGAUSS will fill any gridbox that has the weight
+function
+
+W_n(x_n,y_n) = exp{-[(x_n-x_0)/XSCALE]^2 - [(y_n-y_0)/YSCALE]^2}
+
+greater than exp{-CUTOFF^2}. (See note re CUTOFF at bottom).
+
+In general, this will "spread" the observations over gridpoints
+that had no obs to begin with.
+
+We are implementing an additional external function that will
+count the number of obs/gridbox. If you need to get your answer
+today, then you could think about how to make a mask for your
+grid based on the number of obs in each gridbox, and use that
+to blank out gridpoints you don't want.
+
+Note re CUTOFF: CUTOFF should be a single number, not separate
+numbers for the x and y axes. This was a mistake when the fortran
+code was implemented as an external function. It will be fixed in
+a future release. IN the meantime, please use the same value for
+XCUTOFF and YCUTOFF. A good value is 2, which means that data points
+far enough away from the gridpoints so that the value of the weight&nbsp;
+function is less than exp{-4} = 0.018 will not be used in the calculation
+for that gridpoint. This will exclude data values more than twice the
+scale distances from each gridpoint.&nbsp;
+
+Billy K
+
+
+</pre>
+
+<blockquote type="cite">
+<pre wrap="">Date: Mon, 07 Feb 2005 12:44:10 +0100
+From: "Yogesh K. Tiwari" <a href="" class="moz-txt-link-rfc2396E">&lt;ktiwari@bgc-jena.mpg.de>
+</a>To: ferret_users <a href="" class="moz-txt-link-rfc2396E">&lt;oar.pmel.ferret_users@noaa.gov>
+</a>Subject: radius and cutoff values in&nbsp; scat2gridgauss_xy&nbsp; command
+
+Hello Ferret Users,
+
+I could not understand exactly the meaning of cutoff
+and radius values in the scat2gridgauss*&nbsp; ferret command.
+
+I want to make a rule while griding my scattered data as,
+
+I required that there are at least 10 observations
+in a grid box 1x1 while using the scat2gridgauss_xy command.
+
+Whether my following radius and cutoff values are right for my
+above rule (10 obs in a grid).
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; define symbol radius = 0.25
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; define symbol cutoff = 2.0
+
+Many many thanks in advance for your help.
+
+Regards,
+Yogesh
+
+--&nbsp;
+
+===========================================
+Yogesh K. Tiwari,
+Max-Planck Institute for Biogeochemistry,
+Beutenberg Campus, Hans-Knoell-Strasse 10,
+D-07745 Jena,
+Germany
+
+Office&nbsp;&nbsp; : 0049 3641 576376
+Home&nbsp;&nbsp;&nbsp;&nbsp; : 0049 3641 223163
+Fax&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0049 3641 577300
+Handy&nbsp;&nbsp;&nbsp; : 0049 173 698 8789
+e-mail&nbsp;&nbsp; : <a href="" class="moz-txt-link-abbreviated">yogesh.tiwari@bgc-jena.mpg.de
+</a>===========================================
+
+
+</pre>
+</blockquote>
+
+<pre wrap=""><!---->
+</pre>
+</blockquote>
+</blockquote>
+
+<p>--
+<p>Steve Hankin, NOAA/PMEL -- Steven.C.Hankin@noaa.gov
+<br>7600 Sand Point Way NE, Seattle, WA 98115-0070
+<br>ph. (206) 526-6080, FAX (206) 526-6744
+<br>&nbsp;
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00123" href="msg00123.html">Re: radius and cutoff values in  scat2gridgauss_xy  command</a></strong>
+<ul><li><em>From:</em> Billy Kessler</li></ul></li>
+<li><strong><a name="00131" href="msg00131.html">Re: radius and cutoff values in  scat2gridgauss_xy  command</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00131.html">Re: radius and cutoff values in  scat2gridgauss_xy  command</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00141.html">Re: radius and cutoff values in  scat2gridgauss_xy  command</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00131.html">Thread Prev</a>][<a href="msg00141.html">Thread Next</a>][<A HREF="threads.html#00132">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

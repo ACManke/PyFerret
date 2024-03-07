@@ -1,0 +1,234 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: SAMPLEXY funtion agian -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sun, 17 Oct 2004 23:44:39 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0410181219570.22137&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20041017092141.76200.qmail@web41728.mail.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: SAMPLEXY funtion agian</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00732.html">Thread Prev</a>][<a href="msg00789.html">Thread Next</a>][<A HREF="threads.html#00735">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: SAMPLEXY funtion agian</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: SAMPLEXY funtion agian</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 18 Oct 2004 12:22:12 +0530 (IST)</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;,  jagadish karmacharya &lt;<a href="mailto:j_karmacharya@DOMAIN.HIDDEN">j_karmacharya@xxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00732.html">20041017092141.76200.qmail@web41728.mail.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jagadish,
+              External function SAMPLEXY needs the &quot;MODULO&quot; axis of the 
+variable (if any) to be a &quot;regular&quot; one (ie. uniformly spaced). For 
+example your script will work for Levitus climatology, using &quot;show axis&quot; 
+command to know the axis properties....
+
+  yes? use levitus_climatology
+  yes? show axis XAXLEVITR     ! longitude (x) axis for variables temp &amp; 
+salt
+   name       axis              # pts   start                end
+   XAXLEVITR LONGITUDE          360mr   20.5E                19.5E(379.5)
+     Axis span (to cell edges) = 360 (modulo length = axis span)
+  yes?
+
+  pts is given as 360mr : here m ==&gt; modulo &amp; r ==&gt; regular
+
+  For your dataset, it will be &quot;***mi&quot;. 
+  
+  You can regrid the variable to a regular longitude axis and then use 
+the new variable as the source data for sampling (see the example below).
+
+Hope this helps 
+
+With regards
+
+Jaison
+
+Example : 
+---------
+
+   ! create an &quot;irregular&quot; &amp; MODULO longitude axis
+
+   let xdata = XSEQUENCE({0,5,10,15,20,25,30,40,50,60,70,80,90,100})
+   define axis/x/units=longitudes/MODULO/from_data xax=xdata 
+   show axis xax
+
+   ! create some data defined over this axis
+
+   define axis/y=-30:30:1/units=latitudes yax 
+   define axis/z=0:500:25/units=meters/DEPTH zax
+   let var = sin(x[gx=xax]/100 + y[gy=yax]/100 + z[gz=zax]/50)
+
+   ! do the sampling
+
+       LET xlon = 34.5 + I[I=1:50] ! define the slant line
+       LET dely = 24./49
+       LET ylat = 24.5 - dely*i[i=1:50] + dely
+!   IF we do the sampling now ..it will fail...try it out by
+!      uncommenting the following line..
+!       LET slantsalt = samplexy(var,xlon,ylat) ; fill slantsalt
+
+!   So let us regrid the variable to a regular axis   
+
+    define axis/x=0:100:10/units=longitudes/MODULO xregular
+    show axis xregular
+
+    let var_reg = var[gx=xregular]  
+    LET slantsalt = samplexy(var_reg[y=-10:10,x=10:40],xlon,ylat)
+    fill slantsalt
+!----------------------------------
+
+
+On Sun, 17 Oct 2004, jagadish karmacharya wrote:
+
+&gt;  Dear Ansley, 
+&gt;  SAMPLEXY funtion works fine for the examples you mentioned but it did not work with my data. I used following commands which generate the following error: 
+&gt; 
+&gt; yes? LET xlon=82+I[I=1:6]
+&gt; yes? LET dely = 24./49
+&gt; yes? LET ylat = 24.5 - dely*i[i=1:6] + dely
+&gt; yes? PLOT/VS/LINE/SYM=27 xlon,ylat  ! gives slanted line
+&gt; 
+&gt; yes? LET slanttk = samplexy(tk[x=80:90,y=20:25,L=1],xlon,ylat)
+&gt; yes?  FILL slanttk
+&gt; Bailing out of external function &quot;samplexy&quot;:
+&gt;         cannot handle MODULO axis that is not regular
+&gt;  **ERROR: : error in external function
+&gt; 
+&gt;  I wonder what caused the error.
+&gt; 
+&gt; thanking you in advance
+&gt; 
+&gt; jagadish
+&gt; 
+&gt; ps : my dataset
+&gt; 
+&gt; yes? show data
+&gt;      currently SET data sets:
+&gt;     1&gt; ./ATMJJAS-DAILYAVG.CDF  (default)
+&gt;  name     title                             I         J         K         L
+&gt;  U        Zonal Wind                       1:63      1:66      1:18      1:122
+&gt;  V        Meridional Wind                  1:63      1:66      1:18      1:122
+&gt;  TK       Temperature                      1:63      1:66      1:18      1:122
+&gt;  QD       Mixing Ratio                     1:63      1:66      1:18      1:122
+&gt;  QC       Cloud Mixing Ratio               1:63      1:66      1:18      1:122
+&gt;  MSE      Moist Static Energy              1:63      1:66      1:18      1:122
+&gt;  RH       Relative Humidity                1:63      1:66      1:18      1:122
+&gt;  HGT      Geopotential Height              1:63      1:66      1:18      1:122
+&gt;  PS       Surface Pressure                 1:63      1:66      ...       1:122
+&gt;  RT       Total Precip                     1:63      1:66      ...       1:122
+&gt;  TGRND    Ground Temperature               1:63      1:66      ...       1:122
+&gt;  SMT      Total Soil Water                 1:63      1:66      ...       1:122
+&gt;  RB       Base Flow                        1:63      1:66      ...       1:122
+&gt; 
+&gt; 
+&gt; Ansley Manke &lt;ansley.b.manke@noaa.gov&gt; wrote: Hello Jagadish,
+&gt; There is an example which does this kind of thing in the 
+&gt; Users Guide.  Look up &quot;SAMPLEXY, function definition&quot;.
+&gt; The X axis of the plot that is made has just a count of points, 
+&gt; 1 for the first point, 2 for the second point and so on.  Here 
+&gt; is the example from the Users Guide, which shows how to define
+&gt; a set of points along a line.  You could also define them as lists as I
+&gt; did in the previous email.  This example has depth vs location; time 
+&gt; vs location would be analogous.
+&gt;  
+&gt;   USE ocean_atlas_annual
+&gt;   LET xlon = 234.5 + I[I=1:50]       ! define the slant line
+&gt;   LET dely = 24./49
+&gt;   LET ylat = 24.5 - dely*i[i=1:50] + dely
+&gt; 
+&gt;   LET slantsalt = samplexy(salt[x=200:300,y=0:30],xlon,ylat)
+&gt;   FILL/LEVELS=(33.2,35.2,0.1)/VLIMITS=0:4000 slantsalt 
+&gt; 
+&gt; Ansley
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 		
+&gt; ---------------------------------
+&gt; Do you Yahoo!?
+&gt; vote.yahoo.com - Register online to vote today!
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00789" href="msg00789.html">arial average over non-rectangular( irregular) grids</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00732" href="msg00732.html">SAMPLEXY funtion agian</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00732.html">SAMPLEXY funtion agian</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00789.html">arial average over non-rectangular( irregular) grids</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00732.html">Thread Prev</a>][<a href="msg00789.html">Thread Next</a>][<A HREF="threads.html#00735">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How to mask the data -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Mon, 6 Dec 2004 09:37:01 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0412062307030.7285&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41B44950.1070906@bgc&#45;jena.mpg.de -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to mask the data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00874.html">Thread Prev</a>][<a href="msg00876.html">Thread Next</a>][<A HREF="threads.html#00875">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to mask the data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to mask the data</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 6 Dec 2004 23:16:33 +0530 (IST)</li>
+<li>Cc: &quot;Yogesh K. Tiwari&quot; &lt;<a href="mailto:ktiwari@DOMAIN.HIDDEN">ktiwari@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00874.html">41B44950.1070906@bgc-jena.mpg.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Yogesh,
+            Masking a variable with respect to particular value/values 
+of another variable is a straight forwad case if both variables are on the
+same grid. In your case &quot;nchan&quot; and &quot;CO2_sat&quot; are on the same grid..so 
+just use an IF condition to mask values corresponding to nchan other than
+18. Now to get the masked variable to a proper grid, time in your case,
+is bit tricky..since there will be lot of undefined points for the masked
+variable. Then the idea is to remove those missing values and put the
+masked variable onto a new proper time axis. Please go thorugh the example 
+below. If you need any more clarification let me know.
+
+Hope this helps
+
+With Regards
+
+Jaison 
+
+!--------------mask.jnl--------------------
+\ cancel mode verify
+
+! let us create some dummy data defined over a time axis
+
+     let vdata = TSEQUENCE({2,3,18,4,5,2,16,6,9,7,11,8,18,9,10,15,18})
+     define axis/t=&quot;01-JAN-2001:00&quot;:&quot;17-JAN-2001:00&quot;:1/unit=days/\
+        T0=&quot;31-DEC-2000:00&quot;   tax
+
+     let nchan     = vdata[GT=tax@ASN]  ! take as your variable &quot;nchan&quot;
+     let CO2_sat   = sin(nchan)         ! take as your variable &quot;CO2_sat&quot;
+
+! now we need to get the CO2_sat when nchan is 18. Since you want to
+!   make plots (ie. timeseries), it will be better to get the &quot;L&quot; indices
+!   where the nchan is 18 and then sample CO2_sat along this indices. Also
+!   get the &quot;time&quot; data corresponding to this indices to define a time 
+axis
+!   &quot;without&quot; missing values
+
+     let l_only_18 =  IF nchan EQ 18 THEN L[GT=CO2_sat]
+     list l_only_18, nchan
+
+     ! now remove the missing values by &quot;COMPRESSING&quot; it
+     ! and taking only the good values
+
+     let l_only_18_com = COMPRESSL(l_only_18)
+     list l_only_18_com
+     let l_only_18_good = l_only_18_com[L=1:`l_only_18_com[l=@NGD]`]
+     list l_only_18_good
+
+     ! now sample along these indices, both var and t[gt=var]
+
+     let CO2_sat_only_18 = SAMPLEL(CO2_sat,l_only_18_good)
+     let t_data_18       = SAMPLEL(t[gt=CO2_sat],l_only_18_good)
+
+     list CO2_sat_only_18, t_data_18  
+
+     ! now define a time axis with the sampled values with same units and
+     ! T0 as for the time axis of the variable CO2_sat
+
+     define symbol t_zero  = `CO2_sat,r=T0`
+     define symbol t_units = `CO2_sat,r=tunits`
+
+     DEFINE axis/t/units=($t_units)/T0=&quot;($t_zero)&quot;/from_data tax18=t_data_18
+
+     let CO2_sat_18 = CO2_sat_only_18[GT=tax18@ASN]  ! assign the new time axis
+
+     list CO2_sat_18       ! our final variable
+     list CO2_sat, nchan   ! for cross checking with starting data
+
+     ! now the variable is on proper time axis and defined only for nchan=18
+     !  case ..do plotting..or anything you want to do...
+
+!-----end of mask.jnl----------------------
+
+On Mon, 6 Dec 2004, Yogesh K. Tiwari wrote:
+
+&gt; Hello Ferret Users,
+&gt; 
+&gt; I have point data which looks in ferret as :-
+&gt; 
+&gt; 
+&gt; title         I        J      K        L
+&gt; 
+&gt; CO2_sat      --       --      --    1:1860206
+&gt; 
+&gt; nchan        --       --      --    1:1860206
+&gt; 
+&gt; lat          --       --      --    1:1860206
+&gt; 
+&gt; lon          --       --      --    1:1860206
+&gt; 
+&gt; time         --       --      --    1:1860206
+&gt; 
+&gt; 
+&gt; Here the values of the variable 'nchan'(number of channel) is varying 
+&gt; between 2 to 18.
+&gt; 
+&gt; Now my problem is :-
+&gt; 
+&gt; I want to plot the co2_sat with other variables when nchan=18 only
+&gt; and rest values I want to mask.
+&gt; 
+&gt; Is it possible to do this inside the ferret ?
+&gt; 
+&gt; Many thanks in advance for the help.
+&gt; 
+&gt; Regards,
+&gt; Yogesh
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00874" href="msg00874.html">How to mask the data</a></strong>
+<ul><li><em>From:</em> Yogesh K. Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00874.html">How to mask the data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00876.html">Getting number of variables</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00874.html">Thread Prev</a>][<a href="msg00876.html">Thread Next</a>][<A HREF="threads.html#00875">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Ferret: Vector plots of velocity on a C&#45;grid -->
+<!--X-From-R13: "Uhfgnsfba, Ivyyvnz W" <jvyyvnz.thfgnsfbaNcay.tbi> -->
+<!--X-Date: Mon, 13 Jun 2005 08:58:18 &#45;0700 -->
+<!--X-Message-Id: 67AF35FA07A89948AFA88E64793A1DB3013F3BC3@pnlmse35.pnl.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Ferret: Vector plots of velocity on a C-grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00597.html">Thread Prev</a>][<a href="msg00594.html">Thread Next</a>][<A HREF="threads.html#00592">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Ferret: Vector plots of velocity on a C-grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Ferret: Vector plots of velocity on a C-grid</strong></li>
+<li><strong>From</strong>: <strong>&quot;Gustafson, William I&quot; &lt;<a href="mailto:william.gustafson@DOMAIN.HIDDEN">william.gustafson@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Jun 2005 08:58:10 -0700</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>Thread-index: AcVwK6vxo4ZzCLX/T+OIvyXKhk2s7QAAxeEhAAB00xI=</li>
+<li>Thread-topic: Ferret: Vector plots of velocity on a C-grid</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>&gt; I don't have any extra techniques to share, but I can relay my experience with the WRF
+&gt; atmospheric model, which sounds like it uses a similar grid setup. I interpolate the U and V
+&gt; velocities to the T points using simple averages. In my case, this mimics what most of the
+&gt; physics routines inside WRF do so I have not worried too much about loosing information in the
+&gt; process. The one problem I did run into was that when I did the averages to the T grid, I
+&gt; smoothed out some numerical noise produced by the model at around the 2*dx frequency. So, I
+&gt; was under the impression that my fields were smoother than they actually were if I only plotted
+&gt; the interpolated winds. 
+&gt; 
+&gt; Here is a sample of my code to plot the vectors from WRF. I setup the variables &quot;ugrd&quot; and
+&gt; &quot;vgrd&quot; in two steps in order to get the labelling to look nicer in the final plots.
+&gt; 
+&gt; use wrfout_d01_2000-08-28_12:00:00.nc
+&gt; ! Winds:
+&gt; let uu1 = 0.5*(u+u[i=@shf:1])
+&gt; define var/title=&quot;unrotated de-staggered zonal wind&quot;/units=&quot;m/s&quot; ugrd = uu1[g=xlong]
+&gt; let vv1 = 0.5*(v+v[j=@shf:1])
+&gt; define var/title=&quot;unrotated de-staggered meridional wind&quot;/units=&quot;m/s&quot; vgrd = vv1[g=xlong]
+&gt; vector/k=1/l=1 ugrd,vgrd
+&gt; 
+&gt; Since we are on the subject of winds, if anybody has some nice code to rotate winds to earth
+&gt; relative for the lambert conformal grid used in WRF, that would be a great thing to share!
+&gt; 
+&gt; -Bill
+&gt; --------------------------------------------------------------
+&gt; William I. Gustafson Jr.
+&gt; Atmospheric Science and Global Change Division
+&gt; Pacific Northwest National Laboratory
+&gt; 3200 Q Ave., MSIN K9-30
+&gt; Richland, WA 99352
+&gt; (509)372-6110
+&gt; 
+&gt; 
+&gt; ----------
+&gt; From: 	owner-ferret_users@pmel.noaa.gov on behalf of William S Kessler
+&gt; Sent: 	Monday, June 13, 2005 8:21 AM
+&gt; To: 	ferret_users@noaa.gov
+&gt; Cc: 	billy.kessler@noaa.gov
+&gt; Subject: 	Ferret: Vector plots of velocity on a C-grid
+&gt; 
+&gt; This is only partly a Ferret question, but I suspect many Ferret users
+&gt; have thought about how to deal with this problem.
+&gt; 
+&gt; I have OGCM output on a C-grid. The temperature and velocity components
+&gt; are on a staggered grid structure. A single gridbox looks like:
+&gt; 
+&gt;   v  
+&gt; u T u 
+&gt;   v  
+&gt; 
+&gt; where the u-values are the currents in/out the east-west sides of the
+&gt; box, and the v-values out the north-south, and T is the temperature
+&gt; value defined in the center of the box. All these are on the same
+&gt; vertical level. 
+&gt; 
+&gt; I want to make a vector plot of the velocity components, but since the
+&gt; u's and v's are not at the same location this is not straightforward. 
+&gt; 
+&gt; One possibility is to define a grid consisting of all the u and v points
+&gt; together, and interpolate all the velocities to all the points that
+&gt; exist on either grid.
+&gt; 
+&gt; Another is to average the u's in x and v's in y onto the temperature
+&gt; gridpoint.
+&gt; 
+&gt; A third is to do no interpolation, but treat the upper v and right-side
+&gt; u as the flow at the northeast corner of the box, and the lower v and
+&gt; left-side u as the flow at the southwest corner.
+&gt; 
+&gt; The problem becomes particularly acute when I want to make vectors in a
+&gt; region of complicated land masses, with narrow straits, but I want the
+&gt; plot to accurately reflect the model's actual flow, and not to omit any
+&gt; gridpoints.
+&gt; 
+&gt; All of the above ideas result in losing some values, because, for
+&gt; example, there is no left-side u-value on gridpoints against a western
+&gt; boundary, while the right-side u and upper and lower v's do exist in
+&gt; this case.
+&gt; 
+&gt; Anybody have a good idea how to do this as correctly as possible?
+&gt; 
+&gt; Billy K
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00597.html">Re: Ferret: Vector plots of velocity on a C-grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00594.html">how to get S-N, E-W in a plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00597.html">Thread Prev</a>][<a href="msg00594.html">Thread Next</a>][<A HREF="threads.html#00592">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: time bounds -->
+<!--X-From-R13: Egrir Vnaxva <Egrira.Q.VnaxvaNabnn.tbi> -->
+<!--X-Date: Tue, 19 Oct 2004 10:36:18 &#45;0700 -->
+<!--X-Message-Id: 417550C6.92249B37@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.44.0410191042480.18802&#45;100000@atw -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: time bounds</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00739.html">Thread Prev</a>][<a href="msg00737.html">Thread Next</a>][<A HREF="threads.html#00740">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: time bounds</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: time bounds</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 19 Oct 2004 10:37:10 -0700</li>
+<li>Cc: <a href="mailto:Mark.Collier@DOMAIN.HIDDEN">Mark.Collier@xxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00739.html">Pine.LNX.4.44.0410191042480.18802-100000@atw</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+&nbsp;
+<p>Andrew Wittenberg wrote:
+<blockquote TYPE=CITE>Hi Mark,
+<p>I've had similar problems.&nbsp; As far as I know, descriptors cannot
+handle
+<br>irregular within-NetCDF-file time axes (as of Ferret v5.70).&nbsp;
+This
+<br>capability would be a most welcome addition in the future!</blockquote>
+Hi Andrew, et. al.,
+<p>Just a little discussion about the aggregation of irregular time step
+files.
+<p>The current MC descriptors support irregular start times for each file,
+but assume that the time steps within individual files are regular.&nbsp;
+The reason for this limitation is the design requirement that only the
+first file in the MC-aggregation should need to be opened.&nbsp; Given
+this requirement (which is important for performance) various alternative
+strategies are available for obtaining the true irregular time steps.&nbsp;
+For example, we could offer a way to enumerate each time step value in
+the MC descriptor; or a way to point to some external resource that contains
+that enumeration.&nbsp; With a larger investment of effort we could have
+an initialization step (could be a separate utility) that automatically
+built the sequence of irregular time steps (the "external resource") for
+you.
+<p>Currently there are two work-arounds available -- that provide full
+functionality, but at some additional effort:
+<ul>
+<li>
+(as andrew suggests) Put the sequence of irregular time steps into an axis
+defined in a separate netCDF file and assign this axis to the (incorrect)
+time axis of the MC dataset using a Ferret command; or</li>
+
+<li>
+use the Unidata aggregation server to create a virtual dataset</li>
+</ul>
+The existence of these work-arounds has kept the priority level (read "pressure")
+for a code enhancement relatively low.&nbsp; Perhaps an FAQ on the subject
+would be a sufficient solution.&nbsp; We invite your comments.
+<p>&nbsp;&nbsp;&nbsp; - steve
+<blockquote TYPE=CITE>A workaround is to regrid your variables to the correct
+time axis in
+<br>Ferret.&nbsp; The hard part is defining the time axis; monthly data
+is
+<br>especially tricky due to leap years etc.&nbsp; The days1900 function
+can help
+<br>with this.
+<p>In our model data we're lucky enough to have the time axis values
+<br>available as an additional variable in the NetCDF file, so I just regrid
+<br>to those.&nbsp; Otherwise, you could use ncrcat to concatenate just
+the time
+<br>axis values from your NetCDF files into small new file, and then use
+those
+<br>in Ferret.
+<p>Andrew
+<p>On Mon, 18 Oct 2004 Mark.Collier@csiro.au wrote:
+<p>> Hi
+<br>>
+<br>> The following descriptor file works o.k., however, it assumes that
+each
+<br>> month is of equal size. Is there some way of getting ferret to use
+the
+<br>> time bounds information used in the individual files? These separate
+<br>> files have different time values and upper and lower limits. This
+would
+<br>> enable more accurate analysis/plots.
+<br>>
+<br>> Thanks,
+<br>> Mark.
+<br>>
+<br>> &amp;FORMAT_RECORD
+<br>>&nbsp;&nbsp;&nbsp; D_TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= '&nbsp; MC'
+<br>>&nbsp;&nbsp;&nbsp; D_FORMAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= '&nbsp; 1A'
+<br>> /
+<br>>
+<br>> &amp;BACKGROUND_RECORD
+<br>>&nbsp;&nbsp;&nbsp; D_TITLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= '20C3M Experiment'
+<br>>&nbsp;&nbsp;&nbsp; D_T0TIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= '16-DEC-1870 12:00:00'
+<br>>&nbsp;&nbsp;&nbsp; D_TIME_UNIT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 2628000.0
+<br>>&nbsp;&nbsp;&nbsp; D_TIME_MODULO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = .FALSE.
+<br>>&nbsp;&nbsp;&nbsp; D_CALTYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 'NOLEAP'
+<br>> /
+<br>>
+<br>> &amp;MESSAGE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; D_MESSAGE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>>&nbsp;&nbsp;&nbsp; D_ALERT_ON_OPEN&nbsp;&nbsp;&nbsp; = .FALSE.
+<br>>&nbsp;&nbsp;&nbsp; D_ALERT_ON_OUTPUT&nbsp; = .FALSE.
+<br>> /
+<br>>
+<br>> &amp;EXTRA_RECORD /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1871-
+<br>> 1880_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 120
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1881-
+<br>> 1890_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 121
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 240
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1891-
+<br>> 1900_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 241
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 360
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1901-
+<br>> 1910_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 361
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 480
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1911-
+<br>> 1920_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 481
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 600
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1921-
+<br>> 1930_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 601
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 720
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1931-
+<br>> 1940_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 721
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 840
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1941-
+<br>> 1950_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 841
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 960
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1951-
+<br>> 1960_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 961
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1080
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1961-
+<br>> 1970_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1081
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1200
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1971-
+<br>> 1980_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1201
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1320
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1981-
+<br>> 1990_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1321
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1440
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+=
+<br>> '/cs/datastore/csdar/cec006/ocean/ipcc/data/20C3M/A1a/run1/psl_A1a_1991-
+<br>> 2000_20C3M_run1.nc'
+<br>>&nbsp;&nbsp;&nbsp; S_AUX_SET_NUM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0
+<br>>&nbsp;&nbsp;&nbsp; S_START&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1441
+<br>>&nbsp;&nbsp;&nbsp; S_END&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1560
+<br>>&nbsp;&nbsp;&nbsp; S_DELTA&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1
+<br>>&nbsp;&nbsp;&nbsp; S_NUM_OF_FILES&nbsp;&nbsp;&nbsp;&nbsp; = 1
+<br>>&nbsp;&nbsp;&nbsp; S_REGVARFLAG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= ' '
+<br>> /
+<br>>
+<br>> &amp;STEPFILE_RECORD
+<br>>&nbsp;&nbsp;&nbsp; S_FILENAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= '**END OF STEPFILES**'
+<br>> /
+<br>>
+<br>>
+<p>+--------------------------------------------------------------+
+<br>| Dr. Andrew T. Wittenberg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Mailing
+address:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>| Physical Scientist, GFDL/NOAA | US DOC/GFDL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>| Andrew.Wittenberg@noaa.gov&nbsp;&nbsp;&nbsp; | Attn: Andrew Wittenberg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>| Voice: (609) 987-5064&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Forrestal Campus, US Route 1 |
+<br>|&nbsp;&nbsp; Fax: (609) 987-5063&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+| Princeton, NJ 08542&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|
+<br>+--------------------------------------------------------------+</blockquote>
+
+<p>--
+<p>Steve Hankin, NOAA/PMEL -- Steven.C.Hankin@noaa.gov
+<br>7600 Sand Point Way NE, Seattle, WA 98115-0070
+<br>ph. (206) 526-6080, FAX (206) 526-6744
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00739" href="msg00739.html">Re: time bounds</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00739.html">Re: time bounds</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00737.html">3 argument shade, sigma coordinates, layer depths</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00739.html">Thread Prev</a>][<a href="msg00737.html">Thread Next</a>][<A HREF="threads.html#00740">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

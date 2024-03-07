@@ -1,0 +1,195 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: poly&#45;vector in hammer projection -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 19 Aug 2004 13:31:21 &#45;0700 -->
+<!--X-Message-Id: 41250E2A.3080104@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20040818185236.56436.qmail@web41201.mail.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: poly-vector in hammer projection</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00565.html">Thread Prev</a>][<a href="msg00567.html">Thread Next</a>][<A HREF="threads.html#00566">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: poly-vector in hammer projection</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Boyin Huang &lt;<a href="mailto:huang_boyin@DOMAIN.HIDDEN">huang_boyin@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: poly-vector in hammer projection</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 19 Aug 2004 13:31:38 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00565.html">20040818185236.56436.qmail@web41201.mail.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00565.html">20040818185236.56436.qmail@web41201.mail.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi everyone,<br>
+Boyin Huang worked out a way to run his script which calls the mp_hammer 
+projection<br>
+and overlays vectors using the mp_poly_vectors.jnl script.  The working 
+script is<br>
+below, e0.jnl  He askes a couple of good questions which I'll try to 
+answer. 
+<br>
+  &gt; The attached script e0.jnl works fine though I still<br>
+  &gt; can not understand fully why:<br>
+  &gt;<br>
+  &gt; (1) What should we use? &quot;set grid uwnd&quot; or &quot;go mp_grid<br>
+  &gt; uwnd&quot;. What's the difference? 
+  &gt;<br>
+  &gt; The later does not work in this mp_poly_vector<br>
+  &gt; call, but fine in &quot;vector u, v, x_page, y_page&quot;.<br>
+<br>
+<br>
+The scripts mp_poly_vectors.jnl, and also mp_graticule.jnl, reset some 
+of the<br>
+variables that were defined by the earlier call to mp_hammer. For example,<br>
+mp_poly_vectors.jnl cancels mp_x and mp_y and then redefines those 
+variables.<br>
+If you look at mp_grid.jnl,  (yes? go/help mp_grid.jnl)  it sets the 
+variables mp_x<br>
+and mp_y. When these are reset by mp_poly_vectors, they are no longer 
+useable<br>
+by mp_graticule or other scripts.<br>
+<br>
+So, when running  mp_poly_vector.jnl or mp_graticule.jnl  we can either 
+use SET GRID,<br>
+or re-run the set-up steps mp_hammer, and  mp_grid after the call to 
+mp_poly_vectors.<br>
+<br>
+  &gt; (2) Why do I have to use &quot;go mp_hammer 156 41&quot; in<br>
+  &gt; poly_vector, but fine to use &quot;go mp_hammer&quot; in<br>
+  &gt; &quot;vector u, v, x_page, y_page&quot;<br>
+<br>
+<br>
+This is due to the same thing.  If you call mp_hammer without the arguments,<br>
+then  mp_central_meridian and mp_standard_parallel are set automatically<br>
+by mp_hammer.jnl, and they depend on mp_x and mp_y. 
+<br>
+ yes? USE coads_climatology<br>
+ yes? SET REGION/X=131:181/Y=21:61/L=5 
+<br>
+ yes? go mp_hammer<br>
+ yes? show var<br>
+<br>
+ Created by DEFINE VARIABLE:<br>
+   &gt;&gt;&gt; Definitions that replace any file variable of same name:<br>
+    MP_X = X<br>
+    MP_CENTRAL_MERIDIAN = (MP_X[I=@MAX] + MP_X[I=@MIN])/2<br>
+    MP_Y = Y<br>
+    MP_STANDARD_PARALLEL = (MP_Y[J=@MAX] + MP_Y[J=@MIN])/2<br>
+<br>
+<br>
+Then when you run mp_poly_vectors.jnl, mp_x and mp_y are changed and then<br>
+the meridian and parallel variables will have different values.  If you 
+call mp_hammer<br>
+with specific scalar values then they do not depend on mp_x and mp_y.<br>
+<br>
+Thank you for reporting all of this, and for creating an example using 
+the coads_climatology<br>
+data.   I'll see what we can do to improve the documentation so it's 
+easier to understand the<br>
+interactions between these complex scripts!<br>
+<br>
+Ansley<br>
+<br>
+--------------------------------------------<br>
+<br>
+!e0.jnl<br>
+<br>
+SE coads_climatology<br>
+<br>
+SET REGION/X=131:181/Y=21:61/L=5<br>
+<br>
+go mp_hammer 156 41<br>
+<br>
+SET GRID uwnd<br>
+!GO mp_grid uwnd<br>
+GO mp_aspect<br>
+<br>
+FILL/NOAXIS/NOKEY/PAL=inverse_grayscale/TITLE=&quot;Winds Colored by Pressure&quot; slp, x_page,y_page<br>
+GO mp_fland 20 black<br>
+<br>
+LET x_vec = X[GX=uwnd,X=131:181] + 0*Y[GY=uwnd,Y=21:61]<br>
+LET y_vec = 0*X[GX=uwnd,X=131:181] + Y[GY=uwnd,Y=21:61]<br>
+LET u_vec = uwnd[X=131:181,Y=21:61,L=5]<br>
+LET v_vec = vwnd[X=131:181,Y=21:61,L=5]<br>
+<br>
+GO mp_poly_vectors x_vec y_vec u_vec v_vec 3 &quot;arrow&quot;<br>
+<br>
+stat mp_x_arrow<br>
+stat mp_y_arrow<br>
+<br>
+list mp_x_arrow<br>
+list mp_y_arrow<br>
+<br>
+LET press = YSEQUENCE(slp[X=131:181,Y=21:61,L=5])<br>
+POLYGON/OVER/NOAX/NOLAB/KEY/LINE/PAL=rainbow mp_x_arrow, mp_y_arrow, press<br>
+<br>
+GO mp_graticule 131 181 12.5 21 61 10 1<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00565" href="msg00565.html">poly-vector in hammer projection</a></strong>
+<ul><li><em>From:</em> Boyin Huang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00565.html">poly-vector in hammer projection</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00567.html">Ascii file: switching X Y data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00565.html">Thread Prev</a>][<a href="msg00567.html">Thread Next</a>][<A HREF="threads.html#00566">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

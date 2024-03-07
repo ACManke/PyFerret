@@ -1,0 +1,238 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] loading 360_day netcdf data -->
+<!--X-From-R13: [nygr Xnafra <zwnafraNvsz&#45;trbzne.qr> -->
+<!--X-Date: Tue, 18 Oct 2005 09:18:37 &#45;0700 -->
+<!--X-Message-Id: 575d28903eb0.43553c71@ifm&#45;geomar.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] loading 360_day netcdf data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00941.html">Thread Prev</a>][<a href="msg00947.html">Thread Next</a>][<A HREF="threads.html#00946">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] loading 360_day netcdf data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Cyndy Chandler &lt;<a href="mailto:cchandler@DOMAIN.HIDDEN">cchandler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] loading 360_day netcdf data</strong></li>
+<li><strong>From</strong>: <strong>Malte Jansen &lt;<a href="mailto:mjansen@DOMAIN.HIDDEN">mjansen@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 18 Oct 2005 18:18:25 +0200</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi all,
+
+using ncatted I managed to tell ferret to use calendar type 360_DAY. But still my data is interpreted in the funny way that ferret uses bigger time boxes for always two days in a year. So the overall Axis span is 3650 &quot;days&quot; instead of 3600. It now looks like this:
+
+
+yes? show/l=350:365 axis time
+ name       axis              # pts   start                end
+ TIME      TIME              3600 i   04-JAN      00:00    23-FEB-0011 00:00
+ T0 = 01-JAN-0001 00:00:00
+ CALENDAR = 360_DAY
+ Axis span (to cell edges) = 3650   
+ 
+       L     T                                    TBOX      TBOXLO                         TSTEP (days)
+     350&gt;  23-DEC          00:00:00    1            22-DEC         12:00:00      352
+     351&gt;  24-DEC          00:00:00    1            23-DEC         12:00:00      353
+     352&gt;  25-DEC          00:00:00    1            24-DEC         12:00:00      354
+     353&gt;  26-DEC          00:00:00    1            25-DEC         12:00:00      355
+     354&gt;  27-DEC          00:00:00    1            26-DEC         12:00:00      356
+     355&gt;  28-DEC          00:00:00    1            27-DEC         12:00:00      357
+     356&gt;  29-DEC          00:00:00    1            28-DEC         12:00:00      358
+     357&gt;  30-DEC          00:00:00    3.5         29-DEC         12:00:00      359
+     358&gt;  06-JAN-0002 00:00:00    3.5          03-JAN-0002 00:00:00     365
+     359&gt;  07-JAN-0002 00:00:00    1            06-JAN-0002 12:00:00     366
+     360&gt;  08-JAN-0002 00:00:00    1            07-JAN-0002 12:00:00     367
+     361&gt;  09-JAN-0002 00:00:00    1            08-JAN-0002 12:00:00     368
+     362&gt;  10-JAN-0002 00:00:00    1            09-JAN-0002 12:00:00     369
+     363&gt;  11-JAN-0002 00:00:00    1            10-JAN-0002 12:00:00     370
+     364&gt;  12-JAN-0002 00:00:00    1            11-JAN-0002 12:00:00     371
+     365&gt;  13-JAN-0002 00:00:00    1            12-JAN-0002 12:00:00     372
+
+Is there anybody who has an Idea what happened and whow to solve that problem?
+
+Thanks
+Malte
+
+
+
+----- Ursprüngliche Nachricht -----
+Von: Cyndy Chandler &lt;cchandler@whoi.edu&gt;
+Datum: Freitag, Oktober 14, 2005 4:03 pm
+Betreff: Re: [ferret_users] loading 360_day netcdf data
+
+&gt; Hello Malte,
+&gt; 
+&gt; I just ran into this yesterday!
+&gt; 
+&gt; You'll want to tell ferret to use a calendar type of 360_DAY 
+&gt; I found the info in the User Guide (I think in the section that 
+&gt; discusses the time axis).
+&gt; 
+&gt; here's the User Guide example:
+&gt; Define a calendar axis and regrid an existing variable to this axis:
+&gt; yes? DEFINE 
+&gt; AXIS/CALENDAR=360_DAY/T=&quot;15-JAN-1982&quot;:&quot;15-DEC-1985&quot;:30/UNITS=days 
+&gt; tmodelyes? LET twind = uwnd[GT=tmodel@NRST]
+&gt; 
+&gt; 
+&gt; I used NCO tools, ncatted, to add the calendar type to the NetCDF 
+&gt; file 
+&gt; itself:
+&gt; ncatted -O -a calendar,TIME,o,c,&quot;360_DAY&quot; $nc_file
+&gt; 
+&gt; double TIME(TIME) ;
+&gt;                TIME:units = &quot;days since 01-FEB-1829&quot; ;
+&gt;                TIME:axis = &quot;T&quot; ;
+&gt;                TIME:time_origin = &quot;01-FEB-1829&quot; ;
+&gt;                TIME:calendar = &quot;360_DAY&quot; ;
+&gt; 
+&gt; Then ferret uses that information to define the Time axis.
+&gt; 
+&gt; sho axis/T TIME
+&gt; name       axis              # pts     start                       
+&gt;     end
+&gt; TIME      TIME                62 r   01-JAN-1940 00:00    01-JAN-
+&gt; 2001 00:00
+&gt; T0 = 01-FEB-1829 00:00:00
+&gt; CALENDAR = 360_DAY
+&gt; 
+&gt; hope this helps,
+&gt; Cyndy
+&gt; 
+&gt; 
+&gt; Malte Jansen wrote:
+&gt; 
+&gt; &gt;Hello,
+&gt; &gt;
+&gt; &gt;I use a (10 years - daily data) netcdf dataset with a 360_day 
+&gt; calendar. When I load it in ferret, ferret seems to interpret it as 
+&gt; a gregorian calendar in the following funny way:
+&gt; &gt;
+&gt; &gt;yes? use/order=xyzt burnout.nc
+&gt; &gt;yes? show/l=355:370 grid temp
+&gt; &gt;ls: /usr/local/ferret/ext_func/libs/: No such file or directory
+&gt; &gt;    GRID GTO1
+&gt; &gt; name        axis                       # pts     start            
+&gt;             end
+&gt; &gt; LON         LONGITUDE           65 r      0E                      
+&gt;     0E(360)
+&gt; &gt; LAT         Y (degrees_nor        32 i-    -85.761                
+&gt;   85.761
+&gt; &gt; HEIGHT    Z (hPa)                    3 i-    200                  
+&gt;        1000
+&gt; &gt; TIME        TIME                  3600 i      01-JAN      00:00   
+&gt;   24-DEC-0010 00:00
+&gt; &gt; 
+&gt; &gt;       L     T                   TBOX                 TBOXLO       
+&gt;              TSTEP (days)
+&gt; &gt;     355&gt;  21-DEC      00:00:00      1         20-DEC      
+&gt; 12:00:00       354
+&gt; &gt;     356&gt;  22-DEC      00:00:00      1         21-DEC      
+&gt; 12:00:00       355
+&gt; &gt;     357&gt;  23-DEC      00:00:00      1         22-DEC      
+&gt; 12:00:00       356
+&gt; &gt;     358&gt;  24-DEC      00:00:00      1         23-DEC      
+&gt; 12:00:00       357
+&gt; &gt;     359&gt;  25-DEC      00:00:00      1         24-DEC      
+&gt; 12:00:00       358
+&gt; &gt;     360&gt;  26-DEC      00:00:00      3.5       25-DEC      
+&gt; 12:00:00       359
+&gt; &gt;     361&gt;  01-JAN-0002 00:00:00  3.5       29-DEC      00:00:00    
+&gt;   365
+&gt; &gt;     362&gt;  02-JAN-0002 00:00:00  1         01-JAN-0002 12:00:00    
+&gt; 366&gt;     363&gt;  03-JAN-0002 00:00:00  1         02-JAN-0002 12:00:00 
+&gt;   367
+&gt; &gt;     364&gt;  04-JAN-0002 00:00:00  1         03-JAN-0002 12:00:00    
+&gt; 368&gt;     365&gt;  05-JAN-0002 00:00:00  1         04-JAN-0002 12:00:00 
+&gt;   369
+&gt; &gt;     366&gt;  06-JAN-0002 00:00:00  1         05-JAN-0002 12:00:00    
+&gt; 370&gt;     367&gt;  07-JAN-0002 00:00:00  1         06-JAN-0002 12:00:00 
+&gt;   371
+&gt; &gt;     368&gt;  08-JAN-0002 00:00:00  1         07-JAN-0002 12:00:00    
+&gt; 372&gt;     369&gt;  09-JAN-0002 00:00:00  1         08-JAN-0002 12:00:00 
+&gt;   373
+&gt; &gt;     370&gt;  10-JAN-0002 00:00:00  1         09-JAN-0002 12:00:00    
+&gt; 374&gt;
+&gt; &gt;how can I make Ferret accept my data as 360_day data ?
+&gt; &gt;
+&gt; &gt;Thanks
+&gt; &gt;Malte
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; 
+&gt; 
+&gt; -- 
+&gt; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+&gt; Cyndy Chandler        	| voice: (508) 289-2765
+&gt; MS #43, WHOI        	| Office hrs: M-F ~ 9-4
+&gt; Woods Hole, MA  02543	| FAX: (508) 457-2161
+&gt; cchandler@whoi.edu | <a  href="http://www.whoi.edu/people/cchandler">http://www.whoi.edu/people/cchandler</a>
+&gt; Ocean Carbon and Biogeochemistry Data Management Office
+&gt; Department of Marine Chemistry and Geochemistry
+&gt; Woods Hole Oceanographic Institution
+&gt; 
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00947" href="msg00947.html">Re: [ferret_users] loading 360_day netcdf data</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00941.html">Re: [ferret_users] loading 360_day netcdf data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00947.html">Re: [ferret_users] loading 360_day netcdf data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00941.html">Thread Prev</a>][<a href="msg00947.html">Thread Next</a>][<A HREF="threads.html#00946">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

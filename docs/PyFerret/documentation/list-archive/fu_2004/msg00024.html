@@ -1,0 +1,191 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: multi&#45;netcdf files for ensemble simulations -->
+<!--X-From-R13: Ebavn Erarivengar <frarivenNwnahf.tfsp.anfn.tbi> -->
+<!--X-Date: Tue, 13 Jan 2004 09:51:32 &#45;0800 -->
+<!--X-Message-Id: 200401131748.i0DHmPUK010724@janus.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: multi-netcdf files for ensemble simulations</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00021.html">Thread Prev</a>][<a href="msg00022.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: multi-netcdf files for ensemble simulations</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: multi-netcdf files for ensemble simulations</strong></li>
+<li><strong>From</strong>: <strong>Sonia Seneviratne &lt;<a href="mailto:senevira@DOMAIN.HIDDEN">senevira@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 13 Jan 2004 12:48:25 -0500 (EST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ansley,
+
+Yes, this was the easiest solution, thanks a lot for your help!
+
+Cheers,
+Sonia
+
+PS: Thanks as well to Rob Scott for his suggestion (I was not able to make it 
+work but this would probably have beeen a solution as well).
+
+
+
+
+&gt; Hi Sonia,
+&gt; I am going to quote your script here -- your attachment doesn't show
+&gt; up in the email archives.
+&gt; --------------------------
+&gt;    def axis/x=1:360:1 xaxis
+&gt;    def axis/y=-90:90:1 yaxis
+&gt;    def axis/z=1:2:1/DEPTH zaxis
+&gt;    def grid/x=xaxis/y=yaxis/z=zaxis glace_grid
+&gt;   
+&gt;    use &quot;DL_HAD3_ok/HadAM3_ENSR_SIM01_SoilWet.nc&quot;
+&gt;    def axis/z=1:1:1 zaxis1
+&gt;    def grid/like=glace_grid/z=zaxis1 glace_grid1
+&gt;    let/title=&quot;soilwetHAD3&quot; sw=soilwet[G=glace_grid1]
+&gt;    save/file=testglace.nc/klimits=1:2/k=1 sw
+&gt;    can data/all
+&gt;   
+&gt;    use &quot;DL_HAD3_ok/HadAM3_ENSR_SIM02_SoilWet.nc&quot;
+&gt;    def axis/z=2:2:1 zaxis1
+&gt;    def grid/like=glace_grid/z=zaxis1 glace_grid1
+&gt;    let/title=&quot;soilwetHAD3&quot; sw=soilwet[G=glace_grid1]
+&gt;    save/append/file=testglace.nc/k=2 sw
+&gt;    can data/all
+&gt; --------------------------
+&gt; 
+&gt; In Example 4  of  Chap. 10 Sec. 2, you'll notice that the first SAVE
+&gt; command, which writes the NetCDF file header, writes variables that are
+&gt; defined using the &quot;zaxis&quot; Z axis, which has all the desired output levels.
+&gt; This way the file is set with the right number of levels. So you want to 
+&gt; put
+&gt; your variable sw on the first level of  axis &quot;zaxis&quot; when you first 
+&gt; write it out.
+&gt; 
+&gt; The example in the Users Guide is also a bit different from what 
+&gt; you'redoing,
+&gt; in that it's reading ascii files with the FILE command. That is why the axes
+&gt; zaxis1, zaxis2, are used.  You do not need those. Do your input files
+&gt; have Z axes?  If not, then you will need to force them onto a Z axis, by 
+&gt; adding
+&gt; to it a variable whose values are zero, at the correct depth, i.e.
+&gt;      let sw=soilwet + 0*z[gz=zgrid1,k=1].
+&gt; 
+&gt; Your script would then be something like this:
+&gt; 
+&gt;    def axis/z=1:2:1/DEPTH zaxis
+&gt;   
+&gt;    use &quot;DL_HAD3_ok/HadAM3_ENSR_SIM01_SoilWet.nc&quot;
+&gt;    let/title=&quot;soilwetHAD3&quot; sw=soilwet + 0*z[gz=zaxis,z=1]
+&gt;    save/file=testglace.nc/klimits=1:2/k=1 sw
+&gt;    can data/all
+&gt;   
+&gt;    use &quot;DL_HAD3_ok/HadAM3_ENSR_SIM02_SoilWet.nc&quot;
+&gt;    let/title=&quot;soilwetHAD3&quot; sw=soilwet + 0*z[gz=zaxis,z=2]
+&gt;    save/append/file=testglace.nc/k=2 sw
+&gt;    can data/all
+&gt; 
+&gt; 
+&gt; Sonia Seneviratne wrote:
+&gt; 
+&gt; &gt;Dear Ferreters,
+&gt; &gt;
+&gt; &gt;Hopefully someone already found a solution to the following problem:
+&gt; &gt;
+&gt; &gt;I have a series of NetCDF files entailing output from GCM ensemble 
+simulations. 
+&gt; &gt;In order to analyse the data, it would help me to be able to concatenate the 
+&gt; &gt;NetCDF files on one axis, with each axis &quot;level&quot; corresponding to one member 
+of 
+&gt; &gt;the ensemble (I thought of using the Z axis for this as I only have surface 
+&gt; &gt;fields). 
+&gt; &gt;
+&gt; &gt;I did a few tests following the instructions from Chap. 10  Sec. 2, however, 
+the 
+&gt; &gt;output file does never entail more than one z-level (see attachment). Did 
+anyone 
+&gt; &gt;have this problem before and manage to find a solution?
+&gt; &gt;
+&gt; &gt;Thank you very much!
+&gt; &gt;Sonia
+&gt; &gt;
+&gt; &gt;---------------------------------------------------------------------
+&gt; &gt;Sonia Seneviratne (Dr. Sc.)
+&gt; &gt;NASA Goddard Space Flight Center, Code 900.3, Bldg. 33, Rm A105
+&gt; &gt;Greenbelt Road, Greenbelt, MD 20771, USA
+&gt; &gt;Phone: +1 301 614 5930; Fax: +1 301 614 6297
+&gt; &gt;senevira@janus.gsfc.nasa.gov
+&gt; &gt;---------------------------------------------------------------------
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; 
+&gt; 
+&gt; -- 
+&gt; This message has been scanned for viruses and dangerous
+&gt; content by MailScanner, and is believed to be clean.
+&gt; 
+&gt; 
+
+-- 
+This message has been scanned for viruses and dangerous
+content by MailScanner, and is believed to be clean.
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00021.html">Re: multi-netcdf files for ensemble simulations</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00022.html">calculate grid area a function of latitude and longitude on earth'ssurface</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00021.html">Thread Prev</a>][<a href="msg00022.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

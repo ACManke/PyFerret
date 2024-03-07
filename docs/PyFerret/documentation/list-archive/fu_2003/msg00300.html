@@ -1,0 +1,183 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: reading multiple datasets from a single ascii file -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Thu, 10 Apr 2003 10:08:02 &#45;0700 -->
+<!--X-Message-Id: 3E95A51B.9931BBA5@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.44.0304080813230.5133&#45;100000@itchy -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: reading multiple datasets from a single ascii file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00292.html">Thread Prev</a>][<a href="msg00301.html">Thread Next</a>][<A HREF="threads.html#00300">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: reading multiple datasets from a single ascii file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Knox &lt;<a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: reading multiple datasets from a single ascii file</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 10 Apr 2003 10:08:44 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00292.html">Pine.LNX.4.44.0304080813230.5133-100000@itchy</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Steve,
+<br>Not directly.&nbsp; Ferret's concept of a dataset is that each dataset
+<br>is one file, or a set of files.
+<p>You might be able to read the whole file, and use variables to
+<br>split it up into its different parts, perhaps saving them to
+<br>NetCDF or other separate files for simpler future use.
+<br>FILE/FORM=DELIM&nbsp; lets you tell Ferret to read the missing
+<br>fields in the header rows as missing data for the second and third
+<br>variables.&nbsp; This isn't simple or pretty, but it may get you started.
+<br>&nbsp;
+<p><tt>yes? file/var=v1,v2,v3/form=delim/type=numeric/delim=" " twosets.dat</tt>
+<br><tt>yes? list&nbsp; v1,v2,v3</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DATA SET: ./twosets.dat</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X: 0.5 to 9.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: V1</tt>
+<br><tt>&nbsp;Column&nbsp; 2: V2</tt>
+<br><tt>&nbsp;Column&nbsp; 3: V3</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+V1&nbsp;&nbsp;&nbsp;&nbsp; V2&nbsp;&nbsp;&nbsp;&nbsp; V3</tt>
+<br><tt>1&nbsp;&nbsp; / 1:&nbsp;&nbsp; 3.00&nbsp;&nbsp; ....&nbsp;&nbsp;
+....</tt>
+<br><tt>2&nbsp;&nbsp; / 2:&nbsp;&nbsp; 1.00&nbsp;&nbsp; 2.00&nbsp;&nbsp;
+3.00</tt>
+<br><tt>3&nbsp;&nbsp; / 3:&nbsp;&nbsp; 4.00&nbsp;&nbsp; 5.00&nbsp;&nbsp;
+6.00</tt>
+<br><tt>4&nbsp;&nbsp; / 4:&nbsp;&nbsp; 7.00&nbsp;&nbsp; 8.00&nbsp;&nbsp;
+9.00</tt>
+<br><tt>5&nbsp;&nbsp; / 5:&nbsp;&nbsp; 4.00&nbsp;&nbsp; ....&nbsp;&nbsp;
+....</tt>
+<br><tt>6&nbsp;&nbsp; / 6:&nbsp;&nbsp; 1.00&nbsp;&nbsp; 2.00&nbsp;&nbsp;
+3.00</tt>
+<br><tt>7&nbsp;&nbsp; / 7:&nbsp;&nbsp; 4.00&nbsp;&nbsp; 5.00&nbsp;&nbsp;
+6.00</tt>
+<br><tt>8&nbsp;&nbsp; / 8:&nbsp;&nbsp; 7.00&nbsp;&nbsp; 8.00&nbsp;&nbsp;
+9.00</tt>
+<br><tt>9&nbsp;&nbsp; / 9:&nbsp; 10.00&nbsp; 11.00&nbsp; 12.00</tt><tt></tt>
+<p><tt>yes? let head1 = 1</tt>
+<br><tt>yes? let start1 = head1 + 1</tt>
+<br><tt>yes? let end1 = start1 + v1[i=`head1`] - 1</tt><tt></tt>
+<p><tt>yes? list/nohead&nbsp; start1, end1</tt>
+<br><tt>I / *:&nbsp;&nbsp;&nbsp;&nbsp; 2.000&nbsp; 4.000</tt><tt></tt>
+<p><tt>yes? let v1_1 = v1[i=`start1`:`end1`]</tt>
+<br><tt>yes? let v2_1 = v2[i=`start1`:`end1`]</tt>
+<br><tt>yes? let v3_1 = v3[i=`start1`:`end1`]</tt><tt></tt>
+<p><tt>yes? list v1_1, v2_1, v3_1</tt>
+<br><tt>yes? list v1_1, v2_1, v3_1</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DATA SET: ./twosets.dat</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X: 1.5 to 4.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: V1_1 is V1[I=2:4]</tt>
+<br><tt>&nbsp;Column&nbsp; 2: V2_1 is V2[I=2:4]</tt>
+<br><tt>&nbsp;Column&nbsp; 3: V3_1 is V3[I=2:4]</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V1_1&nbsp;&nbsp;
+V2_1&nbsp;&nbsp; V3_1</tt>
+<br><tt>2&nbsp;&nbsp; / 2:&nbsp; 1.000&nbsp; 2.000&nbsp; 3.000</tt>
+<br><tt>3&nbsp;&nbsp; / 3:&nbsp; 4.000&nbsp; 5.000&nbsp; 6.000</tt>
+<br><tt>4&nbsp;&nbsp; / 4:&nbsp; 7.000&nbsp; 8.000&nbsp; 9.000</tt><tt></tt>
+<p><tt>yes? let head2 = end1 + 1&nbsp;&nbsp;&nbsp; ! and so forth...</tt>
+<br><tt></tt>&nbsp;
+<br><tt></tt>&nbsp;
+<br><tt></tt>&nbsp;
+<p>Steve Knox wrote:
+<blockquote TYPE=CITE>Hello,
+<br>I've scanned the archives but am unable to find a solution to reading
+<br>multiple datasets from a single file.
+<p>I have an ascii file with separate datasets separated by a header line.
+<br>There are 3 variables/row and the header indicates the number of rows.
+<br>In the following example, there are 2 datasets, the first has 3 columns
+by
+<br>3 rows; the second has 3 columns by 4 rows.
+<br>Is it possible to read the number of rows from the header and then
+read
+<br>only that many rows, then read the next header and read the rows for
+that
+<br>dataset, etc?
+<p>3 (This header indicates 3 rows)
+<br>1 2 3
+<br>4 5 6
+<br>7 8 9
+<br>4 (This header indicates 4 rows)
+<br>1 2 3
+<br>4 5 6
+<br>7 8 9
+<br>10 11 12
+<p>Thanks for any help.
+<p>Steve</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00301" href="msg00301.html">Re: reading multiple datasets from a single ascii file</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00292" href="msg00292.html">reading multiple datasets from a single ascii file</a></strong>
+<ul><li><em>From:</em> Steve Knox</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00292.html">reading multiple datasets from a single ascii file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00301.html">Re: reading multiple datasets from a single ascii file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00292.html">Thread Prev</a>][<a href="msg00301.html">Thread Next</a>][<A HREF="threads.html#00300">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

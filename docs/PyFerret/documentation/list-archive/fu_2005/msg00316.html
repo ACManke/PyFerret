@@ -1,0 +1,148 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Fw: Isentropic Surface -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Tue, 5 Apr 2005 14:29:02 &#45;0700 -->
+<!--X-Message-Id: Pine.GSO.4.33.0504051346450.3780&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200504051949.j35JnKYP007904@ldap3.fsu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Fw: Isentropic Surface</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00314.html">Thread Prev</a>][<a href="msg00315.html">Thread Next</a>][<A HREF="threads.html#00316">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Fw: Isentropic Surface</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Guimond &lt;<a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Fw: Isentropic Surface</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 5 Apr 2005 14:29:02 -0700 (PDT)</li>
+<li>Cc: &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00314.html">200504051949.j35JnKYP007904@ldap3.fsu.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Steve,
+	I think the @weq transformation.  As stated in the manual (look
+under the W's in the index), @WEQ is a generalization of the @LOC idea.
+	Here is a demo of how it might apply in a situation like yours:
+
+!**** value of a variable at a location where another variable has *****
+!****       a desired value using the @WEQ transformation          *****
+
+use levitus_climatology   ! which has TEMP and SALT data
+region/x=160:200/y=-20:20 ! limit the region to mid-Pacific
+
+! compute potential temperature at reference level 0 (for the demo
+!         treat z[g=temp] as if it were pressure)
+let theta=THETA_FO( salt, temp, Z[g=temp], 0 )
+
+shade theta[z=2000] ! looks like theta = 2 degC is around 2000m
+                    ! so let us look for the value of SALT at
+                    ! the depth where THETA = 2
+
+let salt_weight = SALT*THETA[Z=@WEQ:2]
+let SaltAtTheta2 = salt_weight[z=@sum]
+
+shade SaltAtTheta2
+
+!****** set mode interp to ensure interpolation happens *******
+set mode interp
+!****** important for the comparisons below to be good ********
+
+! lets list one value to show that it makes sense
+list/form=(f9.5) SaltAtTheta2[i=161,j=90]
+! which gives the value 34.64136
+
+list/form=(f12.5) theta[i=161,j=90,z=@loc:2]
+! this says that THETA=2 occurs at z=2108.96460
+! so lets see what value SALT has at that depth
+list/form=(f9.5) salt[i=161,j=90,z=2108.96460]
+! which gives the same value (34.64136).
+
+! for temperature at the THETA=2 level
+let temp_weight = TEMP*THETA[Z=@WEQ:2]
+let TempAtTheta2 = temp_weight[z=@sum]
+
+list/form=(f9.5) TempAtTheta2[i=161,j=90]
+! which gives the value 2.14840
+list/form=(f9.5) temp[i=161,j=90,z=2108.96460]
+! again giving the same value (2.14840)
+
+!********************end of demo*******************************
+
+If the variable you wanted to extract was on a different grid than
+THETA I'd guess you would want to regrid it to the THETA grid
+before making the product - perhaps something like
+	let myVar_weight = myVar[g=THETA]*THETA[Z=@WEQ:2]
+	let myVarAtTheta2 = myVar_weight[z=@sum]
+but I haven't tested this.
+
+Good luck,
+	Mick
+
+|!!! Mick.Spillane@noaa.gov !!!|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00314" href="msg00314.html">Fw: Isentropic Surface</a></strong>
+<ul><li><em>From:</em> Steve Guimond</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00314.html">Fw: Isentropic Surface</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00315.html">Script to find and plot variance ellipses</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00314.html">Thread Prev</a>][<a href="msg00315.html">Thread Next</a>][<A HREF="threads.html#00316">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

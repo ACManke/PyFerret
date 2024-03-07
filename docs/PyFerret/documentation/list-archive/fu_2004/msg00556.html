@@ -1,0 +1,223 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: shakey in hammer projection -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 16 Aug 2004 11:17:12 &#45;0700 -->
+<!--X-Message-Id: 4120FA27.2010909@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20040811132421.38353.qmail@web41209.mail.yahoo.com -->
+<!--X-Reference: 4120F4EA.9010305@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: shakey in hammer projection</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00555.html">Thread Prev</a>][<a href="msg00553.html">Thread Next</a>][<A HREF="threads.html#00556">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: shakey in hammer projection</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: shakey in hammer projection</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 16 Aug 2004 11:17:11 -0700</li>
+<li>Cc: Boyin Huang &lt;<a href="mailto:huang_boyin@DOMAIN.HIDDEN">huang_boyin@xxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00555.html">4120F4EA.9010305@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00552.html">20040811132421.38353.qmail@web41209.mail.yahoo.com</a>&gt; &lt;<a href="msg00555.html">4120F4EA.9010305@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi everyone,
+There is already an FAQ covering much of this topic,
+
+How can I get the right aspect ratio for map projections in viewports?
+<a  href="http://www.ferret.noaa.gov/Ferret/FAQ/graphics/mp_viewport_aspect.html">http://www.ferret.noaa.gov/Ferret/FAQ/graphics/mp_viewport_aspect.html</a>
+
+
+
+Ansley Manke wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Boyin,<br>
+This involves the interaction of the map projection and the size of<br>
+the viewport.  If you call mp_aspect this sets the aspect ratio of the<br>
+entire window.  If you also define a viewport, the dimensions that you<br>
+give to the viewport also sets the ratio of the horizontal and 
+vertical axes.<br>
+The viewport is more flattened than the aspect ratio that mp_aspect<br>
+computes.<br>
+<br>
+Then when you make a shade or fill plot, with Ferret determining  the 
+size<br>
+of the shade key  automatically, the key can seem to disappear in a small<br>
+and flattened viewport. 
+See what the mp_aspect.jnl script is doing with<br>
+  yes?  go/help mp_aspect<br>
+<br>
+You should probably set your data and the region, call mp_hammer, set the<br>
+grid, then do<br>
+<br>
+yes? go mp_aspect LIST<br>
+<br>
+The script computes the appropriate aspect ratio for the projection and<br>
+the region.  Use the result to define the viewport.  Define the viewport<br>
+with the /AXES qualifier to accurately set the correct ratio of the<br>
+axis lengths.  Here is an example.  I think I will make this into an<br>
+FAQ as it's an interesting detail that should be documented.<br>
+<br>
+ yes? can mode logo<br>
+<br>
+      ! Start with a window having a known aspect ratio of 1.<br>
+<br>
+ yes? set win/asp=1<br>
+<br>
+ yes? can mode logo<br>
+ yes? use coads_climatology<br>
+ yes? go mp_hammer<br>
+ yes? set grid sst<br>
+<br>
+      ! Set the variable y_over_x to use in<br>
+      ! setting the viewport.<br>
+<br>
+ yes? go mp_aspect LIST<br>
+<br>
+      ! Define the relative lengths of the axes,<br>
+      ! as a proportion of the entire window.<br>
+      ! Because we started with an overall aspect<br>
+      ! ratio of 1, the viewport axis ratio will<br>
+      ! be set by y_over_x<br>
+<br>
+      ! The numbers 0.1, 0.45 and 0.65 are arbitrary,<br>
+      ! setting the desired location of the viewport.<br>
+<br>
+ yes? let xlen = 0.45-0.1<br>
+ yes? let ylen = xlen*y_over_x<br>
+ yes? define view/axes/xlim=0.1,0.45/ylim=0.65,`0.65+ylen` v1<br>
+<br>
+      ! Shade with automatic shade key<br>
+<br>
+ yes? set view v1<br>
+ yes? shade/noax sst[l=1], x_page, y_page<br>
+<br>
+      ! In a second window, put the shade key horizontally<br>
+      ! above the plot.<br>
+<br>
+ yes? define view/axes/xlim=0.1,0.45/ylim=0.15,`0.15+ylen` v2<br>
+ yes? set view v2<br>
+<br>
+ yes? shade/noax/set sst[l=6], x_page, y_page<br>
+ yes? let x1 = ($ppl$xorg)<br>
+ yes? let x2 = ($ppl$xorg)+($ppl$xlen)<br>
+ yes? let y1 = ($ppl$yorg)+($ppl$ylen)+0.8<br>
+ yes? let y2 = ($ppl$yorg)+($ppl$ylen)+1.1<br>
+ yes? ppl shakey 1,0,-0.1,,,,`x1`, `x2`, `y1`, `y2`<br>
+ yes? ppl shade<br>
+<br>
+<br>
+The third argument to the shakey command puts the labels on<br>
+the upper side of the shade key so they are easier to read.<br>
+<br>
+<br>
+Boyin Huang wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">ferreters:<br>
+<br>
+I notice the following problems in the color legend<br>
+(ppl shakey in fill plot) for hammer projection map:<br>
+<br>
+(1) if mp_aspect is not used, the legend can only be<br>
+put horizontally, not vertically (not appear).<br>
+<br>
+(2) when a small view port is used (def 
+view/xlim=0.09,0.49/ylim=0.69,0.90  v1),<br>
+the horizontal legend disappeared again.<br>
+<br>
+if a large view port (def<br>
+view/xlim=0.15,0.85/ylim=0.69,0.90  v1) is set, the horizontal legend 
+is fine.<br>
+<br>
+Can we make the lengend to appear in a small plot? Can<br>
+we put the legend in vertical direction without using<br>
+mp_aspect?<br>
+<br>
+Thank<br>
+<br>
+=====<br>
+Boyin Huang<br>
+The Center for Research on the Changing Earth System (CRCES)<br>
+10211 Wincopin Circle, Suite 240<br>
+Columbia, Maryland 21044<br>
+Tel. 410-992-5300/19 (O), 410-461-9339(H) Fax. 410-992-5944, Email. 
+byh@crces.org <a  href="http://byh.crces.org">http://byh.crces.org</a><br>
+<br>
+<br>
+       
+_______________________________<br>
+Do you Yahoo!?<br>
+Express yourself with Y! Messenger! Free. Download now. 
+<a  href="http://messenger.yahoo.com">http://messenger.yahoo.com</a><br>
+ 
+<br>
+</blockquote><pre>
+</pre>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00552" href="msg00552.html">shakey in hammer projection</a></strong>
+<ul><li><em>From:</em> Boyin Huang</li></ul></li>
+<li><strong><a name="00555" href="msg00555.html">Re: shakey in hammer projection</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00555.html">Re: shakey in hammer projection</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00553.html">shakey in hammer projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00555.html">Thread Prev</a>][<a href="msg00553.html">Thread Next</a>][<A HREF="threads.html#00556">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

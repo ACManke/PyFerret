@@ -1,0 +1,220 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Daily data to monthly climatology... -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Mon, 13 Jan 2003 11:17:37 &#45;0800 (PST) -->
+<!--X-Message-Id: 3E231127.67E3263E@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.21.0301122158290.2740&#45;100000@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Daily data to monthly climatology...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00023.html">Thread Prev</a>][<a href="msg00030.html">Thread Next</a>][<A HREF="threads.html#00027">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Daily data to monthly climatology...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Arindam Chakraborty &lt;<a href="mailto:arch@DOMAIN.HIDDEN">arch@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Daily data to monthly climatology...</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Jan 2003 11:19:04 -0800</li>
+<li>Cc: Andrew Wittenberg &lt;<a href="mailto:atw@DOMAIN.HIDDEN">atw@xxxxxxxxxxxxx</a>&gt;,       Ferret Users Mailing List &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;,       Andrew Wittenberg &lt;<a href="mailto:andyw@DOMAIN.HIDDEN">andyw@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00023.html">Pine.LNX.4.21.0301122158290.2740-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Arindam,
+Answering you outside of the Ferret Users List, because
+I don't have an answer now. Here are some ideas that you
+might use to make further experiments and understand this.
+I don't have time today to explore it more, but it is an
+interesting question - maybe Andrew will have more ideas.
+
+- use @LIN regridding.  I did this and the results are what
+you are expecting.
+
+- Define the monthly axes as modulo and use @MOD regridding
+
+- Try the ideas in the FAQ,
+How can I determine the averaging weights when regridding with AVE? @<a  href="http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html">http://ferret.pmel.noaa.gov/Ferret/FAQ/analysis/regridding_with_ave.html</a>
+Also look at some of the other discussions that have to do with regridding
+in the analysis section of the FAQ's
+<a  href="http://ferret.pmel.noaa.gov/Ferret/FAQ/#analysis">http://ferret.pmel.noaa.gov/Ferret/FAQ/#analysis</a>
+
+Ansley Manke
+
+
+Arindam Chakraborty wrote:
+
+&gt; hello Ferreters,
+&gt;         this may be continuation of the discussion about making
+&gt; monthly average from daily data. I've daily data of one year and I'm
+&gt; facing problem in making monthly means from it. To test the monthly
+&gt; mean created I've used a dummy daily variable which takes the value as
+&gt; the Julian day:
+&gt;
+&gt; ! define daily axis and variable
+&gt; def axis/t=&quot;01-jan-1998&quot;:&quot;31-dec-1998&quot;/npoint=365/units=days t_day
+&gt; def grid/t=t_day g_day
+&gt; let vardy = l[gt=g_day,l=1:365]
+&gt; list vardy[l=1:4]
+&gt;              L[GT=G_DAY,L=1:365]
+&gt;  01-JAN-1998 00 / 1:  1.000
+&gt;  02-JAN-1998 00 / 2:  2.000
+&gt;  03-JAN-1998 00 / 3:  3.000
+&gt;  04-JAN-1998 00 / 4:  4.000
+&gt;
+&gt; Now monthly axis is defined and monthly means were made:
+&gt; let month = mod(l-1,12)+1
+&gt; let add_year = int((l-1)/12)
+&gt; let tstep = days1900(1998+add_year,month,1)
+&gt; define axis/t/units=days/t0=1-jan-1900/edges/name=truemonth
+&gt; tstep[l=1:13]
+&gt; def grid/t=truemonth g_mon
+&gt; let varmn1 = vardy[gt=g_mon@ave]
+&gt; list varmn1
+&gt;              VARDY[GT=G_MON@AVE]
+&gt;  16-JAN-1998 12 /  1:   16.5
+&gt;  15-FEB-1998 00 /  2:   46.0
+&gt;  16-MAR-1998 12 /  3:   75.5
+&gt; ... ...
+&gt;
+&gt; Clearly, both edges are included to make the monthly mean.
+&gt; (JAN mean should be 31*(31+1)/2/31 = 16.0 but it is 32*(32+1)/2/32 =
+&gt; 16.5 and similarly for the other months, except for the 12th).
+&gt; But I want to exclude the 1st data value of the next month while
+&gt; making monthly mean for the present one. I tried like this too:
+&gt;
+&gt; ! define another monthly axis at the middle of every month
+&gt; let ts98 = days1900(1998+add_year,month,1)
+&gt; let te98 = ts98[l=@shf:1] - 1
+&gt; define axis/t/units=days/t0=&quot;1-jan-1900:00:00&quot;/name=t_month
+&gt; (ts98[l=1:12]+te98[l=1:12])/2
+&gt; let varmn2 = vardy[gt=t_month@ave]
+&gt; list varmn2
+&gt;              VARDY[GT=T_MONTH@AVE]
+&gt;  16-JAN-1998 00 /  1:   16.0
+&gt;  14-FEB-1998 12 /  2:   45.5
+&gt;  16-MAR-1998 00 /  3:   75.2
+&gt;  15-APR-1998 12 /  4:  105.5
+&gt;  16-MAY-1998 00 /  5:  136.0
+&gt;  15-JUN-1998 12 /  6:  166.5
+&gt;  16-JUL-1998 00 /  7:  197.1
+&gt;  16-AUG-1998 00 /  8:  227.9
+&gt;  15-SEP-1998 12 /  9:  258.5
+&gt;  16-OCT-1998 00 / 10:  289.0
+&gt;  15-NOV-1998 12 / 11:  319.5
+&gt;  16-DEC-1998 00 / 12:  350.0
+&gt;
+&gt; Here all values are correct except MAR (should be 75.0),
+&gt; JUL (should be 197.0) and AUG (should be 228.0). I'm not able
+&gt; to figure out what's happening for these months. Is there any
+&gt; work around? To make the monthly mean I want to consider only those
+&gt; many data points as many days of that month.
+&gt;
+&gt; I'm using Ferret version 5.22 in Linux.
+&gt;
+&gt; thanks,
+&gt;
+&gt; arindam
+&gt; ------------------------------------------
+&gt;  ARINDAM CHAKRABORTY
+&gt;  Centre for Atmospheric &amp; Oceanic Sciences
+&gt;  Indian Institute of Science
+&gt;  Bangalore 560 012; INDIA
+&gt;  Tel: 091-080-3942505, 091-080-3600450
+&gt;  Fax: 091-080-3600865
+&gt; __________________________________________
+&gt;
+&gt; On Fri, 10 Jan 2003, Andrew Wittenberg wrote:
+&gt;
+&gt; &gt; On Fri, 10 Jan 2003, Ansley Manke wrote:
+&gt; &gt; &gt; To make monthly data you would define a monthly time axis for the
+&gt; &gt; &gt; period in question, and regrid your data to it:
+&gt; &gt; &gt;
+&gt; &gt; &gt; DEFINE AXIS/T=&quot;1-Jan-1961&quot;:&quot;1-jan-1991&quot;:1/unit=month t_month
+&gt; &gt; &gt; LET precip_month = precip[GT=t_month]
+&gt; &gt;
+&gt; &gt; Gary &amp; Ansley,
+&gt; &gt;
+&gt; &gt; If your precip is a daily field, you probably want
+&gt; &gt;
+&gt; &gt;    precip[GT=t_month@ave]
+&gt; &gt;
+&gt; &gt; which gives monthly averages.  Otherwise you'll get linear interpolation
+&gt; &gt; (the default regridding).
+&gt; &gt;
+&gt; &gt; Cheers,
+&gt; &gt;
+&gt; &gt; Andrew
+&gt; &gt;
+&gt; &gt; +---------------------------------------+
+&gt; &gt; |  Andrew Wittenberg  |  GFDL/NOAA      |
+&gt; &gt; |  atw@gfdl.noaa.gov  |  Princeton, NJ  |
+&gt; &gt; +---------------------------------------+
+&gt; &gt;
+&gt; &gt;
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00023" href="msg00023.html">Re: Daily data to monthly climatology...</a></strong>
+<ul><li><em>From:</em> Arindam Chakraborty</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00023.html">Re: Daily data to monthly climatology...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00030.html">Re: Daily data to monthly climatology...</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00023.html">Thread Prev</a>][<a href="msg00030.html">Thread Next</a>][<A HREF="threads.html#00027">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

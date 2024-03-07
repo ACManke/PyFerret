@@ -1,0 +1,155 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: nested conditional statements -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Wed, 5 Mar 2003 14:25:15 &#45;0800 (PST) -->
+<!--X-Message-Id: 3E6679F4.3290CD0@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.33.0302271253350.31093&#45;100000@vorlon.eas.gatech.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: nested conditional statements</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00178.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00187">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: nested conditional statements</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brent A McDaniel &lt;<a href="mailto:gte328r@DOMAIN.HIDDEN">gte328r@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: nested conditional statements</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 05 Mar 2003 14:28:04 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00178.html">Pine.LNX.4.33.0302271253350.31093-100000@vorlon.eas.gatech.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Brent,
+<br>In general, you can do the nested conditional using masking:
+<p><tt>&nbsp; let mask = if condition then 1</tt>
+<br><tt>&nbsp; repeat/l=1:15&nbsp; if `mask*(next condition)` then list...</tt>
+<p>On the mask definition, by default the "else" is missing data, or false.&nbsp;
+i.e.
+<br>it's the same as "let mask = if condition then 1 else bad". So multiplying
+<br>the mask by the next condition is equivalent to an "and" operation.&nbsp;
+To get
+<br>at the didt(l+1) that you want, use the @shf operator.&nbsp; So in
+outline you
+<br>would have:<tt></tt>
+<p><tt>&nbsp; let aoshift = ao[l=@shf:-1]</tt>
+<br><tt>&nbsp; let didt = ao[l=@ddc]</tt><tt></tt>
+<p><tt>&nbsp; let didtp1 =aoshift[l=@ddc]</tt>
+<br><tt>&nbsp; list/l=1:5 didt, didtp1&nbsp;&nbsp;&nbsp; ! check that we
+have l, l+1</tt><tt></tt>
+<p><tt>&nbsp; let mask = if didt gt threshold then 1</tt>
+<br><tt>&nbsp; repeat/l=1:15 if `mask*(didtp1 gt threshold)` then list...</tt>
+<br>&nbsp;
+<br>&nbsp;
+<p>Brent A McDaniel wrote:
+<blockquote TYPE=CITE>Greetings,
+<p>Hopefully someone can help me out with this simple question.
+<p>I have data with 14610 time steps and I want to pick out certain cases
+<br>according to the value of the derivative of an index AO.
+<p>Here's what I do:
+<p>let didt=ao[d=1,l=@ddc]
+<br>let threshold=.25
+<p>repeat/l=1:14610 if `didt gt threshold` then
+<br>save/file=case.slope.25.nc/append utend
+<p>and this works fine.
+<p>What I want to do is similar but I want the derivative to be over 2
+days
+<br>(or more).
+<p>In psuedo code, something like:
+<p>For l=1:14610:1
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if didt(l) > threshold
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if didt(l+1) > threshold
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+then write the data out for l
+<p>else continue through the loop.
+<p>I hope this makes sense.
+<p>If that's not clear on what I'm asking, another example where similar
+<br>ability would make life easier is a case study looking for when the
+index
+<br>crosses some threshold.
+<p>something like:
+<p>for l=1:14610:1
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if ao(l) > threshold
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+if ao(l-1) &lt; threshold
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+then write the data at l
+<p>else continue through the loop.
+<p>I've wanted to be able to do similar things with ferret several times
+but
+<br>have never figured out how to do it.&nbsp; Any help is appreciated.
+<p>Thanks as always,
+<p>--Brent
+<p>--
+<br>Brent A. McDaniel
+<p>Dept of Earth and Atmospheric Sciences
+<br>Georgia Institute of Technology
+<br>Atlanta, Ga.&nbsp; USA</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00178" href="msg00178.html">nested conditional statements</a></strong>
+<ul><li><em>From:</em> Brent A McDaniel</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00178.html">nested conditional statements</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00179.html">memory</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00178.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00187">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

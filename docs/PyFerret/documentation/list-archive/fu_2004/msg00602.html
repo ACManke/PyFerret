@@ -1,0 +1,303 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: time_counter as axis -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 1 Sep 2004 11:35:52 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409020014280.14677&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 413604DE.6060106@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: time_counter as axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00601.html">Thread Prev</a>][<a href="msg00603.html">Thread Next</a>][<A HREF="threads.html#00602">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: time_counter as axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: time_counter as axis</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 2 Sep 2004 00:23:52 +0530 (IST)</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;,  &quot;Arthur M. Greene&quot; &lt;<a href="mailto:amg13@DOMAIN.HIDDEN">amg13@xxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00601.html">413604DE.6060106@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+     As Ansley pointed out the example script is working fine and 
+the climatology is exactly matching with the manually calculated 
+mean.
+
+yes? define axis/t=1:60:1 tabs
+
+yes? let v  = 30 - ( sin(t[gt=tabs]) ) + RANDU(t[gt=tabs])
+
+yes? let v_3to5yr = TSEQUENCE(v[L=25:60])
+
+yes? define axis/T=0:`365.2425*3`/NPOINTS=36/EDGES/units=days/\
+...? T0=&quot;01-JAN-1974:00:00&quot; t3to5yr
+
+yes? let v_3to5yr_t = v_3to5yr[gt=t3to5yr@asn]
+
+yes? define axis/T=0:365.2425/EDGES/NPOINTS=12/T0=1-JAN-0001/\
+...? UNITS=DAYS/MODULO tclim
+
+yes? let v_clim_12mon = v_3to5yr_t[GT=tclim@MOD]
+
+yes? set list/precision=10
+
+yes? cancel mode verify
+
+yes? REPEAT/k=1:12:1 ( ;\ 
+...? let mon    = `k`  ;\
+...? let v_mean =  ( v_3to5yr_t[l=`mon`] +  v_3to5yr_t[l=`mon+12`] + \
+...?                            v_3to5yr_t[l=`mon+24`] )/3 ;\
+...? list/nohead mon, v_clim_12mon[l=`mon`], v_mean;\
+...?  )
+I / *:     1.000000000  31.11149597  31.11149597
+I / *:     2.000000000  30.45406342  30.45406342
+I / *:     3.000000000  29.73362923  29.73362923
+I / *:     4.000000000  29.80100060  29.80100060
+I / *:     5.000000000  30.65710258  30.65710258
+I / *:     6.000000000  31.01781273  31.01781273
+I / *:     7.000000000  31.00856209  31.00856209
+I / *:     8.000000000  30.23208427  30.23208427
+I / *:     9.000000000  29.78796387  29.78796387
+I / *:     10.00000000  29.93144226  29.93144226
+I / *:     11.00000000  30.38167381  30.38167381
+I / *:     12.00000000  31.16622925  31.16622925
+yes?
+
+
+  If you need any more clarification about the @MOD &amp; @ASN regridding 
+functions please let  me know
+
+ With Regards 
+ 
+ Jaison 
+ 
+On Wed, 1 Sep 2004, Ansley Manke wrote:
+
+&gt; Hi Arthur,
+&gt; It sounds like you've about got it. I don't see anything wrong
+&gt; with your commands. Ferret does not interpolate your data to
+&gt; days as it's computing the monthly climatology; days are the
+&gt; coordinate units but the monthly data is kept as monthly data.
+&gt; 
+&gt; This example works correctly, just using all of your commands
+&gt; but just integers as the data.  See if any of the list commands I
+&gt; have here help you figure out what's happening with your data:
+&gt; 
+&gt;   yes? let v_3to5yr = tsequence(t[t=25:60])
+&gt;   yes? list/L=1:5  v_3to5yr
+&gt;              VARIABLE : TSEQUENCE(T[T=25:60])
+&gt;              SUBSET   : 5 points (T)
+&gt;    1   / 1:  25.00
+&gt;    2   / 2:  26.00
+&gt;    3   / 3:  27.00
+&gt;    4   / 4:  28.00
+&gt;    5   / 5:  29.00
+&gt; 
+&gt;   yes? def axis/t=0:1095.7275/npoints=36/edges/units=days/\
+&gt;      t0=&quot;01-jan-1974:00:00&quot; t3to5yr
+&gt;   yes? let v_3to5yr_t = v_3to5yr[gt=t3to5yr@asn]
+&gt; 
+&gt;   yes? def axis/t=0:365.2425/edges/npoints=12/
+&gt;      \t0=1-jan-0001/units=days/modulo tclim
+&gt;   yes? let v_clim_12mon = v_3to5yr_t[gt=tclim@mod]
+&gt; 
+&gt;   yes? list v_clim_12mon
+&gt;              VARIABLE : V_3TO5YR_T[GT=TCLIM@MOD]
+&gt;              SUBSET   : 12 points (TIME)
+&gt;    16-JAN      /  1:  37.00
+&gt;    15-FEB      /  2:  38.00
+&gt;    18-MAR      /  3:  39.00
+&gt;    17-APR      /  4:  40.00
+&gt;    17-MAY      /  5:  41.00
+&gt;    17-JUN      /  6:  42.00
+&gt;    17-JUL      /  7:  43.00
+&gt;    17-AUG      /  8:  44.00
+&gt;    16-SEP      /  9:  45.00
+&gt;    17-OCT      / 10:  46.00
+&gt;    16-NOV      / 11:  47.00
+&gt;    17-DEC      / 12:  48.00
+&gt; 
+&gt;      ! Check some averages
+&gt;   yes? list v_3to5yr_t[l=1:36:12]  ! January values averaged
+&gt;              VARIABLE : V_3TO5YR[GT=T3TO5YR@ASN]
+&gt;                         regrid: 365 day on T
+&gt;              SUBSET   : 3 points (TIME)
+&gt;    JAN-1974 / 1:  25.00
+&gt;    JAN-1975 / 2:  37.00
+&gt;    JAN-1976 / 3:  49.00
+&gt; 
+&gt;   yes? list (28+40+52)/3    ! mean agrees with Jan of v_clim_12mon
+&gt;              VARIABLE : (28+40+52)/3
+&gt;           40.00
+&gt; 
+&gt; 
+&gt;   yes? list v_3to5yr_t[l=4:36:12]  ! April values averaged
+&gt;              VARIABLE : V_3TO5YR[GT=T3TO5YR@ASN]
+&gt;                         regrid: 365 day on T
+&gt;              SUBSET   : 3 points (TIME)
+&gt;    APR-1974 / 1:  28.00
+&gt;    APR-1975 / 2:  40.00
+&gt;    APR-1976 / 3:  52.00
+&gt;   yes? list (25+37+49)/3    ! mean agrees with Apr of v_clim_12mon
+&gt;              VARIABLE : (25+37+49)/3
+&gt;           37.00
+&gt; 
+&gt; 
+&gt; 
+&gt; Arthur M. Greene wrote:
+&gt; 
+&gt; &gt;Hi Jason,
+&gt; &gt;
+&gt; &gt;Thanks for the reply! Here's what I've been able to do (There are 5
+&gt; &gt;years of monthly variable v; we wish to construct a climatology for the
+&gt; &gt;last three years):
+&gt; &gt;
+&gt; &gt;let v_3to5yr = tsequence(v[L=25:60])   ! Extract desired time slice
+&gt; &gt;
+&gt; &gt;define axis/T=0:1095.7275/npoints=36/edges/units=days/\
+&gt; &gt;T0=&quot;01-jan-1974:00:00&quot; t3to5yr
+&gt; &gt;
+&gt; &gt;let v_3to5yr_t = v_3to5yr[GT=t3to5yr@asn]
+&gt; &gt;
+&gt; &gt;So far, so good. I now have three years of data on a real-time axis,
+&gt; &gt;beginning with jan-1974. The plot looks OK. Now for the climatology:
+&gt; &gt;
+&gt; &gt;define axis/T=0:365.2425/EDGES/NPOINTS=12/\
+&gt; &gt;T0=1-JAN-0001/UNITS=DAYS/MODULO tclim
+&gt; &gt;
+&gt; &gt;let v_clim_12mon = v_3to5yr_t[GT=tclim@MOD]
+&gt; &gt;
+&gt; &gt;This does produce a 12-month plot that _looks_ like a climatology (i.e.,
+&gt; &gt;x-axis reads Jan, Feb, Mar...), but the values are not equal to the
+&gt; &gt;averages of the corresponding month's values in v_3to5yr_t, i.e.,
+&gt; &gt;v(Jan,v_clim_12mon) &lt;&gt; (Sum of Jan vals in v_3to5mon)/3. So perhaps I
+&gt; &gt;don't understand how the MOD (or ASN, for that matter) climatologies are
+&gt; &gt;actually computed. Even if the 36 months of data were interpolated into
+&gt; &gt;daily values, and the appropriate daily values averaged to produce the
+&gt; &gt;monthly climatology, the resultant would not appear to be correct. The
+&gt; &gt;docs do not seem to clarify exactly how these climatologies are computed
+&gt; &gt;(or maybe I need a refresher!)
+&gt; &gt;
+&gt; &gt;Your comments greatly appreciated!
+&gt; &gt;
+&gt; &gt;Thanks,
+&gt; &gt;
+&gt; &gt;Arthur
+&gt; &gt;
+&gt; &gt;On Wed, 2004-09-01 at 08:33, Jaison Kurian wrote:
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; &gt;&gt;! --------------example.jnl--------------------------------
+&gt; &gt;&gt;   ! extract last three years data ie. abstract index L=25:60
+&gt; &gt;&gt;
+&gt; &gt;&gt;   let v_3to5yr = TSEQUENCE(v[L=25:60])
+&gt; &gt;&gt;
+&gt; &gt;&gt;   ! define monthly time axis from JAN-1997 to DEC-1999 &amp; assign it
+&gt; &gt;&gt;   !     T=0:`365.2425*3`/NPOINTS=36/UNITS=DAYS together will make it for 
+&gt; &gt;&gt;   !      3 years and  T0 will take care of actual year stamp.
+&gt; &gt;&gt;
+&gt; &gt;&gt;      define axis/T=0:`365.2425*3`/NPOINTS=36/EDGES/units=days/\
+&gt; &gt;&gt;                  T0=&quot;01-JAN-1997:00:00&quot; t3to5yr
+&gt; &gt;&gt;
+&gt; &gt;&gt;      let v_3to5yr_t = v_3to5yr[gt=t3to5yr@asn] 
+&gt; &gt;&gt;
+&gt; &gt;&gt;   ! Define a monthly climatological axis 
+&gt; &gt;&gt;   
+&gt; &gt;&gt;      define axis/T=0:365.2425/EDGES/NPOINTS=12/T0=1-JAN-0001/\
+&gt; &gt;&gt;                     UNITS=DAYS/MODULO tclim
+&gt; &gt;&gt;
+&gt; &gt;&gt;   ! Find monthly climatology by &quot;MODULO&quot; regridding
+&gt; &gt;&gt;
+&gt; &gt;&gt;      let v_clim_12mon = v_3to5yr_t[GT=tclim@MOD]
+&gt; &gt;&gt;      plot v_clim_12mon     
+&gt; &gt;&gt;
+&gt; &gt;&gt;! If you want to find anomaly or want to plot the climatology
+&gt; &gt;&gt;!   over the data then please refer :
+&gt; &gt;&gt;!   <a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01470.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01470.html</a>
+&gt; &gt;&gt;
+&gt; &gt;&gt;!---------------------- end of example.jnl-------------
+&gt; &gt;&gt;    
+&gt; &gt;&gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00601" href="msg00601.html">Re: time_counter as axis</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00601.html">Re: time_counter as axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00603.html">Max. cross correlation of 2D fields</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00601.html">Thread Prev</a>][<a href="msg00603.html">Thread Next</a>][<A HREF="threads.html#00602">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

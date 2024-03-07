@@ -1,0 +1,165 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: plane rotation -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 28 Apr 2005 11:32:34 &#45;0700 -->
+<!--X-Message-Id: 42712C42.7090207@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 5.1.0.14.0.20050427124816.00a9cb40@mail.flinders.edu.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: plane rotation</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00387.html">Thread Next</a>][<A HREF="threads.html#00386">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: plane rotation</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hemerson Tonin &lt;<a href="mailto:hemer.tonin@DOMAIN.HIDDEN">hemer.tonin@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: plane rotation</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 28 Apr 2005 11:32:34 -0700</li>
+<li>Cc: &quot;ferret users-noaa.gov&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00381.html">5.1.0.14.0.20050427124816.00a9cb40@mail.flinders.edu.au</a>&gt;</li>
+<li>References: &lt;<a href="msg00381.html">5.1.0.14.0.20050427124816.00a9cb40@mail.flinders.edu.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi all,<br>
+After an off-line conversation with Ned Cokelet of our lab, the question 
+comes down to defining different kinds of axes.  They do not need to be 
+rectangular latitude-longitude axes. Because the rotated grid has 
+different values of longitude along a grid line, and likewise for 
+latitude, it will need to be expressed as a &quot;curvilinear&quot; grid.<br>
+<br>
+So, you can define the new grid using cos and sin relationships.  If all 
+you need is graphical output, you can use the ideas from the map 
+projection scripts  (like mp_mercator.jnl etc) to define the coordinates 
+for the rotated grid, and then use the curvilinear plotting capabilities 
+of Ferret. You need to create two new variables, one with the longitudes 
+at each grid point of the new 2-D grid, and one with the latitudes, also 
+in 2 dimensions.<br>
+<br>
+This would be along these lines, if your variables is called VAR.<br>
+<br>
+  let xpts = x[gx=var]<br>
+  let ypts = y[gy=var]<br>
+  let angle_deg = 30.<br>
+ 
+  let Pi = 3.14159265<br>
+  let deg2rad = Pi / 180.0<br>
+ 
+  let angle_rad = angle_deg* deg2rad<br>
+  let xrad = xpts * deg2rad<br>
+  let yrad = ypts * deg2rad<br>
+ 
+  let xcoord = xrad* cos(angle_rad) - yrad* sin(angle_rad)<br>
+  let ycoord = yrad* cos(angle_rad) + xrad* sin(angle_rad)<br>
+ 
+  shade/noaxes var, xcoord, ycoord<br>
+<br>
+<br>
+If you need to do computations with the data on the new grid, you could 
+use the RECT_TO_CURV regridding function which was released with Ferret 
+version 5.8, and regrid var onto the curvilinear grid defined by xcoord 
+and ycoord.<br>
+<br>
+(I'll incorporate the above into a new map projection script, 
+mp_rotate.jnl for future releases.)<br>
+<br>
+Ansley<br>
+<br>
+Hemerson Tonin wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Ferreters,<br>
+<br>
+Has anybody out there a good idea to define axis (and grid) to be 
+inclined ?<br>
+<br>
+I would like to rotate my grid on XY plane, and my &quot;new X-axis&quot; must 
+have an angle in relation to Equator.<br>
+<br>
+<br>
+<br>
+original  (XY 
+plane)                                                            I 
+need (XY plane)<br>
+<br>
+                                                                                                            
+/ &lt;-- &quot;new X -axis&quot;<br>
+                                                                                                           
+/<br>
+-----------&gt; Equator and &quot;current X - axis&quot; 
+---------/---------------------------- Equator<br>
+<br>
+<br>
+<br>
+Hemerson Tonin<br>
+School of Chemistry, Physics and Earth Sciences<br>
+Flinders University<br>
+Adelaide - Australia<br>
+<br>
+</blockquote><pre>
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00387" href="msg00387.html">Re: plane rotation</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00381" href="msg00381.html">plane rotation</a></strong>
+<ul><li><em>From:</em> Hemerson Tonin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00381.html">plane rotation</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00387.html">Re: plane rotation</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00387.html">Thread Next</a>][<A HREF="threads.html#00386">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

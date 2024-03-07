@@ -1,0 +1,167 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] Bug with add_offset/scale_factor and descriptorfiles -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sun, 28 Aug 2005 22:49:21 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.61.0508272238030.25381@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 44E484D4C8E40C4B9EF26BC6397F973009906E@extas2&#45;hba.tas.csiro.au -->
+<!--X-Reference: 430F5A79.9050809@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] Bug with add_offset/scale_factor and descriptorfiles</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00816.html">Thread Prev</a>][<a href="msg00817.html">Thread Next</a>][<A HREF="threads.html#00818">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Bug with add_offset/scale_factor and descriptorfiles</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Bug with add_offset/scale_factor and descriptorfiles</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 27 Aug 2005 22:48:39 +0530 (IST)</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;, <a href="mailto:Peter.J.Turner@DOMAIN.HIDDEN">Peter.J.Turner@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00816.html">430F5A79.9050809@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00815.html">44E484D4C8E40C4B9EF26BC6397F973009906E@extas2-hba.tas.csiro.au</a>&gt;&lt;<a href="msg00816.html">430F5A79.9050809@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ansley &amp; Peter,
+                     I faced a similar problem with the descriptor file and
+scale factor earlier (only with Ferret version 5.8). The reason I identified
+was that, Ferret_5.8 was not able to handle two different scale factors for
+two different variables with a descriptor file. But the &quot;return&quot; command always
+used to return the exact values like :
+
+      yes? say `ZONAL_WIND_SPEED,r=nc_scale`
+      0.01
+      yes? say `ZONAL_WIND_STRESS,r=nc_scale`
+      0.001
+
+  All the variables with the first scale_factor (0.01) seems to be working fine
+but variables with the second scale_factor (0.001) seems to be not scaled at
+all. ( i tried with only one step file in the descriptor file, but the situation
+was same). If we directly open the NetCDF file in Ferret, there is no problem
+with this different scale_factors for Ferret_5.8.
+
+  With versions 5,5.53 &amp; 5.7 the same descriptor file worked just fine. So it
+is sure that something went wrong for the descriptor files with version 5.8.
+
+With Regards
+
+Jaison
+
+On Fri, 26 Aug 2005, Ansley Manke wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi Peter,<br>
+Could you send ne the example descriptor file and one or two stepfiles that 
+illustrate this?  There weren't any changes in Ferret v5.81 that changed how 
+it works with scale factors or descriptor files, but version 5.80 had a 
+change that might relate to the problem. Previously the scale factor and 
+offset found in the first stepfile were applied to all stepfiles in a 
+multi-file set.  With v5.80 we had Ferret read the scale factors from each 
+stepfile and apply them to the data in that stepfile.<br>
+<br>
+<a  href="http://www.ferret.noaa.gov/Ferret/Documentation/Release_Notes/v58.html#vary_scale_mc">http://www.ferret.noaa.gov/Ferret/Documentation/Release_Notes/v58.html#vary_scale_mc</a><br>
+<br>
+Ansley<br>
+<br>
+Peter.J.Turner@csiro.au wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hello,<br>
+       I have been using LAS to place SST data online. The system was<br>
+working OK until a couple of months ago when we upgraded Ferret and LAS.<br>
+The data we are serving is in netcdf files stored as 8 bit (xyt) with<br>
+add_offset and a scale_factor and the files are linked using a<br>
+descriptor file. It took a little while to notice, but after the upgrade<br>
+the data retrieved were no longer being scaled using the scale_factor<br>
+and add_offset.  I then upgraded to Ferret 5.81 and the latest version<br>
+of LAS but the problem persisted.<br>
+<br>
+I have now narrowed the problem down to Ferret.  I created a new<br>
+descriptor file just pointing at one data file and was able to show that<br>
+if I opened the netcdf file directly (set data &quot;sstnok.nc&quot;) selected a<br>
+region and did a shade plot the scale was correctly applied, but if I<br>
+used a descriptor file (set data tnok) (ntok.des) and did the set region<br>
+and shade plot the data was no longer scaled. 
+On further investigation I have found that if I reduce the number of<br>
+variables and attributes in the netcdf file before the variable<br>
+(rewriting the netcdf file in a different order) I am trying to plot<br>
+then the data will scale correctly when initialized through the<br>
+descriptor file. 
+I do not think I can quantify the symptoms much better, has anyone else<br>
+had this rather obscure problem?  I am not a big Ferret user and could<br>
+be doing something stupid and would appreciate some assistance in<br>
+resolving the problem. I can provide some example code etc which should<br>
+show the problem if anyone is interested! 
+Regards<br>
+<br>
+Peter<br>
+<br>
+(PS running under Linux 2.6.8-24-smp)<br>
+<br>
+CSIRO Marine and Atmospheric Research<br>
+Australia<br>
+<br>
+<br>
+</blockquote><pre>
+</pre>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00815" href="msg00815.html">[ferret_users] Bug with add_offset/scale_factor and descriptor files</a></strong>
+<ul><li><em>From:</em> Peter.J.Turner</li></ul></li>
+<li><strong><a name="00816" href="msg00816.html">Re: [ferret_users] Bug with add_offset/scale_factor and descriptorfiles</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00816.html">Re: [ferret_users] Bug with add_offset/scale_factor and descriptorfiles</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00817.html">[ferret_users] DODS data reading</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00816.html">Thread Prev</a>][<a href="msg00817.html">Thread Next</a>][<A HREF="threads.html#00818">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

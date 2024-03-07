@@ -1,0 +1,173 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: bad flag gets reset -->
+<!--X-From-R13: Egrir Yabk <fgrirxNaery.pbybfgngr.rqh> -->
+<!--X-Date: Thu, 1 Jul 2004 10:06:47 &#45;0700 -->
+<!--X-Message-Id: 40E4449A.3040902@nrel.colostate.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 286C9166197E0C44B94FF9762B27DAC7056404A4@sumac.cfs.le.ac.uk -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: bad flag gets reset</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00485.html">Thread Prev</a>][<a href="msg00487.html">Thread Next</a>][<A HREF="threads.html#00486">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: bad flag gets reset</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Kaduk, Dr J.&quot; &lt;<a href="mailto:jk61@DOMAIN.HIDDEN">jk61@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: bad flag gets reset</strong></li>
+<li><strong>From</strong>: <strong>Steve Knox &lt;<a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Jul 2004 11:06:34 -0600</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;286C9166197E0C44B94FF9762B27DAC7056404A4@sumac.cfs.le.ac.uk&gt;</li>
+<li>Organization: Natural Resource Ecology Laboratory </li>
+<li>References: &lt;286C9166197E0C44B94FF9762B27DAC7056404A4@sumac.cfs.le.ac.uk&gt;</li>
+<li>Reply-to: <a href="mailto:stevek@DOMAIN.HIDDEN">stevek@xxxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 0.6 (Windows/20040502)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Kaduk, Dr J. wrote:
+
+</pre>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+just came across this today as well. Seems that the missing value flag<br>
+is indeed reset whenever you do a calculation or define a new variable.<br>
+You can specify the missing value flag by including the /bad option in 
+the variable definition:<br>
+let/bad=1.0000000E+20 xxx=.....<br>
+'hope that helps<br>
+cheers,<br>
+Joerg<br>
+<br>
+________________________________<br>
+<br>
+From: owner-ferret_users@pmel.noaa.gov on behalf of Steve Knox<br>
+Sent: Thu 7/1/2004 17:23<br>
+To: ferret_users@noaa.gov<br>
+Subject: bad flag gets reset<br>
+<br>
+<br>
+Hi,<br>
+I'm computing the following and it appears that the missing vlaue defined in my netcdf file is getting<br>
+reset when I compute the ration of @var/@ave. The missingvalue is 1.0000000E+20 but when I compute @var/@ave the bad flag is set to -9.9999998E+33 (= -0.1000E+35)<br>
+I would have expected the missing value to remain the same, ie 1.0000000E+20.<br>
+Any ideas?<br>
+Here's the Netcdf header:<br>
+<br>
+obs.globe.lan.1901-2000.pre.annual {<br>
+dimensions:<br>
+       lon = 720 ;<br>
+       lat = 360 ;<br>
+       time = UNLIMITED ; // (100 currently)<br>
+variables:<br>
+       float lon(lon) ;<br>
+               lon:units = &quot;degrees_east&quot; ;<br>
+               lon:valid_min = -180.f ;<br>
+               lon:valid_max = 180.f ;<br>
+               lon:title = &quot;Longitude&quot; ;<br>
+       float lat(lat) ;<br>
+               lat:units = &quot;degrees_north&quot; ;<br>
+               lat:valid_min = -90.f ;<br>
+               lat:valid_max = 90.f ;<br>
+               lat:title = &quot;Latitude&quot; ;<br>
+       float time(time) ;<br>
+               time:units = &quot;years since 1900-01-01&quot; ;<br>
+               time:title = &quot;Time&quot; ;<br>
+               time:long_name = &quot;Time axis&quot; ;<br>
+               time:time_origin = &quot; 1900-01-15 00:00:00&quot; ;<br>
+       float pre(time, lat, lon) ;<br>
+               pre:units = &quot;mm/month&quot; ;<br>
+               pre:long_name = &quot;Precipitation&quot; ;<br>
+               pre:missing_value = 1.e+20f 
+<br>
+yes? set region/i=1:1/j=1:1      !look at a grid cell that I know is missing<br>
+yes? list/l=1:1/format=(e15.6)  pre[l=@ave]<br>
+            VARIABLE : Precipitation (mm/month)<br>
+            FILENAME : obs.globe.lan.1901-2000.pre.annual.nc<br>
+            BAD FLAG :  1.0000000E+20<br>
+            LONGITUDE: 179.8W(-179.8)<br>
+            LATITUDE : 89.8S<br>
+            TIME     : 02-JUL-1900 14:54 to 02-JUL-1901 20:43 (averaged)<br>
+  0.100000E+21  (OK)<br>
+yes? list/l=1:1/format=(e12.4)  pre[l=@var]<br>
+            VARIABLE : Variance of Precipitation ((mm/month)^2)<br>
+            FILENAME : obs.globe.lan.1901-2000.pre.annual.nc<br>
+            BAD FLAG :  1.0000000E+20<br>
+            LONGITUDE: 179.8W(-179.8)<br>
+            LATITUDE : 89.8S<br>
+            TIME     : 02-JUL-1900 14:54 to 02-JUL-1901 20:43 (variance)<br>
+ 0.1000E+21 (OK)<br>
+yes? list/l=1:1/format=(e12.4)  pre[l=@var]/pre[l=@ave]<br>
+            VARIABLE : PRE[L=@VAR]/PRE[L=@AVE]<br>
+            FILENAME : obs.globe.lan.1901-2000.pre.annual.nc<br>
+            BAD FLAG : -9.9999998E+33 (aka -0.1000E+35)<br>
+            LONGITUDE: 179.8W(-179.8)<br>
+            LATITUDE : 89.8S<br>
+            TIME     : 02-JUL-1900 14:54 to 02-JUL-1901 20:43<br>
+-0.1000E+35 (NOT OK)<br>
+<br>
+<br>
+ 
+<br>
+</blockquote>Thanks for your suggestion! It seems to work. This is what I did:<br>
+yes? let/bad=1.0E+20 *ratio*=pre[D=1,l=@var]/pre[D=1,l=@ave]<br>
+yes? list/t=&quot;15-jan-1946&quot;:&quot;15-dec-1995&quot;/... *ratio*<br>
+<br>
+<br>
+I guess the point is that in a calculation, the variables in the 
+calculation don't necessarily have the *same* missing value so Ferret 
+supplies a new one for the result.<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00485.html">bad flag gets reset</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00487.html">High resolution data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00485.html">Thread Prev</a>][<a href="msg00487.html">Thread Next</a>][<A HREF="threads.html#00486">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

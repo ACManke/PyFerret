@@ -1,0 +1,188 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Calls of an external function to evaluate Ferret expressions -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Mon, 20 Oct 2003 12:54:21 &#45;0700 -->
+<!--X-Message-Id: 3F943E14.C3688ECB@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.21.0310202129450.18295&#45;100000@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Calls of an external function to evaluate Ferret expressions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00752.html">Thread Prev</a>][<a href="msg00755.html">Thread Next</a>][<A HREF="threads.html#00754">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Calls of an external function to evaluate Ferret expressions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Arindam Chakraborty &lt;<a href="mailto:arch@DOMAIN.HIDDEN">arch@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Calls of an external function to evaluate Ferret expressions</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 20 Oct 2003 12:57:08 -0700</li>
+<li>Cc: Ferret Users List &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00752.html">Pine.LNX.4.21.0310202129450.18295-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Arindam,
+<br>When possible, Ferret uses cached results in memory when
+<br>a variable has been computed and a subset of it is needed
+<br>again for a calculation.
+<p>At the point in Ferret execution when they are called, external
+<br>functions are all treated as "grid-changing functions", since Ferret
+<br>does not know whether they may indeed have an output whose grid
+<br>is different from the grid of the arguments.&nbsp; For instance, in
+the FFT
+<br>functions, the very structure of the output grid (the frequency axis)
+<br>will vary depending upon the input region. In fact there is enough
+<br>information that Ferret could potentially check whether there is a
+<br>custom axis defined and determine when an external function MAY
+<br>be grid changing, but this has not been implemented.
+<p>In any event, when your last command is executed
+<p>&nbsp;plot/vs/over/line=8 binxy[j=1],binxy[j=2]
+<p>Ferret does not know whether the computation of variable
+<br>"vary" made earlier can safely be used to compute binxy,
+<br>and it redoes the computation.
+<p>Note that when you call the external functions multiple times
+<br>on subsets of the data, Ferret uses only the subset of data
+<br>needed for the computation, so it is not repeating the entire
+<br>computation.&nbsp; You can readily see this with SET MODE
+<br>DIAGNOSTIC.&nbsp; Here is a simple example with the example
+<br>function SUBTRACT.&nbsp;&nbsp; Look at the output lines that start
+with
+<br>"eval" to see what calculation is made, and which data is used.
+<br>For the entire unrestricted data region, the LOAD command uses
+<br>i=1:180, j=1:90, L=1:12&nbsp; but for the PLOT command, C is
+<br>computed using only i=1:180, j=45:45, L=1:1
+<p><tt>yes? use coads_climatology</tt>
+<br><tt>yes? let c = subtract(sst, airt)</tt>
+<br><tt>yes? set mode diag</tt>
+<br><tt>yes? load c</tt><tt></tt>
+<p><tt>yes? plot/l=1/y=0 c</tt>
+<p>Compare this with the output when you define
+<br><tt>yes? let c = sst - airt</tt>
+<p>Finally, if the computation is large and your computation winds up
+<br>repeating many calculations, you can write one or more variables
+<br>to intermediate files and read the data back in. That is, you might
+<br>write var1 or vary to a file, cancel the original data and the definitions
+<br>of these variables, and then read the variable(s) back from your file
+<br>before proceeding to use var1 in your binning function.
+<p>Ansley Manke
+<p>Arindam Chakraborty wrote:
+<blockquote TYPE=CITE>Hello Ferreters,
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I'm doing scatter plot between
+two variables (varx vs. vary).
+<br>One of these variables are calculated using an external function.
+<br>Next, both these variables are used to 'bin' the data and plot line
+<br>graph over the previous view itself. So the sequence of commands
+<br>are something like this:
+<p>...
+<p>let varx = ... ! uses ferret expressions and file variables
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! (without a function call).
+<p>let vary1 = extfun1(v1,v2,v3,...) ! v1, v2, v3 are file variables.
+<br>! Now there's a condition to get final vary
+<br>let vary = if vary1 gt 0 then vary1
+<br>! and plot it
+<br>plot/vs varx, vary
+<br>! The regions are not specified explicitly but given in []'s while
+<br>!&nbsp; defining the variables.
+<br>! At this point, a single write(*,*) statement from extfun1()
+<br>! displays:
+<br>Hi from extfun1
+<br>Hi from extfun1
+<br>! which means extfun1() is being called twice. This is most probably
+<br>! due to the definition of vary which involves vary1 twice. (A simple
+<br>! check with let vary = if vary1 gt 0 then (vary1 + vary1)*0.5 prints
+<br>! the message 3 times.)
+<p>! Now I try to bin this variables:
+<br>&nbsp;let binxy = bin_1d(varx,vary,xi,xf,xw) ! This is another external
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! function which returns 2D result along abstract axes.
+<br>! and plot
+<br>&nbsp;plot/vs/over/line=8 binxy[j=1],binxy[j=2]
+<br>! but again those messages appear:
+<br>Hi from extfun1
+<br>Hi from extfun1
+<br>! which shows that extfun1() was called again two times.
+<p>Since everything remains same (data and region) between the scatter
+<br>and bin-ed line plots, there is not need to call extfun1() again.
+<br>If the variable (from external function) is being calculated every
+<br>time it appears in an expression, then it may become time consuming
+<br>especially if the external function does a huge set of computations.
+<p>Is there any way I can reduce these 4 calls of extfun1() by a
+<br>single call? Or any tricks in re-arranging these statements
+<br>(commands) to reduce the time taken by the whole procedure?
+<p>Many thanks in advance,
+<p>arindam chakraborty
+<br>------------------------------------------
+<br>&nbsp;ARINDAM CHAKRABORTY
+<br>&nbsp;Centre for Atmospheric &amp; Oceanic Sciences
+<br>&nbsp;Indian Institute of Science
+<br>&nbsp;Bangalore 560 012; INDIA
+<br>&nbsp;Tel: +91-80-2932505, +91-80-3600450
+<br>&nbsp;Fax: +91-80-3600865
+<br>__________________________________________</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00752" href="msg00752.html">Calls of an external function to evaluate Ferret expressions</a></strong>
+<ul><li><em>From:</em> Arindam Chakraborty</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00752.html">Calls of an external function to evaluate Ferret expressions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00755.html">xskip/yskip with ppl vector/set</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00752.html">Thread Prev</a>][<a href="msg00755.html">Thread Next</a>][<A HREF="threads.html#00754">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

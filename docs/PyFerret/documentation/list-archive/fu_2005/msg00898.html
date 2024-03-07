@@ -1,0 +1,157 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: [ferret_users] mixed layer average velocity (depth&#45;integrating to an isosurface) -->
+<!--X-From-R13: Oaqerj Ivggraoret <Oaqerj.IvggraoretNabnn.tbi> -->
+<!--X-Date: Fri, 23 Sep 2005 11:49:10 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0509231307050.1496&#45;100000@atw -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[ferret_users] mixed layer average velocity (depth-integrating to an isosurface)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00895.html">Thread Prev</a>][<a href="msg00899.html">Thread Next</a>][<A HREF="threads.html#00898">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] mixed layer average velocity (depth-integrating to an isosurface)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] mixed layer average velocity (depth-integrating to an isosurface)</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 23 Sep 2005 14:38:45 -0400 (EDT)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Posting this in case someone finds it useful...
+
+Looking to compute an average velocity over the oceanic mixed layer, I ran
+across Steve Hankin's message from 1999 (attached below), which shows how
+to mask a variable and compute a vertical average over an irregular depth.
+That was before the ZBOXLO and ZBOXHI variables were introduced in 2001
+(Ferret v5.3), so it summed only over full cells.  We can now improve the
+accuracy of the computation by including fractional cells.
+
+Suppose we have a variable V(x,y,z) and mixed layer depth H(x,y), where z
+is a depth-axis, and both z and H have units of meters.  To compute the
+vertical average of V between the surface and H:
+
+let ztop = zboxlo[gz=v]           !depth of cell top
+let zthick = zbox[gz=v]           !full cell thickness
+let zfrac = min(zthick,h-ztop)    !like ZTHICK except where H intersects cell
+let mask = IF ztop LT h THEN 1    !excludes cells completely below H
+let v_weighted = v * zfrac * mask !masked product of variable and weights
+let v_zint = v_weighted[z=@sum]   !the vertical integral
+let v_zave = v_zint/h             !the vertical average
+
+Or more concisely:
+
+let v_weighted = IF zboxlo[gz=v] LT h THEN v*min(zbox[gz=v],h-zboxlo[gz=v])
+let v_zave = v_weighted[z=@sum]/h
+
+Cheers,
+
+Andrew
+
++-----------------------+
+| Dr. Andrew Wittenberg |
+|       GFDL/NOAA       |
+|     Princeton, NJ     |
++-----------------------+
+
+
+from: <a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_99/msg00016.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_99/msg00016.html</a>
+
+    * To: Bruno Levier &lt;blevier@xxxxxxxxxxxxxx&gt;
+    * Subject: Re: Averaging/integrating
+    * From: Steve Hankin &lt;hankin@xxxxxxxxxxxxx&gt;
+    * Date: Wed, 13 Jan 1999 11:35:45 -0800
+    * Cc: ferret_users@xxxxxxxxxxxxxxxxxxx
+    * References: &lt;Pine.SUN.3.95.990113183638.5915A-100000@bali.cetiis.fr&gt;
+    * Sender: owner-ferret_users
+
+Hi Bruno,
+
+A general solution to this is to &quot;mask&quot; the variable before integration.
+
+e.g. to integrate only above the 20 degree isotherm
+
+  LET iso20 = my_temperature[Z=@LOC:20]
+  LET mask = IF Z[g=my_temperature] .LT. iso20 THEN 1     ! else missing
+is implied
+  LET masked_temp = mask*my_temperature
+
+Now integrate masked_temp instead of my_temp.
+
+Note that this approach applies an all-or-nothing criterion to each grid
+cell, rather than including fractional grid cells in the integration. If
+necessary the accuracy of the integration can be improved by first
+regridding my_temperature to a finer grid. 
+
+	- steve
+
+=========================================================================
+
+Bruno Levier wrote:
+&gt; 
+&gt; Hi!
+&gt; 
+&gt; How to integrate a variable within a surface/volume delimitated by an
+&gt; isoligne/isosurface?
+&gt; 
+&gt; Thanks
+&gt; 
+&gt;         Bruno
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00895.html">[ferret_users] Saturation max and color palette</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00899.html">[ferret_users] Two interpolation syntax questions</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00895.html">Thread Prev</a>][<a href="msg00899.html">Thread Next</a>][<A HREF="threads.html#00898">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

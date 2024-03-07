@@ -1,0 +1,149 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Log(depth) plot -->
+<!--X-From-R13: <[vpx.EcvyynarNabnn.tbi> -->
+<!--X-Date: Fri, 18 Feb 2005 08:42:45 &#45;0800 -->
+<!--X-Message-Id: Pine.GSO.4.33.0502180801430.214&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4215FFE1.2030208@cls.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Log(depth) plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00163.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00164">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Log(depth) plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Tony Jolibois &lt;<a href="mailto:tjolibois@DOMAIN.HIDDEN">tjolibois@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Log(depth) plot</strong></li>
+<li><strong>From</strong>: <strong>&lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Feb 2005 08:42:36 -0800 (PST)</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00163.html">4215FFE1.2030208@cls.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Fri, 18 Feb 2005, Tony Jolibois wrote:
+
+&gt; I read the mail archive about it but I'm not able to reproduce on my data.
+&gt; I want to make a plot with the vertical axis = log(depth) on a grid like
+&gt; yes? show grid temperature
+&gt;     GRID GEX2
+&gt;  name       axis              # pts   start                end
+&gt;  TRACK     X                   29 r   1                    29
+&gt;  DEPTH     Y (m)               33 i-  0                    5500
+&gt;  TIME      Z (days)           519 i   19601                20120
+&gt;  normal    T
+
+Hi Tony,
+	If it is a line plot you want then you should look in the
+manual rather than the mail since the log plot functionality has
+become much more user friendly.  You should look at the /HLOG
+/VLOG and perhaps the /TRANSPOSE options of the PLOT command.
+	For a SHADE or FILL with log axis the three-argument
+versions may be best suited to the job, and there is a recent
+reply of mine
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2005/msg00129.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2005/msg00129.html</a>
+that may be of use.
+
+	There is another issue in the dataset you describe - that
+the depth axis includes the value ZERO! The plot/hlog option does
+not throw a fit at this in a demo I just tried, but the data at
+DEPTH=0 is ignored (and the value at y=10 in some cases which I
+don't understand!!!.  If your sampling is dense enough for small
+depths this is not a problem but, if this is the only near surface
+value you may want to &quot;fake it&quot; by regridding the y=0 value to
+say y=1!
+
+Here is a demo to illustrate the issues. Hope it helps,
+Mick
+
+!----- DEMO OF LOG AXIS PLOT WHEN ZERO IS AN AXIS VALUE -----
+
+! define x and z axes
+def axis/x=1:29:1 xax ; def axis/z=1:10:1 zax
+! ... and a y-axis to represent depths (with a y=0 value)
+let ht=ysequence({0,10,22,55,100,220,550,1000,2200,5500})
+def axis/y/name=yax/depth/from_data ht
+def grid/x=xax/y=yax/z=zax grd
+
+! define a dummy function v(x,y,z)
+let v=i[g=grd]+10*j[g=grd]+100*k[g=grd]
+
+plot/i=1/k=1/vlog/vlimits=1:10000/transpose v !!! lacks y=10 point
+
+! note that with the use of /depth in the axis definition and the
+! /transpose option in the plot you get a downward pointing
+! (inverse) log axis as seems appropriate to your case. Note that
+! if you drop the /vlimits=1:10000 the presence of y=0 causes an
+! error.  The quirk is that the perfectly valid data point at y=10
+! is dropped unless you set the j range
+
+plot/i=1/k=1/j=2:10/vlog/vlimits=1:10000/transpose v !!! OK now
+
+! now suppose you want to include the surface datum (y=0) too.
+! if your data is such that y=0 is for all practical purposes
+! the same as y=1 then we can just regrid. For example
+let ht2=ysequence({1,10,22,55,100,220,550,1000,2200,5500})
+def axis/y/name=yax2/depth/from_data ht2
+define grid/like=grd/y=yax2 grd2
+let v2=v[g=grd2,gy=@asn]
+
+plot/i=1/k=1/vlog/vlimits=1:10000/transpose v2 !!! whole profile
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00163" href="msg00163.html">Log(depth) plot</a></strong>
+<ul><li><em>From:</em> Tony Jolibois</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00163.html">Log(depth) plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00163.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00164">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

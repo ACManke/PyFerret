@@ -1,0 +1,238 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Descriptor Files -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 15 Sep 2004 13:59:28 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409160203540.767&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4148805C.302@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Descriptor Files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00628.html">Thread Prev</a>][<a href="msg00630.html">Thread Next</a>][<A HREF="threads.html#00629">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Descriptor Files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Descriptor Files</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 16 Sep 2004 02:29:31 +0530 (IST)</li>
+<li>Cc: <a href="mailto:plattner@DOMAIN.HIDDEN">plattner@xxxxxxxxxxxxx</a>, Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00628.html">4148805C.302@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Kasper,
+             As Ansley pointed out &quot;load&quot; command will make the 
+time-independent variable (from the first descriptor file) available
+even after opening a new descriptor file (this is the easiest method). 
+Few more work arounds...
+
+  1. Use the time-independent variable from the first descriptor file
+           in some &quot;action commands&quot; (like list/plot/fill) before opening
+           the second descriptor file. In ferret..........
+
+      set data first.des
+           
+      let t_indp_vars = TSEQUENCE({&quot;lon&quot;,&quot;lat&quot;})  ! time independent vars
+      let t_indp      = `t_indp_vars,return=lend` ! num of time indep. vars
+      
+      REPEAT/l=1:`t_indp` ( let var = `t_indp_vars` ;\
+          list/nohead var[i=@sum,j=@sum,k=@sum] )        
+
+      set data second.des
+
+    If &quot;t_indp_vars&quot; is supplied with all time-independent variables then
+       above method will take care of all of them.
+
+   2. Time-independent variables will be &quot;same&quot; for all files in a 
+         particular experiment (say for 5km run). Then you can save all
+         these time-independent variables from a *.des file to a new netcdf 
+         file in Ferret using SAVE command  : 
+         
+         set data exp_5km.des ! or any individual file in the series
+         SAVE/file=time_indep_var_5km.nc/append lon 
+         SAVE/file=time_indep_var_5km.nc/append lat 
+         cancel data/all
+         set data exp_15km.des
+         SAVE/file=time_indep_var_15km.nc/append lon
+         SAVE/file=time_indep_var_15km.nc/append lat
+
+         ..now you can open these new files for the time-independent 
+         variables of the corresponding *.des file.
+
+
+ With Regards 
+
+ Jaison 
+
+
+
+On Wed, 15 Sep 2004, Ansley Manke wrote:
+
+&gt; Hi Kasper,
+&gt; This seems to be a bug in how Ferret handles time-independent variables in
+&gt; descriptor files.  We'll look into fixing it, but in the meantime I 
+&gt; think I've found
+&gt; a way to work around it.  Load the non-time-dependent data from the first
+&gt; set before the &quot;set data&quot; command for the second set.
+&gt; 
+&gt;    set data  model_1.des
+&gt;    load mask[d=1]
+&gt; 
+&gt;    set data model_2.des
+&gt;    list mask[d=2]
+&gt;    list mask[d=1]
+&gt; 
+&gt; In the example I cooked up, the two mask variables are correct when loaded
+&gt; in this way.
+&gt; 
+&gt; Ansley Manke
+&gt; 
+&gt; Gian-Kasper Plattner wrote:
+&gt; 
+&gt; &gt; Hi all,
+&gt; &gt;
+&gt; &gt; I have problems using descriptor files in ferret. I would like to 
+&gt; &gt; compare model output from two different versions of our ocean model, 
+&gt; &gt; which are run on different grids (e.g. 15km and 5km horizontal 
+&gt; &gt; resolution), in order to analyse the resolution-dependence of the 
+&gt; &gt; results. The netcdf files for the two model versions have the exactly 
+&gt; &gt; same output variables (names etc), some of which are time-independent 
+&gt; &gt; (masks, lon, lat etc.) and most are time-dependent. To calculate 
+&gt; &gt; climatological averages over several years, I have created separate 
+&gt; &gt; descriptor files for both model versions. That works fine and I can 
+&gt; &gt; load the files with &quot;set data *.des&quot; and use them in ferret as dataset 
+&gt; &gt; 1 and 2. However, it seems as if all the variables that are 
+&gt; &gt; time-independent are overwritten each time I read a new descriptor 
+&gt; &gt; file into ferret. Therefore when I read the 15km file first [d=1] and 
+&gt; &gt; then the 5km file [d=2], the values of all the time-independent 
+&gt; &gt; variables in dataset 1are set to the values from dataset 2!
+&gt; &gt;
+&gt; &gt; Did anyone encounter similar problems while using descriptor files? Do 
+&gt; &gt; I have to adapt my descriptor files?
+&gt; &gt;
+&gt; &gt; Thanks for your help,
+&gt; &gt;
+&gt; &gt; Best regards, Kasper
+&gt; &gt;
+&gt; &gt;------------------------------------------------------------------------
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;&amp;FORMAT_RECORD
+&gt; &gt;D_TYPE        = '  MC',
+&gt; &gt;D_FORMAT      = '  1A',
+&gt; &gt;D_SOURCE_CLASS       = 'MODEL OUTPUT',
+&gt; &gt;/
+&gt; &gt;&amp;BACKGROUND_RECORD
+&gt; &gt;D_EXPNUM      = '0001',
+&gt; &gt;D_MODNUM      = '  AA',
+&gt; &gt;D_TITLE       = '2 year simulation with 15 km grid',
+&gt; &gt;D_T0TIME      = '01-JAN-2000:12:00:00',
+&gt; &gt;D_TIME_UNIT   = 1.0,
+&gt; &gt;D_TIME_MODULO = .FALSE.,
+&gt; &gt;D_CALTYPE     = '360_DAY',
+&gt; &gt;/
+&gt; &gt;&amp;MESSAGE_RECORD
+&gt; &gt;D_MESSAGE     = ' ',
+&gt; &gt;D_ALERT_ON_OPEN      = F,
+&gt; &gt;D_ALERT_ON_OUTPUT    = F,
+&gt; &gt;/
+&gt; &gt;&amp;EXTRA_RECORD
+&gt; &gt;/
+&gt; &gt;&amp;STEPFILE_RECORD
+&gt; &gt;s_filename    = 'usw15_5_flux_euph_avg_Y1.nc.AVG_EUPH_LAYER',
+&gt; &gt;S_AUX_SET_NUM = 0,
+&gt; &gt;S_START       = 3.117324e+08,
+&gt; &gt;S_END  =        3.415404e+08,
+&gt; &gt;S_DELTA       = 1296000.0,
+&gt; &gt;S_REGVARFLAG  = ' ',
+&gt; &gt;/
+&gt; &gt;&amp;STEPFILE_RECORD
+&gt; &gt;S_FILENAME    = 'usw15_5_flux_euph_avg_Y2.nc.AVG_EUPH_LAYER',
+&gt; &gt;S_AUX_SET_NUM = 0,
+&gt; &gt;S_START       = 3.428364e+08,
+&gt; &gt;S_END         = 3.726444e+08,
+&gt; &gt;S_DELTA       = 1296000.0,
+&gt; &gt;S_REGVARFLAG  = ' ',
+&gt; &gt;/
+&gt; &gt;&amp;STEPFILE_RECORD
+&gt; &gt;      s_filename    = '**END OF STEPFILES**'
+&gt; &gt;/
+&gt; &gt;  
+&gt; &gt;
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00628" href="msg00628.html">Re: Descriptor Files</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00628.html">Re: Descriptor Files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00630.html">Making multiple subplots &amp; save the graphics o/p</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00628.html">Thread Prev</a>][<a href="msg00630.html">Thread Next</a>][<A HREF="threads.html#00629">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

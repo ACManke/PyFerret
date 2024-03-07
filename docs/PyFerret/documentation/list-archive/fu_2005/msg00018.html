@@ -1,0 +1,239 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Discontinuous time axis  seen as continuous -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Thu, 6 Jan 2005 07:44:15 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.44.0501062115500.20399&#45;200000@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 41DD56D4.6000306@cea.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Discontinuous time axis  seen as continuous</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00017.html">Thread Prev</a>][<a href="msg00019.html">Thread Next</a>][<A HREF="threads.html#00018">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Discontinuous time axis  seen as continuous</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Discontinuous time axis  seen as continuous</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 6 Jan 2005 21:20:54 +0530 (IST)</li>
+<li>Cc: Patrick Brockmann &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;,  Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00017.html">41DD56D4.6000306@cea.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Patrick,
+             It is a tricky business, still you can do it. Here is an
+example i wrote earlier for my friend (see attachement, tax_4mon.jnl)
+using the same monthly_navy_winds dataset. Also have a look at the 
+sequence of mails starting with this one: 
+
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2004/msg00569.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2004/msg00569.html</a>
+
+  If anything remains not explained, please let me know.
+
+ Hope This Helps
+
+ With Regards 
+
+ Jaison 
+
+On Thu, 6 Jan 2005, Patrick Brockmann wrote:
+
+&gt; Hi all,
+&gt; 
+&gt; Is there a way to plot only summer months from a time serie.
+&gt; 
+&gt; Let work from an usual example:
+&gt; 
+&gt; yes? use monthly_navy_winds.cdf
+&gt; ! Plot the all time serie
+&gt; yes? plot UWND[i=@ave,j=@ave]
+&gt; 
+&gt; Now I would like to plot only JUL-AUG-SEP months from years 1982 to 1992.
+&gt; JUL-1982; AUG-1982; SEP-1982; JUL-1983; AUG-1983; SEP-1983
+&gt; 
+&gt; Extract the selected months and save them into a file:
+&gt; 
+&gt; yes? save/file=extract.nc/clobber/bounds  
+&gt; UWND[i=@ave,j=@ave,l=`7+12*0`:`9+12*0`]
+&gt; yes? save/file=extract.nc/append/bounds  
+&gt; UWND[i=@ave,j=@ave,l=`7+12*1`:`9+12*1`]
+&gt; yes? save/file=extract.nc/append/bounds  
+&gt; UWND[i=@ave,j=@ave,l=`7+12*2`:`9+12*2`]
+&gt; yes? save/file=extract.nc/append/bounds  
+&gt; UWND[i=@ave,j=@ave,l=`7+12*3`:`9+12*3`]
+&gt; yes? save/file=extract.nc/append/bounds  
+&gt; UWND[i=@ave,j=@ave,l=`7+12*4`:`9+12*4`]
+&gt; 
+&gt; Have a look to the extracted file
+&gt; yes? use extract.nc
+&gt; yes? plot UWND
+&gt; 
+&gt; I get a correct plot with my selected months.
+&gt; But what could I do to remove graphically blanks between summer months ?
+&gt; I have done this using several viewports to plot each time a summer of a 
+&gt; specific year
+&gt; but it a little bit tricky. Is there a simpler solution ?
+&gt; 
+&gt; Thanks for any help on this topic
+&gt; 
+&gt; Happy new year to all
+&gt; 
+&gt; Patrick
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+</pre>
+<pre>\ cancel mode verify
+!
+! To plot data for four months (JJAS) without any breaks on time axis.
+!-----------------------------------------------------------------------
+
+! let us use monthly_navy_winds dataset (available with Ferret distribution)
+!   this data starts from 16-JAN-1982 and ends at 17-DEC-1992 (monthly) : 11yrs
+
+     set data   monthly_navy_winds   ! d=1
+
+! get T0 &amp; time units of the variable for later use
+ 
+    define symbol tzero  = `uwnd[d=1],return=T0`
+    define symbol tunits = `uwnd[d=1],return=TUNIT`
+
+! get the &quot;time values&quot; of JJAS from 1982 to 1992 in a text file
+!    since it is a monthly dataset we will use the mid-day of a month
+!    for listing the &quot;L&quot; values
+
+    sp rm -f dummy.dat
+    REPEAT/RANGE=1982:1992/NAME=yr ( ;\
+         let lindx = L[gt=uwnd,d=1,t=&quot;15-JUN-`yr`&quot;:&quot;15-SEP-`yr`&quot;] ;\
+         let tdata = T[gt=uwnd,d=1,t=&quot;15-JUN-`yr`&quot;:&quot;15-SEP-`yr`&quot;] ;\
+         list/nohead/quiet/file=dummy.dat/format=(2x,2(f11.3,4x))/append lindx, tdata ;\
+       )
+
+! read the time values from dummy.dat and then sample along the &quot;L&quot; values
+!     11 yrs * 4 months = 44 &quot;L&quot; values
+
+    cancel reg/all ; cancel var lindx, tdata
+    
+    define axis/t=1:44:1 tfile
+    define grid/t=tfile  gfile    
+    file/g=gfile/var=lindx, tdata dummy.dat   
+
+    let uwnd_jjas = SAMPLEL(uwnd[d=1],lindx[d=2])   ! data for JJAS of 11 yrs
+    set var/title=&quot;Seasonal(JJAS) Zonal Wind Speed&quot;/units=&quot;M/S&quot; uwnd_jjas
+
+!now the uwnd_jjas's time axis will be an &quot;abstract&quot; one ..ie..1,2,3,..43,44.
+!  If we regrid this variable to a proper calendar time axis, then while making
+!  plots Ferret will display the full time axis (from JUN-1982 to SEP-1992) with
+!  gaps in between for other months. So let us make the plot with this 
+!  &quot;abstract&quot; time axis itself and then label manually for each year.
+!
+!  Now we have four months in a year. Please note that now the abstract time
+!    is behaving like normal X/Y/Z axis..so all normal ppl commands are 
+!    applicable
+!              X-ax Y-ax 
+    PPL AXLSZE 0.00,0.12  ! font size for axis numeric labels ( no label for X) 
+    PPL AXLINT 1,1        ! which all tics should be labelled
+    PPL AXNMTC 3,2        ! number of small tics between large tics on time axis
+
+    plot/set/x=65/y=10/hlim=0:45:4 uwnd_jjas  ! note that hlim_lo NE  1 
+                                              !   &amp;       hlim_hi NE 44
+    ppl xlab &quot; &quot;       ! to remove the time axis(ie. xaxis) label
+    ppl plot
+
+! now get proper labels for time axis
+
+   let yaxlo       = `($PPL$YMIN1)` 
+   let yoffset_yr  =  0.52   !tune this value to get year  label on position 
+   let yoffset_mn  =  0.68   !tune this value to get month label on position 
+   let yr_start    = 1982    !first year
+   let num_yrs     = 11      !number of years
+   let mnames      = TSEQUENCE({&quot;J&quot;,&quot;J&quot;,&quot;A&quot;,&quot;S&quot;})   ! month label &quot;text&quot;
+
+   REPEAT/RANGE=1:`num_yrs`:1/NAME=yrs ( ;\  ! for 11 years
+       label `(yrs-1)*4+2.0`,`yaxlo*yoffset_yr`,0,0,0.12,~`yr_start+yrs-1` ;\
+       REPEAT/RANGE=1:4:1/NAME=mons ( ;\      ! for JJAS 
+         define symbol mm = mnames[l=`mons`]                         ;\
+         label `(yrs-1)*4+mons`,`yaxlo*yoffset_mn`,0,0,0.11, `($mm)` ;\
+       ) ;\
+    )
+        
+! restore defaults
+  
+     PPL AXLSZE 0.1, 0.1
+     PPL AXLINT 2
+     PPL AXNMTC 0
+
+! remove unwated files
+
+     sp rm -f dummy.dat
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00017" href="msg00017.html">Discontinuous time axis  seen as continuous</a></strong>
+<ul><li><em>From:</em> Patrick Brockmann</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00017.html">Discontinuous time axis  seen as continuous</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00019.html">Re: Discontinuous time axis  seen as continuous</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00017.html">Thread Prev</a>][<a href="msg00019.html">Thread Next</a>][<A HREF="threads.html#00018">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

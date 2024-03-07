@@ -1,0 +1,240 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: title of variable -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sat, 25 Sep 2004 13:39:58 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409260209410.25006&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: C60FB424&#45;0EE1&#45;11D9&#45;AB5E&#45;0003935AA05C@mercury.oi.u&#45;tokai.ac.jp -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: title of variable</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00667.html">Thread Prev</a>][<a href="msg00661.html">Thread Next</a>][<A HREF="threads.html#00670">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: title of variable</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: title of variable</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 26 Sep 2004 02:12:42 +0530 (IST)</li>
+<li>Cc: Hiroyuki Tomita &lt;<a href="mailto:tomita@DOMAIN.HIDDEN">tomita@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00667.html">C60FB424-0EE1-11D9-AB5E-0003935AA05C@mercury.oi.u-tokai.ac.jp</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Hiroyuki Tomita,
+                    Let us &quot;ferretize&quot; things. In your first mail you mensioned
+that you are reading a netCDF file &quot;created in Ferret&quot;. In this case you can get 
+a proper title to the variable if you are assigning one, before writing it to the 
+output file using &quot;SAVE&quot; command. So in that case there is no need to go for other 
+tools or workarounds. I think it will be a good habit to assign a proper title
+and unit to the variable (if it does't have these) when the variable is in its
+final form (to be plotted or written).
+
+Example : 
+
+     set data monthly_navy_winds
+
+     let uwnd_85 = uwnd[X=60,Y=0,T=&quot;02-JAN-1985&quot;:&quot;30-DEC-1985&quot;@SBX:3]
+     set var/title=&quot;Zonal Wind Speed (From navy_winds : 3pts smoothed)&quot;/units=&quot;m/s&quot; uwnd_85
+    
+     plot uwnd_85
+
+     sp rm -f uwnd_85_navy_60E_0N.nc  ! to remove previous version of the file
+     save/file=uwnd_85_navy_60E_0N.nc/append uwnd_85 
+
+
+ Hope This Helps
+
+ With Regards
+
+ Jaison
+
+
+
+On Sat, 25 Sep 2004, Hiroyuki Tomita wrote:
+
+&gt; Dear Ferret users,
+&gt; 
+&gt; 
+&gt; 
+&gt; I'm sorry for my late reply and I want to thank you for your helps!
+&gt; My problem was solved.
+&gt; 
+&gt; I summarize the problem and its answers here.
+&gt; 
+&gt; 
+&gt; The additional string &quot;(T=31-DEC-1991 12:00:31-DEC-1992 12:00)&quot; was
+&gt; in my NetCDF file as following
+&gt; 
+&gt; yes? sho data
+&gt;       currently SET data sets:
+&gt;      1&gt; ./NRA1_WND_6HR_DAILY_1992-2000.nc  (default)
+&gt;   name     title                             I         J         K       
+&gt;    L
+&gt;   WND      NRA1 Wind Speed                  1:192     1:94      ...      
+&gt;   1:3288
+&gt;         (T=31-DEC-1991 12:00:31-DEC-1992 12:00)
+&gt; 
+&gt; I want to erase this string.
+&gt; 
+&gt; This comes from that when we &quot;regrid&quot; a data or append some NetCDF 
+&gt; files.
+&gt; 
+&gt; Using command ncdump -h in Unix command line,
+&gt; I confirmed this string is stored in the attribute &quot;long_name_mod&quot;.
+&gt; We can not edit this attribute in Ferret.
+&gt; 
+&gt; To avoid this problem, three methods are suggested by ferret users.
+&gt;    1. Using Ferret
+&gt;    2. Using command ncatted in NCO
+&gt;    3. Using command ncdump and ncgen
+&gt; 
+&gt; 1. Using Ferret
+&gt;    Define new variable with new title
+&gt;   (then &quot;long_name_mod&quot; is not inherited to new variable) as following
+&gt; 
+&gt;    let/title=&quot;NRA1 Wind Speed&quot; new_var = var_with_unconvenient_title
+&gt;    save/file=new_file.nc/clobber new_var
+&gt; 
+&gt; This method is very easy but a changing variable name is required.
+&gt; 
+&gt; 
+&gt;   2. Using command ncatted in NCO
+&gt;    ncatted can edit any attriibute in NetCDF.
+&gt; To erase the strings stored in attribute &quot;long_name_mod&quot;,
+&gt; 
+&gt; ncatted -a long_name_mod,WND,d,c,&quot;&quot; NRA1_WND_6HR_DAILY_1992-2000.nc 
+&gt; test.cdf
+&gt; 
+&gt; This method is very smart.  But we must install NCO in a system.
+&gt; 
+&gt; 
+&gt; 3. Using command ncdump and ncgen
+&gt;    If the file is small (some MB), we can also use ncdump and ncgen
+&gt;    ncdump your_file.nc &gt; your_file.dta
+&gt; 
+&gt; Use a good ASCII-editor (nothing like word) to
+&gt; change the header as you like.
+&gt; 
+&gt; ncgen -b -o your_new_file.nc your_file.dta
+&gt; 
+&gt; 
+&gt; 
+&gt; Thank you.
+&gt; 
+&gt; Sincerely,
+&gt; 
+&gt; 
+&gt; Hiroyuki Tomita
+&gt; 
+&gt; On 2004/09/23, at 13:13, Hiroyuki Tomita wrote:
+&gt; 
+&gt; &gt; Dear Ferret Users,
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; I have a small question for ferret.
+&gt; &gt;
+&gt; &gt; I read a NetCDF file created by ferret
+&gt; &gt; and then the command &quot;show data&quot; gives following result.
+&gt; &gt;
+&gt; &gt; yes? sho data
+&gt; &gt;      currently SET data sets:
+&gt; &gt;     1&gt; ./NRA1_WND_6HR_DAILY_1992-2000.nc  (default)
+&gt; &gt;  name     title                             I         J         K      
+&gt; &gt;    L
+&gt; &gt;  WND      NRA1 Wind Speed                  1:192     1:94      ...     
+&gt; &gt;   1:3288
+&gt; &gt;        (T=31-DEC-1991 12:00:31-DEC-1992 12:00)
+&gt; &gt;
+&gt; &gt; yes?
+&gt; &gt;
+&gt; &gt; I want to erace the string &quot;(T=31-DEC-1991 12:00:31-DEC-1992 12:00)&quot;
+&gt; &gt; because this string does not make sense in my NetCDF file.
+&gt; &gt; How can I do it?
+&gt; &gt;
+&gt; &gt; I guessed this string is title of variable,
+&gt; &gt; so I tried to re-title using follwing command
+&gt; &gt; set var/title=&quot;NRA1 Wind Speed&quot; WND
+&gt; &gt; But the string was not erased.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Best,
+&gt; &gt;
+&gt; &gt; Hiroyuki Tomita
+&gt; &gt;
+&gt; &gt;
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00667" href="msg00667.html">Re: title of variable</a></strong>
+<ul><li><em>From:</em> Hiroyuki Tomita</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00667.html">Re: title of variable</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00661.html">non-standard axes</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00667.html">Thread Prev</a>][<a href="msg00661.html">Thread Next</a>][<A HREF="threads.html#00670">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Question about Making NaN.. -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sat, 25 Sep 2004 12:05:26 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409260036280.24827&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4155896C.8090707@ocean.washington.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Question about Making NaN..</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00668.html">Thread Prev</a>][<a href="msg00673.html">Thread Next</a>][<A HREF="threads.html#00669">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Question about Making NaN..</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Question about Making NaN..</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 26 Sep 2004 00:38:55 +0530 (IST)</li>
+<li>Cc: jammal Tanclei &lt;<a href="mailto:jamaalzzz@DOMAIN.HIDDEN">jamaalzzz@xxxxxxxxxxx</a>&gt;,  Jordan Dawe &lt;<a href="mailto:freedryk@DOMAIN.HIDDEN">freedryk@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00668.html">4155896C.8090707@ocean.washington.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Jordan &amp; Jammal Tanclei,
+                            The two variable method will make all values .GE. 0 
+missing values ( I think the expression &quot;missing_value&quot; wiil be more appropriate
+than &quot;NAN&quot; in the context of Ferret &amp; netCDF). 
+
+    yes? let dat  = {30,29,28.5,31,0,26,39,0,-31}
+    yes? let var1 = if dat lt 0.0 then dat
+    yes? let var  = if var1 gt 0.0 then dat else var1
+    yes? list var
+                 VARIABLE : IF VAR1 GT 0.0 THEN DAT ELSE VAR1
+                 SUBSET   : 9 points (X)
+     1   / 1:   ....
+     2   / 2:   ....
+     3   / 3:   ....
+     4   / 4:   ....
+     5   / 5:   ....
+     6   / 6:   ....
+     7   / 7:   ....
+     8   / 8:   ....
+     9   / 9: -31.00
+    yes?    
+
+If you want to convert only &quot;0.0&quot; to missing value then ;
+
+  method.1 : set the &quot;bad&quot; (ie. missing ) value for the variable to 0.0
+             (This will not alter the &quot;effect of&quot; a previous missing_value, if
+               exists)
+              
+    
+    yes? let dat  = {30,29,28.5,31,0,26,39,0,-31}
+    yes? set var/bad=0.0 dat
+    yes? list dat
+                 VARIABLE : {30,29,28.5,31,0,26,39,0,-31}
+                 SUBSET   : 9 points (X)
+     1   / 1:  30.00
+     2   / 2:  29.00
+     3   / 3:  28.50
+     4   / 4:  31.00
+     5   / 5:   ....
+     6   / 6:  26.00
+     7   / 7:  39.00
+     8   / 8:   ....
+     9   / 9: -31.00
+    yes?     
+
+  method.2 : Define a new variable so that &quot;0.0&quot; will be missing value
+
+    yes? let dat  = {30,29,28.5,31,0,26,39,0,-31}   
+    yes? let dat1 = IF dat LT 0 OR dat GT 0 THEN dat
+    yes? list dat1
+                 VARIABLE : IF DAT LT 0 OR DAT GT 0 THEN DAT
+                 SUBSET   : 9 points (X)
+     1   / 1:  30.00
+     2   / 2:  29.00
+     3   / 3:  28.50
+     4   / 4:  31.00
+     5   / 5:   ....
+     6   / 6:  26.00
+     7   / 7:  39.00
+     8   / 8:   ....
+     9   / 9: -31.00
+    yes?
+
+
+ Hope this helps
+
+ With Regards
+
+ Jaison
+
+
+On Sat, 25 Sep 2004, Jordan Dawe wrote:
+
+&gt; jammal Tanclei wrote:
+&gt; 
+&gt; &gt; Hi, Ferret Users.
+&gt; &gt;  
+&gt; &gt; I need to change the value of 0.0 to &quot;NaN&quot; because after that I'm 
+&gt; &gt; going to use function of @FLN to do interpolation at the boundary of land.
+&gt; &gt;  
+&gt; &gt; Is there anybody to help me?
+&gt; &gt;  
+&gt; 
+&gt; You can do something like this:
+&gt; 
+&gt; let var1 = if data lt 0.0 then data
+&gt; let var = if var1 gt 0.0 then data else var1
+&gt; 
+&gt; This should leave 0.0 undefined in var.
+&gt; 
+&gt; Jordan
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00668" href="msg00668.html">Re: Question about Making NaN..</a></strong>
+<ul><li><em>From:</em> Jordan Dawe</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00668.html">Re: Question about Making NaN..</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00673.html">2d-Plot with symbols</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00668.html">Thread Prev</a>][<a href="msg00673.html">Thread Next</a>][<A HREF="threads.html#00669">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

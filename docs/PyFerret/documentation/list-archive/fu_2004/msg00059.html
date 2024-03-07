@@ -1,0 +1,271 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: White band at edge of domain -->
+<!--X-From-R13: Xbanguna Qnyynuna <Xbanguna.E.QnyynunaNabnn.tbi> -->
+<!--X-Date: Wed, 28 Jan 2004 12:54:58 &#45;0800 -->
+<!--X-Message-Id: 40182223.1090204@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.LNX.4.10.10401281458150.23799&#45;100000@limpet.umeoce.maine.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: White band at edge of domain</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00058.html">Thread Prev</a>][<a href="msg00061.html">Thread Next</a>][<A HREF="threads.html#00059">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: White band at edge of domain</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: White band at edge of domain</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<a href="mailto:Jonathan.S.Callahan@DOMAIN.HIDDEN">Jonathan.S.Callahan@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 28 Jan 2004 12:57:07 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00058.html">Pine.LNX.4.10.10401281458150.23799-100000@limpet.umeoce.maine.edu</a>&gt;</li>
+<li>References: &lt;<a href="msg00058.html">Pine.LNX.4.10.10401281458150.23799-100000@limpet.umeoce.maine.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Steve,<br>
+<br>
+What version of Ferret are you using?<br>
+<br>
+<br>
+-- Jon<br>
+<br>
+<br>
+Steve Cousins wrote:<br>
+<blockquote type="cite"
+ cite="">
+  <pre wrap="">On Tue, 27 Jan 2004, Jonathan Callahan wrote:
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Steve,
+
+The first thing that occurs to me is that the modulo flag might not be 
+set for the longitude axis in the netCDF file.  This would cause the 
+behavior you describe.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Hi Jon,
+
+I've changed the data set to have:
+
+dimensions:
+	time = UNLIMITED ; // (12 currently)
+	latitude = 116 ;
+	longitude = 100 ;
+	depth = 25 ;
+	latitude_u = 116 ;
+	longitude_u = 100 ;
+variables:
+	float time(time) ;
+		time:long_name = "time" ;
+		time:units = "months since 15-DEC-2003 00:00:00" ;
+		time:time_origin = "15-DEC-2003 00:00:00" ;
+		time:modulo = " " ;	
+	float latitude(latitude) ;
+		latitude:units = "degrees" ;
+		latitude:long_name = "Latitude" ;
+	float longitude(longitude) ;
+		longitude:units = "degrees" ;
+		longitude:long_name = "Longitude" ;
+		longitude:modulo = " " ;
+	float latitude_u(latitude_u) ;
+		latitude_u:units = "degrees" ;
+	float longitude_u(longitude_u) ;
+		longitude_u:units = "degrees" ;
+		longitude_u:modulo = " " ;
+
+etc.
+
+Unfortunately it doesn't help as far as Ferret goes.  Ansley suggested a
+quick test doing:
+
+	define axis/modulo axisname
+
+I tried a number of variations of this with no luck, however, I was
+successful with:
+
+	set axis/modulo longitude
+
+So, that works with Ferret.  The data I'm working with is actually on a
+restricted LAS server and LAS doesn't seem to be picking up the
+information about the modulo longitude variable (I did addXml.pl and then
+make) or something else is going on because LAS still shows the White
+line. 
+
+With the modulo attribute set in the netCDF file should I have to do
+anything else in Ferret (define axis, or set axis) in order to have ferret
+overlap the longitudes correctly?  With modulo set should I be able to do:
+
+use l.nc
+fill/X=-180:180/k=5/t=1 DIAT
+
+and not have the line under Africa?  Currently this works only if I also
+do: set axis/modulo longitude.  This would be fine if I was just using
+Ferret, but with LAS it might complicate things a little.  Do I need to
+put something in the las.xml file for this?  Depending on the answers I
+get above I'll move my questions to the LAS email list.
+
+Thanks very much,
+
+Steve
+
+
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">
+-- Jon
+
+
+Steve Cousins wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <blockquote type="cite">
+        <pre wrap="">Hi,
+
+I have a netCDF file that has longitudes from 23.4 degrees to 379.8
+degrees stepping by 3.6 degrees.
+
+longitude = 23.4, 27, 30.6, 34.2, 37.8, 41.4, 45, 48.6, 52.2, 55.8, 59.4,
+63, 66.6, 70.2, 73.8, 77.4, 81, 84.6, 88.2, 91.8, 95.4, 99, 102.6, 106.2,
+109.8, 113.4, 117, 120.6, 124.2, 127.8, 131.4, 135, 138.6, 142.2, 145.8,
+149.4, 153, 156.6, 160.2, 163.8, 167.4, 171, 174.6,178.2, 181.8, 185.4,
+189, 192.6, 196.2, 199.8, 203.4, 207, 210.6, 214.2, 217.8, 221.4, 225,
+228.6, 232.2, 235.8, 239.4, 243, 246.6, 250.2, 253.8, 257.4, 261, 264.6,
+268.2, 271.8, 275.4, 279, 282.6, 286.2, 289.8, 293.4, 297, 300.6, 304.2,
+307.8, 311.4, 315, 318.6, 322.2, 325.8, 329.4, 333, 336.6, 340.2, 343.8,
+347.4, 351, 354.6, 358.2, 361.8, 365.4, 369, 372.6, 376.2, 379.8 ;
+	
+If I do:
+
+	fill/k=1/l=1 SSH
+
+It looks fine.  If I do:
+
+	fill/i=21:120/k=1/l=1 SSH
+
+to shift the the plot then there is a vertical white line that goes
+through Africa.  You can see this at:
+
+	<a class="moz-txt-link-freetext" href="">http://rocky.umeoce.maine.edu/images/problem.gif</a>
+
+I assume this has to do with some overlap problem but I
+haven't seen it before with other similar data sets.  I've checked the
+data and there is data in the last column so it shouldn't be interpreted
+as land.  For instance:
+
+ 379.4641, 382.4534, 358.5003, 356.5043, 353.662, 359.2267, 365.5977, 
+   369.4947, 392.3723, 374.757, 372.0594, 389.124, 390.5706, 391.9053, 
+   393.023, 397.463, 375.3581, 371.0126, 372.924, 392.4577, 373.5735, 
+   364.2137, 364.4178, 372.6771, 392.912, 378.2903, 369.8222, 391.9157, 
+   370.6215, 371.5577, 371.0256, 377.0153, 374.279, 386.7569, 390.8015, 
+   371.6572, 365.4334, 366.7746, 364.0185, 362.7578, 379.4369, 377.3554, 
+   375.8331, 376.2615, 376.9933, 378.4856, 379.1119, 369.9149, 373.0526, 
+   376.518, 378.6648, 381.4642, 382.6173, 383.2715, 384.5013, 384.4879, 
+   384.6168, 386.2058, 386.3334, 384.5129, 383.7413, 384.0238, 384.1737, 
+   384.5389, 384.4421, 382.0946, 380.4161, 384.2753, 386.06, 384.2455, 
+   383.0246, 381.7079, 383.1534, 385.2602, 386.4101, 370.0849, -1e+34, 
+   368.7702, 362.1729, 358.6587, 360.2878, 362.5882, 363.6682, 367.4212, 
+   374.6625, 380.5357, 384.4504, 386.2372, 387.3375, 386.3895, 383.0319, 
+   381.321, 381.4418, 383.392, 382.2667, 382.2667, 380.2295, 376.7909, 
+   379.5762, 378.9742,
+
+This is at 66 degrees South which has valid entries for almost all of the
+horizontal grid points.  -1e+34 is the land value.
+
+Has anyone seen this before?  Any ideas about how to bridge the gap?  This
+is version 5.51 on a Redhat Linux 7.3 server.
+
+Thanks,
+
+Steve
+_____________________________________________________________
+Steve Cousins                 Email: <a class="moz-txt-link-abbreviated" href="">cousins@umit.maine.edu</a>
+Research Associate            Phone: (207) 581-4302
+Ocean Modeling Group
+School of Marine Sciences     208 Libby Hall
+University of Maine           Orono, Maine 04469
+
+
+ 
+
+        </pre>
+      </blockquote>
+      <pre wrap="">
+      </pre>
+    </blockquote>
+  </blockquote>
+  <pre wrap=""><!---->
+
+
+
+
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00058" href="msg00058.html">Re: White band at edge of domain</a></strong>
+<ul><li><em>From:</em> Steve Cousins</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00058.html">Re: White band at edge of domain</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00061.html">Re: White band at edge of domain</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00058.html">Thread Prev</a>][<a href="msg00061.html">Thread Next</a>][<A HREF="threads.html#00059">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

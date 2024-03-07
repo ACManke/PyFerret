@@ -1,0 +1,221 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: how to assign (spawn) arguments in batch -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sat, 12 Jun 2004 04:29:03 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0406121631120.12634&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1086901806.3806.27.camel@ollin -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how to assign (spawn) arguments in batch</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00439.html">Thread Prev</a>][<a href="msg00440.html">Thread Next</a>][<A HREF="threads.html#00441">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how to assign (spawn) arguments in batch</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how to assign (spawn) arguments in batch</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 12 Jun 2004 17:01:24 +0530 (IST)</li>
+<li>Cc: Hector Manzo &lt;<a href="mailto:manzo@DOMAIN.HIDDEN">manzo@xxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00439.html">1086901806.3806.27.camel@ollin</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Hector Manzo,
+                 From the error messages, it seems that the problem is with 
+the syntax. In your case, at a time 'cont' will have only one value. Let it 
+be 300..like 
+
+ [user@machine]$ echo 300 &gt; cont
+ 
+ In ferret..
+
+ yes? let lo = &quot;`{spawn:&quot;more cont&quot;}`&quot;    ! note the change in syntax
+ yes? define axis/t=`lo`:`lo`:1 tiempo    ! note the change in syntax
+ yes? list t[gt=tiempo]
+              VARIABLE : T
+                        axis TIEMPO
+             T        : 300
+          300.0
+
+Regarding grave accents :
+Ferret supports  numerical expressions that may be embedded anywhere 
+within a command line. These expressions are evaluated immediately by 
+Ferret-before the command itself is parsed and executed. Immediate 
+mode expressions are enclosed in grave accents.
+For more details refer user manual : 
+	Ch3 Sec3. EMBEDDED EXPRESSIONS
+        Ch7 Sec5. USE WITH EMBEDDED EXPRESSIONS
+        Ch1 Sec4. COMMAND SYNTAX
+
+ Andrew Wittenberg detailed the usage of &quot;spawn&quot; in one of his earlier 
+mail : 
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01166.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01166.html</a>
+
+You can also use linux commads like &quot;head&quot;, &quot;tail&quot; or &quot;cat&quot; instead of 
+&quot;more&quot;.
+
+Hope this helps
+
+With Regards 
+
+Jaison
+ 
+
+On 10 Jun 2004, Hector 
+Manzo wrote:
+
+&gt; Hi!
+&gt; I am trying to do some loop with shell scripting and passing arguments!
+&gt; to ferret by means of a counter. The intention is to vary time axis and
+&gt; create a XYT cdf file from xy individual files. Following my scripts:
+&gt; ====================0===============
+&gt; #!/bin/sh
+&gt; for (( i = $1; i &lt;= $2; i++ ))
+&gt; do
+&gt; .
+&gt; .
+&gt; &quot;some stuff&quot;
+&gt; .
+&gt; .
+&gt; grd2xyz sst.grd -R210/285/-5/33 -ZBLa -V &gt; salida
+&gt; awk '{if ($1 == &quot;NaN&quot;) print -999; else print $1}' salida &gt; dato
+&gt; echo $i &gt; cont
+&gt; 
+&gt; ferret &lt;&lt; eof
+&gt; let lo = '{spawn:&quot;more cont&quot;}'
+&gt; list lo
+&gt; go junta.jnl
+&gt; eof
+&gt; done
+&gt; exit
+&gt; =============0=========
+&gt; !ferret answers with errors!
+&gt; ==============0===========
+&gt; NOAA/PMEL TMAP
+&gt;         FERRET v5.60
+&gt;         Linux(g77) 2.4.20 - 04/08/04
+&gt;          9-Jun-04 15:50
+&gt; 
+&gt; yes? let lo = '{spawn:&quot;more cont&quot;}'
+&gt; ls: FER_DIR/ext_func/libs/: No such file or directory
+&gt; yes? list lo
+&gt;  **ERROR: variable unknown or not in data set: '{spawn:&quot;more cont&quot;}'
+&gt; yes? go junta.jnl
+&gt; use sst_2004.cdf
+&gt; define axis/x=210:284.95:0.05 lon
+&gt; Replacing definition of axis LON
+&gt;  *** NOTE: grid  used by data set sst_2004
+&gt;  *** NOTE: Redefinition may alter apparent contents of data set
+&gt; define axis/y=-5:32.95:0.05 lat
+&gt; define axis/t=lo:lo:1 tiempo
+&gt;  **ERROR: command syntax: lo
+&gt; define axis/t=lo:lo:1 tiempo
+&gt; Command file, command group, or REPEAT execution aborted
+&gt; yes?
+&gt; 
+&gt; 
+&gt; ===============0=================
+&gt; junta.jnl contains:
+&gt; 
+&gt; use sst_2004.cdf
+&gt; define axis/x=210:284.95:0.05 lon
+&gt; define axis/y=-5:32.95:0.05 lat
+&gt; define axis/t=lo:lo:1 tiempo
+&gt; define grid/X=lon/Y=lat/T=tiempo rejilla
+&gt; file/var=sst/grid=rejilla dato
+&gt; save/append/file=sst_2004.cdf sst
+&gt; cancel data dato
+&gt; exit
+&gt; 
+&gt; ==================0=====================
+&gt; 
+&gt; 
+&gt; ext_func.libs error message seems not to be fatal, I have done ok work
+&gt; with this
+&gt; message.
+&gt; 
+&gt; I appreciate your help
+&gt; 
+&gt; Hector Manzo
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00439" href="msg00439.html">how to assign (spawn) arguments in batch</a></strong>
+<ul><li><em>From:</em> Hector Manzo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00439.html">how to assign (spawn) arguments in batch</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00440.html">Can you use ferret to do spatial spectral analysis?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00439.html">Thread Prev</a>][<a href="msg00440.html">Thread Next</a>][<A HREF="threads.html#00441">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

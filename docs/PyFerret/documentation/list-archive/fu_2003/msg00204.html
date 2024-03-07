@@ -1,0 +1,136 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: extracting the netCDF data within the polygon path (ascii) -->
+<!--X-From-R13: Oaqerj Ivggraoret <ngjNtsqy.abnn.tbi> -->
+<!--X-Date: Thu, 6 Mar 2003 16:39:32 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.LNX.4.44.0303061847240.12695&#45;100000@atw -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.4.50.0303061821590.3645&#45;100000@nabla.geosc.psu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: extracting the netCDF data within the polygon path (ascii)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00203.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00204">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: extracting the netCDF data within the polygon path (ascii)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Dong-Ha Min &lt;<a href="mailto:dmin@DOMAIN.HIDDEN">dmin@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: extracting the netCDF data within the polygon path (ascii)</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:atw@DOMAIN.HIDDEN">atw@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 06 Mar 2003 19:40:38 -0500 (EST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00203.html">Pine.GSO.4.50.0303061821590.3645-100000@nabla.geosc.psu.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Thu, 6 Mar 2003, Dong-Ha Min wrote:
+&gt; &gt; Dong-Ha Min wrote:
+&gt; &gt; &gt; I want to extract the data from a netCDF-format file for a specific
+&gt; &gt; &gt; geographic region defined by the irregular-shape polygon paths in a
+&gt; &gt; &gt; separate ascii file. Can someone guide me step by step how to do this?
+&gt; &gt; &gt;
+&gt; &gt; &gt; For example, say, I have a levitus_climatology.cdf (data 1) and want to
+&gt; &gt; &gt; extract the sea surface temperature from the region given by data 2 (see
+&gt; &gt; &gt; below).
+&gt; &gt; &gt;
+&gt; &gt; &gt; data2 (lon, lat)
+&gt; &gt; &gt; ---------------
+&gt; &gt; &gt; 160.5 20.5
+&gt; &gt; &gt; 160.5 30.5
+&gt; &gt; &gt; 170.5 30.5
+&gt; &gt; &gt; 170.5 20.5
+&gt; &gt; &gt; 160.5 20.5
+
+Hi Dong-Ha,
+
+For simple polygons or curves, you can do this with masking (IF..THEN)  
+statements; you just give the equations for the edges.  An example:
+
+use coads_climatology
+let xd = (x[g=sst]-210)/180
+let yd = y[g=sst]/90
+let/title=&quot;SST snowcone&quot;/unit=&quot;`sst,r=unit`&quot; sst_snowcone = \
+   IF yd LT (.3^2-xd^2)^.5 AND yd GT 2*abs(xd)-.6 THEN sst
+set window/asp=1.3 1
+cancel view
+set view upper; shade/l=1 sst_snowcone; go land
+set view lower; plot sst_snowcone[x=@ave,y=@ave]
+
+The bottom plot is an average over the &quot;valid&quot; snowcone region.
+
+For more complex polygons or curves, such as cruise or flight paths, you
+could create a script to determine the equations from a supplied list of
+waypoints, and then build up the mask step-by-step.  You might have to
+create some temporary files to contain the masks at intermediate steps,
+since there's a limit on the complexity of IF..THEN statements.
+
+Andrew
+
++--------------------------------------------------------+
+|   Dr. Andrew T. Wittenberg   |        GFDL/NOAA        |
+|      atw@gfdl.noaa.gov       |      Princeton, NJ      |
++--------------------------------------------------------+
+
+
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00203" href="msg00203.html">Re: extracting the netCDF data within the polygon path (ascii)</a></strong>
+<ul><li><em>From:</em> Dong-Ha Min</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00203.html">Re: extracting the netCDF data within the polygon path (ascii)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00217.html">Re: extracting the netCDF data within the polygon path (ascii)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00203.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00204">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: logarithmic scale using FILL command -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Sun, 13 Jun 2004 13:44:35 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0406140205290.8003&#45;200000@caos.iisc.ernet.in -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 1086179219.28021.13.camel@hades.uqar.qc.ca -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: logarithmic scale using FILL command</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00442">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: logarithmic scale using FILL command</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: logarithmic scale using FILL command</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 14 Jun 2004 02:17:05 +0530 (IST)</li>
+<li>Cc: Vincent Le Fouest &lt;<a href="mailto:vincent_lefouest@DOMAIN.HIDDEN">vincent_lefouest@xxxxxxxxxx</a>&gt;,  &lt;<a href="mailto:jfiechter@DOMAIN.HIDDEN">jfiechter@xxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00426.html">1086179219.28021.13.camel@hades.uqar.qc.ca</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ferreters,
+                Finally we started discussing about logarithmic color key.
+Earlier Jerome posted a querry but it went unanswered (
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01065.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg01065.html</a>).
+
+Paulo's method is simple and straight forward but it will give only logarithmic
+labeling for default, equaly spaced colors of the color key.
+
+ Here is a go file(attached) to get a continuous logarithmic color key 
+with logarithmic labelling and gradient for colors. The method to get a 
+color key in a seperate viewport is adapted from one of Mick Spillane's 
+mail in the archive 
+(<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2002/msg00055.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2002/msg00055.html</a>). 
+
+Important steps are
+
+   1. define three viewports ; 
+        bigger one for fill/shade plot with &quot;levels&quot; suitable
+           for a logarithmic color key.
+        two smaller viewports with the same xlim, ylim &amp; text  
+           for the color key.
+   2. define a log y_axis for getting colors in the key viewport.
+   3. use one of the smaller viewport to get the logarithmic 
+        tics and labels with /vlog qualifier to plot command.
+   4. use the second smaller viewport to get the color with a 
+        logarithmic gradient.
+   5. make the fill/shade plot with /nokey qualifier in the 
+        bigger viewport. This is done at the end of the go script
+        because for further labellng or other plotting purposes we 
+        need the bigger viewport as the active one. 
+
+But this method have following disadvantages
+
+  1. &quot;levels&quot; of fill/shade will be fixed according to the given maximum
+        and minimum values of the key(should be integer powers of 10).
+  2. Only vertically oriented color key is possible (according to
+        present form; can be modified to get a horizontal one).
+  3. If we want to change the size of the viewport for the main plot
+        then we have to manually adjust the position and size of the 
+        color key through optional arguments ($6-$10)
+  4. Current script will draw a color key for values between 
+        1(10^0) &amp; 100000(10^5) ; this can be modified.
+  5. fill/shade levels cannot modified according to exact maximum/
+        minimum of data values.
+           let minimum value to be filled be 20 &amp; 
+               maximum  &quot;                 be 800
+           then the only one possible option for &quot;levels&quot; is 
+               /levels=&quot;(10,100,10)(100,1000,100)&quot; 
+             Thus the unwated regions (10-20 &amp; 800-1000) also will
+             be included in the fill/shade range &amp; in the color key.
+  6. color key will be drawn before the shade/fill plot !!!!
+
+  But the advantage is that we will get a neat continuous logarithmic 
+color key.
+
+Usage :
+go log_key key_low key_high variable [view_main] [fill_command] [key_xlo] 
+[key_xhi] [key_ylo] [key_yhi] [key_txt]
+
+Example :
+	set data etopo20.cdf
+	set region/x=29.8:120/y=-20.2:50
+   	define view/xlim=0:0.96/ylim=0:1 vmain
+        go log_key 1, 10000,&quot;rose[d=1]&quot;,vmain,&quot;fill/nokey&quot;,0.81,1.00,0.10,0.90,0.50
+
+
+If there is any bugs/problems please post it back to the mailing list. 
+
+With Regards 
+
+Jaison
+
+
+On 2 Jun 2004, Vincent Le Fouest wrote:
+
+&gt; Dear Ferret users,
+&gt; 
+&gt; I would be interested to use a logarithmic scale using the FILL command
+&gt; but I cannot find anything in the FAQ or Ferret documentation. Would
+&gt; somebody have an idea about that?
+&gt; 
+&gt; Kind regards,
+&gt; 
+&gt; Vincent 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+</pre>
+<pre>\ cancel mode verify
+!
+! log_key.jnl 
+!
+! Description : makes a vertical lograthmic color key for shade/fill plots for
+!                 given min &amp; max values, variable &amp; viewport(main).  
+!                 $6-$10 needs to be adjusted to get the key at the 
+!                 required location with required size
+!
+! Argument      description
+! --------      ------------------------------------------------------------
+! Mandatory argumnets
+! $1 (int)  : lower value of the color key ; should be an integer power(0-4) of 10 
+! $2 (int)  : high        &quot;                ;          &quot;           power(1-5) of 10
+! $3 (text) : variable to be filled/shaded in double quotes like &quot;rose[d=1]&quot;
+!
+! Optional arguments
+! $4 (text) : name of main view port (like vmain)
+! $5 (text) : fill/shade command with qualifiers in double quotes like
+!                  &quot;fill/nolab/nokey&quot; (defualt is &quot;fill/nokey&quot;)
+! $6 (real) : key position : x_low     |  default values of $6-$10 is for making 
+! $7 (real) :   &quot;          : x_high    |  a color key of a main viewport defined with
+! $8 (real) :   &quot;          : y_low     |  xlim=0:0.96/ylim=0:1 (window aspect=1.0)
+! $9 (real) :   &quot;          : y_high    | 
+! $10(real) : key size     : text ( /text qualifier to &quot;define view&quot; )
+!
+! Usage : 
+!    go log_key key_low key_high variable [view_main] [fill_command] [key_xlo] [key_xhi] [key_ylo] [key_yhi] [key_txt]
+! 
+! Example :
+!	set data etopo20.cdf
+!	set region/x=29.8:120/y=-20.2:50
+!	go log_key 1, 10000,&quot;rose[d=1]&quot;   ! &lt;== with minimum argumnets
+!               .....OR.....
+!   	define view/xlim=0:0.96/ylim=0:1 vmain
+!       go log_key 1, 10000,&quot;rose[d=1]&quot;,vmain,&quot;fill/nokey/nolab&quot;,0.81,1.00,0.10,0.90,0.50
+!                                               ! &lt;== with all arguments
+!-----------------------------------------------------------------------------------------
+
+! mandatory
+   let key_lo = $1&quot;&lt;Usage: go log_key key_low key_high variable [view_main] [fill_command] [key_xlo] [key_xhi] [key_ylo] [key_yhi] [key_txt] &quot;
+   let key_hi = $2&quot;&lt;Usage: go log_key key_low key_high variable [view_main] [fill_command] [key_xlo] [key_xhi] [key_ylo] [key_yhi] [key_txt]&quot;
+   define symbol var    = $3&quot;&lt;Usage: go log_key key_low key_high variable [view_main] [fill_command] [key_xlo] [key_xhi] [key_ylo] [key_yhi] [key_txt] &quot; 
+
+! optional
+   define symbol vmn    = $4&quot;vdummy&quot; 
+   define view/xlim=0:0.96/ylim=0:1 vdummy
+   define symbol comnd  = $5&quot;fill/nokey&quot;
+   let keyxlo = $6&quot;0.81&quot;  
+   let keyxhi = $7&quot;1.00&quot;  
+   let keyylo = $8&quot;0.10&quot;  
+   let keyyhi = $9&quot;0.90&quot;  
+   let keytxt = $10&quot;0.50&quot;  
+
+
+! consistancy check for the arguments 
+       ! this is to make sure that the &quot;levels&quot; needed to make the log color 
+       ! key can be safely defined from the given arguments      
+           
+        let a = log(key_lo) ; let b = log(key_hi) 
+
+        IF `INT(a) LT a` THEN
+              say &quot; key_low -&gt; $1 is not an integer power of 10 : correct it &quot;
+              exit
+        ENDIF 
+        IF `INT(b) LT b` THEN
+              say &quot; key_high -&gt; $2 is not an integer power of 10 : correct it &quot;
+              exit
+        ENDIF 
+        IF `a GT b` THEN 
+              say &quot; key_low{$1} &gt; key_high{$2} : CORRECT key_low &amp; key_high &quot;
+              exit
+        ENDIF 
+        IF `key_lo LT 1` THEN 
+              say &quot; with current set up, the possible min value of &quot;
+              say &quot;     key_low  is  1  but given value is $1&quot;
+              exit
+        ENDIF 
+        IF `b GT 5` THEN
+              say &quot; with current set up, the possible max value of &quot;
+              say &quot;     key_high is  100000  but given value is $2&quot;
+              exit
+        ENDIF
+
+! get the &quot;levels&quot; according to given key_low and key_high 
+    ! levs is the possible levels 
+
+        let levs = {'(1,10,1)', '(10,100,10)', '(100,1000,100)', \          
+                    '(1000,10000,1000)','(10000,100000,10000)'}                                    
+       	let lev`a+1` = levs[x=`a+1`]
+        IF `a+1 LT b` THEN
+	        repeat/i=`a+2`:`b`:1 ( ;\
+        	let lev`i` = lev`i-1` + levs[x=`i`] ;\
+                )
+        ENDIF
+        let lev_dummy  = lev`b`         
+        define symbol levf = `lev_dummy` 
+
+   ! define the fill command for the main plot as a &quot;symbol&quot;
+
+        define symbol qt   = \&quot;
+        define symbol cmnd = (\$comnd)/lev=(\$qt)(\$levf)(\$qt) (\$var)
+
+! save current reg to &quot;save&quot; &amp; set new reg as required by the key.
+   ! the log key will be drawn before the main fill/shade plot. 
+  
+        define region/default save  
+        define reg/x=1:2 kreg 
+        set reg kreg
+
+! define a x_axis and log y_axis (y_min is 1 and y_max is 100000)
+   ! the data points on y_axis (ie lev_da) should be exactly matching 
+   ! with the fill levels defined by levf (ie. levs).
+
+        let lev_da = {1,2,3,4,5,6,7,8,9,10,20,30,40,50,60,70,80,90, \
+		  100,200,300,400,500,600,700,800,900,1000,2000,\
+		  3000,4000,5000,6000,7000,8000,9000,10000,20000,\
+                  30000,40000,50000,60000,70000,80000,90000,100000} 
+
+        define axis/y ydummy=lev_da
+        define axis/y key_y=Y[gy=ydummy,y=`key_lo`:`key_hi`]
+        def axis/x=1:2:1 key_x 
+	let key_da=x[gx=key_x]-x[gx=key_x]+y[gy=key_y]
+        define axis/y ylog=LOG(Y[gy=key_y])
+
+! define two viewports with same xlimits,yilmits &amp; text
+    ! one vieport will be used for getting tics and labels
+    ! other vieport will be used for getting the colors
+         
+	define view/text=`keytxt`/xlim=`keyxlo`:`keyxhi`/ylim=`keyylo`:`keyyhi` key_v1
+	define view/text=`keytxt`/xlim=`keyxlo`:`keyxhi`/ylim=`keyylo`:`keyyhi` key_v2
+
+! tics and numeric lables
+
+        set view key_v1
+        ppl axset 0,0,0,1 ; ppl axlabp 0,1; ppl axlsze .15,.15
+        plot/vlog/i=1/nolab/color=white key_da[gy=ylog@asn]
+
+! lograthmic colors 
+
+        set view key_v2
+        ppl axlsze 0 0 ; ppl tics 0 0 0 0 0 0; ppl axset 1,1,1,1        
+	ppl axlabp -1 -1
+        fill/set/nolab/nokey/levels=($qt)($levf)($qt) key_da[gy=ylog@asn]
+        ppl fill
+
+! restore defaults
+
+        ppl axlsze .1,.1 ; ppl tics .125 .25 .125 .25 -1 -1
+        cancel reg kreg
+        SET REGION save
+
+! get the main fill/shade plot
+
+     ! for labelling or any other needs it is better to have the main viewport
+     ! as the active one.
+
+        set view ($vmn)
+        ($cmnd)
+
+! cancel defined symbols and variables
+
+  cancel var key* ;   cancel var lev* ; cancel var a ; cancel var b
+  cancel symbol cmnd,vmn,var,levf,qt,comnd
+
+! end of log_key.jnl
+
+  set mode/last verify
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00426" href="msg00426.html">logarithmic scale using FILL command</a></strong>
+<ul><li><em>From:</em> Vincent Le Fouest</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00429.html">Re: logarithmic scale using FILL command</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00430.html">regridding problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00429.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00442">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

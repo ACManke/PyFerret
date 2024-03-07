@@ -1,0 +1,147 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?) -->
+<!--X-From-R13: Ayvivre ODQVSD <byvivre.nepureNvserzre.se> -->
+<!--X-Date: Wed, 7 May 2003 09:04:53 &#45;0700 -->
+<!--X-Message-Id: 3EB92EA0.5070407@ifremer.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3EA9009C.4020902@ifremer.fr -->
+<!--X-Reference: 3EAFE2C2.90908@ifremer.fr -->
+<!--X-Reference: 3EB237FD.7090705@ifremer.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00333.html">Thread Prev</a>][<a href="msg00321.html">Thread Next</a>][<A HREF="threads.html#00349">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:contact_ferret@DOMAIN.HIDDEN">contact_ferret@xxxxxxxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</strong></li>
+<li><strong>From</strong>: <strong>Olivier ARCHER &lt;<a href="mailto:olivier.archer@DOMAIN.HIDDEN">olivier.archer@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 07 May 2003 18:04:48 +0200</li>
+<li>Organization: IFREMER (Tatie Veille)</li>
+<li>References: &lt;<a href="msg00318.html">3EA9009C.4020902@ifremer.fr</a>&gt; &lt;<a href="msg00323.html">3EAFE2C2.90908@ifremer.fr</a>&gt;&lt;<a href="msg00333.html">3EB237FD.7090705@ifremer.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.0.1) Gecko/20021003</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi,<br>
+		I really would like to have access to ferret source code to try to 
+handle the EROFS error corectly. Ferret sources are not avialable at 
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Downloads/linux_downloads.html">http://ferret.pmel.noaa.gov/Ferret/Downloads/linux_downloads.html</a> and I 
+have no more mail adresses than contact_ferret@pmel.noaa.gov and 
+ferret_users@ferret.wrc.noaa.gov.<br>
+<br>
+Can someone tell me someone to contact to send me the source so I can 
+patch it ?<br>
+<br>
+--<br>
+Olivier<br>
+<br>
+<br>
+Olivier Archer wrote:<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi,<br>
+   I've *temporary* solved my problem, with a so ugly hack:<br>
+I've overload the fopen libc function to set errno whith EACCES when it 
+is EROFS...<br>
+<br>
+#include &lt;stdlib.h&gt;<br>
+#include &lt;dlfcn.h&gt;<br>
+#include &lt;signal.h&gt;<br>
+#include &lt;errno.h&gt;<br>
+<br>
+<br>
+FILE *fopen(const char *path, const char *mode){<br>
+       static FILE *(*RealFopen)(const char *path, const char *mode)=0;<br>
+       FILE *fid;<br>
+<br>
+<br>
+ // set it up only once<br>
+ if (!RealFopen){<br>
+   RealFopen=dlsym(((void *) -1l), &quot;fopen&quot;);<br>
+   if (!RealFopen){<br>
+     fprintf(stderr, &quot;Fatal error - cannot find fopen()\n&quot;);<br>
+     abort();<br>
+   }<br>
+ }<br>
+<br>
+ fid= RealFopen(path,mode);<br>
+   /* force errno to be EACCES if it is EROFS */<br>
+ if( (fid == NULL) &amp;&amp; ( errno == EROFS ) ){ errno=EACCES; }<br>
+ return fid;<br>
+}<br>
+<br>
+%gcc -o fopen.so -shared fopen.c<br>
+%setenv LD_PRELOAD fopen.so<br>
+%ferret<br>
+<br>
+This hack permit me go ahead with LAS, but I think something is doable 
+source side...<br>
+<br>
+</blockquote><pre>
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00318" href="msg00318.html">Ferret open .jnl file rw ?</a></strong>
+<ul><li><em>From:</em> Olivier ARCHER</li></ul></li>
+<li><strong><a name="00323" href="msg00323.html">Re: Ferret open .jnl file rw ?</a></strong>
+<ul><li><em>From:</em> Olivier ARCHER</li></ul></li>
+<li><strong><a name="00333" href="msg00333.html">hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</a></strong>
+<ul><li><em>From:</em> Olivier Archer</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00333.html">hack to run ferret on RO FS. (Was Re: Ferret open .jnl file rw ?)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00321.html">zaxreplace and @iin</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00333.html">Thread Prev</a>][<a href="msg00321.html">Thread Next</a>][<A HREF="threads.html#00349">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

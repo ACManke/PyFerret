@@ -1,0 +1,360 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: with Descriptor file:  ** unknown netCDF error code: &#45;31 -->
+<!--X-From-R13: Oevaqnz Qunxenobegl <nepuNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 14 May 2004 23:01:25 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0405151122560.3179&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.10.10405141503390.6224&#45;100000@limpet.umeoce.maine.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: with Descriptor file:  ** unknown netCDF error code: -31</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: with Descriptor file:  ** unknown netCDF error code: -31</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: with Descriptor file:  ** unknown netCDF error code: -31</strong></li>
+<li><strong>From</strong>: <strong>Arindam Chakraborty &lt;<a href="mailto:arch@DOMAIN.HIDDEN">arch@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 15 May 2004 11:34:44 +0530 (IST)</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;, &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00381.html">Pine.LNX.4.10.10405141503390.6224-100000@limpet.umeoce.maine.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>hi Steve, Anasley,
+	did you try using a separate STEPFILE_RECORD for the last 
+file? It works fine in that way.
+
+***********************************************************
+...
+...
+&amp;STEPFILE_RECORD
+  S_FILENAME            = 'file.001',
+  S_AUX_SET_NUM         = 0,
+  S_START               = 1.0,
+  S_END                 = 228.0,
+  S_DELTA               = 1.0,
+  S_NUM_OF_FILES        = 19,
+  S_REGVARFLAG          = ' ',
+/
+&amp;STEPFILE_RECORD
+  S_FILENAME            = 'file.020',
+  S_AUX_SET_NUM         = 0,
+  S_START               = 229.0,
+  S_END                 = 239.0,
+  S_DELTA               = 1.0,
+  S_NUM_OF_FILES        = 1,
+  S_REGVARFLAG          = ' ',
+/
+&amp;STEPFILE_RECORD
+  S_FILENAME            = '**END OF STEPFILES**'
+/
+********************************************************
+
+Actually the number of time steps should be calculated as
+(S_END-S_START)/S_DELTA + 1
+
+(=239 in for you).
+
+
+Since in your case number of files are 20 (if you use one stepfile 
+record), it assumes that all these 239 values are equally divided to 
+all the 20 files and hence (as Ansley pointed out) the problem is with 
+stepping in between two files. Using the first stepfile record for the 
+first 19 similar files and another for the last file solves the total 
+problem.
+
+
+regards,
+------------------------------------------
+ ARINDAM CHAKRABORTY
+ Centre for Atmospheric &amp; Oceanic Sciences
+ Indian Institute of Science
+ Bangalore 560 012; INDIA
+ Tel: +91-80-22932505, +91-80-23600450
+ Fax: +91-80-23600865
+__________________________________________
+
+On Fri, 14 May 2004, Steve Cousins wrote:
+
+&gt; 
+&gt; 
+&gt; On Fri, 14 May 2004, Ansley Manke wrote:
+&gt; 
+&gt; &gt; Hi Steve,
+&gt; &gt; You're right, of course.  The time axis is indeed computed using 
+&gt; &gt; 
+&gt; &gt; (S_END - S_START+1)/S_DELTA
+&gt; &gt; 
+&gt; &gt; But the point is that the descriptor file wants the first and last step, in your 
+&gt; &gt; case 1 and 240 for a total of 20 years of 12 months each.  The user does 
+&gt; &gt; not have to worry about the +1; that is taken care of internally.  You have
+&gt; &gt; 240 time steps (middle-of-the-month values)  and you were thinking of 
+&gt; &gt; the boundaries between time steps (end-of-the-month).
+&gt; 
+&gt; Actually, what was confusing me was that the last data file has only 11
+&gt; slices in it so the total number of slices in all of the files is 239.
+&gt; This is why I set S_END to 239. However, I think I was trying to do
+&gt; something that wasn't supported by the descriptor file.  It was just luck
+&gt; that the missing month was the very last one in order for it to work at
+&gt; all.  For correctness I probably should have used a separate
+&gt; STEPFILE_RECORD for the last file.
+&gt;  
+&gt; &gt; Anyway, we got you off and going.
+&gt; 
+&gt; Yes you did.  Thanks very much.  It is a great help.  I thought I was
+&gt; going to have to start ncrcating :^(
+&gt; 
+&gt; Cheers,
+&gt; 
+&gt; Steve
+&gt;  
+&gt; 
+&gt; 
+&gt; 
+&gt; &gt; Ansley
+&gt; &gt; 
+&gt; &gt; Steve Cousins wrote:
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; On Fri, 14 May 2004, Ansley Manke wrote:
+&gt; &gt; 
+&gt; &gt;   
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Your time unit of 2629746 corresponds to monthly data.  (1/12 of 365.2425
+&gt; &gt; days).  You have
+&gt; &gt; 
+&gt; &gt;  S_START =   1,
+&gt; &gt;  S_END   =   239,
+&gt; &gt;  S_DELTA =   1,
+&gt; &gt; 
+&gt; &gt; I assume this corresponds to 20 years of data.  But the time axis is 
+&gt; &gt; computed
+&gt; &gt; using (S_END-S_START-1)/S_DELTA = (239-1)  months.  This is less than
+&gt; &gt; 20 years; and that looks to me like it's why you're seeing the error 
+&gt; &gt; message,
+&gt; &gt; 
+&gt; &gt;  WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE
+&gt; &gt;  INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY
+&gt; &gt; 
+&gt; &gt; Following the suggestion of usin g a DEFINE AXIS command
+&gt; &gt; to make the axis that you want, and using its steps to
+&gt; &gt; define your axis, if you want:
+&gt; &gt; 
+&gt; &gt; yes? def
+&gt; &gt;     
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; axis/t=15-jan-1980:15-dec-1999:1/units=months/t0=&quot;15-dec-1979:00:00&quot; tax
+&gt; &gt;   
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; yes? list t[gt=tax]
+&gt; &gt; 
+&gt; &gt; Then this suggests thatyou want S_END to be 240.
+&gt; &gt;     
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Hi Ansley, 
+&gt; &gt; 
+&gt; &gt; I gave it a try using 240 and it works!  It is a bit non-intuitive (for me
+&gt; &gt; anyway) though.  Rather than using (S_END-S_START-1)/S_DELTA I would have
+&gt; &gt; thought it would be (S_END-S_START+1)/S_DELTA.  I have 239 time slices so
+&gt; &gt; I would (and did) guess that S_END would be 1 and S_END would be 239.
+&gt; &gt; At least it works and it is a very easy fix.
+&gt; &gt; 
+&gt; &gt; Thanks very much,
+&gt; &gt; 
+&gt; &gt; Steve
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt;   
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Ansley Manke
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; Steve Cousins wrote:
+&gt; &gt; 
+&gt; &gt;     
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; I have a series of 20 netCDF files, each with 12 time slices (except the
+&gt; &gt; last file only has 11 time slices). I have a descriptor file to connect
+&gt; &gt; these:
+&gt; &gt; 
+&gt; &gt; &amp;FORMAT_RECORD
+&gt; &gt; D_TYPE	= '  MC',
+&gt; &gt; D_FORMAT	= '  1C',
+&gt; &gt; /
+&gt; &gt; &amp;BACKGROUND_RECORD
+&gt; &gt; D_TITLE	= 'BIOLOGY',
+&gt; &gt; D_T0TIME	= '15-dec-1979 00:00:00',
+&gt; &gt; D_TIME_UNIT	= 2629746.0,
+&gt; &gt; D_TIME_MODULO	= .false.,
+&gt; &gt; /
+&gt; &gt; &amp;MESSAGE_RECORD
+&gt; &gt; D_MESSAGE     = ' ',
+&gt; &gt; D_ALERT_ON_OPEN      = F,
+&gt; &gt; D_ALERT_ON_OUTPUT    = F,
+&gt; &gt; /
+&gt; &gt; &amp;EXTRA_RECORD
+&gt; &gt; /
+&gt; &gt; &amp;STEPFILE_RECORD
+&gt; &gt; S_FILENAME    = '/neptune/usr2/pacific-g-46-99/bio.cdf.001',
+&gt; &gt; S_AUX_SET_NUM   =           0,
+&gt; &gt; S_START =   1,
+&gt; &gt; S_END   =   239,
+&gt; &gt; S_DELTA =   1,
+&gt; &gt; S_NUM_OF_FILES  =           20,
+&gt; &gt; S_REGVARFLAG    = '     ',
+&gt; &gt; S_INDEX = '                       '
+&gt; &gt; / 
+&gt; &gt; &amp;STEPFILE_RECORD
+&gt; &gt;  S_FILENAME    = '**END OF STEPFILES**'
+&gt; &gt; /
+&gt; &gt; 
+&gt; &gt; In ferret I periodically (every 12 slices) get:
+&gt; &gt; 
+&gt; &gt; 	** unknown netCDF error code: -31
+&gt; &gt; 
+&gt; &gt; Here is an example:
+&gt; &gt; 
+&gt; &gt; [ferret@rocky server]# ferret
+&gt; &gt; 	NOAA/PMEL TMAP
+&gt; &gt; 	FERRET v5.53  
+&gt; &gt; 	Linux(g77) 2.4.x - 09/26/03
+&gt; &gt; 	14-May-04 13:02     
+&gt; &gt; 
+&gt; &gt; yes?  set data &quot;/usr2/fer_dsets/descr/bio-g-80-99.des&quot;
+&gt; &gt; WARNING - NON-INTEGER NUMBER OF STEPS PER STEPFILE
+&gt; &gt; INDICATED IN DESCRIPTOR - TRYING TO CONTINUE ANYWAY
+&gt; &gt; yes?  shade/L=1/Z=5/levels=30 co2flx
+&gt; &gt; yes?  shade/L=12/Z=5/levels=30 co2fl x
+&gt; &gt; ** unknown netCDF error code: -31
+&gt; &gt; yes?  shade/L=13/Z=5/levels=30 co2flx
+&gt; &gt; yes?  shade/L=11/Z=5/levels=30 co2flx
+&gt; &gt; yes?  shade/L=24/Z=5/levels=30 co2flx
+&gt; &gt; ** unknown netCDF error code: -31
+&gt; &gt; yes?  shade/L=36/Z=5/levels=30 co2flx
+&gt; &gt; ** unknown netCDF error code: -31
+&gt; &gt; yes?  shade/L=48/Z=5/levels=30 co2flx
+&gt; &gt; ** unknown netCDF error code: -31
+&gt; &gt; yes?  shade/L=47/Z=5/levels=30 co2flx
+&gt; &gt; yes?  shade/L=49/Z=5/levels=30 co2flx
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; If I access the file directly (not using the Descriptor file) that
+&gt; &gt; corresponds to slice 13 I can plot tha t slice fine.
+&gt; &gt; 
+&gt; &gt; I can't find what error -31 is.  Anybody have any ideas?
+&gt; &gt; 
+&gt; &gt; Thanks,
+&gt; &gt; 
+&gt; &gt; Steve
+&gt; &gt; 
+&gt; &gt; ______________________________________________________________________
+&gt; &gt; Steve Cousins, Ocean Modeling Group    Email: [ <a  href="mailto:cousins@umit.maine.edu">mailto:cousins@umit.maine.edu</a> ]cousins@umit.maine.edu
+&gt; &gt; Marine Sciences, 208 Libby Hall        [ <a  href="http://rocky.umeoce.maine.edu">http://rocky.umeoce.maine.edu</a> ]<a  href="http://rocky.umeoce.maine.edu">http://rocky.umeoce.maine.edu</a>
+&gt; &gt; Univ. of Maine, Orono, ME 04469        Phone: (207) 581-4302
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt;  
+&gt; &gt; 
+&gt; &gt;         
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt;       
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt;   
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; 
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00381" href="msg00381.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+<ul><li><em>From:</em> Steve Cousins</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00381.html">Re: with Descriptor file:  ** unknown netCDF error code: -31</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00383.html">usage of @LOC along y-direction</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

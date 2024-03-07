@@ -1,0 +1,176 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: time/date format for netcdf -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Tue, 23 Sep 2003 10:12:48 &#45;0700 -->
+<!--X-Message-Id: 3F707F87.A41907A5@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 7BA1DDC610C19F4FA92E33478C92CE284FEA43@mail2.chesapeakebay.net -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: time/date format for netcdf</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00686.html">Thread Prev</a>][<a href="msg00687.html">Thread Next</a>][<A HREF="threads.html#00688">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: time/date format for netcdf</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Enils Bashi &lt;<a href="mailto:EBashi@DOMAIN.HIDDEN">EBashi@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: time/date format for netcdf</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 23 Sep 2003 10:14:47 -0700</li>
+<li>Cc: &quot;ferret (E-mail)&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00686.html">7BA1DDC610C19F4FA92E33478C92CE284FEA43@mail2.chesapeakebay.net</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Enils,
+<br>The command FILE/FORMAT=DELIMITED will read and translate
+<br>date and time fields.&nbsp;&nbsp; See "delimited files, reading" and
+"SET DATA/
+<br>FORMAT=DELIMITED" in the Users Guide index. You should keep
+<br>the date and time as two separate fields in your file&nbsp; 2003-09-23&nbsp;
+09:00:00
+<p>Here I made up some data and show how to read it. dateval.dat
+<br>has these three columns: date, hour, and a data value
+<p><tt>2003-09-23 09:00:00 1.5</tt>
+<br><tt>2003-09-23 10:00:00 6.0</tt>
+<br><tt>2003-09-23 11:00:00 9.4</tt>
+<br><tt>2003-09-23 12:00:00 4.4</tt>
+<br><tt>2003-09-23 13:00:00 5.0</tt>
+<p>! Read this into Ferret as follows:
+<br>yes? file/form=delim/var="dy,hr,val"/type="date,time,num"/delim=" "
+dateval.dat
+<br>yes? list dy, hr, val&nbsp;&nbsp; ! Notice the units for dy are "days
+since 1-jan-1900"
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DATA SET: ./dateval.dat</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+X: 0.5 to 5.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: DY is DY (days)(Julian days since 1-Jan-1900)</tt>
+<br><tt>&nbsp;Column&nbsp; 2: HR is HR (hours)(Time of day)</tt>
+<br><tt>&nbsp;Column&nbsp; 3: VAL</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DY&nbsp;&nbsp;&nbsp;&nbsp; HR&nbsp;&nbsp;&nbsp; VAL</tt>
+<br><tt>1&nbsp;&nbsp; / 1:&nbsp; 37885.&nbsp;&nbsp; 9.00&nbsp; 1.500</tt>
+<br><tt>2&nbsp;&nbsp; / 2:&nbsp; 37885.&nbsp; 10.00&nbsp; 6.000</tt>
+<br><tt>3&nbsp;&nbsp; / 3:&nbsp; 37885.&nbsp; 11.00&nbsp; 9.400</tt>
+<br><tt>4&nbsp;&nbsp; / 4:&nbsp; 37885.&nbsp; 12.00&nbsp; 4.400</tt>
+<br><tt>5&nbsp;&nbsp; / 5:&nbsp; 37885.&nbsp; 13.00&nbsp; 5.000</tt>
+<br>&nbsp;
+<br>! Now we can use the day and time variables to create a time
+<br>! axis for the variable val
+<p>yes? let tpts = dy + hr/24
+<br>yes? define axis/t/units=days/t0=1-jan-1900 tax = tpts
+<br>&nbsp;
+<br>yes? let valt = reshape(val,t[gt=tax])
+<br>yes? plot valt
+<br>&nbsp;
+<p>Enils, we'll work out how to read all your datafiles and get
+<br>them into a data set outside the Users List and post the answer
+<br>back here when we have it.
+<p>Ansley Manke
+<p>Enils Bashi wrote:
+<blockquote TYPE=CITE>Dear Ferreters,
+<p>I think probably some of you have been through this problem before.
+<br>I have carefully read the ferret user documentation and some previous
+online
+<br>postings to ferret forums, but I still have hard time with the time/date
+<br>when creating netcdf files.
+<br>My date/time format from my ascii files that I generated from MySql
+<br>Databases is as follows:
+<br>yyyy-mm-dd hh:mm:ss or for example
+<br>2003-09-23&nbsp;&nbsp; 09:00:00
+<br>This format did not work when trying to generate netcdf files. I used
+mysql
+<br>date format functions to make it so ferret "likes" it (dd-mmm-yyyy:hh:mm),
+<br>but no luck. Here is the example:
+<p>yes? def axis/x=80w:72w:1/units=longitude xax
+<br>yes? def axis/y=36n:40n:1/units=latitude yax
+<br>yes? def axis/z=0:0:1/units=meters zax
+<br>yes? def axis/t="1-jan-2003:00:00":"31-aug-2003:00:00":1/units=days
+tax
+<br>yes? def grid/x=xax/y=yax/z=zax/t=tax bishopville
+<br>yes?
+<br>file/grid=bishopville/var="time,lat,lon,temp,salinity,dop,doc,ph,turbidity,c
+<br>hlorophyll" bishopville.res
+<br>yes? save/file=bishopville.cdf
+<br>time,lat,lon,temp,salinity,dop,doc,ph,turbidity,chlorophyll
+<br>Success
+<br>&nbsp;**TMAP ERR:
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Last or next-to-last record read:
+<br>"26-apr-03:06:04" 38.42 -75.19 15.46 17.25 95.30 8.57 13
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Data set: ./bishopville.res
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Data file: ./bishopville.res
+<p>Any and all feedback would be greatly appreciated.
+<p>Enils Bashi
+<br>Programmer - Chesapeake Bay Program
+<br>Veridyne Incorporated
+<br>Annapolis, Maryland: (410) 267-9833
+<br>www.chesapeakebay.net</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00686" href="msg00686.html">time/date format for netcdf</a></strong>
+<ul><li><em>From:</em> Enils Bashi</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00686.html">time/date format for netcdf</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00687.html">Re: question about ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00686.html">Thread Prev</a>][<a href="msg00687.html">Thread Next</a>][<A HREF="threads.html#00688">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

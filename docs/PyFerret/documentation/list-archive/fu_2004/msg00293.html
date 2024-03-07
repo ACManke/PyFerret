@@ -1,0 +1,231 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: MLD reaches bottom -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Mon, 12 Apr 2004 10:11:12 &#45;0700 -->
+<!--X-Message-Id: 407ACEA8.1AB9EA1C@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6.0.0.22.0.20040406184017.01b69cd8@essic.umd.edu -->
+<!--X-Reference: Pine.LNX.4.44.0404070429570.28301&#45;100000@caos.iisc.ernet.in -->
+<!--X-Reference: 6.0.0.22.0.20040408150651.01b7acd8@essic.umd.edu -->
+<!--X-Reference: 4075B3E5.2040301@noaa.gov -->
+<!--X-Reference: 6.0.0.22.0.20040408170409.01b78868@essic.umd.edu -->
+<!--X-Reference: 4077003D.4030100@noaa.gov -->
+<!--X-Reference: 407A3B98.6020606@kordi.re.kr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: MLD reaches bottom</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00292.html">Thread Prev</a>][<a href="msg00269.html">Thread Next</a>][<A HREF="threads.html#00293">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: MLD reaches bottom</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Chan Joo Jang &lt;<a href="mailto:cjjang@DOMAIN.HIDDEN">cjjang@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: MLD reaches bottom</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 12 Apr 2004 10:15:20 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00267.html">6.0.0.22.0.20040406184017.01b69cd8@essic.umd.edu</a>&gt;&lt;<a href="msg00268.html">Pine.LNX.4.44.0404070429570.28301-100000@caos.iisc.ernet.in</a>&gt;&lt;<a href="msg00284.html">6.0.0.22.0.20040408150651.01b7acd8@essic.umd.edu</a>&gt; &lt;<a href="msg00286.html">4075B3E5.2040301@noaa.gov</a>&gt;&lt;<a href="msg00287.html">6.0.0.22.0.20040408170409.01b78868@essic.umd.edu</a>&gt; &lt;<a href="msg00290.html">4077003D.4030100@noaa.gov</a>&gt;&lt;<a href="msg00292.html">407A3B98.6020606@kordi.re.kr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+I don't see your earlier question on this; but at least, this one
+got through.
+
+If you search the email archives for &quot;deepest depth&quot; you'll see a
+few helpful messages, including this one for how to define a variable
+at its deepest depth
+
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg00082.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg00082.html</a>
+
+You could modify this to get the depth rather than the variable at
+the deepest depth where data is defined for each location. When you
+say  &quot;bottom depth&quot;, do you want the deeper end of the grid cell for
+temp, as deep as temp is defined?  That is what I do here:
+
+  let kvals = k[g=temp] + 0*temp
+  let kzero = kvals - kvals[k=1:`temp,return=kend`@max]
+
+! Z value for coordinates on the Z axis.
+  let zvals = z[gz=temp] + 0*temp
+  let integrand = zvals*kzero[k=@weq:0]
+  let z_low = integrand[k=1:`temp,return=kend`@sum]
+
+ ! Deeper end of grid cells on z axis
+  let zvals_bot = zboxhi[gz=temp] + 0*temp
+  let int_bot = zbotvals*kzero[k=@weq:0]
+  let z_bot = integrand[k=1:`temp,return=kend`@sum]
+
+Then you can use this in combination with your MLD variable
+
+   let mld=mls[z=@loc:1.0]
+   let mlddepth = if mld eq z_low then z_bot else mld
+
+
+Ansley Manke
+
+
+Chan Joo Jang wrote:
+
+&gt; Dear Ferreters:
+&gt;
+&gt;  I would like to set the mixed layer depth (MLD) to bottom depth when
+&gt; MLD reaches the final depth with a valid value.
+&gt; How can I express this in Ferret(version 5.22)?
+&gt; Thanks in advance. Jang
+&gt;
+&gt; ps)  I posted the same question to this user group without any responses.
+&gt;  =====
+&gt;
+&gt; Following is a Ferret script which I used to calculate MLD based on
+&gt; temperature difference.
+&gt;
+&gt; % cat mld_feb.jnl
+&gt; cancel mode verify
+&gt; set mode metafile mld_feb.plt
+&gt; !===============
+&gt; ! EXP CR
+&gt; !===============
+&gt; set data temp_cr.nc
+&gt; let sst=temp[k=1]
+&gt; let mls=abs(temp-sst)
+&gt; let mld=mls[z=@loc:1.0]
+&gt; let sbad=MISSING(temp,0)
+&gt; define viewport/xlimits=0.15:0.5/ylimits=0.5:0.9 v1
+&gt; set viewport v1
+&gt; go margins 0.0 0.0 0.0 0.0
+&gt; fill/set/l=2/nolab/lev=(-10,1000,70) missing(mld,-10)
+&gt; ppl xlab &quot; &quot; !LONGITUDE
+&gt; ppl ylab LATITUDE
+&gt; ppl fill
+&gt; shade/over/nolab/pal=grey/lev=(0)/l=1/k=1 sbad
+&gt; label 140 55 0 0 0.35 MLD in Feb. (DT=1)
+&gt; label 130 48 0 0 0.28 EXP CR
+&gt; cancel data_set 1
+&gt;
+&gt; Information for the NetCDF file which I used.
+&gt;
+&gt; % ncdump -ch temp_cr.nc
+&gt;
+&gt; netcdf temp_cr {
+&gt; dimensions:
+&gt; longitude = 96 ;
+&gt; latitude = 114 ;
+&gt; level024 = 24 ;
+&gt; time = UNLIMITED ; // (12 currently)
+&gt; variables:
+&gt; float longitude(longitude) ;
+&gt; longitude:long_name = &quot;Longitude values&quot; ;
+&gt; longitude:cartesian_axis = &quot;X&quot; ;
+&gt; longitude:units = &quot;degrees_E&quot; ;
+&gt; longitude:ipositive = 1 ;
+&gt; float latitude(latitude) ;
+&gt; latitude:long_name = &quot;Latitudes values&quot; ;
+&gt; latitude:cartesian_axis = &quot;Y&quot; ;
+&gt; latitude:units = &quot;degrees_N&quot; ;
+&gt; latitude:ipositive = 1 ;
+&gt; float level024(level024) ;
+&gt; level024:long_name = &quot;Level values&quot; ;
+&gt; level024:cartesian_axis = &quot;Z&quot; ;
+&gt; level024:units = &quot;level&quot; ;
+&gt; level024:ipositive = 1 ;
+&gt; level024:positive = &quot;up&quot; ;
+&gt; double time(time) ;
+&gt; time:long_name = &quot;Time coordinate values&quot; ;
+&gt; time:cartesian_axis = &quot;T&quot; ;
+&gt; time:units = &quot;months since 1900-01-01 00:00:00.0&quot; ;
+&gt; time:ipositive = 1 ;
+&gt; time:calendar_type = &quot;Gregorian&quot; ;
+&gt; float temp(time, level024, latitude, longitude) ;
+&gt; temp:long_name = &quot;temp(deg. C)&quot; ;
+&gt; temp:units = &quot;unknown&quot; ;
+&gt; temp:valid_range = -1.e+37f, 1.e+37f ;
+&gt; temp:missing_value = 1.e+20f ;
+&gt;
+&gt; // global attributes:
+&gt; :title = &quot;Simulated temperature (EXP CR)&quot; ;
+&gt; :Conventions = &quot;COARDS&quot; ;
+&gt; :GFDL_NCIR_VER_NO = &quot;0.7&quot; ;
+&gt; :missing_value = 1.e+20f ;
+&gt; }
+&gt;
+&gt; --
+&gt;
+&gt; Chan Joo Jang, Ph.D., Senior researcher
+&gt; (cjjang@kordi.re.kr,<a  href="http://ogcm.kordi.re.kr">http://ogcm.kordi.re.kr</a>)
+&gt; Korea Ocean Research and Development Institute
+&gt; 1270 Sa1-dong, Ansan  425-744, Korea
+&gt; Phone 82-31-400-6317 FAX 82-31-408-5823
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00267" href="msg00267.html">text size</a></strong>
+<ul><li><em>From:</em> Wendy Wang</li></ul></li>
+<li><strong><a name="00268" href="msg00268.html">Re: text size</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+<li><strong><a name="00284" href="msg00284.html">Re: text size</a></strong>
+<ul><li><em>From:</em> Wendy Wang</li></ul></li>
+<li><strong><a name="00286" href="msg00286.html">Re: text size</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00287" href="msg00287.html">Re: text size</a></strong>
+<ul><li><em>From:</em> Wendy Wang</li></ul></li>
+<li><strong><a name="00290" href="msg00290.html">Re: text size</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00292" href="msg00292.html">MLD reaches bottom</a></strong>
+<ul><li><em>From:</em> Chan Joo Jang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00292.html">MLD reaches bottom</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00269.html">how to handle a figure?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00292.html">Thread Prev</a>][<a href="msg00269.html">Thread Next</a>][<A HREF="threads.html#00293">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

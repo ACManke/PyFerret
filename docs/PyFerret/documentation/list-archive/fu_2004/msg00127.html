@@ -1,0 +1,250 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: clarification on MC descriptor files -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 25 Feb 2004 12:20:00 &#45;0800 -->
+<!--X-Message-Id: Pine.LNX.4.21.0402260051280.8346&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.44.0402251013190.4732&#45;100000@pircsl5.agron.iastate.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: clarification on MC descriptor files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00125.html">Thread Prev</a>][<a href="msg00128.html">Thread Next</a>][<A HREF="threads.html#00127">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: clarification on MC descriptor files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Chris Anderson &lt;<a href="mailto:candersn@DOMAIN.HIDDEN">candersn@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: clarification on MC descriptor files</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 26 Feb 2004 01:54:07 +0530 (IST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00125.html">Pine.LNX.4.44.0402251013190.4732-100000@pircsl5.agron.iastate.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+    From user manual Ch2 Sec2.1. Multi-file NetCDF data sets
+
+	3)    (note) Previous to version 5.2, each file is
+self-documenting with respect to the time axis of the variables -even if
+the time axis represents only a single point. (All of the time axes must
+be identically encoded with respect to units and date of the time
+origin.)   &quot;In version 5.3 and higher these checks are not performed. This
+means that the MC descriptor mechanism can be used to associate into time
+series groups of files that are not internally self-documenting with
+respect to time&quot;. 
+
+      Now regarding your problem: 
+	you have 
+		hourly data ==&gt;      D_TIME_UNIT = 3600  (in seconds)
+	 	with different T0 ==&gt; never mind ( provided your ferret
+ 			    version is higher than 5.3 &amp; data time
+                            points are continuous..ie. 61 files means 
+	                    hourly data from some hr in day 1 to some hour 
+                            in day 61 without missing any hour in between)
+                solution ==&gt; take one T0 ( say T0 of the 1st days file),
+                                 give S_START &amp; S_END for each 
+			         file according to this T0
+
+                    suppose D_T0TIME      = '30-JUL-1993 01:00:00'  
+                            D_TIME_UNIT   = 3600.0,
+
+                    suppose your 1st time point in first file  is 
+					&quot;30-jul-1993:01:00:00&quot; ...then
+
+                    for 1st file    S_START  = 0  &amp;  S_END = 23  
+                    for 2nd file    S_START  = 24 &amp;  S_END = 47
+                    for 3rd fiel    S_START  = 48 &amp;  S_END = 71 &amp; so on
+
+  Hope now you will be able to trace your earlier problem with &quot;error in
+line definition A gap or overlap exists in time axis&quot; 
+		==&gt; you have same S_START &amp; S_END values for first and 
+			and second file, as you can see it is not 
+			&quot;continuous in time&quot;         
+
+ A corrected form of your descriptor file is given below. Remember there 
+is a limit in the maximum number of files you can include in a descriptor
+file (... 400 or 500 i think). Don't forget to cross check the
+data accessed through the descriptor file with the original data, in all
+aspects (including time).
+
+ 
+With Regards 
+
+Jaison
+ 
+======================corrected descriptor file====================
+
+  &amp;FORMAT_RECORD
+   D_TYPE        =  '  MC',
+   D_FORMAT      =  '  1A',
+  /
+  &amp;BACKGROUND_RECORD
+   D_TITLE       =  'Control',
+   D_T0TIME      = '30-JUL-1993 01:00:00',
+   D_TIME_UNIT   = 3600.0,
+   D_TIME_MODULO = .FALSE.,
+  /
+  &amp;MESSAGE_RECORD
+   D_MESSAGE     =  '    ',
+   D_ALERT_ON_OPEN      = F,
+   D_ALERT_ON_OUTPUT    = F,
+   /
+   &amp;EXTRA_RECORD
+   /
+   &amp;STEPFILE_RECORD
+    S_FILENAME = '/rcm/dissertation/coarse_control/MMOUT_DOMAIN1_60.nc'
+   S_START  =    0,
+   S_END    =  23,
+   S_DELTA  = 1,
+   S_NUM_OF_FILES  =   1,
+  /
+   &amp;STEPFILE_RECORD
+   /
+    S_FILENAME ='/rcm/dissertation/coarse_control/MMOUT_DOMAIN1_61.nc'
+    S_START  =    24,
+    S_END    =  47,
+    S_DELTA  = 60,
+    S_NUM_OF_FILES  =   1,
+   /
+   &amp;STEPFILE_RECORD
+    s_filename    = '**END OF STEPFILES**'
+   /
+=============================================================
+ 
+
+On Wed, 25 Feb 2004, Chris Anderson wrote:
+
+&gt; 
+&gt; Hi,
+&gt; 
+&gt; I have another question regarding MC files.  First, thanks to those who 
+&gt; responded to my first question.  Your suggestions have helped me get up to 
+&gt; speed very quickly.
+&gt; 
+&gt; My situation is this.  I have 61 netcdf files.  Each file contains 24 
+&gt; hours of model output at an hourly interval.  The time coordinate is the 
+&gt; tricky part.  The time coordinate uses a relative time axis.  The 
+&gt; reference time is unique to each file.  For example:
+&gt; MMOUT_DOMAIN1_01.nc has reference time of 1-JUN-1993 01:00:00
+&gt; MMOUT_DOMAIN1_02.nc has reference time of 2-JUN-1993 01:00:00
+&gt; ...
+&gt; MMOUT_DOMAIN1_61.nc has reference time of 31-JUL-1993 01:00:00
+&gt; 
+&gt; If I understand the namelist file format, there can be only one reference 
+&gt; time as specified by setting D_T0TIME.  If this is true, then the only 
+&gt; option I see to use the MC capability is to rewrite the netcdf files with 
+&gt; a fixed reference time.  Does this seem correct?  Does anyone know of an 
+&gt; alternative?  (I have a lot of netcdf files, actually much more than 
+&gt; 61, and I'm hoping for a more convenient approach than rewriting all of my 
+&gt; files.)
+&gt; 
+&gt; BTW, this is the error message I received when I asked ferret to use the 
+&gt; example.des file shown below.
+&gt; 
+&gt; yes? set data example.des
+&gt;  **TMAP ERR: error in line definition
+&gt;              A gap or overlap exists in time axis
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; example.des
+&gt;  &amp;FORMAT_RECORD
+&gt;   D_TYPE        =  '  MC',
+&gt;   D_FORMAT      =  '  1A',
+&gt;  /
+&gt;  &amp;BACKGROUND_RECORD
+&gt;   D_TITLE       =  'Control',
+&gt;   D_T0TIME      = '30-JUL-1993 01:00:00',
+&gt;   D_TIME_UNIT   = 60.0,
+&gt;   D_TIME_MODULO = .FALSE.,
+&gt;  /
+&gt;  &amp;MESSAGE_RECORD
+&gt;   D_MESSAGE     =  '    ',
+&gt;   D_ALERT_ON_OPEN      = F,
+&gt;   D_ALERT_ON_OUTPUT    = F,
+&gt;  /
+&gt;  &amp;EXTRA_RECORD
+&gt;  /
+&gt;  &amp;STEPFILE_RECORD
+&gt;   S_FILENAME      ='/rcm/dissertation/coarse_control/MMOUT_DOMAIN1_60.nc'
+&gt;   S_START  =    0,
+&gt;   S_END    =  1380,
+&gt;   S_DELTA  = 60,
+&gt;   S_NUM_OF_FILES  =   1,
+&gt;  /
+&gt;  &amp;STEPFILE_RECORD
+&gt;  /
+&gt;  &amp;STEPFILE_RECORD
+&gt;   S_FILENAME      ='/rcm/dissertation/coarse_control/MMOUT_DOMAIN1_61.nc'
+&gt;   S_START  =    0,
+&gt;   S_END    =  1380,
+&gt;   S_DELTA  = 60,
+&gt;   S_NUM_OF_FILES  =   1,
+&gt;  /
+&gt;  &amp;STEPFILE_RECORD
+&gt;   s_filename    = '**END OF STEPFILES**'
+&gt;  /
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00125" href="msg00125.html">clarification on MC descriptor files</a></strong>
+<ul><li><em>From:</em> Chris Anderson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00125.html">clarification on MC descriptor files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00128.html">Vectors on polar stereographic plots</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00125.html">Thread Prev</a>][<a href="msg00128.html">Thread Next</a>][<A HREF="threads.html#00127">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

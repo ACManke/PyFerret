@@ -1,0 +1,208 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: [ferret_users] multi&#45;stereographic plots -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 18 Nov 2005 14:10:03 &#45;0800 -->
+<!--X-Message-Id: 437E513A.1070200@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.OSF.4.44.0511181557350.146266&#45;100000@login1.uea.ac.uk -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: [ferret_users] multi-stereographic plots</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg01016.html">Thread Prev</a>][<a href="msg01017.html">Thread Next</a>][<A HREF="threads.html#01020">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] multi-stereographic plots</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Manfredi Manizza &lt;<a href="mailto:M.Manizza@DOMAIN.HIDDEN">M.Manizza@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] multi-stereographic plots</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Nov 2005 14:10:02 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg01016.html">Pine.OSF.4.44.0511181557350.146266-100000@login1.uea.ac.uk</a>&gt;</li>
+<li>References: &lt;<a href="msg01016.html">Pine.OSF.4.44.0511181557350.146266-100000@login1.uea.ac.uk</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla Thunderbird 1.0.7 (Windows/20050923)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Manfredi,<br>
+I have several suggestions.  The main one is to issue the SET VIEWPORT 
+command just before starting the plotting commands. It turns out that 
+when your run the the mp_aspect.jnl script, it issues a SET 
+WINDOW/ASPECT= command, and this turns off the viewport setting that you 
+made.  This is something I had not been aware of, and it only seems to 
+happen with /ASPECT and not other SET WINDOW options. We'll have to see 
+if this is a bug, or what. Try this sequence to see this:<br>
+<br>
+  set viewport ul<br>
+  show viewport   ! shows &quot;current viewport is UL&quot;<br>
+  set window/asp=2<br>
+  show viewport   ! shows &quot;current viewport is NONE&quot;<br>
+<br>
+Also, I notice that you are using a SHAKEY command to move the shade 
+key.  This is a PPLUS setting, and so it only takes effect after a 
+FILL/SET (or shade/set) command.<br>
+<br>
+Last, the comments at the start of the &quot;go margins&quot; script suggest that 
+it should be called after any calls to set the viewport.  You might want 
+to experiment with the placement of the call to this script, or decide 
+whether you want to call it at all.<br>
+<br>
+Note that you could do the contour lines over the fill plot with a 
+single command FILL/LINE  if you wish.<br>
+<br>
+So, your script should work if you do things in this order (removing the 
+/LEVELS and /PALETTE qualifiers from your example commands just for 
+easier reading)<br>
+<br>
+ go mp_stereographic_north.jnl<br>
+<br>
+ set grid DALBEDO<br>
+ go mp_aspect<br>
+ set region/x=0:360/y=65:90<br>
+<br>
+ set viewport ul<br>
+ fill /set /noaxis /nolabels DALBEDO[l=@ave], x_page, y_page<br>
+ ppl shaset,1,0<br>
+ ppl fill<br>
+<br>
+ contour /over /noaxis /nolabels DALBEDO[l=@ave], x_page, y_page<br>
+<br>
+ go mp_fland 120 gray<br>
+ go mp_graticule 0 360 30 65 90 10<br>
+<br>
+ set viewport ur<br>
+(same commands as above)<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+Manfredi Manizza wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Dear Ferreters,<br>
+<br>
+I would like to<br>
+have a multiple plot with stereographic<br>
+plots of the polar oceans.<br>
+<br>
+I am testing a simple case here using Ferret predefined<br>
+viewports (ul, ur, ll, lr) and repeting the same plot.<br>
+<br>
+With these commands below it plots the first figure as upper left<br>
+and then it should plot the same in the upper right subwindow.<br>
+<br>
+What it does in practice is opening a window, plotting the first figure<br>
+and then cancelling the same and plots the same figure in the same<br>
+window but as before it takes the whole window.<br>
+<br>
+According to that it does not work as planned.<br>
+<br>
+Is there a way to fix it or it is basically impossible<br>
+to have multiple stereographic plots with Ferret ?<br>
+<br>
+Thanks in advance for your help.<br>
+<br>
+Manfredi.<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+set viewport ul<br>
+<br>
+go mp_stereographic_north.jnl<br>
+<br>
+go margins .2, .6, .2, .2<br>
+<br>
+set grid DALBEDO<br>
+<br>
+go mp_aspect<br>
+<br>
+set region/x=0:360/y=65:90<br>
+<br>
+ppl shakey 1,0,<br>
+fill  /noaxis /nolabels  /pal=light_centered<br>
+/lev=(-10,10,1)(-20)(20)(-30)(30)(-40)(40)(-50)(50)(-60)(60)<br>
+DALBEDO[l=@ave]*100, x_page, y_page<br>
+contour /over   /noaxis /nolabels  /pal=light_centered<br>
+/lev=(-10,10,0.5)(-20)(20)(-30)(30)(-40)(40)(-50)(50)(-60)(60)<br>
+DALBEDO[l=@ave], x_page, y_page<br>
+go mp_fland 120 gray<br>
+<br>
+go mp_graticule 0 360 30 65 90 10<br>
+<br>
+set viewport ur<br>
+<br>
+<br>
+<br>
+<br>
+Manfredi Manizza<br>
+PhD Student<br>
+School of Environmental Sciences<br>
+University of East Anglia<br>
+NR4 7TJ, Norwich<br>
+United Kingdom<br>
+Telephone : +44-(0)1603-591315<br>
+FAX       : +44-(0)1603-591327<br>
+Email     : m.manizza@uea.ac.uk<br>
+<br>
+ 
+<br>
+</blockquote>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="01016" href="msg01016.html">[ferret_users] multi-stereographic plots</a></strong>
+<ul><li><em>From:</em> Manfredi Manizza</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg01016.html">[ferret_users] multi-stereographic plots</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg01017.html">[ferret_users] [ferret] pallette question</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg01016.html">Thread Prev</a>][<a href="msg01017.html">Thread Next</a>][<A HREF="threads.html#01020">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

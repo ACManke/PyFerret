@@ -1,0 +1,214 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: reading of quickscat wind data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 9 May 2005 11:26:59 &#45;0700 -->
+<!--X-Message-Id: 427FAB73.8020604@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20050506013749.35561.qmail@web8409.mail.in.yahoo.com -->
+<!--X-Reference: 427BDBF3.1090706@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: reading of quickscat wind data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00410.html">Thread Prev</a>][<a href="msg00407.html">Thread Next</a>][<A HREF="threads.html#00416">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: reading of quickscat wind data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: reading of quickscat wind data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 09 May 2005 11:26:59 -0700</li>
+<li>Cc: jammal Tanclei &lt;<a href="mailto:jamaalzzz@DOMAIN.HIDDEN">jamaalzzz@xxxxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00410.html">427BDBF3.1090706@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00406.html">20050506013749.35561.qmail@web8409.mail.in.yahoo.com</a>&gt; &lt;<a href="msg00410.html">427BDBF3.1090706@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi everyone,<br>
+Martin Schmitt answered Jammal with some helpful ideas and a script from his experience with binary quickscat data, but he reports his message didn't appear in the Users List archive.  Here it is: 
+<br>
+<br>
+<br>
+------------- Begin Forwarded Message -------------<br>
+Hi Jammal,<br>
+<br>
+I am using the daily 3-days composites from<br>
+<a  href="ftp://ftp.ssmi.com/qscat">ftp://ftp.ssmi.com/qscat</a><br>
+<br>
+I think, to try to read the original byte-coded files with ferret<br>
+is hopeless. The ferret input is not made for this type of data processing. 
+<br>
+So one should use the delivered fortran routines. After extracting data<br>
+with the fortran routines<br>
+<br>
+(be carefully, some architectures read I*2 as -32767:32768<br>
+others as 0:65535 you must check this! A ggod test: all variables<br>
+also the rainflag and scatflag must have reasonable values. If<br>
+these are wrong, also the winds are wrong even if they look good!)<br>
+<br>
+you get a .bin file for each day. A rare number of them is 
+missing. This procedure you must have<br>
+ready, before you can use ferret to transform to<br>
+netcdf. 
+<br>
+Using UNIX ls and a good editor I generate scripts like the 
+attached one. Looks complicated but takes a few minutes. Much<br>
+faster than organizing loops in ferret.<br>
+It calls readbin.jnl for each bin-file. 
+<br>
+go readbin 2001 01 01 clobber<br>
+go readbin 2001 01 02 append<br>
+go readbin 2001 01 03 append<br>
+...<br>
+and so on ...<br>
+<br>
+The lines for missing files are also missing. Check the information<br>
+from the .log files written from the fortran routines.<br>
+<br>
+You may also choose a region in readbin. What the script does 
+you can guess from variable names. The<br>
+manipulation with the time variable needs explanation. The reason is, taht we<br>
+need so called time-stamps pointing to the end time of the dataset.<br>
+<br>
+I attach the files for one year, if someone needs the driving<br>
+files for the other years, please feel free to write me.<br>
+<br>
+Any improvement or comment concerning readbin.jnl<br>
+is very welcome.<br>
+<br>
+Martin Schmidt<br>
+<br>
+------------- End Forwarded Message -------------<br>
+<br>
+!  
+! readbin.jnl<br>
+<br>
+! Define the region here<br>
+let xs = -15<br>
+let xe = 22<br>
+let ys = -40 
+let ye = 10 
+! find the day<br>
+let year = `$1`<br>
+let mont = `$2`<br>
+let daym = `$3`<br>
+<br>
+define axis/x=0.125:359.875:0.25/units=degrees_east/modulo xu<br>
+define axis/y=-89.875:89.875:0.25/units=degrees_north yu<br>
+<br>
+if `year eq 1999` then let day_off = 0<br>
+if `year eq 2000` then let day_off = 365<br>
+if `year eq 2001` then let day_off = 365 + 366<br>
+if `year eq 2002` then let day_off = 365 + 366 + 365<br>
+if `year eq 2003` then let day_off = 365 + 366 + 365 + 365<br>
+if `year eq 2004` then let day_off = 365 + 366 + 365 + 365 + 365<br>
+if `year eq 2005` then let day_off = 365 + 366 + 365 + 365 + 365 + 366<br>
+<br>
+if `year eq 1999` then let yearlen = 365<br>
+if `year eq 2000` then let yearlen = 366<br>
+if `year eq 2001` then let yearlen = 365<br>
+if `year eq 2002` then let yearlen = 365<br>
+if `year eq 2003` then let yearlen = 365<br>
+if `year eq 2004` then let yearlen = 366<br>
+if `year eq 2005` then let yearlen = 365<br>
+define axis/t=`day_off-.5`:`day_off+yearlen-.5`:1/t0=1-jan-1999/unit=days time<br>
+<br>
+define grid/x=xu/y=yu xygrid<br>
+define grid/x=xu/y=yu/t=time xytgrid<br>
+<br>
+let dayval = days1900(year, mont, daym) - days1900(1999, 1, 1) + 1 - `day_off`<br>
+<br>
+set data/EZ/format=stream/skip=1/grid=xygrid/var=dummy ($1)($2)($3)_3day_u.bin<br>
+<br>
+let/unit=&quot;m/s&quot;/title=&quot;zonal wind&quot; windx=dummy + 0*t[gt=xytgrid,l=`dayval`]<br>
+save/file=windx.mom.dta.nc/($4)/l=`dayval`/x=`xs`:`xe`/y=`ys`:`ye` windx<br>
+can data/all<br>
+<br>
+set data/EZ/format=stream/skip=1/grid=xygrid/var=dummy ($1)($2)($3)_3day_v.bin<br>
+let/unit=&quot;m/s&quot;/title=&quot;meridional wind&quot; windy=dummy + 0*t[gt=xytgrid,l=`dayval`]<br>
+save/file=windy.mom.dta.nc/($4)/l=`dayval`/x=`xs`:`xe`/y=`ys`:`ye` windy<br>
+can data/all<br>
+<br>
+set data/EZ/format=stream/skip=1/grid=xygrid/var=dummy ($1)($2)($3)_3day_s.bin<br>
+let/unit=&quot;none&quot;/title=&quot;scatflag&quot; scatflag=dummy + 0*t[gt=xytgrid,l=`dayval`]<br>
+save/file=sflag.mom.dta.nc/($4)/l=`dayval`/x=`xs`:`xe`/y=`ys`:`ye` scatflag<br>
+can data/all<br>
+<br>
+set data/EZ/format=stream/skip=1/grid=xygrid/var=dummy ($1)($2)($3)_3day_r.bin<br>
+let/unit=&quot;none&quot;/title=&quot;radrain&quot; radrain=dummy + 0*t[gt=xytgrid,l=`dayval`]<br>
+save/file=rflag.mom.dta.nc/($4)/l=`dayval`/x=`xs`:`xe`/y=`ys`:`ye` radrain<br>
+can data/all<br>
+<br>
+set data/EZ/format=stream/skip=1/grid=xygrid/var=dummy ($1)($2)($3)_3day_m.bin<br>
+let/unit=&quot;none&quot;/title=&quot;landmask&quot; mask=dummy + 0*t[gt=xytgrid,l=`dayval`]<br>
+save/file=mask.mom.dta.nc/($4)/l=`dayval`/x=`xs`:`xe`/y=`ys`:`ye` mask<br>
+can data/all<br>
+<br>
+can axis/all<br>
+can var/all<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00406" href="msg00406.html">reading of quickscat wind data</a></strong>
+<ul><li><em>From:</em> jammal Tanclei</li></ul></li>
+<li><strong><a name="00410" href="msg00410.html">Re: reading of quickscat wind data</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00410.html">Re: reading of quickscat wind data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00407.html">Looping over multiple files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00410.html">Thread Prev</a>][<a href="msg00407.html">Thread Next</a>][<A HREF="threads.html#00416">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: PPL $element() within a repeat loop -->
+<!--X-From-R13: Oafyrl [naxr <Oafyrl.P.[naxrNabnn.tbi> -->
+<!--X-Date: Thu, 27 Mar 2003 14:44:56 &#45;0800 -->
+<!--X-Message-Id: 3E837EFD.324D2D89@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.21.0303272201540.7304&#45;100000@caos.iisc.ernet.in -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: PPL $element() within a repeat loop</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00254.html">Thread Prev</a>][<a href="msg00255.html">Thread Next</a>][<A HREF="threads.html#00258">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: PPL $element() within a repeat loop</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Arindam Chakraborty &lt;<a href="mailto:arch@DOMAIN.HIDDEN">arch@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: PPL $element() within a repeat loop</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 27 Mar 2003 14:45:17 -0800</li>
+<li>Cc: Ferret Users List &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00254.html">Pine.LNX.4.21.0303272201540.7304-100000@caos.iisc.ernet.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Arindam,
+Thank you for the simple example in your question.  I don't
+know of a way to use the ppl $element function inside the loop;
+there may be a way, but you can do the same things using the
+newer functions for string variables.  It takes a few more steps,
+but this works:
+
+! strr.jnl.
+! Example:
+!  Make a simple plot, then use the strr.jnl to put labels on it.
+!     yes? plot/i=1:12 i
+!     yes? go strr.jnl &quot;1,1,First&quot; &quot;2,2,Second&quot;
+! string functions within a repeat loop
+!
+ def sym nplt = 2
+
+ repeat/i=1:($nplt) ( \
+  let tit = &quot;$`i`&quot;; \
+  let it = strindex(tit,&quot;,&quot;);\
+  let st1 = substring(tit,1,`it-1`);\
+  let t1 = strfloat(st1);\
+  let slen = strlen(tit);\
+  let trem = substring(tit,`it+1`,slen);\
+  let it = strindex(trem,&quot;,&quot;);\
+  let st2 = substring(trem,1,`it-1`);\
+  let t2 = strfloat(st2);\
+  let t3 = substring(trem,`it+1`,slen);\
+  list t1; \
+  list t2; \
+  list t3; \
+  label/nouser 2,`t2`,0,0,0.2,&quot;@P`t1``t3`&quot;; \
+)
+! end of file strr.jnl
+
+
+Arindam Chakraborty wrote:
+
+&gt; Hello Ferreters,
+&gt;         I'm facing a problem while trying to get a substring using
+&gt; ppl $element() within a repeat loop. To illustrate it, I'm showing a
+&gt; simple journal file here:
+&gt;
+&gt; yes? sp cat pplrep.jnl
+&gt; ! ppl $element within a repeat loop
+&gt;  can sym/all
+&gt;
+&gt;  def sym nplt = 2
+&gt;
+&gt; ! def sym tit = 1,2,My Title
+&gt; ! ppl set t3 $element(3,&quot;,&quot;,tit);
+&gt;
+&gt;  repeat/i=1:($nplt) ( \
+&gt;   def sym tit = $`i`; \
+&gt;   ppl set t1 $element(1,&quot;,&quot;,tit); \
+&gt;   ppl set t2 $element(2,&quot;,&quot;,tit); \
+&gt;   ppl set t3 $element(3,&quot;,&quot;,tit); \
+&gt;   label/nouser 2,2,0,0,0.2,@P($t1)($t3); \
+&gt;   say ($t1); \
+&gt;   say ($t2); \
+&gt;   say ($t3); \
+&gt;  )
+&gt; ! end of file pplrep.jnl
+&gt;
+&gt; Now,
+&gt;
+&gt; yes? go pplrep.jnl &quot;1,1,First&quot; &quot;2,2,Second&quot;
+&gt;
+&gt; does not put the text (&quot;First&quot; or &quot;Second&quot;). It is clear that all the
+&gt; three t1, t2 and t3 are null strings, whereas tit contains the correct
+&gt; string. I'm using Ferret 5.51 in RH Linux 8.0. The same file works very
+&gt; well with Ferret 5.33 for Linux 6.2 (as well in 8.0).
+&gt;
+&gt; If I break the repeat loop into $nplt number of grouped
+&gt; statements (those are within the loop), it works fine again with
+&gt; Ferret 5.51 (and 5.33). But for my application the value of nplt is
+&gt; supposed to change (mostly will be an input argument) and it is very
+&gt; clean to use the loop instead a bunch of repeating statements of the
+&gt; same kind.
+&gt;
+&gt; Any workaround is much appreciated. Many thanks in advance.
+&gt;
+&gt; Arindam
+&gt; ------------------------------------------
+&gt;  ARINDAM CHAKRABORTY
+&gt;  Centre for Atmospheric &amp; Oceanic Sciences
+&gt;  Indian Institute of Science
+&gt;  Bangalore 560 012; INDIA
+&gt;  Tel: +91-80-3942505, +91-80-3600450
+&gt;  Fax: +91-80-3600865
+&gt; __________________________________________
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00254" href="msg00254.html">PPL $element() within a repeat loop</a></strong>
+<ul><li><em>From:</em> Arindam Chakraborty</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00254.html">PPL $element() within a repeat loop</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00255.html">weird problem in filling contour</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00254.html">Thread Prev</a>][<a href="msg00255.html">Thread Next</a>][<A HREF="threads.html#00258">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: SAVE in EOF analysis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 28 Oct 2003 09:04:12 &#45;0800 -->
+<!--X-Message-Id: 3F9EA18A.6010805@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20031027183927.71393.qmail@web41208.mail.yahoo.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: SAVE in EOF analysis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00780.html">Thread Prev</a>][<a href="msg00698.html">Thread Next</a>][<A HREF="threads.html#00783">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: SAVE in EOF analysis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:byh@DOMAIN.HIDDEN">byh@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: SAVE in EOF analysis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 28 Oct 2003 09:04:10 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00780.html">20031027183927.71393.qmail@web41208.mail.yahoo.com</a>&gt;</li>
+<li>References: &lt;<a href="msg00780.html">20031027183927.71393.qmail@web41208.mail.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.4)Gecko/20030624 Netscape/7.1 (ax)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Boyin,<br>
+You are right.  The spatial, time and statistics are all computed<br>
+each time the the underlying EOF software is called, but as the<br>
+Ferret External Functions framework can only return one<br>
+(multi-dimensional) result for each function, there we wrote three<br>
+functions, which each return one of the results.  This indeed means<br>
+that the same calculation is repeated when you call eof_space,<br>
+eof_tfunc, and eof_stat, and for larger problems this is a big waste<br>
+of computing time. 
+<br>
+If you like, I can provide the source code for these, if you would<br>
+like to create one function which writes some of the results out to<br>
+intermediate files.  Then you could compile this function yourself and<br>
+call it as a locally-compiled external function.<br>
+<br>
+Another thing which will help is a set of functions which are not yet<br>
+released, which run faster.  These functions can be called in cases where<br>
+the input data does not have gaps in time.  Please see this and other<br>
+messages in the mail archives, which you'll find if you search for the<br>
+string &quot;SVD&quot; in the archives.<br>
+<br>
+<a  href="http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg00647.html">http://ferret.pmel.noaa.gov/Ferret/Mail_Archives/fu_2003/msg00647.html</a><br>
+<br>
+I will try to make these functions available as external function code<br>
+which users can compile themselves, as soon as possible.<br>
+<br>
+Ansley Manke<br>
+<br>
+Boyin Huang wrote:<br>
+<br>
+<blockquote style="border-left: #0000FF solid 0.1em; margin-left: 0.0em; padding-left: 1.0em">Hi, ferreters:<br>
+<br>
+I have two questions<br>
+<br>
+(1) We use the following commands to calculate EOF<br>
+space distribution and its time magnitude. Does this<br>
+mean that the caculation for eof_space, eof_st, and<br>
+eof_tfunc is compeletely separated? I would simply<br>
+think that the time function and statistics should<br>
+have already stored somewhere, when eof_space is<br>
+calculated (about an hour). But it looks not, since<br>
+&quot;LET eof_st = eof_stat&quot; also takes an hour to finish.<br>
+<br>
+LET eof_xy =<br>
+eof_space(eof_ave[X=($x1):($x2),Y=($y1):($y2)], 0.5)<br>
+LET eof_st = eof_stat<br>
+(eof_ave[X=($x1):($x2),Y=($y1):($y2)], 0.5)<br>
+LET eof_tm =<br>
+eof_tfunc(eof_ave[X=($x1):($x2),Y=($y1):($y2)], 0.5)<br>
+<br>
+SAVE/CLOBBER/FILE=&quot;eof_space.cdf&quot; eof_xy<br>
+SAVE/CLOBBER/FILE=&quot;eof_tfunc.cdf&quot; eof_tm[i=1:`nout`]<br>
+SAVE/CLOBBER/FILE=&quot;eof_stats.cdf&quot; eof_st<br>
+<br>
+(2) Using ncdump command, I found that the number of<br>
+EOFs are not consistent: 4550 or 3687? Although we are<br>
+interested in first several EOFs, the question is: are<br>
+they consistent in space and time domain when we talk<br>
+about EOF-n?<br>
+<br>
+netcdf eof_stats {<br>
+dimensions:<br>
+       XAX1_4550 = 4550 ;  
+       YAX1_3 = 3 ;<br>
+<br>
+<br>
+netcdf eof_space {<br>
+dimensions:<br>
+       LONGITUDE66_156 = 91 ;<br>
+       LATITUDE18_67 = 50 ;<br>
+       LATITUDE18_67edges = 51 ;<br>
+       TAX1_4550 = UNLIMITED ; // (4550 currently)<br>
+<br>
+netcdf eof_tfunc {<br>
+dimensions:<br>
+       XAX1_3687 = 3687 ;<br>
+       TYEAR = UNLIMITED ; // (10 currently)<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+=====<br>
+Boyin Huang<br>
+The Center for Research on the Changing Earth System (CRCES)<br>
+10211 Wincopin Circle, Suite 240<br>
+Columbia, Maryland 21044<br>
+Tel. 410-992-5300/819 (O), 410-737-4557(H)<br>
+Fax. 410-992-5944, Email. byh@crces.org<br>
+<a  href="http://byh.crces.org">http://byh.crces.org</a><br>
+<br>
+__________________________________<br>
+Do you Yahoo!?<br>
+Exclusive Video Premiere - Britney Spears<br>
+<a  href="http://launch.yahoo.com/promos/britneyspears/">http://launch.yahoo.com/promos/britneyspears/</a><br>
+ 
+<br>
+</blockquote><pre>
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00780" href="msg00780.html">Re: SAVE in EOF analysis</a></strong>
+<ul><li><em>From:</em> Boyin Huang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00780.html">Re: SAVE in EOF analysis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00698.html">Re: SAVE in EOF analysis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00780.html">Thread Prev</a>][<a href="msg00698.html">Thread Next</a>][<A HREF="threads.html#00783">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

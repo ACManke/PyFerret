@@ -1,0 +1,248 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: POLYGON versus DEFINED REGION -->
+<!--X-From-R13: Xnvfba Yhevna <wnvfbaNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Wed, 15 Sep 2004 03:35:02 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.44.0409151600390.27827&#45;100000@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4145D84B.5060606@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: POLYGON versus DEFINED REGION</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00620.html">Thread Prev</a>][<a href="msg00627.html">Thread Next</a>][<A HREF="threads.html#00626">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: POLYGON versus DEFINED REGION</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: POLYGON versus DEFINED REGION</strong></li>
+<li><strong>From</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 15 Sep 2004 16:04:18 +0530 (IST)</li>
+<li>Cc: Emilie Vanvyve &lt;<a href="mailto:vanvyve@DOMAIN.HIDDEN">vanvyve@xxxxxxxxxxxxxx</a>&gt;,  Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00620.html">4145D84B.5060606@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+         The method described by Mick is the best to get the domain of a 
+grid overlayed on a plot on another grid. Ansley pointed out how to deal 
+with  -ve values of the longitudes while making the overlay using 
+polygon command. We  need to exercise little care while doing this..let us 
+see coads_climatology for example...
+
+   x[gx=sst,i=1]   =  21.00
+   x[gx=sst,i=170] = 359.00 
+   x[gx=sst,i=180] = 379.00 
+
+  ie., western longitudes are +ve and the exact value of longitudes from 
+0E-20E  is &gt; 360. Suppose this is our main grid and we need to plot a 
+&quot;model domain&quot; of desired shape over this, then
+
+     If the longitude values of the &quot;domain&quot; are +ve for eastern and
+             -ve for the western longitudes &amp; the domain region is from
+              15W to 15E then we need to modify the longitudes of the
+              &quot;domain&quot; (boundaries) as 
+
+               modbx = bx + 360       is sufficient but
+
+              If the &quot;domain&quot; is from..say 30W to 30E then 
+
+               modbx = IF bx LT 21 THEN bx+360 ELSE bx
+
+   So the whole idea is that, to make an overlay over a lat-lon plot using 
+plot/vs or polygon commands, the longitude values of the data being 
+overlayed should be in the same format as the first plot. If those are 
+different then we can fix the problem by making few trials to get right &quot;modbx&quot; 
+as described above or by bringing both the grids to a common longitude 
+format by regridding. 
+
+  Another approach is to choose a matching specification of the &quot;longitude 
+region&quot; for the first plot : 
+              
+             let   bx = {-35 , 35, 35, -35, -35}
+             let   by = { 10 , 10, 30,  30,  10}
+        
+             set data coads_climatology
+
+             shade/x=-50:50/y=0:45/l=1 sst  ! this will work because reg is 
+             polygon/ov/line/color=7  bx,by ! specified in the same format as &quot;bx&quot;  
+
+             shade/x=50W:50E/y=0:45/l=1 sst ! won't work
+             polygon/ov/line/color=7  bx,by !
+ 
+             shade/x=310:410/y=0:45/l=1 sst ! won't work
+             polygon/ov/line/color=7  bx,by ! 
+
+
+Hope This Helps
+
+With Regards 
+
+Jaison
+
+
+
+On Mon, 13 Sep 2004, Ansley Manke wrote:
+
+&gt; Hi Emile,
+&gt; The lists of numbers in bx and by do not tell Ferret that they
+&gt; are longitudes and latitudes.  So Ferret does not know to apply
+&gt; a &quot;modulo&quot; operation to convert -17 to (360-17) and put it at the
+&gt; right location on the plot.  You can easily do the modulo operation
+&gt; yourself on the values in bx:
+&gt; 
+&gt;   let modbx = if bx lt 0 then 360+bx else bx
+&gt;   polygon/line/over modbx, by
+&gt; 
+&gt; Emilie Vanvyve wrote:
+&gt; 
+&gt; &gt; Hello,
+&gt; &gt;
+&gt; &gt; Thanks for the answers I got to my Friday questions! With them, I 
+&gt; &gt; could finally find an &quot;enough-simple-according-to-me&quot; way to solve my 
+&gt; &gt; little problem (I agree it is indeed easier to write to/read from a 
+&gt; &gt; file).
+&gt; &gt; But I now encounter another one when I use POLYGON when a region has 
+&gt; &gt; been defined: the polygon is not plotted as soon as I restrict the x 
+&gt; &gt; and/or y-axis values (with: set region, /x=...:..., /y=...:...), 
+&gt; &gt; otherwise it is plotted.
+&gt; &gt; It may be comprehensible, but I do not know how to put up with that.
+&gt; &gt;
+&gt; &gt; Briefly, I do within a script:
+&gt; &gt;
+&gt; &gt; set region/x=31.7W:33.7E/y=32.5N:64.9N !Europe instead of whole world
+&gt; &gt; shade my_var
+&gt; &gt; polygon/line/over bx,by
+&gt; &gt;
+&gt; &gt; or
+&gt; &gt;
+&gt; &gt; shade/x=31.7W:33.7E/y=32.5N:64.9N my_var !Europe instead of whole world
+&gt; &gt; polygon/line/over bx,by
+&gt; &gt;
+&gt; &gt; where bx and by are both 1-D arrays, containing resp. longitude and 
+&gt; &gt; latitude values of a shape I wish to draw on the plot.
+&gt; &gt; They are e.g. (read from the box.dat file):
+&gt; &gt;
+&gt; &gt; yes? list bx, by
+&gt; &gt; DATA SET: ./box.dat
+&gt; &gt; X: 0.5 to 348.5
+&gt; &gt; Column 1: BX
+&gt; &gt; Column 2: BY
+&gt; &gt; BX BY
+&gt; &gt; 1 / 1: -17.00 32.53
+&gt; &gt; 2 / 2: -17.08 32.87
+&gt; &gt; 3 / 3: -17.17 33.21
+&gt; &gt; 4 / 4: -17.26 33.55
+&gt; &gt; 5 / 5: -17.35 33.89
+&gt; &gt; ...
+&gt; &gt; 344 / 344: -15.38 32.81
+&gt; &gt; 345 / 345: -15.78 32.74
+&gt; &gt; 346 / 346: -16.19 32.67
+&gt; &gt; 347 / 347: -16.59 32.60
+&gt; &gt; 348 / 348: -17.00 32.53
+&gt; &gt;
+&gt; &gt; I suspect the problem to be directly linked to the restriction I 
+&gt; &gt; impose on x and/or y-axis values, when I define the region. Those 
+&gt; &gt; restrictions might in fact be also applied to bx and by. Their index 1 
+&gt; &gt; to 348 seem to be understood as longitudes.
+&gt; &gt; I tried to give the bx and by values according another axis: 
+&gt; &gt; polygon/line/over zsequence(bx), zsequence(by)
+&gt; &gt; but it did not work.
+&gt; &gt;
+&gt; &gt; What's the solution...?
+&gt; &gt; Thanks in advance for any suggestion!
+&gt; &gt;
+&gt; &gt; Emilie
+&gt; &gt;
+&gt; &gt; ____________________________________________________________
+&gt; &gt; Emilie VANVYVE
+&gt; &gt; Physicist, PhD student
+&gt; &gt;
+&gt; &gt; Université catholique de Louvain (UCL)
+&gt; &gt; Institut d'astronomie et de géophysique G. Lemaître (ASTR)
+&gt; &gt; Chemin du Cyclotron, 2
+&gt; &gt; 1348 Louvain-la-Neuve (Belgium)
+&gt; &gt; Phone : +32-(0)10-473300
+&gt; &gt; Fax : +32-(0)10-474722
+&gt; &gt; E-mail : vanvyve@astr.ucl.ac.be
+&gt; &gt; Web : www.astr.ucl.ac.be
+&gt; 
+&gt; 
+
+-- 
+___________________________________________________
+
+    Jaison Kurian                           
+    Centre for Atmospheric and Oceanic Sciences
+    Indian Institute of Science
+    B A N G A L O R E   560 012
+    Ph: +91-80-3942505
+        +91-80-3600450
+    Fax:+91-80-3600865
+___________________________________________________
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00627" href="msg00627.html">Re: POLYGON versus DEFINED REGION</a></strong>
+<ul><li><em>From:</em> P S Swathi</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00620" href="msg00620.html">Re: POLYGON versus DEFINED REGION</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00620.html">Re: POLYGON versus DEFINED REGION</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00627.html">Re: POLYGON versus DEFINED REGION</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00620.html">Thread Prev</a>][<a href="msg00627.html">Thread Next</a>][<A HREF="threads.html#00626">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>
