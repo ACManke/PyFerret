@@ -1,0 +1,180 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: repeat loop over depth axis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Thu, 24 Jan 2002 13:13:22 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C50790E.686C3AAB@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.10.10201241020410.966&#45;100000@tsangpo.nio.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: repeat loop over depth axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00037.html">Thread Next</a>][<A HREF="threads.html#00039">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: repeat loop over depth axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Shankar Doraiswamy &lt;<a href="mailto:shankar@DOMAIN.HIDDEN">shankar@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: repeat loop over depth axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 24 Jan 2002 13:13:50 -0800</li>
+<li>Cc: FERRET users mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;,       Satheesh Shenoi &lt;<a href="mailto:shenoi@DOMAIN.HIDDEN">shenoi@xxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00036.html">Pine.LNX.4.10.10201241020410.966-100000@tsangpo.nio.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Shankar,
+I am not quite sure what goes wrong when you try the repeat
+command over depth.  It always helps if you can quote the
+Ferret commands that are  not working as you would expect.
+So, I hope I am not missing the point of your question.
+
+You can do a repeat on a depth axis.  This should work:
+
+cancel mode verify
+REPEAT/K=1:20  (LIST/nohead div[k=1:`k`@din])
+
+If I understand what is in your cdf file, the depthedges are
+the cell edges of the variable DEPTH.  If this is also true
+for the variables that you are integrating, then since @DIN
+uses the sizes of the grid boxes in creating the sum, you don't
+need to do anything special to take DEPTHEDGES into account.
+
+The transformation @NGD would allow you to see the lowest
+value of a variable, e.g.
+
+   use levitus_climatology
+   set region/y=0/x=150:180
+   set view upper;  shade salt
+   set view lower;  plot  salt[z=@ngd]
+
+Hope this helps; if your question is different than what I've talked
+about, let us know.
+
+Ansley Manke
+
+Shankar Doraiswamy wrote:
+
+&gt; Hello,
+&gt;
+&gt; How do I get the repeat command to loop over the depth axis (as, say,
+&gt; in a FORTRAN do loop)?
+&gt;
+&gt; I am using the SODA data, which give U and V as functions of (x,y,z,t)
+&gt; and sea level (eta) as a function of (x,y,t).  I want to define the
+&gt; vertical velocity w as a function of (x,y,z,t) for some calculations.
+&gt;
+&gt; To do this, I computed w at the surface (using eta, U, and V), but am
+&gt; not able to use the repeat loop over depth (k index) to integrate
+&gt; (using @din) the horizontal divergence field.  Since I need w at
+&gt; several depths, I do not want to freeze the lower limit of the
+&gt; integral.
+&gt;
+&gt; A related question concerning the computation of w ...
+&gt;
+&gt; The SODA data also include a depth attribute called depthedges.  The
+&gt; last value of this atribute charts the bottom topography.  Is it
+&gt; possible to use this attribute in ferret?  I need it to compute the w
+&gt; field. (As before, I also need to be able to &quot;repeat&quot; over depth to
+&gt; compute the integral using @din.)
+&gt;
+&gt; From the SODA netCDF file ...
+&gt;
+&gt; dimensions:
+&gt;
+&gt;         DEPTH = 20 ;
+&gt;         DEPTHedges = 21 ;
+&gt;
+&gt; variables:
+&gt;
+&gt;         double DEPTH(DEPTH) ;
+&gt;                 DEPTH:units = &quot;meters&quot; ;
+&gt;                 DEPTH:positive = &quot;down&quot; ;
+&gt;                 DEPTH:point_spacing = &quot;uneven&quot; ;
+&gt;                 DEPTH:edges = &quot;DEPTHedges&quot; ;
+&gt;
+&gt;         double DEPTHedges(DEPTHedges) ;
+&gt;                 DEPTHedges:edges = &quot; &quot; ;
+&gt;
+&gt; data:
+&gt;
+&gt;  DEPTH = 7.5, 22.5, 37.5, 52.5, 67.5, 82.5, 97.5, 112.5, 127.5, 142.5,
+&gt; 157.5, 190.61, 276.27, 443.79, 714.46, 1099.46, 1598.79, 2201.3, 2885.6,
+&gt; 3622.5 ;
+&gt;
+&gt;  DEPTHedges = 0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 174.055,
+&gt; 233.44, 360.03, 579.125, 906.96, 1349.125, 1900.045, 2543.45, 3254.05,
+&gt; 3990.95 ;
+&gt;
+&gt; Regards, Shankar.
+&gt;
+&gt; D. Shankar                           Ph. (O): [91](832) 22 6253 * 4312/4400
+&gt; Physical Oceanography Division,                         22 1322 * 4312/4400
+&gt; National Institute of Oceanography,      (R): [91](832) 23 8208
+&gt; Dona Paula,                          Fax    : [91](832) 22 3340/9102
+&gt; Goa 403 004,                         email  : shankar@darya.nio.org
+&gt; India.                                        shankar@csnio.ren.nic.in
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00036" href="msg00036.html">repeat loop over depth axis</a></strong>
+<ul><li><em>From:</em> Shankar Doraiswamy</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00036.html">repeat loop over depth axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00037.html">Equal area grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00036.html">Thread Prev</a>][<a href="msg00037.html">Thread Next</a>][<A HREF="threads.html#00039">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: EOF_SPACE usage -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Thu, 31 Aug 2000 10:27:22 &#45;0700 (PDT) -->
+<!--X-Message-Id: 39AE95B9.5374FE1B@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: Pine.GSO.3.96.1000831152724.4177A&#45;100000@kelvin -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: EOF_SPACE usage</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00374.html">Thread Prev</a>][<a href="msg00375.html">Thread Next</a>][<A HREF="threads.html#00377">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: EOF_SPACE usage</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: EOF_SPACE usage</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<A HREF="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 31 Aug 2000 10:28:25 -0700</li>
+<li>References: &lt;<a href="msg00374.html">Pine.GSO.3.96.1000831152724.4177A-100000@kelvin</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello Graham,
+Let me see if I can help -- the EOF's need a demo script or two in the
+Ferret documentation which we'll be getting online soon.   The  function
+call you describe looks correct.   Attached are two scripts; eof_coads_clim.jnl
+uses the COADS monthly data set, and plots some results, and eof_cos_sin.jnl
+generates an analytic function and then decomposes it with the EOF functions.
+
+I hope this will enough to show you how the results are returned, and get you
+started.
+
+Ansley Manke
+
+Graham Gladman wrote:
+
+&gt; Hello,
+&gt;
+&gt; I've just installed Ferret 5.22 so that I am able to use the external EOF
+&gt; and FFT functions (with a view to perhaps writing a more general SVD
+&gt; external function, depending on difficulty).
+&gt;
+&gt; I wonder if anyone has used EOF_SPACE, EOF_STAT and EOF_TRUNC on a 4D
+&gt; dataset, and has an example script on the input syntax and handling the
+&gt; output from these functions.
+&gt;
+&gt; For example, I have a 4D temperature field TEMP, and I would an EOF of
+&gt; TEMP at 250m depth on the first two years of monthly data. Is:
+&gt;
+&gt; let temp_eofs = eof_space(temp[z=250,l=1:24], 2, 0.8)
+&gt;
+&gt; sufficient. Or are the command qualifiers described elsewhere. How are the
+&gt; eofs stored on the resulting grid, and how would I plot them?
+&gt;
+&gt; Any help appreciated,
+&gt;
+&gt; Graham Gladman
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+</pre>
+<pre>
+!  eof_coads_clim.jnl   Demonstration of the EOF external functions from 
+!  Ferret version 5.0 and later.  Ansley Manke  6/00
+!
+!
+!  Implements Chelton's '82 method for finding EOFs of gappy time series.
+!  eof_space returns EOF eigenvectors: spatial EOF in x and y with the same
+!            units as the incoming data
+!  eof_tfunc returns EOF time amplitude functions; dimensionless
+!  eof_stat  returns statistics on the EOF computation: number of EOFs 
+!            scaled and returned; Percent variance explained by each EOF; 
+!            and the eigenvalues.
+!  All the functions perform the same computation but return different
+!  aspect of the results.  For all functions the arguments are as follows:
+!
+!  1st argument:  Input Data field, functions of x, y, and time.
+!
+!  2nd argument is the minimum percent variance explained by the EOF's that
+!  are computed and scaled, e.g. to return EOFs that explain at least 2% 
+!  variance, use 2.0
+
+!  3nd argument is the fraction of each time series that must be present to 
+!  include it in the calculations, e.g. to use all time series that have 
+!  at least half the data present, use 0.5
+
+SET MODE VERIFY
+USE coads_climatology
+SET REGION/X=67w:1w/Y=11S:11N
+
+
+!  Compute and save the spatial EOF functions.  These have the same units
+!  as the data
+
+LET eof_xyfcn = eof_space(sst, 2.0, 0.5)
+SAVE/CLOBBER/FILE=sst_clim_eof_space.cdf eof_xyfcn
+
+can region
+can variable/all
+
+use sst_clim_eof_space.cdf
+set view ul; fill/l=1/title=&quot;eof 1&quot; eof_xyfcn; go land
+set view ur; fill/l=2/title=&quot;eof 2&quot; eof_xyfcn; go land
+set view ll; fill/l=3/title=&quot;eof 3&quot; eof_xyfcn; go land
+!set view lr; fill/l=4/title=&quot;eof 4&quot; eof_xyfcn; go land
+
+!  Compute and save statistics on the EOFs: number of EOFs scaled
+!  and returned; Percent variance explained by each EOF; and the
+!  eigenvalues.
+
+USE coads_climatology
+SET REGION/X=67w:1w/Y=11S:11N
+
+LET eofstat = eof_stat(sst[X=67w:1w,Y=11S:11N], 2.0, 0.5)
+let nout =  eofstat[i=1,j=1]
+
+SAVE/CLOBBER/FILE=sst_clim_eof_stat.cdf eofstat[i=1:`nout`]
+
+can var/all
+can region
+use sst_clim_eof_stat.cdf
+
+let nout = eofstat[i=1,j=1,d=sst_clim_eof_stat]
+let pcts = eofstat[i=1:`nout`,j=2,d=sst_clim_eof_stat]
+let eigenv = eofstat[i=1:`nout`,j=3,d=sst_clim_eof_stat]
+
+list nout
+list pcts
+list eigenv
+
+!  Compute and save time amplitude functions: they are dimensionless.
+
+USE coads_climatology
+LET eoftime = eof_tfunc(sst[X=67w:1w,Y=11S:11N], 2.0, 0.5)
+
+can region
+SAVE/CLOBBER/FILE=sst_clim_eof_tfunc.cdf eoftime[i=1:`nout`]
+
+can var/all
+use sst_clim_eof_tfunc.cdf
+can view
+
+set view ul; plot/i=1/title=&quot;time function 1&quot;/ylimits=-2:2:0.5 eoftime
+set view ur; plot/i=2/title=&quot;time function 2&quot;/ylimits=-2:2:0.5 eoftime
+set view ll; plot/i=3/title=&quot;time function 3&quot;/ylimits=-2:2:0.5 eoftime
+
+set mode/last verify
+
+</pre>
+<pre>
+! Demo of the EOF functions: generate a function of x,y,time using trig 
+! functions.  Decompose into spatial and time EOF's and display statistics.
+!
+!  ACM  7/30/99
+! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+show func eof_stat
+show func eof_space
+show func eof_tfunc
+
+pause
+
+let time = t[t=1-jan-1990:10-jan-1990:24]   ! 24 hour resolution time axis
+
+define axis/x=0:10:0.5 x10
+define axis/y=0:10:0.5 y10
+define grid/x=x10/y=y10/t=time g10x10
+set grid g10x10
+
+let fcn1 = 15.* sin(omega1*t)*cos(r)/(r+1)
+let fcn2 = 20.* sin(omega2*t)*(sin(s)-.2*sin(q))/(s+1)
+
+let r = ((6.*(xpts-x0)^2 + 7.*(ypts-y0)^2)^0.5)
+let s = (((xpts-x1)^2 + 2*(ypts-y1)^2)^0.5)
+let q = ((3*(xpts-x0)^2 + (ypts-y1)^2)^0.5)
+
+let x0 = 2; let y0 = 4; let x1 = 5; let y1 = 7
+
+let omega1 = 1/32*2*3.14159
+let omega2 = 2 * omega1
+
+let sample_function = fcn1 + fcn2
+let xpts = x
+let ypts = y
+
+let estat = eof_stat(sample_function, 2., 0.1)
+
+list/i=1/j=1 estat
+
+list/i=1:5/j=2 estat
+
+list/i=1:5/j=3 estat
+
+pause
+! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+define view/xlim=0.,.33/ylim=.6,1./text=0.2 vul
+define view/xlim=.33,.66/ylim=.6,1./text=0.2 vuc
+define view/xlim=.66,1./ylim=.6,1./text=0.2 vur
+
+define view/xlim=0.,.33/ylim=.1,.5/text=0.2 vll
+define view/xlim=.33,.66/ylim=.1,.5/text=0.2 vlc
+define view/xlim=.66,1./ylim=.1,.5/text=0.2 vlr
+
+set view vul; contour/title=&quot;FCN1&quot; fcn1[l=1:32@ave]
+set view vuc; contour/title=&quot;FCN2&quot; fcn2[l=1:32@ave]
+set view vur; contour/title=&quot;FCN1 + FCN2&quot; sample_function[l=1:32@ave]
+
+
+let exy = eof_space(sample_function, 2., 0.1)
+
+load exy
+set view vll
+contour/l=1/title=&quot;EOF1&quot; exy
+set view vlc
+contour/l=2/title=&quot;EOF 2&quot; exy
+
+pause
+cancel view
+! -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+let etim = eof_tfunc(sample_function, 2., 0.1)
+
+set view ul
+plot/i=1/title=taf1 etim
+
+set view ur
+plot/i=2/title=taf2 etim
+
+! should be all bad flags...
+set view ll
+plot/i=3/title=taf3 etim
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00374" href="msg00374.html">EOF_SPACE usage</a></strong>
+<ul><li><em>From:</em> Graham Gladman</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00374.html">EOF_SPACE usage</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00375.html">pipe and FIFO</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00374.html">Thread Prev</a>][<a href="msg00375.html">Thread Next</a>][<A HREF="threads.html#00377">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

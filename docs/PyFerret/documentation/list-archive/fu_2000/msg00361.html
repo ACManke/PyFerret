@@ -1,0 +1,469 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: RE: Creating 3D grid from scattered data -->
+<!--X-From-R13: "[pQnaa, [vxr" <zppnaaNzonev.bet> -->
+<!--X-Date: Fri, 18 Aug 2000 17:18:35 &#45;0700 (PDT) -->
+<!--X-Message-Id: 8969C7C92A78D311869C0090278750B6B52858@cumulus.shore.mbari.org -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>RE: Creating 3D grid from scattered data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00363.html">Thread Prev</a>][<a href="msg00362.html">Thread Next</a>][<A HREF="threads.html#00361">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: Creating 3D grid from scattered data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;'<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>'&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>RE: Creating 3D grid from scattered data</strong></li>
+<li><strong>From</strong>: <strong>&quot;McCann, Mike&quot; &lt;<A HREF="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 18 Aug 2000 17:10:21 -0700</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Dear Ferret experts,
+
+I've hit a wall on trying to assemble my slabs into a 3D 
+volume.  It seems that even though I'm doing SAVE/APPEND
+only the last slab gets saved when the script is done.
+
+Here is my .jnl file that is closely modeled to 
+Example 4 in Chapter 10 of the Users Guide:
+
+! ----------- Assemble slabs into 3D netcdf file -----------
+
+DEFINE AXIS/X=237.92:238.16:0.048/UNITS=degrees_east xax1
+DEFINE AXIS/Y=36.78:36.85:0.0233/UNITS=degrees_north yax1
+DEFINE AXIS/Z=0:20:10/DEPTH/UNITS=meters zax1
+DEFINE GRID/X=xax1/Y=yax1/Z=zax1 xyzgrid
+DEFINE AXIS/Z=0:0:1 zlevel
+DEFINE GRID/LIKE=xyzgrid/Z=zlevel xyzlevg
+FILE/GRID=xyzlevg/VAR=&quot;grtempz&quot; gtemp0.txt
+LET/TITLE=Temperature/UNITS=&quot;Degrees C&quot; grtemp = grtempz[g=xyzgrid]
+SAVE/FILE=&quot;tow081100a.AVGxyz.nc&quot;/klimits=1:3 grtemp
+LIST grtemp
+CANCEL DATA gtemp0.txt
+
+DEFINE AXIS/Z=10:10:1 zlevel
+FILE/GRID=xyzlevg/VAR=&quot;grtempz&quot; gtemp10.txt
+SAVE/FILE=&quot;tow081100a.AVGxyz.nc&quot;/APPEND grtemp
+LIST grtemp
+CANCEL DATA gtemp10.txt
+
+DEFINE AXIS/Z=20:20:1 zlevel
+FILE/GRID=xyzlevg/VAR=&quot;grtempz&quot; gtemp20.txt
+SAVE/FILE=&quot;tow081100a.AVGxyz.nc&quot;/APPEND grtemp
+LIST grtemp
+CANCEL DATA gtemp20.txt
+
+CANCEL VAR grtemp
+USE tow081100a.AVGxyz.nc
+LIST grtemp
+
+
+My eyes have gone bleary looking at it.  If you can see anything
+that's wrong please let me know.  The output I get from this is
+(same results on Linux and Solaris):
+
+[mccann@mbari400 towfish]$ ferret
+ 	NOAA/PMEL TMAP
+ 	Program FERRET (V500beta1.1)
+ 	Version 5.00 - 06/03/99
+ 	18-Aug-00 17:08     
+
+yes? go helpme
+ 
+! ----------- Assemble slabs into 3D netcdf file -----------
+ 
+DEFINE AXIS/X=237.92:238.16:0.048/UNITS=degrees_east xax1
+DEFINE AXIS/Y=36.78:36.85:0.0233/UNITS=degrees_north yax1
+DEFINE AXIS/Z=0:20:10/DEPTH/UNITS=meters zax1
+DEFINE GRID/X=xax1/Y=yax1/Z=zax1 xyzgrid
+DEFINE AXIS/Z=0:0:1 zlevel
+DEFINE GRID/LIKE=xyzgrid/Z=zlevel xyzlevg
+FILE/GRID=xyzlevg/VAR=&quot;grtempz&quot; gtemp0.txt
+LET/TITLE=Temperature/UNITS=&quot;Degrees C&quot; grtemp = grtempz[g=xyzgrid]
+SAVE/FILE=&quot;tow081100a.AVGxyz.nc&quot;/klimits=1:3 grtemp
+ LISTing to file tow081100a.AVGxyz.nc
+LIST grtemp
+             Temperature (Degrees C)
+             DATA SET: ./gtemp0.txt
+               122.08W122.03W121.98W121.94W121.89W121.84W
+                 1      2      3      4      5      6
+ ---- K:1 Z:   0
+ 36.873N / 5:   ....  13.56  13.87  14.17  14.46  14.75
+ 36.849N / 4:  13.24  13.53  13.80  14.08  14.34  14.60
+ 36.826N / 3:  13.25  13.50  13.74  13.99  14.22  14.44
+ 36.803N / 2:  13.27  13.48  13.69  13.90  14.10  14.29
+ 36.779N / 1:  13.29  13.46  13.63  13.80  13.97  14.14
+ ---- K:2 Z:   10
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+ ---- K:3 Z:   20
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+CANCEL DATA gtemp0.txt
+ 
+DEFINE AXIS/Z=10:10:1 zlevel
+Replacing definition of axis ZLEVEL
+FILE/GRID=xyzlevg/VAR=&quot;grtempz&quot; gtemp10.txt
+SAVE/FILE=&quot;tow081100a.AVGxyz.nc&quot;/APPEND grtemp
+ LISTing to file tow081100a.AVGxyz.nc
+LIST grtemp
+             Temperature (Degrees C)
+             DATA SET: ./gtemp10.txt
+               122.08W122.03W121.98W121.94W121.89W121.84W
+                 1      2      3      4      5      6
+ ---- K:1 Z:   0
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+ ---- K:2 Z:   10
+ 36.873N / 5:  14.79  11.60  10.78  11.98  14.40  17.17
+ 36.849N / 4:  14.07  11.10  11.65  12.60  13.87  15.38
+ 36.826N / 3:  10.93  13.45  13.02  13.28  12.83  13.19
+ 36.803N / 2:  10.40  12.33  12.50  14.10  10.92   9.95
+ 36.779N / 1:  10.26  11.52  12.41  12.27  10.04   7.29
+ ---- K:3 Z:   20
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+CANCEL DATA gtemp10.txt
+ 
+DEFINE AXIS/Z=20:20:1 zlevel
+Replacing definition of axis ZLEVEL
+FILE/GRID=xyzlevg/VAR=&quot;grtempz&quot; gtemp20.txt
+SAVE/FILE=&quot;tow081100a.AVGxyz.nc&quot;/APPEND grtemp
+ LISTing to file tow081100a.AVGxyz.nc
+LIST grtemp
+             Temperature (Degrees C)
+             DATA SET: ./gtemp20.txt
+               122.08W122.03W121.98W121.94W121.89W121.84W
+                 1      2      3      4      5      6
+ ---- K:1 Z:   0
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+ ---- K:2 Z:   10
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+ ---- K:3 Z:   20
+ 36.873N / 5:  12.87  12.52  11.88  10.64   8.99   7.18
+ 36.849N / 4:  11.82  12.34  11.96  11.29  10.08   8.40
+ 36.826N / 3:  11.04  12.18  11.57  11.81  11.30   9.80
+ 36.803N / 2:  11.75  12.30  11.11  11.81  12.45  12.03
+ 36.779N / 1:  12.32  11.89  11.58  12.06  13.08  14.17
+CANCEL DATA gtemp20.txt
+ 
+CANCEL VAR grtemp
+USE tow081100a.AVGxyz.nc
+LIST grtemp
+             Temperature (Degrees C)
+             DATA SET: ./tow081100a.AVGxyz.nc
+               122.08W122.03W121.98W121.94W121.89W121.84W
+                 1      2      3      4      5      6
+ ---- K:1 Z:   0
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+ ---- K:2 Z:   10
+ 36.873N / 5:   ....   ....   ....   ....   ....   ....
+ 36.849N / 4:   ....   ....   ....   ....   ....   ....
+ 36.826N / 3:   ....   ....   ....   ....   ....   ....
+ 36.803N / 2:   ....   ....   ....   ....   ....   ....
+ 36.779N / 1:   ....   ....   ....   ....   ....   ....
+ ---- K:3 Z:   20
+ 36.873N / 5:  12.87  12.52  11.88  10.64   8.99   7.18
+ 36.849N / 4:  11.82  12.34  11.96  11.29  10.08   8.40
+ 36.826N / 3:  11.04  12.18  11.57  11.81  11.30   9.80
+ 36.803N / 2:  11.75  12.30  11.11  11.81  12.45  12.03
+ 36.779N / 1:  12.32  11.89  11.58  12.06  13.08  14.17
+
+The (small) data files are attached.  
+
+Thanks in advance,
+Mike            
+
+--
+Mike McCann   (mccann@mbari.org)
+Group Leader, Information Applications Group
+Monterey Bay Aquarium Research Institute
+7700 Sandholdt Road
+Moss Landing, CA 95039-9644
+Voice: (831) 775-1769   Fax: (831) 775-1646 <A  HREF="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</A>
+
+
+&gt; -----Original Message-----
+&gt; From: Steve Hankin [<A  HREF="mailto:hankin@pmel.noaa.gov">mailto:hankin@pmel.noaa.gov</A>]
+&gt; Sent: Wednesday, August 16, 2000 4:07 PM
+&gt; To: McCann, Mike
+&gt; Cc: 'ferret_users@ferret.wrc.noaa.gov'
+&gt; Subject: Re: Creating 3D grid from scattered data
+&gt; 
+&gt; 
+&gt; hi Mike,
+&gt; 
+&gt; Since it appears that you have only 5 points on your Z axis 
+&gt; (?) there is a
+&gt; simple solution possible:
+&gt; 
+&gt;     LET VZ0  = scatter2gridlaplace_xy( **arguments at Z=0** )
+&gt;     LET VZ25 = scatter2gridlaplace_xy( **arguments at Z=25** )
+&gt;     LET VZ50 = ...
+&gt;     LET VZ75 = ...
+&gt;     LET VZ100 = ...
+&gt; 
+&gt;     DEF AXIS/Z=0:100:25/DEPTH  zaxis
+&gt; 
+&gt;     LET V  = IF K[GZ=zaxis] EQ 1 THEN VZ0  ELSE V2
+&gt;     LET V2 = IF K[GZ=zaxis] EQ 2 THEN VZ25 ELSE V3
+&gt;     LET V3 = IF K[GZ=zaxis] EQ 3 THEN VZ50 ELSE V4
+&gt;     LET V4 = IF K[GZ=zaxis] EQ 4 THEN VZ75 ELSE VZ100
+&gt; 
+&gt; Your variable &quot;V&quot; is now the function of Z that you desire.
+&gt; 
+&gt; This approach is not the ideal solution. Ideally the function
+&gt; scatter2gridlaplace_xy() should inherit the Z axis from the 
+&gt; arguments XPTS,
+&gt; YPTS, and F. In this case, as long as the variable you 
+&gt; provide as &quot;F&quot; is,
+&gt; itself a function of Z, so, too will the result be. I suspect 
+&gt; it was a simple
+&gt; oversight that the function does not work this way. We will 
+&gt; look into fixing
+&gt; this. Note that the function *does* inherit correctly in this 
+&gt; manner on the T
+&gt; axis.
+&gt; 
+&gt;     - steve
+&gt; 
+&gt; ===========================================================
+&gt; 
+&gt; &quot;McCann, Mike&quot; wrote:
+&gt; 
+&gt; &gt; Hi,
+&gt; &gt;
+&gt; &gt; I have a set of scattered ocean observations that I'd like
+&gt; &gt; to grid into a 3D volume.  The strategy I'm considering is
+&gt; &gt;
+&gt; &gt; 1. Create horizontal sections and grid to a level with
+&gt; &gt;    scatter2gridlaplace_xy()
+&gt; &gt;
+&gt; &gt; 2. Assemble these sections into a 3D volume following the
+&gt; &gt;    multiple-slab example:
+&gt; &gt;
+&gt; &gt; yes? DEF AXIS/x=1:360:1  xaxis
+&gt; &gt; yes? DEF AXIS/y=1:180:1  yaxis
+&gt; &gt; yes? DEF AXIS/Z=0:100:25/DEPTH  zaxis
+&gt; &gt; yes? DEF GRID/X=xaxis/Y=yaxis/Z=zaxis uv_grid
+&gt; &gt; yes? DEF AXIS/Z=0:0:1  zaxis1
+&gt; &gt; yes? DEF GRID/LIKE=uv_grid/Z=zaxis1  uv_grid1
+&gt; &gt; yes? FILE/GRID=uv_grid1/BAD=-999/VAR=&quot;u,v&quot;  uv.data1
+&gt; &gt; yes? LET/TITLE=&quot;My U data&quot;  u1 = u[G=uv_grid]
+&gt; &gt; yes? LET/TITLE=&quot;My V data&quot;  v1 = v[G=uv_grid]
+&gt; &gt; yes? SAVE/FILE=uv1_5z.cdf/KLIMITS=1:5  u1, v1
+&gt; &gt; yes? CANCEL DATA uv.data1
+&gt; &gt; yes? DEF AXIS/Z=25:25:1  zaxis1
+&gt; &gt; yes? FILE/GRID=uv_grid1/BAD=-999/VAR=&quot;u,v&quot;  uv.data2
+&gt; &gt; yes? SAVE/FILE=uv1_5z.cdf/APPEND  u1,v1
+&gt; &gt; . . .
+&gt; &gt;
+&gt; &gt; My problem is that I need to get the output of 
+&gt; scatter2gridlaplace_xy()
+&gt; &gt; onto a 3D grid where the Z axis is a single value.  How can 
+&gt; I do this?
+&gt; &gt;
+&gt; &gt; I tried
+&gt; &gt; SET VAR/GRID=newgrid &lt;variable_from scatter2gridlaplace_xy()&gt;
+&gt; &gt; but I get an error.
+&gt; &gt;
+&gt; &gt; I think I can list the level out to an ascii file, then read it back
+&gt; &gt; in onto the 3D grid, but I'd rather not have to do this.  Is there
+&gt; &gt; a more efficient way?
+&gt; &gt;
+&gt; &gt; Thanks in advance,
+&gt; &gt; Mike
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Mike McCann   (mccann@mbari.org)
+&gt; &gt; Group Leader, Information Applications Group
+&gt; &gt; Monterey Bay Aquarium Research Institute
+&gt; &gt; 7700 Sandholdt Road
+&gt; &gt; Moss Landing, CA 95039-9644
+&gt; &gt; Voice: (831) 775-1769   Fax: (831) 775-1646 
+&gt; <A  HREF="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</A>
+&gt; 
+&gt; --
+&gt; 
+&gt;                 |  NOAA/PMEL               |  ph. (206) 526-6080
+&gt; Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+&gt;                 |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+&gt; 
+&gt; 
+
+</pre>
+<pre>
+   10.25537    
+   11.52069    
+   12.40652    
+   12.27347    
+   10.04309    
+   7.288235    
+   10.39858    
+   12.32574    
+   12.50040    
+   14.10451    
+   10.91627    
+   9.950573    
+   10.92922    
+   13.44910    
+   13.02152    
+   13.27880    
+   12.83498    
+   13.19406    
+   14.06873    
+   11.09817    
+   11.65454    
+   12.59864    
+   13.87486    
+   15.38216    
+   14.79361    
+   11.60075    
+   10.77843    
+   11.98114    
+   14.39969    
+   17.17306    
+</pre>
+<pre>
+   13.29379    
+   13.45995    
+   13.62905    
+   13.79963    
+   13.97002    
+   14.14142    
+   13.26954    
+   13.47737    
+   13.68708    
+   13.89976    
+   14.09605    
+   14.29453    
+   13.25241    
+   13.49849    
+   13.74451    
+   13.98556    
+   14.21859    
+   14.43571    
+   13.24327    
+   13.52638    
+   13.80426    
+   14.07559    
+   14.33999    
+   14.59917    
+ -9.9999998E+33
+   13.56036    
+   13.86507    
+   14.16601    
+   14.46074    
+   14.74975    
+</pre>
+<pre>
+   12.31857    
+   11.88690    
+   11.57690    
+   12.05708    
+   13.08456    
+   14.16854    
+   11.74786    
+   12.29752    
+   11.11229    
+   11.81003    
+   12.45384    
+   12.02602    
+   11.04228    
+   12.17686    
+   11.56567    
+   11.80519    
+   11.29937    
+   9.795616    
+   11.81857    
+   12.33644    
+   11.95634    
+   11.28522    
+   10.08265    
+   8.403229    
+   12.87177    
+   12.52062    
+   11.87783    
+   10.64404    
+   8.986000    
+   7.184929    
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00363.html">Re: Creating 3D grid from scattered data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00362.html">Re: Creating 3D grid from scattered data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00363.html">Thread Prev</a>][<a href="msg00362.html">Thread Next</a>][<A HREF="threads.html#00361">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

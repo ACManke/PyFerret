@@ -1,0 +1,151 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Plotting a constant line on a time series plot -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Fri, 5 Jan 2001 09:50:06 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.SOL.3.96.1010105090606.5317A&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200101042330.QAA01279@olympic.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Plotting a constant line on a time series plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00001.html">Thread Prev</a>][<a href="msg00005.html">Thread Next</a>][<A HREF="threads.html#00003">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Plotting a constant line on a time series plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Gary Strand &lt;<A HREF="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Plotting a constant line on a time series plot</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 5 Jan 2001 09:47:17 -0800 (PST)</li>
+<li>Cc: Ferret Users Mailing List &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00001.html">200101042330.QAA01279@olympic.cgd.ucar.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Gary,
+	If a line spanning the entire width of the plot is acceptable
+here is a solution that you might use
+
+! example of overlaying a &quot;y=constant&quot; line on a plot of several
+! time series of different lengths
+def axis/t=5-mar-1980:14-apr-1980:1/units=days tax
+def grid/t=tax grd
+let v1=if(l ge 4 and l le 22)then l[g=grd]
+let v2=if(l ge 7 and l le 25)then l[g=grd]-2
+let v3=if(l ge 2 and l le 19)then l[g=grd]+1
+! plot these three lines
+plot/title=&quot;Time Series&quot;/nolab v1,v2,v3
+
+! now overlay a constant level line lev=10
+let lev=10
+let xlev=if(l eq 1)then `($XAXIS_MIN)` else `($XAXIS_MAX)`
+let ylev=lev+l-l
+plot/o/nolab/line=13/vs/l=1:2 xlev,ylev
+
+If you wanted the constant level line to span say from 10% to 90%
+of the time axis you could modify the above as follows
+
+let xlev1=`($XAXIS_MIN)` + 0.1*(`($XAXIS_MAX)` - `($XAXIS_MIN)`)
+let xlev2=`($XAXIS_MIN)` + 0.9*(`($XAXIS_MAX)` - `($XAXIS_MIN)`)
+let xlev=if(l eq 1)then xlev1 else xlev2
+let lev=12 ; plot/o/nolab/line=14/vs/l=1:2 xlev,ylev
+
+Hope this helps,
+Mick Spillane
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+On Thu, 4 Jan 2001, Gary Strand wrote:
+
+&gt; 
+&gt; I'd like to add a simple, constant value straight line to a plot of a time
+&gt; series of several quantities. For example, a time series of several model runs'
+&gt; average sea surface temperatures, and I want to include the mean Levitus
+&gt; value. The hitch is that not all the model run time series are of the same
+&gt; length, and, IIRC, it's not easy to specify the begin and end of a time axis.
+&gt; 
+&gt; What I've done up until now is something like:
+&gt; 
+&gt; plot/nolabel sst1,sst2,sst3,sst4,sst5
+&gt; let lev = if sst1 eq 1.e10 then 0 else 18.39
+&gt; plot/over/line=1 lev
+&gt; 
+&gt; But that's not real clean if sst1 is much shorter in time than the other four 
+&gt; runs. 
+&gt; 
+&gt; Any ideas?
+&gt; 
+&gt; PS - It would be nice to have &quot;user&quot; coordinates to &quot;/nouser&quot; transforms, both
+&gt; directions, readily callable by FERRET, like GrADS does, so one can use geo-
+&gt; graphic coordinates and the &quot;inches&quot; coordinates on the plotting page 
+&gt; more-or-less interchangably.
+&gt; --
+&gt; Gary Strand                Climate Change Research Section, NCAR (303) 497-1336
+&gt; strandwg@ucar.edu                          <A  HREF="http://www.cgd.ucar.edu/ccr/strandwg">http://www.cgd.ucar.edu/ccr/strandwg</A>
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00001" href="msg00001.html">Plotting a constant line on a time series plot</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00001.html">Plotting a constant line on a time series plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00005.html">Re: Plotting a constant line on a time series plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00001.html">Thread Prev</a>][<a href="msg00005.html">Thread Next</a>][<A HREF="threads.html#00003">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

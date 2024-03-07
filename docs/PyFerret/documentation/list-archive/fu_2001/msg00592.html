@@ -1,0 +1,213 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: DODS/Binary format -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 5 Nov 2001 14:07:55 &#45;0800 (PST) -->
+<!--X-Message-Id: 3BE70D94.F8206469@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 011d01c1663c$076a9160$f5a4b780@gsfc.nasa.gov -->
+<!--X-Reference: 3BE6FF90.DBB078FF@pmel.noaa.gov -->
+<!--X-Reference: 013c01c16641$cd1b9990$f5a4b780@gsfc.nasa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: DODS/Binary format</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00591.html">Thread Prev</a>][<a href="msg00594.html">Thread Next</a>][<A HREF="threads.html#00592">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: DODS/Binary format</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Long Pham &lt;<A HREF="mailto:pham@DOMAIN.HIDDEN">pham@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: DODS/Binary format</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<A HREF="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 05 Nov 2001 14:07:16 -0800</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00589.html">011d01c1663c$076a9160$f5a4b780@gsfc.nasa.gov</a>&gt;&lt;<a href="msg00590.html">3BE6FF90.DBB078FF@pmel.noaa.gov</a>&gt;&lt;<a href="msg00591.html">013c01c16641$cd1b9990$f5a4b780@gsfc.nasa.gov</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Long,
+
+As you have discovered, some datasets lack most meaningful metadata
+including 'use' metadata required to understand what region of space the
+X and Y axes represent.  After poking around I eventually arrived at
+this URL:
+
+  <A  HREF="http://daac.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/">http://daac.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/</A>
+
+There is precious little information available through the DODS .das
+file:
+
+<A  HREF="http://eosdata.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/erythemal-cat.dat.das">http://eosdata.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/erythemal-cat.dat.das</A>
+
+This is not really a fault of Ferret or DODS or even FreeForm (whenever
+you see /nph-ff/ you're connecting with a DODS FreeForm server).  The
+person who created the FreeForm configuration file did only the absolute
+minimum to get the data into a DODS server and we are left guessing what
+the data and even the axes represent.
+
+So we need to use Ferret to add some sensible 'use' metadata.  I've
+appended a quick Ferret session to let you know what you've got to do
+with this kind of data.  These are my best guesses of what to do but
+you'll have to use your own expertise or contact someone at GSFC to
+figure out what's correct.
+
+
+Good luck,
+
+
+-- Jonathan Callahan
+
+!--------------------------- Feret script
+----------------------------------
+use
+&quot;<A  HREF="http://daac.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/health/toms/erythemal/EPTOMS_UVM0001.bin&quot">http://daac.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/health/toms/erythemal/EPTOMS_UVM0001.bin&quot</A>;
+show data
+shade toms_eryth
+!
+! This could be a global dataset.
+! Do I see South America and the Andes at X=85?
+!
+message/quiet
+
+show grid
+list `360/288`
+!
+! 1.25 deg by 1.00 deg is a strange grid but who knows.
+!
+message/quiet
+
+define axis/x=-180:180/npoints=288/modulo longitude
+define axis/y=-90:90/npoints=180 latitude
+define grid/x=longitude/y=latitude toms1g
+
+let a = toms_eryth[gxy=toms1g@asn]
+
+shade a
+go land
+!
+! If I new more about UV data I might be able to decide
+! whether this was a reasonable plot or not.
+!
+
+!--------------------------- Feret script
+----------------------------------
+
+
+
+Long Pham wrote:
+&gt; 
+&gt; Jonathan,
+&gt; 
+&gt; I'm currently using the latest Ferret 5.22.  I'm trying to access
+&gt; data from
+&gt; 
+&gt; <A  HREF="http://daac.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/health/toms/erythemal">http://daac.gsfc.nasa.gov/daac-bin/nph-ff/DODS/catalog/health/toms/erythemal</A>
+&gt; /EPTOMS_UVM0001.bin
+&gt; 
+&gt; Thank you.
+&gt; 
+&gt; ----- Original Message -----
+&gt; From: &quot;Jonathan Callahan&quot; &lt;callahan@pmel.noaa.gov&gt;
+&gt; To: &quot;Long Pham&quot; &lt;pham@eosdata.gsfc.nasa.gov&gt;
+&gt; Cc: &lt;ferret_users@ferret.wrc.noaa.gov&gt;
+&gt; Sent: Monday, November 05, 2001 4:07 PM
+&gt; Subject: Re: DODS/Binary format
+&gt; 
+&gt; &gt; Long,
+&gt; &gt;
+&gt; &gt; You'll have to give some more information.
+&gt; &gt;
+&gt; &gt; What version of Ferret are you using?
+&gt; &gt;
+&gt; &gt; What is the DODS URL for the data you're accessing?
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; -- Jonathan Callahan
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Long Pham wrote:
+&gt; &gt; &gt;
+&gt; &gt; &gt; Hi,
+&gt; &gt; &gt;
+&gt; &gt; &gt; I'm currently trying to retrieve/use binary files via DODS in Ferret,
+&gt; but
+&gt; &gt; &gt; I'm having some problem.  Has anyone had success in this area? Could
+&gt; &gt; &gt; you send me sample file of what you did?
+&gt; &gt; &gt;
+&gt; &gt; &gt; Thanks,
+&gt; &gt; &gt;
+&gt; &gt; &gt; ~ Long ~
+&gt; &gt; &gt; ___________________________________________________
+&gt; &gt; &gt; ___________________________________________________
+&gt; &gt; &gt; Long B. Pham                                       Ph.:  (301) 614-5132
+&gt; &gt; &gt; GSFC Earth Sciences DAAC                 FAX: (301) 614-5268
+&gt; &gt; &gt; NASA-GSFC, Code 902
+&gt; &gt; &gt; Greenbelt, Maryland 20771
+&gt; &gt; &gt; Email: pham@daac.gsfc.nasa.gov
+&gt; &gt; &gt; ___________________________________________________
+&gt; &gt; &gt; ___________________________________________________
+&gt; &gt;
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00589" href="msg00589.html">DODS/Binary format</a></strong>
+<ul><li><em>From:</em> Long Pham</li></ul></li>
+<li><strong><a name="00590" href="msg00590.html">Re: DODS/Binary format</a></strong>
+<ul><li><em>From:</em> Jonathan Callahan</li></ul></li>
+<li><strong><a name="00591" href="msg00591.html">Re: DODS/Binary format</a></strong>
+<ul><li><em>From:</em> Long Pham</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00591.html">Re: DODS/Binary format</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00594.html">Windows version of FERRET</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00591.html">Thread Prev</a>][<a href="msg00594.html">Thread Next</a>][<A HREF="threads.html#00592">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

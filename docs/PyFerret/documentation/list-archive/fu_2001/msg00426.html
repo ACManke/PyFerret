@@ -1,0 +1,231 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: EXIT in a REPEAT loop -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 23 Jul 2001 13:24:34 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3B5C8701.15FED76C@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: v04210107b77baf7e0232@[206.55.228.53] -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: EXIT in a REPEAT loop</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00408.html">Thread Prev</a>][<a href="msg00409.html">Thread Next</a>][<A HREF="threads.html#00426">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: EXIT in a REPEAT loop</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Lynn deWitt &lt;<A HREF="mailto:ldewitt@DOMAIN.HIDDEN">ldewitt@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: EXIT in a REPEAT loop</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 23 Jul 2001 13:20:17 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>, <A HREF="mailto:mpickett@DOMAIN.HIDDEN">mpickett@xxxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00406.html">v04210107b77baf7e0232@[206.55.228.53]</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Lynn,
+
+Thanks for reporting this problem -- we have not encountered it before. You
+example (and Andrew's follow up) illustrate the need for more controls related
+to the EXIT command:
+
+EXIT/script -- exit from current script
+EXIT/loop -- break from current repeat loop (or future FOREACH)
+EXIT/prompt -- return to command prompt, regardless of current activity
+EXIT/program -- terminate Ferret (the current &quot;EXIT/command_file&quot; to be
+denegrated as misleading)
+
+Comments or suggestions?
+
+    - steve
+
+P.S. This should be a quick fix -- we'll try to get it in soon.
+
+==============================================
+
+Lynn deWitt wrote:
+
+&gt; Hi all,
+&gt;      The Ferret users manual states the following about the  &quot;EXIT&quot;  command
+&gt;
+&gt; &quot;When executed within a command file this command terminates the
+&gt; execution of the command file and returns control to the level in
+&gt; Ferret that executed the file (the user or another command file). &quot;
+&gt;
+&gt; We've recently found that this works great unless EXIT is placed
+&gt; within a REPEAT loop.  Here's an example:  The command files test1
+&gt; and test2 exit back to test.jnl, but test3.jnl exits all the way back
+&gt; to the command prompt without executing test1 the second time.   Am I
+&gt; missing something or is this a &quot;feature&quot;?  Lynn
+&gt;
+&gt; test.jnl:
+&gt;
+&gt; let a=1
+&gt; let b=2
+&gt; let c=3
+&gt; go test1 a b c
+&gt; go test2 a b c
+&gt; go test3 a b c
+&gt; go test1 a b c
+&gt;
+&gt; where
+&gt;
+&gt; test1.jnl is
+&gt;
+&gt; list $1,$2,$3
+&gt; list $1
+&gt; exit
+&gt; list $2
+&gt; list $3
+&gt;
+&gt; test2.jnl is
+&gt;
+&gt; repeat/i=1:3 (list $1,$2,$3)
+&gt; list $1
+&gt; exit
+&gt; list $2
+&gt; list $3
+&gt;
+&gt; and test3.jnl is
+&gt; repeat/i=1:3 (list $1,$2,$3; exit)
+&gt; list $1
+&gt; exit
+&gt; list $2
+&gt; list $3
+&gt;
+&gt; the output is:
+&gt; %ferret
+&gt;          NOAA/PMEL TMAP
+&gt;          Program FERRET (GUI)
+&gt;          Version 4.91 - 05/19/98
+&gt;          18-Jul-01 12:50
+&gt;
+&gt; yes? go test
+&gt; let a=1
+&gt; let b=2
+&gt; let c=3
+&gt; go test1 a b c
+&gt; list $1,$2,$3
+&gt;   !-&gt; list a,b,c
+&gt;   Column  1: A is 1
+&gt;   Column  2: B is 2
+&gt;   Column  3: C is 3
+&gt;               A      B      C
+&gt; I / *:    1.000  2.000  3.000
+&gt; list $1
+&gt;   !-&gt; list a
+&gt;               1
+&gt;            1.000
+&gt; exit
+&gt; go test2 a b c
+&gt; repeat/i=1:3 (list $1,$2,$3)
+&gt;   !-&gt; repeat/i=1:3 (list a,b,c)
+&gt; !-&gt; REPEAT: I=1
+&gt;   Column  1: A is 1
+&gt;   Column  2: B is 2
+&gt;   Column  3: C is 3
+&gt;               A      B      C
+&gt; I / *:    1.000  2.000  3.000
+&gt; !-&gt; REPEAT: I=2
+&gt;   Column  1: A is 1
+&gt;   Column  2: B is 2
+&gt;   Column  3: C is 3
+&gt;               A      B      C
+&gt; I / *:    1.000  2.000  3.000
+&gt; !-&gt; REPEAT: I=3
+&gt;   Column  1: A is 1
+&gt;   Column  2: B is 2
+&gt;   Column  3: C is 3
+&gt;               A      B      C
+&gt; I / *:    1.000  2.000  3.000
+&gt; list $1
+&gt;   !-&gt; list a
+&gt;               1
+&gt;            1.000
+&gt; exit
+&gt; go test3 a b c
+&gt; repeat/i=1:3 (list $1,$2,$3; exit)
+&gt;   !-&gt; repeat/i=1:3 (list a,b,c; exit)
+&gt; !-&gt; REPEAT: I=1
+&gt;   Column  1: A is 1
+&gt;   Column  2: B is 2
+&gt;   Column  3: C is 3
+&gt;               A      B      C
+&gt; I / *:    1.000  2.000  3.000
+&gt; %(exited all the way out of ferret back to the command prompt)
+&gt; --------------------------------------------
+&gt; Lynn deWitt
+&gt;
+&gt; ldewitt@pfeg.noaa.gov
+&gt;
+&gt; Pacific Fisheries Environmental Laboratories
+&gt; 1352 Lighthouse Avenue
+&gt; Pacific Grove, CA 93950-2097
+&gt; (831)-648-9036
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00406" href="msg00406.html">EXIT in a REPEAT loop</a></strong>
+<ul><li><em>From:</em> Lynn deWitt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00408.html">Re: EXIT in a REPEAT loop</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00409.html">Difficulties with Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00408.html">Thread Prev</a>][<a href="msg00409.html">Thread Next</a>][<A HREF="threads.html#00426">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

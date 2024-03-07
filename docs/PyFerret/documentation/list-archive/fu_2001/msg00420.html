@@ -1,0 +1,178 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Reading Fortran data files -->
+<!--X-From-R13: [nex Hrefpuryy <znexirefpuryyNzvaqfcevat.pbz> -->
+<!--X-Date: Fri, 20 Jul 2001 06:46:14 &#45;0700 (PDT) -->
+<!--X-Message-Id: 200107201346.JAA17410@mclean.mail.mindspring.net -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 003701c110c4$460d5d80$d890e29f@scsio.ac.cn -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Reading Fortran data files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00419.html">Thread Prev</a>][<a href="msg00421.html">Thread Next</a>][<A HREF="threads.html#00420">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Reading Fortran data files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>weiq &lt;<A HREF="mailto:weiqwang@DOMAIN.HIDDEN">weiqwang@xxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Reading Fortran data files</strong></li>
+<li><strong>From</strong>: <strong>Mark Verschell &lt;<A HREF="mailto:markverschell@DOMAIN.HIDDEN">markverschell@xxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 20 Jul 2001 09:46:12 -0400</li>
+<li>Cc: Aiguo Dai &lt;<A HREF="mailto:adai@DOMAIN.HIDDEN">adai@xxxxxxxx</A>&gt;, <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;<a href="msg00419.html">003701c110c4$460d5d80$d890e29f@scsio.ac.cn</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Oh, tough questions....<br>
+<br>
+The basic problem is that ForTran is so very good at creating whatever output you want. I think however that both can be solved, one easily and one with a little trickery.<br>
+<br>
+For <FONT color="0000,0000,0000">WeiQiang:<br>
+</FONT>With direct access output you are missing the 4 bytes that are at the beginning and end of each record in a typical ForTran data file (this is the record length - not needed in direct access when all records are SUPPOSED to be the same length), that is why the /format=unformatted won't work for you. Try instead:<br>
+set data/format=stream/columns=3240/var=map1 data.dat<br>
+<br>
+For Aiguo:<br>
+Yours is a little tougher because (if I remember correctly) what you have in each record would be:<br>
+4 bytes of record length (9720*4=38880)<br>
+12960 bytes of map1<br>
+12960 bytes of map2<br>
+12960 bytes of map3<br>
+4 bytes of record length (9720*4=38880)<br>
+There isn't a super clean way to read these (again, if I remember correctly). The only thing I can think to try is to "fool" ferret and access map1-3 (or amp, pha, and avg) as a single variable with depth. Try something like (CHANGES IN CAPITALS):<br>
+<FONT color="0000,0000,0000">def axis/x=180W:180E/npoint=72/unit="degrees_east" lon<br>
+def axis/y=90S:90N/npoint=45/unit="degrees_north" lat<br>
+</FONT>DEF AXIS/Z=1:3:1 NVAR                                                                            ! CHANGE<FONT color="0000,0000,0000"><br>
+def axis/t=1:5:1 time<br>
+def grid/x=lon/y=lat/Z=NVAR/t=time g5x4</FONT>                                                ! CHANGE<FONT color="0000,0000,0000"><br>
+file/format=unformatted/var=MAPS/col=9720/grid=g5x4 data.dat</FONT>      ! CHANGE<FONT color="0000,0000,0000"><br>
+!<br>
+</FONT>LET AMP=MAPS[Z=1]                                                                                 ! CHANGE<br>
+LET PHA=MAPS[Z=2]                                                                                 ! CHANGE<br>
+LET AVG=MAPS[Z=3]                                                                                 ! CHANGE<FONT color="0000,0000,0000"><br>
+set var/bad=-99999. amp<br>
+set var/bad=-99999. pha<br>
+</FONT><br>
+Good Luck to you both! Mark<br>
+<FONT color="0000,0000,0000"><br>
+</FONT>On Thursday, July 19, 2001, at 10:32 PM, weiq wrote:<br>
+<br>
+<BLOCKQUOTE>Hello, <br>
+Another similiar question in the following:<br>
+parameter(mi=72,mj=45,msea=5)<br>
+real map1(mi,mj)<br>
+<br>
+open(1,form='unformatted',file='data.dat',access='direct',recl=mi*mj)<br>
+<br>
+do is=1,msea<br>
+write(1,rel=is)  map1<br>
+enddo<br>
+<br>
+How can read this data.dat using ferret? I try it sometimes, but i failed.<br>
+By the way, I can read the above data.dat using Matlab, using fread(fp1,[72,45],'float32'). But I must using ferret to read it for graphic output.<br>
+<br>
+<br>
+---------------------------------------------<br>
+Wang WeiQiang<br>
+LED, South China Sea Institute of Oceanology<br>
+Chinese Academy of Sciences<br>
+164 West Xingang Rd., Guangzhou 510301<br>
+P. R. China<br>
+--------------------------------------------   <br>
+<br>
+<br>
+----- Original Message ----- <br>
+From: "Aiguo Dai" &lt;adai@ucar.edu><br>
+To: &lt;ferret_users@ferret.wrc.noaa.gov><br>
+Sent: Friday, July 20, 2001 2:08 AM<br>
+Subject: Reading Fortran data files<br>
+<br>
+<br>
+<BLOCKQUOTE>Try this again:<br>
+<BLOCKQUOTE>Hello,<br>
+<br>
+I was trying to read Fortran 77 files similar to the following one:<br>
+<br>
+parameter(mi=72,mj=45,msea=5)<br>
+real map1(mi,mj),map2(mi,mj),map3(mi,mj)<br>
+<br>
+open(1,form='unformatted',file='data.dat')<br>
+<br>
+do is=1,msea<br>
+write(1)map1,map2,map3<br>
+enddo<br>
+<br>
+using Ferret scripts:<br>
+<br>
+def axis/x=180W:180E/npoint=72/unit="degrees_east" lon<br>
+def axis/y=90S:90N/npoint=45/unit="degrees_north" lat<br>
+def axis/t=1:5:1 time<br>
+def grid/x=lon/y=lat/t=time g5x4<br>
+file/format=unformatted/var=amp,pha,avg/col=9720/grid=g5x4 data.dat<br>
+!<br>
+set var/bad=-99999. amp<br>
+set var/bad=-99999. pha<br>
+<br>
+However, the maps for amp[l=1], ..., amp[l=5], and pha are incorrect.<br>
+<br>
+Any suggestions would be appreciated for reading this types of data<br>
+files (also for cases with only map1 and map2 written). Thanks lot.<br>
+<br>
+-Aiguo Dai, NCAR, Boulder, CO<br>
+</BLOCKQUOTE></BLOCKQUOTE><br>
+</BLOCKQUOTE> 
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00419" href="msg00419.html">Re: Reading Fortran data files</a></strong>
+<ul><li><em>From:</em> weiq</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00419.html">Re: Reading Fortran data files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00421.html">Re: Reading Fortran data files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00419.html">Thread Prev</a>][<a href="msg00421.html">Thread Next</a>][<A HREF="threads.html#00420">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

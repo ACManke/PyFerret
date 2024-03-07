@@ -1,0 +1,252 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: 2D varying z&#45;axis -->
+<!--X-From-R13: Oear Pvnfgbpu <novnfgbpuNhpfq.rqh> -->
+<!--X-Date: Wed, 27 Sep 2000 10:48:41 &#45;0700 (PDT) -->
+<!--X-Message-Id: 39D232ED.7E2807C1@ucsd.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 39D0CBC5.D478E94C@ucsd.edu -->
+<!--X-Derived: bin00003.bin -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: 2D varying z-axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00405.html">Thread Prev</a>][<a href="msg00410.html">Thread Next</a>][<A HREF="threads.html#00409">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: 2D varying z-axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret mailing list &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;,       Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: 2D varying z-axis</strong></li>
+<li><strong>From</strong>: <strong>Arne Biastoch &lt;<A HREF="mailto:abiastoch@DOMAIN.HIDDEN">abiastoch@xxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 27 Sep 2000 10:48:29 -0700</li>
+<li>Organization: Scripps Institution of Oceanography / PORD</li>
+<li>References: &lt;<a href="msg00405.html">39D0CBC5.D478E94C@ucsd.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+Hi Ferreters,
+
+Steve (Hankin) gave me a solution to the problem which worked right from
+the start (I expected this when I got the answer from the master
+itself...). But also thanks to Graham Gladman who gave me a lot of
+suggestions.
+
+Before I come to the solution I should mention that the value is
+slightly different from what I calculated by hand (compare values 2 and
+3 in the list command below). I currently don't have a clue why. Maybe
+it has to do with details how FERRET integrates.
+
+Here are Steves lines:
+The simplistic answer is to use a vertical mask:
+    LET zcoord = Z[g=myvar]
+    LET zmask = IF zcoord LT bathymetry2Dfield THEN 1
+Then apply this mask to the quantity in question before integration. The
+effect of the approach is to count every data point either 100% or 0%
+
+It sounds like you want to weight the bottom points by where within the
+grid cell the bottom lies. For that you could use a &quot;weighted mask&quot;
+    LET margin_mask = IF zcoord[k=@shf] GT bathymetry2Dfield AND zcoord
+GT
+bathymetry2Dfield THEN
+(bathymetry2Dfield-zcoord)/(zcoord[k=@shf]-zcoord)
+    LET weighted_mask = MISSING(zmask, margin_mask)
+
+Then
+    LET summand = myvar * weighted_mask * ZBOX[g=myvar]
+    LET result = summand[k=@sum]
+
+
+I ran this on a testfile (attached to this email) and got:
+
+        NOAA/PMEL TMAP
+        Program FERRET  
+        Version 5.22 - 07/27/00
+        27-Sep-00 10:44     
+
+yes? use test
+yes? show data
+     currently SET data sets:
+    1&gt; ./test.cdf  (default)
+ name     title                             I         J        
+K         L
+ TEMP     POTENTIAL TEMPERATURE            1:1       1:1       1:30     
+1:1
+ BOTTOM   (-1)*DEPTH[D=depth]              1:1       1:1       ...      
+1:1
+ 
+yes? LET zcoord = Z[g=temp]
+yes? LET zmask = IF zcoord LT bottom THEN 1
+yes? LET margin_mask = IF zcoord[k=@shf] GT bottom AND zcoord GT bottom
+THEN (bottom-zcoord)/(zcoord[k=@shf]-zcoord)
+yes? LET weighted_mask = MISSING(zmask, margin_mask)
+yes? LET summand = temp * weighted_mask * ZBOX[g=temp]
+yes? LET result = summand[k=@sum]
+yes? 
+yes? list/l=1 temp[z=@din],temp[k=1:26@din]+temp[k=27]*270,result
+ *** NOTE: Ambiguous coordinates on T axis: TEMP * WEIGHTED_MASK *
+ZBOX[G=TEMP]
+             DATA SET: ./test.cdf
+             LONGITUDE: 50W(-50)
+             LATITUDE: 56N
+             TIME: 30-APR-1992 12:00
+ Column  1: TEMP[Z=0:6525@DIN] is POTENTIAL TEMPERATURE (deg C)
+ Column  2: EX#2 is TEMP[K=1:26@DIN]+TEMP[K=27]*270
+ Column  3: RESULT[Z=0:6525] is SUMMAND[K=@SUM]
+           TEMP    EX#2  RESULT 
+I / *:    13545.  12872.  12286.
+yes? 
+
+
+Ciao,
+	Arne
+
+
+
+Arne Biastoch wrote:
+&gt; 
+&gt; Hi Ferreters,
+&gt; 
+&gt; sorry, I have to bother you again. Steves suggestion did not solved by
+&gt; case. But I am sure that this is a general problem that all modelers
+&gt; with variable bottom and free surface formulations should also have.
+&gt; 
+&gt; I hope that there might be solutions around (Steve might already have 3
+&gt; lines in mind that do this...).
+&gt; 
+&gt; Here's the case:
+&gt; 
+&gt; I have a standard netCDF file with one depth axis. Here I would like to
+&gt; integrate not over the full water column but only down to a certain
+&gt; depth given by a 2D field (the bottom is not at the edges of the grid
+&gt; cells).
+&gt; 
+&gt; standard case      shallower            deeper
+&gt;    +---+              +---+              +---+
+&gt;    |   |              |   |              |   |
+&gt;    | T |              | T |              | T |
+&gt;    |   |              |   |              |   |
+&gt;    +---+              +---+              +---+
+&gt;    |   |              |   |              |   |
+&gt;    | T |              | T |              | T |
+&gt;    |   |              |   |              |   |
+&gt;    +---+              +---+              +---+
+&gt;    |   |              |   |              |   |
+&gt;    |   |              |   |              |   |
+&gt;    | T |              | T |              | T |
+&gt;    |   |              |   |              |   |
+&gt;    |   |              |...|  &lt;---        |   |
+&gt;    +---+  &lt;---        +---+              +---+
+&gt;    |...|              |...|              |   |
+&gt;    |...|              |...|              |...| &lt;---
+&gt;    |...|              |...|              | T |
+&gt;    |...|              |...|              |...|
+&gt;    |...|              |...|              |...|
+&gt;    +---+              +---+              +---+
+&gt; 
+&gt; T are the values that are NOT missing values, &quot;&lt;--&quot; marks the bottom,
+&gt; given by a 2D field
+&gt; 
+&gt; The most intuitive solution would be:
+&gt; 
+&gt; shade T[z=0:depth] whereby depth[i,j]
+&gt; 
+&gt; but as I understand FERRET it is not possible to use variable
+&gt; integration limits.
+&gt; 
+&gt; I appreciate any help.
+&gt; 
+&gt; Ciao,
+&gt;         Arne
+&gt; 
+&gt; Steve Hankin wrote:
+&gt; &gt;
+&gt; &gt; Hi Arne,
+&gt; &gt;
+&gt; &gt; A good starting point might be the FAQ
+&gt; &gt;
+&gt; &gt;     &quot;How do I handle sigma coordinate output in Ferret?&quot;
+&gt; &gt;
+&gt; &gt; at
+&gt; &gt; <A  HREF="http://www.ferret.noaa.gov/Ferret/FAQ/data_management/sigma_coordinate_demo.html">http://www.ferret.noaa.gov/Ferret/FAQ/data_management/sigma_coordinate_demo.html</A>
+&gt; &gt;
+&gt; &gt;     Happy Ferreting - steve
+&gt; &gt;
+&gt; --
+&gt; 
+&gt; Dr. Arne Biastoch
+&gt; Scripps Institution of Oceanography        phone: +1-858-822-3787
+&gt; Physical Oceanography Research Division    fax  : +1-858-534-9820
+&gt; MS: 0230                                   email: abiastoch@ucsd.edu
+&gt; 8605 La Jolla Shores Dr.
+&gt; La Jolla, CA 92093-0230, U.S.A.   <A  HREF="http://www.ecco.ucsd.edu/~biastoch">http://www.ecco.ucsd.edu/~biastoch</A>
+
+-- 
+
+Dr. Arne Biastoch
+Scripps Institution of Oceanography        phone: +1-858-822-3787
+Physical Oceanography Research Division    fax  : +1-858-534-9820
+MS: 0230                                   email: abiastoch@ucsd.edu
+8605 La Jolla Shores Dr.            
+La Jolla, CA 92093-0230, U.S.A.   <A  HREF="http://www.ecco.ucsd.edu/~biastoch">http://www.ecco.ucsd.edu/~biastoch</A></pre>
+<p><strong>Attachment:
+<a href="bin00003.bin" ><tt>test.cdf</tt></a></strong><br>
+<em>Description:</em> Binary data</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00405" href="msg00405.html">Re: 2D varying z-axis</a></strong>
+<ul><li><em>From:</em> Arne Biastoch</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00405.html">Re: 2D varying z-axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00410.html">Re: 2D varying z-axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00405.html">Thread Prev</a>][<a href="msg00410.html">Thread Next</a>][<A HREF="threads.html#00409">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

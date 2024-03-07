@@ -1,0 +1,151 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: how to change the symbol size? -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Thu, 11 Jan 2001 13:56:39 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.SOL.3.96.1010111133023.19436D&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.OSF.4.21.0101111339001.215419&#45;100000@ocean.tamu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how to change the symbol size?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00022.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00023">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how to change the symbol size?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Yang Kun &lt;<A HREF="mailto:yangk@DOMAIN.HIDDEN">yangk@xxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how to change the symbol size?</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 11 Jan 2001 13:53:48 -0800 (PST)</li>
+<li>Cc: ferret_users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00022.html">Pine.OSF.4.21.0101111339001.215419-100000@ocean.tamu.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi again Kun,
+	In the earlier answer I mentioned that using plot marks may be
+a bit limiting from the point of view of the shape of the arrow.  Also
+one cannot rely on the length of the symbol being equal to the &quot;height&quot;
+value entered in the label command.
+	Here is a way to customize the arrow by defining in inches and
+degrees its characteristics and using the &quot;ppl aline/nouser&quot; command.
+The same idea could be applied in user units if one were to take care
+of the aspect ratio issue.
+
+STEP 1:  Edit in the following .jnl file
+!
+! plotarrow.jnl   (1/11/2001 mick spillane noaa/pmel)
+!
+! plots an arrow with head at (xhead,yhead) and pointing
+! toward arrowdir (degrees clockwise from north).  the arrow
+! has length shaftlength and barblength in inches, and the 
+! barbs make an angle barbangle degrees with the shaft, the
+! arrow color is arrowcolor (0-19)
+!
+        ppl pen,1,`arrowcolor`
+        let deg2rad = atan(1.)/45
+        let radang  = deg2rad * (90 - arrowdir) 
+        let xend = xhead - shaftlength * cos(radang)
+        let yend = yhead - shaftlength * sin(radang)
+        ppl aline/nouser,1,`xhead`,`yhead`,`xend`,`yend`
+        let radang  = deg2rad * (90 - arrowdir - barbangle)  
+        let xend = xhead - barblength * cos(radang) 
+        let yend = yhead - barblength * sin(radang) 
+        ppl aline/nouser,1,`xhead`,`yhead`,`xend`,`yend` 
+        let radang  = deg2rad * (90 - arrowdir + barbangle)   
+        let xend = xhead - barblength * cos(radang) 
+        let yend = yhead - barblength * sin(radang) 
+        ppl aline/nouser,1,`xhead`,`yhead`,`xend`,`yend`
+        ppl pen,1,1 
+
+STEP 2: Use it as in the following demo
+
+plot/i=1:10 1/i
+
+let arrowcolor= 14
+let shaftlength=2 ; let barblength=0.3 ; let barbangle=30 
+let xhead=6 ; let yhead=3 ; let arrowdir=135 ; go plotarrow
+
+let arrowcolor= 16 
+let shaftlength=1 ; let barblength=0.2 ; let barbangle=15
+let xhead=3 ; let yhead=3 ; let arrowdir=240 ; go plotarrow
+
+-----------------------------------------------------------------
+Other ideas for even fancier arrows come from the POLYGON
+discussion in the user guide.  For example try this
+
+let xp=180+30*randu(i[i=1:10]) ; let yp=30*randu(1+i[i=1:10])
+let xt=ysequence({0,2,2,10,9,10,2,2})
+let yt=ysequence({0,3,1,2,0,-2,-1,-3})
+polygon xt+xp,yt+yp,i[i=1:10]
+
+Happy Archery,
+Mick
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00022" href="msg00022.html">Re: how to change the symbol size?</a></strong>
+<ul><li><em>From:</em> Yang Kun</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00022.html">Re: how to change the symbol size?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00021.html">Re: how to change the symbol size?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00022.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00023">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: A routine to compute and plot running power spectra -->
+<!--X-From-R13: Zri Fnenfbss <yriNngzbfc.culfvpf.hgbebagb.pn> -->
+<!--X-Date: Mon, 5 Jun 2000 16:51:07 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.SGI.4.10.10006051948460.22749&#45;200000@atmosp.physics.utoronto.ca -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>A routine to compute and plot running power spectra</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00247.html">Thread Prev</a>][<a href="msg00250.html">Thread Next</a>][<A HREF="threads.html#00248">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>A routine to compute and plot running power spectra</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>A routine to compute and plot running power spectra</strong></li>
+<li><strong>From</strong>: <strong>Lev Tarasoff &lt;<A HREF="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxxxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 5 Jun 2000 19:51:04 -0400</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Thanks to lots of help from Ansley Manke and Steve Hankin, here is a
+go script for computing and plotting running power spectra: (A note to
+Linux users. The external function &quot;ffta&quot; in FERRET version
+V500beta1.1 is broken. You should contact Ansley or myself for a
+working version).
+
+cheers 
+
+Lev Tarasoff -  Dept of Physics, University of Toronto,
+                60 St. George St., Toronto, Ontario, CANADA, M5S 1A7
+                Tel (416)-946-3019  Fax (416)-978-8905
+                email: lev@atmosp.physics.utoronto.ca
+
+fft2drun.jnl
+! fft2drun.jnl 06/00
+! Description: computes and plots running power spectrum for variable &quot;specvar&quot;
+! Usage: go fft2drun &quot;plot title&quot; &quot;Taxis&quot; &quot;tlo:thi:dt&quot; window
+!
+! where;
+!1			-plot title
+!2	Taxis 		-the name of the input /T axis for specvar
+!3	tlo:thi:dt 	-is the time axis specification for the running power 
+!			 spectrum, and must not have more than 1100 grid points
+!			 (or memory limits will be hit)
+!4	window 		- (half window length)/dt
+!
+! Example: to plot running power spectrum of &quot;myvar&quot; with 200 gridpoint wide window
+!    for the time range of -2000 to -2 and where myvar has the time axis &quot;Tw&quot;
+!
+!	yes? Let specvar=myvar
+!	yes? Go fft2drun &quot;my title&quot; &quot;Tw&quot; &quot;-2000:-2:2&quot; 100
+!
+! Output: can use routine within the script with adjusted ranges and annotation
+! or else can use &quot;series_fft*series_fft&quot; with one's own plot routine
+! Note might need to modify smoothing of specvar within script (&quot;let wtser...&quot;)
+!----------------------------------------------------------
+\cancel mode verify
+define region/default save
+set grid/save
+
+set memory/size=5.
+
+define axis/T=$3 lyear
+define axis/z=$3 lag_axis
+
+
+let wT = T[gt=lyear]
+let Tinv = T[gt=$2]
+let wL = L[gt=lyear]
+let NT = wT[l=@ngd]
+let NTin = Tinv[l=@ngd]
+
+let wtser=specvar[L=1:`NTin`@SBX:5] !smooth time series, MODIFY as needed
+let vts = wtser[gt=lyear]
+
+set view upper
+plot /tit=&quot;smoothed time series&quot; vts
+
+DEFINE GRID /T=lyear gly
+
+let p= t[gt=lyear]
+let q=vts
+set grid q
+go regresst
+list rsquare
+
+
+Let wts=vts-qhat !linearly detrend timeseries
+
+set view lower
+plot /tit=&quot;detrended time series&quot; wts
+pause
+can view
+
+! define a lag axis and a 2D version of the time series with a running window
+let window = $4
+let lag = K[gz=lag_axis] - 1
+let tseries_2d = IF (lag LT wl+window) and (wl LT lag + window) then wts ELSE 0
+
+! take the full FFT
+let series_fft = ffta(tseries_2d[l=1:`NT`]) 
+
+!set mode meta
+set region /Z=-1800:-200/T=0:0.06 !MODIFY as required
+fill /set_up  /transp series_fft*series_fft
+go remove_logo
+PPL LIST LABELS
+GO unlabel 4
+ppl ylab Frequency (cycles/kyr)
+ppl xlab Time (kyr)
+ppl title, &quot;$1&quot;
+ppl fill
+LABEL -1000,0.064,0,0,0.3 @C13 Running Power Spectrum
+!can mode meta
+
+set region save
+set grid/restore
+set mode/last verify
+</pre>
+<pre>
+! fft2drun.jnl 06/00
+! Description: computes and plots running power spectrum for variable &quot;specvar&quot;
+! Usage: go fft2drun &quot;plot title&quot; &quot;Taxis&quot; &quot;tlo:thi:dt&quot; window
+!
+! where;
+!1			-plot title
+!2	Taxis 		-the name of the input /T axis for specvar
+!3	tlo:thi:dt 	-is the time axis specification for the running power 
+!			 spectrum, and must not have more than 1100 grid points
+!			 (or memory limits will be hit)
+!4	window 		- (half window length)/dt
+!
+! Example: to plot running power spectrum of &quot;myvar&quot; with 200 gridpoint wide window
+!    for the time range of -2000 to -2 and where myvar has the time axis &quot;Tw&quot;
+!
+!	yes? Let specvar=myvar
+!	yes? Go fft2drun &quot;my title&quot; &quot;Tw&quot; &quot;-2000:-2:2&quot; 100
+!
+! Output: can use routine within the script with adjusted ranges and annotation
+! or else can use &quot;series_fft*series_fft&quot; with one's own plot routine
+! Note might need to modify smoothing of specvar within script (&quot;let wtser...&quot;)
+!----------------------------------------------------------
+\cancel mode verify
+define region/default save
+set grid/save
+
+set memory/size=5.
+
+define axis/T=$3 lyear
+define axis/z=$3 lag_axis
+
+
+let wT = T[gt=lyear]
+let Tinv = T[gt=$2]
+let wL = L[gt=lyear]
+let NT = wT[l=@ngd]
+let NTin = Tinv[l=@ngd]
+
+let wtser=specvar[L=1:`NTin`@SBX:5] !smooth time series, MODIFY as needed
+let vts = wtser[gt=lyear]
+
+set view upper
+plot /tit=&quot;smoothed time series&quot; vts
+
+DEFINE GRID /T=lyear gly
+
+let p= t[gt=lyear]
+let q=vts
+set grid q
+go regresst
+list rsquare
+
+
+Let wts=vts-qhat !linearly detrend timeseries
+
+set view lower
+plot /tit=&quot;detrended time series&quot; wts
+pause
+can view
+
+! define a lag axis and a 2D version of the time series with a running window
+let window = $4
+let lag = K[gz=lag_axis] - 1
+let tseries_2d = IF (lag LT wl+window) and (wl LT lag + window) then wts ELSE 0
+
+! take the full FFT
+let series_fft = ffta(tseries_2d[l=1:`NT`]) 
+
+!set mode meta
+set region /Z=-1800:-200/T=0:0.06 !MODIFY as required
+fill /set_up  /transp series_fft*series_fft
+go remove_logo
+PPL LIST LABELS
+GO unlabel 4
+ppl ylab Frequency (cycles/kyr)
+ppl xlab Time (kyr)
+ppl title, &quot;$1&quot;
+ppl fill
+LABEL -1000,0.064,0,0,0.3 @C13 Running Power Spectrum
+!can mode meta
+
+set region save
+set grid/restore
+set mode/last verify
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00247.html">Problem with scatter2gridlaplace_xy on Linux</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00250.html">[no subject]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00247.html">Thread Prev</a>][<a href="msg00250.html">Thread Next</a>][<A HREF="threads.html#00248">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

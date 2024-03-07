@@ -1,0 +1,167 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: regridding and memory -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Fri, 7 Jun 2002 11:39:52 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3D00FDF9.C6CA0AAC@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3CF41ECE.4AF308A4@pacific.jpl.nasa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: regridding and memory</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00287.html">Thread Prev</a>][<a href="msg00290.html">Thread Next</a>][<A HREF="threads.html#00304">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: regridding and memory</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Benyang Tang &lt;<a href="mailto:btang@DOMAIN.HIDDEN">btang@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: regridding and memory</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 07 Jun 2002 11:39:53 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00287.html">3CF41ECE.4AF308A4@pacific.jpl.nasa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Benyang,
+It turns out that this is due to a bug in @AVE regridding, where in some
+cases the wrong range of indices is used in computing the average for
+regridding.  The bug is in versions 5.22  - 5.40 of Ferret.  We have a fix
+for it, which will be in the version 5.41 release.   Here's a related report
+and reply.
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2002/msg00132.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2002/msg00132.html</a>
+
+The bug is is only with @AVE; other regridding transforms will give you
+correct results.
+
+Ansley Manke
+
+Benyang Tang wrote:
+
+&gt; I don't know how to make sense of the following Ferret section.
+&gt;
+&gt; I did
+&gt; list topo1[x=100,y=100]
+&gt; three times. Every time the value changed; no calculation was performed on the variable.
+&gt;
+&gt; The first list was 32.39, which was incorrect.
+&gt; The second list was 4715, after I listed the variable topo1 in a range.
+&gt; The third list was back to 32.39, after memory resizing.
+&gt;
+&gt; Any suggestions? Thanks.
+&gt;
+&gt; Benyang Tang
+&gt;
+&gt; ========================================
+&gt; $ ferret -gif
+&gt;         NOAA/PMEL TMAP
+&gt;         FERRET v5.40
+&gt;         Linux 2.4.3-12smp - 02/19/02
+&gt;         28-May-02 17:07
+&gt; yes? define axis/y=1:224:1/unit=meters oldY
+&gt; yes? define axis/x=1:360:1/unit=meters oldX
+&gt; yes? define grid/y=oldY/x=oldX oldG
+&gt; yes?
+&gt; yes? FILE/VAR=topo/GRID=oldG/FORMAT=stream/type=r4/swap  &quot;topog.dat&quot;
+&gt; yes?
+&gt; yes? define axis/y=1:224:2/unit=meters newY
+&gt; yes? define axis/x=1:360:2/unit=meters newX
+&gt; yes? define grid/y=newY/x=newX newG
+&gt; yes?
+&gt; yes? define var topo1=topo[g=newG@ave]
+&gt; yes?
+&gt; yes? list topo1[x=100,y=100]
+&gt;              VARIABLE : TOPO[G=NEWG@AVE]
+&gt;              FILENAME : topog.dat
+&gt;              X (METERS): 99
+&gt;              Y (METERS): 99
+&gt;           32.39
+&gt; yes?
+&gt; yes? list topo1[x=98:102,y=98:102]
+&gt;              VARIABLE : TOPO[G=NEWG@AVE]
+&gt;              FILENAME : topog.dat
+&gt;              SUBSET   : 2 by 2 points (X (METERS)-Y (METERS))
+&gt;                99     101
+&gt;                50     51
+&gt;  99    / 50:  4715.  2782.
+&gt;  101   / 51:    24.     6.
+&gt; yes?
+&gt; yes? list topo1[x=100,y=100]
+&gt;              VARIABLE : TOPO[G=NEWG@AVE]
+&gt;              FILENAME : topog.dat
+&gt;              X (METERS): 99
+&gt;              Y (METERS): 99
+&gt;           4715.
+&gt; yes? set memory/size=100
+&gt;  Cached data cleared from memory
+&gt; yes?
+&gt; yes? list topo1[x=100,y=100]
+&gt;              VARIABLE : TOPO[G=NEWG@AVE]
+&gt;              FILENAME : topog.dat
+&gt;              X (METERS): 99
+&gt;              Y (METERS): 99
+&gt;           32.39
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00287" href="msg00287.html">regridding and memory</a></strong>
+<ul><li><em>From:</em> Benyang Tang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00287.html">regridding and memory</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00290.html">New Ferret Developers Contact Email</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00287.html">Thread Prev</a>][<a href="msg00290.html">Thread Next</a>][<A HREF="threads.html#00304">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

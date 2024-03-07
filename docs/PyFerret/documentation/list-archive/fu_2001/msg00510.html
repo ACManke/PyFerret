@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: new user -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Wed, 19 Sep 2001 14:01:34 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3BA907BB.2269E235@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3BA8BB88.CDE336B4@ariel.met.tamu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: new user</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00509.html">Thread Prev</a>][<a href="msg00511.html">Thread Next</a>][<A HREF="threads.html#00510">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: new user</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Cocks &lt;<A HREF="mailto:scocks@DOMAIN.HIDDEN">scocks@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: new user</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<A HREF="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 19 Sep 2001 14:01:48 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00509.html">3BA8BB88.CDE336B4@ariel.met.tamu.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Steve,
+This is similar to what's in the FAQ, &quot;How can I plot a time series for a
+variable which exists in multiple files?&quot; at
+<A  HREF="http://ferret.pmel.noaa.gov/Ferret/FAQ/data_management/multi_dataset.html">http://ferret.pmel.noaa.gov/Ferret/FAQ/data_management/multi_dataset.html</A>
+
+First, you need to specify which time step to write out in the SAVE/APPEND
+commands, i.e.
+   save/file=Qscat_concat.nc/append U_T, V_T
+needs to be
+   save/file=Qscat_concat.nc/append U_T[L=2], V_T[L=2]
+
+I can't tell what might be happening with lat/lon.  Specifying lat and lon in the
+grid problem might do the trick (use range and delta from the lat/lon in
+your data)
+
+  define axis/t=&quot;1-jan-2001:00&quot;:&quot;4-jan-2001:18&quot;:6/unit=hours t96hours
+  define axis/X=0:359:deltax  xax            ( use delta x from your data, e.g.2 )
+  define axis/Y=-89.5:89.5:deltay  yax     ( use delta y from your data)
+  define grid/t=t96hours/x=xax/y=yax gg
+
+  let U_T=t[g=gg]*0 + U[gx=gg,gy=gg]
+  let V_T=t[g=gg]*0 + V[gx=gg,gy=gg]
+
+
+
+Steve Cocks wrote:
+
+&gt; Hello,
+&gt;
+&gt; I am a new user of Ferret, and in a middle of a number of problems.    I
+&gt; ran a script to concantenate 16 files into one; each file is a
+&gt; particular time step for a given year, julian date and hour.  Each file
+&gt; carries within it the variables time (unit=&quot;yyyydddhh&quot;, range is 1),
+&gt; lat(units=&quot;degree-north&quot;, range is 1-171), lon(units=&quot;degrees-east&quot;,
+&gt; range is 1-360), u(units=&quot;&quot;(m/s)^2) and v(units=&quot;&quot;(m/s)^2&quot;).  The goal I
+&gt; had was to run a script to concatenate these files into 1 file with all
+&gt; of the above variables but with a time range of 16, or l=1:16.  The
+&gt; script I used is included below:
+&gt; ***********************************************************
+&gt; define axis/t=&quot;1-jan-2001:00&quot;:&quot;4-jan-2001:18&quot;:6/unit=hours t96hours
+&gt; define grid/t=t96hours gg
+&gt;
+&gt; let U_T=t[g=gg]*0 + U
+&gt; let V_T=t[g=gg]*0 + V
+&gt;
+&gt; set variable/title=&quot;U&quot;/units=&quot;m^2/s^2&quot; U_T
+&gt; set variable/title=&quot;V&quot;/units=&quot;m^2/s^2&quot; V_T
+&gt;
+&gt; use &quot;/rlp/scocks/Scatterometer/2001/00/gcv_QSCAT_200100100.nc&quot;
+&gt; save/file=Qscat_concat.nc/append U_T, V_T
+&gt; .
+&gt; .    ETC ETC ETC, boy the list get's long
+&gt; .
+&gt; use &quot;/rlp/scocks/Scatterometer/2001/18/gcv_QSCAT_200100418.nc&quot;
+&gt; save/file=Qscat_concat.nc/append U_T, V_T
+&gt; quit
+&gt; ************************************************************
+&gt; This script did indeed write a concat file with l=1:16 although when
+&gt; each source file was read, the note
+&gt;
+&gt; &quot;*** NOTE: Units on axis &quot;time&quot; are not recognized: yyyydddhh
+&gt;  *** NOTE: They will not be convertible:
+&gt; save/file=Qscat_concat.nc/append U_T, V_T
+&gt;  LISTing to file Qscat_concat.nc
+&gt;  **TMAP ERR: Requested data range is outside of data set limits
+&gt;              Expected: U_T[I= 1 : 360 ] Found: U_T[I= 111 : 271 ]&quot;
+&gt;
+&gt; appeared indicating an error.  When I tried to look at my data, I found
+&gt; that my Lon and Lat variables had been restricted to a much smaller lat
+&gt; and lon range.  Also, my other Go scripts all of sudden didn't recognize
+&gt; the Lon (and probably Lat as well) variable.  The comparisons of ncdump
+&gt; -c on the source file and the new concatentated file showed big
+&gt; differences in variable ranges (excluding the change in time as was
+&gt; expected).  My questions are:
+&gt;
+&gt; 1)  What happened, and how can I concatenate the files without losing
+&gt; the lat and lon data, yet have the variables with l=1:16?
+&gt; 2)  Is there a way to define string variables, say YYYY, DDD, HH, and
+&gt; then substitute into a loop so I won't have to write down every single
+&gt; file into the program?
+&gt;
+&gt; Would greatly appreciate some insight into this matter.  Thanks in
+&gt; advance.
+&gt;
+&gt; Scocks
+&gt; Texas A&amp;M University
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00509" href="msg00509.html">new user</a></strong>
+<ul><li><em>From:</em> Steve Cocks</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00509.html">new user</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00511.html">Fine scale time plot labeling</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00509.html">Thread Prev</a>][<a href="msg00511.html">Thread Next</a>][<A HREF="threads.html#00510">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

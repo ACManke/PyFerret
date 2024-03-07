@@ -1,0 +1,204 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: singleton dimensions -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 17 Aug 2000 13:46:28 &#45;0700 (PDT) -->
+<!--X-Message-Id: 399C4F46.F3F5D528@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200008171804.LAA12492@tsunami.ocean.washington.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: singleton dimensions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00354.html">Thread Prev</a>][<a href="msg00341.html">Thread Next</a>][<A HREF="threads.html#00356">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: singleton dimensions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>David Darr &lt;<A HREF="mailto:darr@DOMAIN.HIDDEN">darr@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: singleton dimensions</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 17 Aug 2000 13:47:02 -0700</li>
+<li>Cc: Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Organization: NOAA/Pacific Marine Environmental Laboratory</li>
+<li>References: &lt;<a href="msg00354.html">200008171804.LAA12492@tsunami.ocean.washington.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi David,
+
+There are two easy solutions to this:
+
+  1. use a transformation such as @AVE on the singleton axis to &quot;compress&quot; it
+     out of existence
+  2. use the RESHAPE function
+
+Approach 1 is illustrated first below. Then 2.
+
+    - steve
+
+==========
+
+1. Using a compressing transformation to eliminate a &quot;singleton&quot; axis:
+&gt; ferret
+        NOAA/PMEL TMAP
+        Program FERRET
+        Version 5.22 - 07/27/00
+        17-Aug-00 13:35
+
+yes? define axis/z=50/npoints=1/units=meters z50
+yes? define axis/x=1:10:1 xax
+yes? let v = z[gz=z50] + x[gx=xax]
+yes? stat/brief v
+
+      Total # of data points: 10 (10*1*1*1)
+      # flagged as bad  data: 0
+      Minimum value: 51
+      Maximum value: 60
+      Mean    value: 55.5         (unweighted average)
+
+yes? save/file=test.cdf/clobber v[z=@ave]
+ LISTing to file test.cdf
+yes? spawn ncdump test.cdf
+
+     netcdf test {
+     dimensions:
+             XAX = 10 ;
+     variables:
+             double XAX(XAX) ;
+                     XAX:point_spacing = &quot;even&quot; ;
+     ==&gt;        float V(XAX) ;        &lt;&lt;== NOTE SINGLE DIMENSION
+                     V:missing_value = -1.e+34f ;
+                     V:_FillValue = -1.e+34f ;
+                     V:long_name = &quot;Z[GZ=Z50] + X[GX=XAX]&quot; ;
+     ==&gt;             V:long_name_mod = &quot;Z=49.5:50.5@AVE&quot; ; &lt;&lt;== NOTE!
+
+     // global attributes:
+                     :history = &quot;FERRET V5.22   17-Aug-00&quot; ;
+     data:
+
+      XAX = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ;
+
+      V = 51, 52, 53, 54, 55, 56, 57, 58, 59, 60 ;
+     }
+
+==========
+
+2. Using a the RESHAPE function to eliminate a &quot;singleton&quot; axis:
+
+You can define a new grid (DEFINE GRID) that matches the old definition but
+without the singleton axis. Then use RESHAPE
+
+yes? define axis/z=50/npoints=1/units=meters z50
+yes? define axis/x=1:10:1 xax
+yes? let v = z[gz=z50] + x[gx=xax]
+yes? load v
+yes? show grid
+ Default grid for DEFINE VARIABLE is ABSTRACT
+ Last successful data access was on grid (G001)
+    GRID (G001)
+ name       axis              # pts   start                end
+ XAX       X                   10 r   1                    10
+ normal    Y
+ Z50       Z (METERS)           1 r   50                   50
+ normal    T
+yes? define grid/x=xax gcompressed
+yes? let dummy = x[g=gcompressed]
+yes? load RESHAPE(v,dummy)
+yes? show grid
+ Default grid for DEFINE VARIABLE is ABSTRACT
+ Last successful data access was on grid GCOMPRESSED
+    GRID GCOMPRESSED
+ name       axis              # pts   start                end
+ XAX       X                   10 r   1                    10
+ normal    Y
+ normal    Z     &lt;&lt;=== !! NOTE THAT THE Z AXIS DISSAPEARED
+ normal    T
+
+================================
+
+David Darr wrote:
+
+&gt; Greetings Ferreters -- This may be fairly straightforward but I'm not
+&gt; quite sure how to do it. I have several netCDF files that have singleton
+&gt; dimensions (in Z). I would like to remove the Z dependence. I can do this
+&gt; fairly straightforwardly by using ncdump to create a CDL file, hand
+&gt; editing the CDL file, and then using ncgen to create the desired CDF file.
+&gt; However, I'd like to automate this process and have a Ferret script remove
+&gt; the singleton dimension. I have tried regridding to a grid that has the
+&gt; desired dimensionality but it seems the singleton dimensions get tacked on
+&gt; anyway. Any suggestions?
+&gt;
+&gt; thanks, David
+&gt;
+&gt; --
+&gt;             |  School of Oceanography       |
+&gt; David Darr  |  University of Washington     |  darr@ocean.washington.edu
+&gt;             |  Seattle, WA 98195            |
+
+--
+
+                |  NOAA/PMEL               |  ph. (206) 526-6080
+Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+                |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00354" href="msg00354.html">singleton dimensions</a></strong>
+<ul><li><em>From:</em> David Darr</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00354.html">singleton dimensions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00341.html">Re: orthographic projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00354.html">Thread Prev</a>][<a href="msg00341.html">Thread Next</a>][<A HREF="threads.html#00356">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

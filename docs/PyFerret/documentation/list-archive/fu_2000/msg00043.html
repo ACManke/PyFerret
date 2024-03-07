@@ -1,0 +1,190 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Regridding -->
+<!--X-From-R13: [nepryb Pneerveb <zneprybNznxb.gnzh.rqh> -->
+<!--X-Date: Thu, 10 Feb 2000 14:42:49 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.OSF.4.21.0002101633100.1301&#45;100000@mako.tamu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1000210121508.ZM15918@amarone.gsfc.nasa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Regridding</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00042.html">Thread Prev</a>][<a href="msg00044.html">Thread Next</a>][<A HREF="threads.html#00043">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Regridding</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Mark A. Verschell&quot; &lt;<A HREF="mailto:verschel@DOMAIN.HIDDEN">verschel@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Regridding</strong></li>
+<li><strong>From</strong>: <strong>Marcelo Barreiro &lt;<A HREF="mailto:marcelo@DOMAIN.HIDDEN">marcelo@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 10 Feb 2000 16:43:15 -0600 (CST)</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;<a href="msg00042.html">1000210121508.ZM15918@amarone.gsfc.nasa.gov</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Mark,
+
+Thanks for your answer, but my English prooved to be very bad. 
+
+I just wanted to do the opposite: I am trying to map a 1-D variable (415
+points) in the &quot;good&quot; points of a 2-D grid (33*18=594 total grid
+points) wich has 179 &quot;bad&quot; points (over the continents).
+Any suggestions to this?
+
+Marcelo
+
+
+P.D. I tried to use the function &quot;unravel&quot; typing
+
+yes? plot unravel(sst)
+
+and I got this error message:
+
+ **ERROR: command syntax: unravel(sst)
+          unravel before ( is illegal
+
+
+
+-----------------------------------------------------------
+
+
+On Thu, 10 Feb 2000, Mark A. Verschell wrote:
+
+&gt; Marcelo,
+&gt; 
+&gt; 	Let me restate what I think you are trying to do, and then give you a
+&gt; (poor) solution.
+&gt; 
+&gt; 	You are trying to map the good data values (SST) of a 2-dimensional
+&gt; grid (33*18=594 total grid points) with 179 grid points being &quot;bad&quot; (over
+&gt; continents) to a 1-dimensional grid that contains only the 415 remaining good
+&gt; points.
+&gt; 
+&gt; If this is so, I only have a partial solution for you. You can use the ferret
+&gt; function UNRAVEL to turn this into a 1-D grid :
+&gt; 
+&gt; yes? plot unravel(sst)
+&gt; 
+&gt; The problem is to skip over the bad-data points. I don't know of anyway to do
+&gt; this in ferret directly. If you have version 5.0 you could probably do this in
+&gt; an external function. I don't have this, and so the only thing I can suggest is
+&gt; a multi-step process:
+&gt; 
+&gt; write out the data:
+&gt; list/nohead/form=(f10.4)/file=tmp1.dat unravel(missing(sst,-9999))
+&gt; 
+&gt; Filter out the bad data values:
+&gt; spawn grep -v tmp1.dat &gt; tmp2.dat
+&gt; 
+&gt; Read in the compressed 1-d sst vector:
+&gt; file/var=sst tmp2.dat
+&gt; 
+&gt; Of course, the smart people at PMEL probably have a way to filter out the bad
+&gt; data values inside ferret, and so my reply to you is likely unnecessary.
+&gt; 
+&gt; Mark
+&gt; 
+&gt; On Feb 9,  9:13pm, Marcelo Barreiro wrote:
+&gt; &gt; Subject: Regridding
+&gt; &gt;
+&gt; &gt; Hi all,
+&gt; &gt;
+&gt; &gt; I am trying to regridd a variable var_a with the grid of a variable
+&gt; &gt; var_g.
+&gt; &gt; -var_g has 594 (33*18*1*1) points of which 179 are flagged as bad (var_g
+&gt; &gt; is SST and the bad data are over the continents). Thus we are left with
+&gt; &gt; 415 good points.
+&gt; &gt; -var_a is a row vector with 415 points.
+&gt; &gt;
+&gt; &gt; I tried
+&gt; &gt;
+&gt; &gt; ? file/var=ac/grid=var_g[d=1]/columns=415 var_a.dat
+&gt; &gt;
+&gt; &gt; but it did not work: it did not consider the region where var_g has bad
+&gt; &gt; data (it did not take into account the continents).
+&gt; &gt; Is there any way to regridd var_a such that its values are distributed
+&gt; &gt; only in the region where var_g has good values? How can I tell ferret to
+&gt; &gt; add bad data to var_a in the same region as var_g?
+&gt; &gt;
+&gt; &gt; Thanks!
+&gt; &gt;
+&gt; &gt; Marcelo
+&gt; &gt;
+&gt; &gt; Texas A&amp;M University
+&gt; &gt; Dept. of Oceanography.
+&gt; &gt;
+&gt; &gt;-- End of excerpt from Marcelo Barreiro
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt;  Mark Verschell                     NASA/Goddard Space Flight Center
+&gt;  verschell@neptune.gsfc.nasa.gov    Code 970/Lab. for Hydrospheric Proc.
+&gt;  301-614-5669  Fax: 301-614-5666    Greenbelt, MD 20771
+&gt; 
+&gt; 
+&gt; 		     Better Living Through Denial
+&gt;                ** USQC Certified: 100% Microsoft Free **
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00042" href="msg00042.html">Re: Regridding</a></strong>
+<ul><li><em>From:</em> Mark A. Verschell</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00042.html">Re: Regridding</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00044.html">Black and white fill</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00042.html">Thread Prev</a>][<a href="msg00044.html">Thread Next</a>][<A HREF="threads.html#00043">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

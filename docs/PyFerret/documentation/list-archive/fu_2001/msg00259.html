@@ -1,0 +1,148 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Draw coastal line in different sea depth levels. -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Wed, 25 Apr 2001 13:42:33 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.GSO.4.33.0104251250120.9430&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: F168anmaBtKgMp8D79I0000c622@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Draw coastal line in different sea depth levels.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00258.html">Thread Prev</a>][<a href="msg00260.html">Thread Next</a>][<A HREF="threads.html#00259">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Draw coastal line in different sea depth levels.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Namba Takaya &lt;<A HREF="mailto:takayanamba@DOMAIN.HIDDEN">takayanamba@xxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Draw coastal line in different sea depth levels.</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 25 Apr 2001 13:42:52 -0700 (PDT)</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;<a href="msg00256.html">F168anmaBtKgMp8D79I0000c622@hotmail.com</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Here is a way to draw the boundary of a mask using straight line
+segments for the top, bottom, left, and right edges of grid cells
+lying along the &quot;land-sea&quot; border.
+
+Example: The Gulf of Alaska
+
+use etopo20
+region/x=180:270/y=45:60
+shade rose
+
+let mask=if(rose[d=1] gt 0)then 1 else 0
+go bounder
+
+where bounder.jnl is the following script
+
+ ! bounder.jnl : drawing the &quot;land-sea&quot; edge in a mask
+
+def grid/like=mask gm
+let xl=x[g=gm]-xbox[g=gm]/2 ; let xr=x[g=gm]+xbox[g=gm]/2
+let yb=y[g=gm]-ybox[g=gm]/2 ; let yt=y[g=gm]+ybox[g=gm]/2
+! the left edge
+let ylb=if(mask[x=@ddb] ne 0)then yb else 999
+let ylt=if(mask[x=@ddb] ne 0)then yt else 999
+! the right edge
+let yrb=if(mask[x=@ddf] ne 0)then yb else 999
+let yrt=if(mask[x=@ddf] ne 0)then yt else 999
+! the bottom edge
+let xbl=if(mask[y=@ddb] ne 0)then xl else 999
+let xbr=if(mask[y=@ddb] ne 0)then xr else 999
+! the top edge
+let xtl=if(mask[y=@ddf] ne 0)then xl else 999
+let xtr=if(mask[y=@ddf] ne 0)then xr else 999
+
+! list all edges to the file bounds.d ...
+list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/clob xl,ylb,xl,ylt
+list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/app  xr,yrb,xr,yrt
+list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/app  xbl,yb,xbr,yb
+list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/app  xtl,yt,xtr,yt
+! ... then use grep to exclude the interior cells ...
+sp rm bounds2.d                ! this may require the user to type y
+sp grep -v 999.00 bounds.d &gt; bounds2.d
+
+file/form=free/var=xx,yy/col=6 bounds2.d
+set var/bad=999 xx ; set var/bad=999 yy
+can region
+plot/o/nolab/vs/line=1 xx,yy
+
+------
+Note that if a very large region were set, or the mask had a very fine
+resolution, the number of points in bounds2.d might exceed the 20000
+or so default limit and the read statement would need to be replaced
+with a gridded read.
+
+Mick Spillane
+
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00256" href="msg00256.html">Re: Draw coastal line in different sea depth levels.</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00258.html">Re: Draw coastal line in different sea depth levels.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00260.html">Re: Draw coastal line in different sea depth levels.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00258.html">Thread Prev</a>][<a href="msg00260.html">Thread Next</a>][<A HREF="threads.html#00259">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

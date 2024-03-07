@@ -1,0 +1,225 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: how to output grid data into the arcview shape format file -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 1 Jul 2002 09:38:57 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3D208570.304566C6@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: F114MQfWiaJDKHsbwoH00020684@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how to output grid data into the arcview shape format file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00326.html">Thread Prev</a>][<a href="msg00327.html">Thread Next</a>][<A HREF="threads.html#00338">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how to output grid data into the arcview shape format file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Namba Takaya &lt;<a href="mailto:takayanamba@DOMAIN.HIDDEN">takayanamba@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how to output grid data into the arcview shape format file</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<a href="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 01 Jul 2002 09:38:08 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>, <a href="mailto:las_users@DOMAIN.HIDDEN">las_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00326.html">F114MQfWiaJDKHsbwoH00020684@hotmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Takaya,
+
+Attached, please find the arc_ascii.jnl script which LAS uses to
+generate an ASCII representation of data that can be ingested by ArcInfo
+-- though not by ArcView.  If anyone knows of a non-proprietary format
+for creating gridded files for GIS systems, we'd love to know about it.
+
+
+-- Jonathan Callahan
+
+Namba Takaya wrote:
+&gt; 
+&gt; Dir Sir
+&gt; 
+&gt; Could somebody tell me how to output the grid data into the arc/view shape
+&gt; file by ferret?
+&gt; 
+&gt; In the Live Access Server, there is a arc/view shape file format in the
+&gt; output format option.
+&gt; I wonder how the ferret(script) list the shape file out in the LAS server.
+&gt; 
+&gt; Thank you in advance.
+&gt; 
+&gt; Takaya Namba
+&gt; 
+&gt; _________________________________________________________________
+&gt; $B%$%s%?!&lt;%M%C%H$r$V$i$V$i%7%g%C%T%s%0$9$k$J$i(B MSN $B%7%g%C%T%s%0$X(B
+&gt; <a  href="http://shopping.msn.co.jp/">http://shopping.msn.co.jp/</a>
+</pre>
+<pre>!\cancel mode verify
+! arc_ascii.jnl - create Arcinfo GIS output of regular grids
+
+! Description: create Arcinfo GIS output of regular grids
+
+! arguments:           1    2   3
+! Usage: GO arc_ascii dset var file
+
+! Hack to get quoted string with leading '/'
+def symbol foo = &quot;$1&quot;
+def symbol bar = &quot;$3&quot;
+! check the arguments
+query/ignore $foo%&lt;Usage: GO std_gif_xy dset var file%
+query/ignore $2%&lt;Usage: GO std_gif_xy dset var file%
+query/ignore $bar%&lt;Usage: GO std_gif_xy dset var file%
+
+can view
+set view full
+
+! initialize the data set
+SET DATA ($foo)
+
+let expr = missing($2,-1E+34)
+let nodata = -1E+34
+
+! THIS SCRIPT IS ONLY APPLICABLE TO THE XY PLANE
+define symbol shape `expr,return=shape`
+QUERY/IGNORE ($shape&quot;|XY|&lt;Region error: you can only obtain GIS output for XY maps&quot;)
+
+set mode cal:days
+set list/file=&quot;$3&quot;
+
+! subscript limits in XY plane
+let istart `expr,return=istart`
+let iend `expr,return=iend`
+let jstart `expr,return=jstart`
+let jend `expr,return=jend`
+
+! size of grid
+let Ni = iend-istart+1
+let Nj = jend-jstart+1
+
+! coordinate arrays
+LET xcoords = x + 0*MISSING(expr[j=`jstart`],0)
+LET ycoords = y + 0*MISSING(expr[i=`istart`],0)
+
+! JC 990719 .. It looks like we don't need xmid,ymid ..
+
+! coordinate bounds of grid
+! Make sure West long is &lt; 0, change both hi &amp; lo if xlo is &gt; 180
+let slon = xcoords[i=`istart`]
+IF `slon GT 180` THEN
+   let xlo = xcoords[i=`istart`] - 360
+   let xhi = xcoords[i=`iend`] - 360
+ELSE
+   let xlo = xcoords[i=`istart`]
+   let xhi = xcoords[i=`iend`]
+ENDIF
+let ylo = ycoords[j=`jstart`]
+let yhi = ycoords[j=`jend`]
+
+! midpoint of grid
+let xmid = (xlo+xhi) / 2
+let ymid = (ylo+yhi) / 2
+
+! size of grid cells
+IF `Ni GT 2` THEN
+  let xcell_size = (xhi-xlo)/(Ni-1)
+ELIF `Ni EQ 2` THEN
+  let xcell_size = (xhi-xlo)
+ELSE
+  let xcell_size = 1
+ENDIF
+IF `Nj GT 2` THEN
+  let ycell_size = (yhi-ylo)/(Nj-1)
+ELIF `Nj EQ 2` THEN
+  let ycell_size = (yhi-ylo)
+ELSE
+  let ycell_size = 1
+ENDIF
+let cell_size = (xcell_size+ycell_size)/2
+
+! SCRIPT IS ONLY APPLICABLE WHERE X and Y spacings are equal
+IF `ABS(xcell_size-ycell_size)/(xcell_size+ycell_size) GT 1E-6` THEN
+   list/file/nohead/append/format=&quot;('WARNING: cell sizes in X and Y differ:',2(1PG15.7))&quot; xcell_size, ycell_size
+ENDIF
+
+
+! make a heading as in this example
+!	ncols 180
+!	nrows 359
+!	xllcenter -89.54166
+!	yllcenter 0.4583334
+!	cellsize 1.
+spawn touch ($bar)
+spawn echo &quot;ncols `Ni`&quot; &gt;&gt; ($bar)
+spawn echo &quot;nrows `Nj`&quot; &gt;&gt; ($bar)
+list/file/nohead/append/format=&quot;('xllcorner',1PG15.7)&quot; xlo
+list/file/nohead/append/format=&quot;('yllcorner',1PG15.7)&quot; ylo
+list/file/nohead/append/format=&quot;('cellsize',1PG15.7)&quot;  cell_size
+list/file/nohead/append/format=&quot;('nodata',1PG15.7)&quot;    nodata
+
+can region/y
+! reverse the j indexing
+let jj = j[g=$2]
+let j_rev = sortj(jj[j=`jstart`:`jend`]*-1)
+let expr_rev = samplej(expr,j_rev)
+
+! write out the data
+list/file/nohead/append/format=&quot;(1PG15.7)&quot;  expr_rev
+
+set mode/last verify
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00326" href="msg00326.html">how to output grid data into the arcview shape format file</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00326.html">how to output grid data into the arcview shape format file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00327.html">window size</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00326.html">Thread Prev</a>][<a href="msg00327.html">Thread Next</a>][<A HREF="threads.html#00338">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

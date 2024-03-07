@@ -1,0 +1,212 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: setting regions for drawing polygons -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Thu, 7 Feb 2002 11:22:31 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C62D429.AEBF2653@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20020207162844.Y8589@sheridan.atm.ch.cam.ac.uk -->
+<!--X-Reference: 20020207171913.A8589@sheridan.atm.ch.cam.ac.uk -->
+<!--X-Reference: 3C62C308.68E9C772@pmel.noaa.gov -->
+<!--X-Reference: 20020207184441.C8589@sheridan.atm.ch.cam.ac.uk -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: setting regions for drawing polygons</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00070.html">Thread Prev</a>][<a href="msg00072.html">Thread Next</a>][<A HREF="threads.html#00071">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: setting regions for drawing polygons</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Glenn Carver &lt;<a href="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: setting regions for drawing polygons</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 07 Feb 2002 11:23:21 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00067.html">20020207162844.Y8589@sheridan.atm.ch.cam.ac.uk</a>&gt;&lt;<a href="msg00068.html">20020207171913.A8589@sheridan.atm.ch.cam.ac.uk</a>&gt;&lt;<a href="msg00069.html">3C62C308.68E9C772@pmel.noaa.gov</a>&gt;&lt;<a href="msg00070.html">20020207184441.C8589@sheridan.atm.ch.cam.ac.uk</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Glenn,
+Yes, I understand what you're saying.  Unfortunately, even an abstract
+axis has to be in one of the four dimensions, so there are issues if you
+have 4-dimensional data.
+
+For the lat and lon, your grid has an abstract axis, and you're right
+that if you set a region x=0:160, ferret will just take the first 360 points.
+The polygon command uses the VALUES of the variables, not their grid
+coordinates which is what's restricted by the SET REGION command.
+
+The basemap.jnl script does not need you to set the region.  It uses
+shade/x= /y=  command.
+
+If you do a basemap without using &quot;set region&quot;,  you should be able to
+call  &quot;go polymark&quot; and see all your lat,lon points.    It should just plot
+what is within the area of the basemap.
+
+yes? can region
+yes? go basemap x=180:360 y=-40:40
+yes? go polymark poly/over lon, lat, sigma
+
+
+Glenn Carver wrote:
+
+&gt; Ansley,
+&gt;
+&gt; Thanks for your email. In fact I haven't quite solved my problem yet. I understand your comment about the Z axis. It would be nice if polymark used an 'abstract' axis because with some 4D data (xyzt) data I have I need to specify a region in all axes.
+&gt;
+&gt; &gt;
+&gt; &gt; By the way, before you answered your own question, I thought you were
+&gt; &gt; talking about restricting the range of lat and lon
+&gt;
+&gt; Yes, I was. And I'm still having problems. Basically what I think is happening is that if I try to specify a region for longitude (e.g. set reg/x=0:360), it's intefering with my lon coordinate array. I have lon[i=1:2562] and by setting the x=0:360, it seems that polymark only takes the first 360 points from lon. I can see this by cancelling the region for x and then all the points are plotted. I can set a region for latitude (y) fine, because my data does not use a latitude axis. The i axis is not really longitude but a count of the no. of data points I have.
+&gt;
+&gt; what I want to do is plot a basemap for a specified region x=180:360,y=-40:40 and only plot the station points within that region (which is why I don't need the masking because my basemap needs to cover the same region).
+&gt;
+&gt; Somehow I need to set a region to plot a basemap but then tell ferret to use all the station points and only plot the points that lie in the lat/lon region I've set. I was thinking I need an abstract axis that I can put my longitude points on so that ferret doesn't subset it but I've not figured out how to do that yet!
+&gt;
+&gt; Hope that makes sense!
+&gt;
+&gt; Regards,
+&gt;               GLenn
+&gt;
+&gt; &gt; -- just while we're on the
+&gt; &gt; topic, they could be restricted by setting a mask for sigma:
+&gt; &gt;
+&gt; &gt;    LET/BAD=999 sigma_restricted = IF(lon GE 200 AND lon LE 250 AND lat GE 0) THEN zpts ELSE 999
+&gt; &gt;    GO polymark  POLY  lon, lat, sigma_restricted
+&gt; &gt;
+&gt; &gt; Ansley
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Glenn Carver wrote:
+&gt; &gt;
+&gt; &gt; &gt; Nothing like answering your own question.  8-)
+&gt; &gt; &gt;
+&gt; &gt; &gt; I neglected to mention that sigma is actually sigma[i=1:2562,k=1:40,l=1:400].
+&gt; &gt; &gt;
+&gt; &gt; &gt; If I set the region for k by set reg/k=1 and then call polymark, it doesn't work.
+&gt; &gt; &gt;
+&gt; &gt; &gt; Instead if I don't specify a region for k and then do:
+&gt; &gt; &gt;   polymark poly/key lon lat sigma[k=1] circle
+&gt; &gt; &gt;
+&gt; &gt; &gt; it works!  Quite what difference specifying the region this way makes I don't understand.
+&gt; &gt; &gt;
+&gt; &gt; &gt;  Glenn
+&gt; &gt; &gt;
+&gt; &gt; &gt; On 2002.02.07 16:28 Glenn Carver wrote:
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; Is it possible to use a region with the polymark script (or just the polygon command)?
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; I have a dataset which has three arrays, lon[i=1:2562], lat[i=1:2562] and a value to be plotted at those coords, sigma[i=1:2562]. I want to plot a marker at each (lon,lat) point coloured according to the values in sigma. Polymark.jnl does the job fine for the full lat &amp; long range. But I can't get it or polygon to work if I only want to plot markers over a region.
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; Unfortunately, although the sequence of points is ordered in some manner I can't simply select a subset of the data. Ideally what I need to do is use set region/x=200:250/y=-30:0 but this doesn't work. I get an error that the number of polygons does not match the data.
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; Is there a way around this?
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; Thanks
+&gt; &gt; &gt; &gt;            Glenn
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; --
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; Dr. Glenn Carver, Centre for Atmospheric Science, Univ. of Cambridge,
+&gt; &gt; &gt; &gt; Chemistry Dept., Lensfield Road, Cambridge, CB2 1EW, UK.
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; <a  href="mailto:Glenn.Carver@atm.ch.cam.ac.uk">mailto:Glenn.Carver@atm.ch.cam.ac.uk</a> <a  href="http://www.atm.ch.cam.ac.uk/~glenn/">http://www.atm.ch.cam.ac.uk/~glenn/</a>
+&gt; &gt; &gt; &gt; Phone: +44 (1223) 763827      ** please note new numbers **
+&gt; &gt; &gt; &gt; Fax:   +44 (1223) 763823
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; --
+&gt; &gt; &gt;
+&gt; &gt; &gt; Dr. Glenn Carver, Centre for Atmospheric Science, Univ. of Cambridge,
+&gt; &gt; &gt; Chemistry Dept., Lensfield Road, Cambridge, CB2 1EW, UK.
+&gt; &gt; &gt;
+&gt; &gt; &gt; <a  href="mailto:Glenn.Carver@atm.ch.cam.ac.uk">mailto:Glenn.Carver@atm.ch.cam.ac.uk</a> <a  href="http://www.atm.ch.cam.ac.uk/~glenn/">http://www.atm.ch.cam.ac.uk/~glenn/</a>
+&gt; &gt; &gt; Phone: +44 (1223) 763827      ** please note new numbers **
+&gt; &gt; &gt; Fax:   +44 (1223) 763823
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; --
+&gt;
+&gt; Dr. Glenn Carver, Centre for Atmospheric Science, Univ. of Cambridge,
+&gt; Chemistry Dept., Lensfield Road, Cambridge, CB2 1EW, UK.
+&gt;
+&gt; <a  href="mailto:Glenn.Carver@atm.ch.cam.ac.uk">mailto:Glenn.Carver@atm.ch.cam.ac.uk</a> <a  href="http://www.atm.ch.cam.ac.uk/~glenn/">http://www.atm.ch.cam.ac.uk/~glenn/</a>
+&gt; Phone: +44 (1223) 763827      ** please note new numbers **
+&gt; Fax:   +44 (1223) 763823
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00067" href="msg00067.html">setting regions for drawing polygons</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+<li><strong><a name="00068" href="msg00068.html">Re: setting regions for drawing polygons</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+<li><strong><a name="00069" href="msg00069.html">Re: setting regions for drawing polygons</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00070" href="msg00070.html">Re: setting regions for drawing polygons</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00070.html">Re: setting regions for drawing polygons</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00072.html">gksm2ps and printing</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00070.html">Thread Prev</a>][<a href="msg00072.html">Thread Next</a>][<A HREF="threads.html#00071">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

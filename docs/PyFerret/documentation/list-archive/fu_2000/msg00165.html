@@ -1,0 +1,254 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: symbols in subscript unrecognized? -->
+<!--X-From-R13: Rnavry =?vfb&#45;8859&#45;1?C?[=TQyyre?= <zhryyreNpyvzngr.havor.pu> -->
+<!--X-Date: Thu, 20 Apr 2000 04:58:38 &#45;0700 (PDT) -->
+<!--X-Message-Id: 38FEF107.533CB3A1@climate.unibe.ch -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>symbols in subscript unrecognized?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00162.html">Thread Prev</a>][<a href="msg00166.html">Thread Next</a>][<A HREF="threads.html#00165">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>symbols in subscript unrecognized?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>symbols in subscript unrecognized?</strong></li>
+<li><strong>From</strong>: <strong>Daniel Müller &lt;<A HREF="mailto:mueller@DOMAIN.HIDDEN">mueller@xxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 20 Apr 2000 13:59:03 +0200</li>
+<li>Organization: Universität Bern</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi ferret users
+
+Here is another thing i don't quite understand. I have a script which
+gets some parameters (i.e. names of variables) and defines some symbols
+for those. It then calls a subscript and hands some parameters to this
+one. Now look at the following script(s) and the error it produces:
+
+   go calc_correlation_map ($var_reg) PC_reg
+    !-&gt; go calc_correlation_map rvar PC_reg
+   !
+---------------------------------------------------------------------------
+   ! Description: calculates correlation map based of ERA data &amp; indexes
+
+   ! arguments  : $1 : variable name            [MSL]
+   !            : $2 : correlation type         [point, NAO, SOI,
+NAO_JONES,
+   !                                             NAO_NCEP, 
+NAO_NCEP_DJFM
+   !                                             PminEpoint,SminEpoint
+   !                                             PminEwGL, SminEwGL,
+   !                                             SH_AOI, PC_reg         
+]
+   !            : $3 : longitude
+   !            : $4 : latitude
+   !            : $5 : lag                      [0.]
+   !            : $6 : file name
+   !
+   !
+--------------------------------------------------------------------------------
+ 
+   define symbol var_cc = $1%MSL%          ! Processed Variable to
+correlate to
+    !-&gt; define symbol var_cc = rvar                ! Processed Variable
+to correlate to
+   define symbol type = $2%point%          ! Type of regression
+    !-&gt; define symbol type = PC_reg                ! Type of regression
+   define symbol lon = $3%20w%             ! longitude for point
+regression
+    !-&gt; define symbol lon = 20w            ! longitude for point
+regression
+   define symbol lat = $4%60N%             ! latitude for point
+regression
+    !-&gt; define symbol lat = 60N            ! latitude for point
+regression
+   define symbol lag = $5%0%               ! lag
+    !-&gt; define symbol lag = 0              ! lag
+   define symbol file_name = $6%file%      ! file (regridding for
+NAO_NCEP only)
+    !-&gt; define symbol file_name = file     ! file (regridding for
+NAO_NCEP only)
+    
+ 
+   ! -------------------------------------------------------------------
+   ! calculate normalized variable
+     go calc_normal_var ($var_cc)
+    !-&gt; go calc_normal_var rvar
+   !
+---------------------------------------------------------------------------
+   ! Description: calculate normalized variable var
+   !
+   ! Comment    : this script uses a number of working variable
+($var)_dummy
+   !              1) Use an expilicit region for the calculation.
+   !              2) File must be set befor running the script
+   !
+   ! Output     : Var_norm       -&gt;  normalized variable var
+   !            : Var_std        -&gt;  standard deviation of variable var
+   !
+   ! author     : ChA  08/97 [christof@climate.unibe.ch]
+   ! adapted by : DM 09/1999 [mueller@climate.unibe.ch]
+   !
+   ! Usage      : GO calc_normal_var varibale_name
+   !
+   ! arguments  : $1 : variable name            [MSL]
+   !
+   !
+---------------------------------------------------------------------------
+   !cancel mode verify
+   ! - define symbol var
+   define symbol var = $1%MSL%
+     !-&gt; define symbol var = rvar
+    
+   show grid ($var)
+    !-&gt; show grid rvar
+    **ERROR: invalid command: grid for rvar is not available.
+             (LOAD this variable and try SHOW GRID again.)
+   show grid rvar
+   Command file, command group, or REPEAT execution aborted
+   yes? show grid ($var)
+    !-&gt; show grid rvar
+       GRID GIC1
+    name       axis              # pts   start                end
+    LONGITUDE LONGITUDE          144mr   0E                   2.5W
+    LATITUDE  LATITUDE            29 r   20N                  90N
+    normal    Z
+    TIME1     T (MON)            472 r   23485                23956
+   yes? 
+   
+
+So it seems, that the command show grid ($var) does work when back in
+ferret typed in manually, but doesn't in the subscript.
+I invoke the show grid command, because the following command in my
+script, 
+   define symbol min_L = `($var),RETURN=LSTART`
+causes ferret tho hang for several minutes and then to terminate itself
+without any further error massage.
+
+The variable rvar is defined as follows: 
+   define symbol fn=pres.mon.mean.jan1958_apr1997.des.20_90
+   define symbol klimavar=pres_des
+   ...
+   use &quot;/usr/users/mueller/dataset/mout/($fn).data.cdf&quot;
+   let rvar=($klimavar)[d=2]
+
+
+which seems to be correct, because the following datasets are open:
+
+   yes? show data
+        currently SET data sets:
+       1&gt;
+/usr/users/mueller/dataset/Wallace/AO_index_jan1958_apr1997.cdf
+    name     title                             I         J        
+K         L
+    AOI      AO Index                         ...       ...      
+...       1:472
+    
+       2&gt;
+/usr/users/mueller/dataset/mout/pres.mon.mean.jan1958_apr1997.des.20_90.data.cdf
+    name     title                             I         J        
+K         L
+    PRES_DES SLP_DESEASONED                   1:144     1:29     
+...       1:472
+    TREND_STEIG                               1:144     1:29     
+...       ...
+    TREND_ABSN                                1:144     1:29     
+...       ...
+    PRES_DES_MEAN                             1:144     1:29     
+...       ...
+    
+       3&gt;
+/usr/users/mueller/dataset/ncep/pres.mon.mean.jan1958_apr1997.cdf
+    name     title                             I         J        
+K         L
+    PRES     Monthly mean surface pressure    1:144     1:73     
+...       1:472
+    
+       4&gt;
+/usr/users/mueller/dataset/mout/weight_my/pres.mon.mean.jan1958_apr1997.des.20_90.DeTrend.DeMean.cdf       
+(default)
+    name     title                             I         J        
+K         L
+    EXPVAR   Explained Variance               ...       ...      
+1:472     ...
+    DEXPVAR  Error  Explained Variance        ...       ...      
+1:472     ...
+    EOF                                       1:144     1:29     
+1:472     ...
+    PC                                        ...       ...      
+1:472     1:472
+    PRES_DES_CALC                                1:144     1:29     
+...       1:472
+ 
+   yes? 
+
+
+Is there anybody who can tell me what's happening (or why it isn't)? And
+even more: Does anybody know a workaround for this?
+
+Thank you in advance!
+
+Daniel
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00166" href="msg00166.html">Re: symbols in subscript unrecognized?</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00162.html">**ERROR: stack overflow: grid stack</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00166.html">Re: symbols in subscript unrecognized?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00162.html">Thread Prev</a>][<a href="msg00166.html">Thread Next</a>][<A HREF="threads.html#00165">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

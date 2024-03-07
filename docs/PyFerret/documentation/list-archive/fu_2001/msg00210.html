@@ -1,0 +1,178 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: wierd problem with go scripts -->
+<!--X-From-R13: Perag O [pRnavry <tgr328eNibeyba.rnf.tngrpu.rqh> -->
+<!--X-Date: Tue, 10 Apr 2001 13:36:10 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.LNX.4.30.0104101642260.2710&#45;100000@vorlon.eas.gatech.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: wierd problem with go scripts</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00207.html">Thread Prev</a>][<a href="msg00208.html">Thread Next</a>][<A HREF="threads.html#00210">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: wierd problem with go scripts</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: wierd problem with go scripts</strong></li>
+<li><strong>From</strong>: <strong>Brent A McDaniel &lt;<A HREF="mailto:gte328r@DOMAIN.HIDDEN">gte328r@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 10 Apr 2001 16:46:44 -0400 (EDT)</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+
+Ferret Users,
+
+I described this wierd bug of trying to pass scripts to ferret via command
+line.  Thanks to Ansley Manke, a solution has been found.  If you use the
+-server option, the script will execute correctly.  The downside is that
+you will not see the script run, only see a series of yes?'s.
+
+This may only be a linux bug (a problem with readline?) but I wanted to
+post it so that the solution will be in the mail archives for others.  You
+still need to include the -batch option as well.  So to run a script, for
+instance airlpreg.jnl, you would execute the following:
+
+ferret -batch -server &lt; airlpreg.jnl
+
+Cheers,
+
+Brent
+
+
+
+Brent A McDaniel wrote:
+
+&gt; Hi Ferreters,
+&gt;
+&gt; I'm experiencing a wierd bug on my system that I wasn't able to find in
+&gt; the mail archives.  The basics of it are: if I try to call certain go
+&gt; scripts (.jnl) from the unix command line (ferret -batch &lt; scriptname.jnl
+&gt; ), it completely fails, but if I enter the exact same commands manually that the
+&gt; script would have run, it works fine.  If I try to call the same script
+&gt; from within ferret (yes? go scriptname.jnl), it works fine.  This is a
+&gt; problem as I'm trying to use shell scripts to automate some data analysis.
+&gt; I've called .jnl files from the command line using ferret -batch &lt;
+&gt; scriptname.jnl before and it's worked ok but the scripts were shorter in
+&gt; length.
+&gt;
+&gt; Here's the script that I'm calling:
+&gt; [gte328r@ao qdata2]$ more aanomreg.jnl
+&gt;
+&gt; set memory/size=100
+&gt; use aoindex.cdf
+&gt; use aanom.1958.nc
+&gt; use aanom.1959.nc
+&gt; use aanom.1960.nc
+&gt; let
+&gt; testa2=airanom[d=2,z=1000,t=1-jan-1958:28-feb-1958]*index[d=1,z=1000,gt=`airanom[d=2],return=GRID`@asn]
+&gt; let
+&gt; testb2=airanom[d=2,z=1000,t=1-dec-1958:31-dec-1958]*index[d=1,z=1000,gt=`airanom[d=2],return=GRID`@asn]
+&gt; let temp2=testa2[t=1-jan-1958:28-feb-1958@sum] +
+&gt; testb2[t=1-dec-1958:31-dec-1958@sum]
+&gt; let
+&gt; testa3=airanom[d=3,z=1000,t=1-jan-1959:28-feb-1959]*index[d=1,z=1000,gt=`airanom[d=3],return=GRID`@asn]
+&gt; let
+&gt; testb3=airanom[d=3,z=1000,t=1-dec-1959:31-dec-1959]*index[d=1,z=1000,gt=`airanom[d=3],return=GRID`@asn]
+&gt; let temp3=testa3[t=1-jan-1959:28-feb-1959@sum] +
+&gt; testb3[t=1-dec-1959:31-dec-1959@sum]
+&gt; let
+&gt; testa4=airanom[d=4,z=1000,t=1-jan-1960:28-feb-1960]*index[d=1,z=1000,gt=`airanom[d=4],return=GRID`@asn]
+&gt; let
+&gt; testb4=airanom[d=4,z=1000,t=1-dec-1960:31-dec-1960]*index[d=1,z=1000,gt=`airanom[d=4],return=GRID`@asn]
+&gt; let temp4=testa4[t=1-jan-1960:28-feb-1960@sum] +
+&gt; testb4[t=1-dec-1960:31-dec-1960@sum]
+&gt; let reg1 = temp2 + temp3 + temp4
+&gt; save/file=aanomtemp.nc reg1
+&gt; quit
+&gt;
+&gt; It's hard for me to debug what's going on as the error messages are
+&gt; garbled to say the least.  Here's what I get when I try to call the script
+&gt; from the command line:
+&gt;
+&gt; [gte328r@ao qdata2]$ ferret -batch &lt; aanomreg.jnl
+&gt;         NOAA/PMEL TMAP
+&gt;         Program FERRET
+&gt;         Version 5.22 - 07/27/00
+&gt;         09-Apr-01 17:34
+&gt;
+&gt; yes? emp3 + temp4
+&gt;  **ERROR: unknown command: emp3
+&gt; yes? save/file=aanomtemp.nc reg1
+&gt;  **ERROR: variable unknown or not in data set: REG1
+&gt; yes? quit
+&gt;
+&gt; I'm running ferret v5.22 on a linux machine.  Has anyone else experienced
+&gt; this?  Is it a linux problem only?
+&gt;
+&gt; Thanks for any help.
+&gt;
+&gt; Brent
+&gt;
+&gt; --
+&gt; Brent A. McDaniel
+&gt;
+&gt; Dept of Earth and Atmospheric Sciences
+&gt; Georgia Institute of Technology
+&gt; Atlanta, Ga.  USA
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00207.html">wierd problem with go scripts</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00208.html">go polar_2d, under Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00207.html">Thread Prev</a>][<a href="msg00208.html">Thread Next</a>][<A HREF="threads.html#00210">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

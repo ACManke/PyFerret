@@ -1,0 +1,177 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: **TMAP ERR: limit on storage for coordinates has been reached -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Wed, 3 May 2000 15:57:46 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3910AEEC.75E0C83E@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3908CDA0.7DDA55B3@jasper.stanford.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: **TMAP ERR: limit on storage for coordinates has been reached</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00179.html">Thread Prev</a>][<a href="msg00180.html">Thread Next</a>][<A HREF="threads.html#00183">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: **TMAP ERR: limit on storage for coordinates has been reached</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:joerg@DOMAIN.HIDDEN">joerg@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: **TMAP ERR: limit on storage for coordinates has been reached</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 03 May 2000 15:57:48 -0700</li>
+<li>Cc: &quot;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Organization: NOAA/Pacific Marine Environmental Laboratory</li>
+<li>References: &lt;<a href="msg00179.html">3908CDA0.7DDA55B3@jasper.stanford.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Jörg,
+
+I believe the explanation for this behavior lies in the netCDF file in
+question.
+I presume that it was made with the SAVE command (LIST/FORMAT=CDF). (see
+note) By
+default the time axis of a variable in Ferret becomes the &quot;record&quot; axis of
+the netCDF file --
+i.e. the axis along which the file can be appended. Since the file is
+append-able the time
+axis cannot reliably be flagged with point_spacing=&quot;even&quot; (What if an
+uneven time coordinate
+is appended afterwards?).
+
+If point-spacing=&quot;even&quot; is absent, then the USE command is forced to read
+all of the
+coordinates of the axis in order to determine if the axis coordinates are
+indeed regular or
+not. If there are too many coordinates to read and store ... BOOM! a
+problem.
+
+There are two easy work-arounds:
+
+   * All Ferret versions support the SAVE/RIGID qualifier
+     This qualifier causes the output netCDF file *NOT* to use a netCDF
+record axis. The
+     result is that the file cannot be appended to -- but the
+point_spacing=&quot;regular&quot;
+     attribute will be automatically attached to the axis if appropriate.
+   * Ferret version 5.1 has the qualifier USE/REGULART
+     This qualifier tells Ferret to *assume* that the time axis is regular
+-- it reads only
+     the first and last coodinate on the axis, nothing more. Obviously,
+this is also a speed
+     up for initializing files with long time axes
+
+** Note that if the file was not created by the SAVE command, then adding
+the attribute point_spacing=&quot;regular&quot; to the time axis should produce the
+desired effect.
+
+    - steve
+
+===============================================
+
+Jörg Kaduk wrote:
+
+&gt; Hi again,
+&gt;
+&gt; I run into the error:
+&gt;
+&gt; **TMAP ERR: limit on storage for coordinates has been reached
+&gt;
+&gt; Is there any work-around?
+&gt;
+&gt; I tried cancel data and cancel memory (see below), which did not
+&gt; help....
+&gt;
+&gt; Thanks!
+&gt; Joerg
+&gt;
+&gt; yes? set view upper
+&gt; yes? plot wc
+&gt; yes? set view lower
+&gt; yes? cancel data/all
+&gt;
+&gt; yes? set data p3.dat
+&gt;  **TMAP ERR: limit on storage for coordinates has been reached
+&gt;              MAX= 100000
+&gt; yes? cancel mem
+&gt;  TEMPORARY data cleared from memory
+&gt; yes? cancel mem/all
+&gt;  PERMANENT data cleared from memory
+&gt;  TEMPORARY data cleared from memory
+&gt; yes? set data p3.dat
+&gt;  **TMAP ERR: limit on storage for coordinates has been reached
+&gt;              MAX= 100000
+&gt;
+&gt; --
+&gt; Jörg Kaduk                            Tel.: 1 650 325 1521 x 416
+&gt; Carnegie Institution of Washington    FAX: 1 650 325 6857
+&gt; Dept. of Plant Biology
+&gt; 260 Panama Street                     joerg@jasper.stanford.edu
+&gt; Stanford, CA 94305-1297               <A  HREF="http://Jasper.Stanford.EDU/joerg/">http://Jasper.Stanford.EDU/joerg/</A>
+
+--
+
+                |  NOAA/PMEL               |  ph. (206) 526-6080
+Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+                |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00179" href="msg00179.html">**TMAP ERR: limit on storage for coordinates has been reached</a></strong>
+<ul><li><em>From:</em> Jörg Kaduk</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00179.html">**TMAP ERR: limit on storage for coordinates has been reached</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00180.html">Passing variables</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00179.html">Thread Prev</a>][<a href="msg00180.html">Thread Next</a>][<A HREF="threads.html#00183">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: [Fwd: linear regression] -->
+<!--X-From-R13: Oaqernf Epuzvggare <naqernfNbprna.frbf.hivp.pn> -->
+<!--X-Date: Wed, 31 Oct 2001 10:23:38 &#45;0800 (PST) -->
+<!--X-Message-Id: 3BE0419E.6B4068C3@ocean.seos.uvic.ca -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>[Fwd: linear regression]</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00579.html">Thread Prev</a>][<a href="msg00585.html">Thread Next</a>][<A HREF="threads.html#00583">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[Fwd: linear regression]</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[Fwd: linear regression]</strong></li>
+<li><strong>From</strong>: <strong>Andreas Schmittner &lt;<A HREF="mailto:andreas@DOMAIN.HIDDEN">andreas@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 31 Oct 2001 10:23:26 -0800</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+-- 
+Andreas Schmittner                        andreas@ocean.seos.uvic.ca
+School of Earth and Ocean Sciences        Tel: (250) 472-4060
+University of Victoria                    Fax: (250) 472-4004
+PO Box 3055, Stn CSC
+Victoria, BC, V8W 3P6, Canada
+<A  HREF="http://climate.uvic.ca/people/andreas/andreas.html">http://climate.uvic.ca/people/andreas/andreas.html</A>
+</pre>
+<blockquote><small>---&nbsp;<i>Begin&nbsp;Message</i>&nbsp;---</small>
+<ul>
+<li><strong>To</strong>: <strong>Gert van Dijken &lt;<A HREF="mailto:gertvd@DOMAIN.HIDDEN">gertvd@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: linear regression</strong></li>
+<li><strong>From</strong>: <strong>Andreas Schmittner &lt;<A HREF="mailto:andreas@DOMAIN.HIDDEN">andreas@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 30 Oct 2001 16:54:26 -0800</li>
+<li>References: &lt;<a href="msg00579.html">Pine.OSF.4.33.0110301608080.16396-100000@pangea.Stanford.EDU</a>&gt;</li>
+</ul>
+<pre>
+Hi Gert,
+
+if I understand you right, you want to compute the spatial
+correlation. Look at the following script (regressxy.jnl) that I
+modified using the standard journal:
+
+\CANCEL MODE VERIFY 
+! Description:  define FERRET variables for regression along the X and Y
+axis
+
+say ... Linear Regression In the XY Plane
+say ... Instructions:
+say Use the LET command to define new variables
+say Define the variable P as your independent (X) variable
+say Define the variable Q as your   dependent (Y) variable
+say Results will be variables &quot;SLOPE&quot;, &quot;INTERCEP&quot; and &quot;RSQUARE&quot;
+say QHAT will be the regression estimate
+say Note: If &quot;Y&quot; is your independent variable then
+say ...   &quot;SET GRID Q&quot; after defining Q.
+say ... 
+
+let pq = p*q
+let pqmask = pq-pq  ! 0 or &quot;missing&quot; so all variables share the same
+missing
+let pmasked = p + pqmask
+let qmasked = q + pqmask
+let pp = pmasked*pmasked
+let qq = qmasked*qmasked
+
+let pxave = pmasked[x=@ave]
+let qxave = qmasked[x=@ave]
+let pave = pxave[y=@ave]
+let qave = qxave[y=@ave]
+let pqxave = pq[x=@ave]
+let ppxave = pp[x=@ave]
+let qqxave = qq[x=@ave]
+let pqave = pqxave[y=@ave]
+let ppave = ppxave[y=@ave]
+let qqave = qqxave[y=@ave]
+let pvar  = ppave - pave*pave
+let qvar  = qqave - qave*qave
+let pqvar = pqave - pave*qave
+
+let slope = pqvar / pvar
+let intercep = qave - slope*pave
+let qhat = slope*p + intercep
+let rsquare = (pqvar*pqvar) / (pvar*qvar)
+let corr = pqvar/(pvar*qvar)^0.5
+
+SET MODE/LAST VERIFY
+
+
+
+Gert van Dijken wrote:
+&gt; 
+&gt; Hi all,
+&gt; 
+&gt; I have some problems using the linear regression go-tools.
+&gt; 
+&gt; My data set looks as follows:
+&gt; 
+&gt; yes? show data
+&gt;      currently SET data sets:
+&gt;     1&gt; ./ozo_prod_diff.cdf  (default)
+&gt;  name     title                             I         J         K         L
+&gt;  OZODIFF  (OZO[D=map.79F.V2]-OZO[D=map.92  1:301     1:301     ...       1:153
+&gt;  PRODDIFF (PROD79_MASK- PROD92_MASK)*100/  1:301     1:301     ...       1:153
+&gt; 
+&gt; I would like to find the equation of the best fit (and r^2) for each day
+&gt; (L) when I plot ozodiff vs. proddiff.
+&gt; 
+&gt; What I tried was more or less the following, for example day 45:
+&gt; yes? plot/vs/l=45 ozodiff,proddiff
+&gt; yes? ! lots of points, but it looks like a pretty good linear correlation...
+&gt; yes? let q = ozodiff[l=45]
+&gt; yes? let p = proddiff[l=45]
+&gt; yes? go regresst
+&gt; yes? set grid q
+&gt; yes? list slope
+&gt; 
+&gt; The problem is that 'slope', 'intercep' or 'rsquare' are not one point,
+&gt; but a 301x301 array.  When I use 'go regressx' or 'go regressy' I get a
+&gt; 1x301 array.  Using 'go regressz' also gives a 301x301 array.
+&gt; 
+&gt; Am I using the wrong go-tool?
+&gt; 
+&gt; Ferret version:  ! Version 5.22 - 07/27/00
+&gt; 
+&gt; Thanks,
+&gt; 
+&gt; Gert
+
+-- 
+Andreas Schmittner                        andreas@ocean.seos.uvic.ca
+School of Earth and Ocean Sciences        Tel: (250) 472-4060
+University of Victoria                    Fax: (250) 472-4004
+PO Box 3055, Stn CSC
+Victoria, BC, V8W 3P6, Canada
+<A  HREF="http://climate.uvic.ca/people/andreas/andreas.html">http://climate.uvic.ca/people/andreas/andreas.html</A>
+</pre>
+<small>---&nbsp;<i>End Message</i>&nbsp;---</small></blockquote>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00579.html">linear regression</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00585.html">compression by gathering</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00579.html">Thread Prev</a>][<a href="msg00585.html">Thread Next</a>][<A HREF="threads.html#00583">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

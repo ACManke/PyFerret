@@ -1,0 +1,252 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Reading Fortran data files -->
+<!--X-From-R13: [nex Hrefpuryy <znexirefpuryyNzvaqfcevat.pbz> -->
+<!--X-Date: Fri, 20 Jul 2001 10:50:35 &#45;0700 (PDT) -->
+<!--X-Message-Id: 200107201750.NAA21411@johnson.mail.mindspring.net -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.GSO.4.30.0107201056180.5593&#45;100000@sanitas&#45;e0.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Reading Fortran data files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00421.html">Thread Prev</a>][<a href="msg00424.html">Thread Next</a>][<A HREF="threads.html#00423">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Reading Fortran data files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Aiguo Dai &lt;<A HREF="mailto:adai@DOMAIN.HIDDEN">adai@xxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Reading Fortran data files</strong></li>
+<li><strong>From</strong>: <strong>Mark Verschell &lt;<A HREF="mailto:markverschell@DOMAIN.HIDDEN">markverschell@xxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 20 Jul 2001 13:50:38 -0400</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;Pine.GSO.4.30.0107201056180.5593-100000@sanitas-e0.cgd.ucar.edu&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+(I put this back on the mailing list because I thought the general community would find the RESHAPE function useful - method 2 below, and also because Aiguo might need specific help using it since I am not that versed in it. Side note: maybe we need to build a little collection of Fortran file formats and how they were read in ferret &lt;- Ferret Crew?)<br>
+<br>
+Aiguo,<br>
+<br>
+I have run across a lot of "creative" output formats in my career. What I have done is to convert almost everything to NetCDF (right from the beginning) unless I will only look at the data a few times. The speed up in accessing a large data base is incredible.<br>
+<br>
+Your particular case will not be pretty. Two ways come to mind....<br>
+<br>
+1) Simplest, but painfully boring<br>
+You need to define 300 Unix soft links to each file, e.g.:<br>
+<TT><FONT face="Courier New">ln -s data1.dat data1.001</FONT></TT><br>
+<TT><FONT face="Courier New"><FONT color="0000,0000,0000">ln -s data1.dat data1.002</FONT></FONT></TT><FONT color="0000,0000,0000"><br>
+</FONT>to<br>
+<TT><FONT face="Courier New">ln -s data1.dat data1.300</FONT></TT><br>
+<br>
+Then, in ferret you would open a file for each obs:<br>
+<TT><FONT face="Courier New"><FONT color="0000,0000,0000">FILE/SKIP=1/VAR=v001/FORMAT=STREAM data1.001</FONT></FONT></TT><FONT color="0000,0000,0000"><br>
+</FONT><TT><FONT face="Courier New">FILE/SKIP=64883/VAR=v002/FORMAT=STREAM data1.002</FONT></TT><br>
+<TT><FONT face="Courier New">FILE/SKIP=129765/VAR=v003/FORMAT=STREAM data1.003<br>
+ad nauseum........<br>
+</FONT></TT>The skip comes from (360*180+80+2)*(obs-1)+1<br>
+<br>
+And of course for data2.dat you would have to define 1 large variable that is 360*180*2 with the 2 being depth and z=1 being map1 and z=2 being map2 and the skip being (2*360*180+80+2)*(obs-1)+1<br>
+<br>
+2) Tricky, but should work<br>
+I can't help you with the details in this one, but it should work<br>
+For data1.dat define your variable in ferret as 2D map1(x,t) where the x axis is<br>
+360*180+80 (80 for the title)<br>
+DEFINE AXIS/X=1:64880:1 xjunk<br>
+<br>
+Then, you remap the good data into a 2d variable using the RESHAPE function (see the Ferret manual Ch3 Sec2.3.23) Something like:<br>
+<br>
+SET REGION/x=81:64880<br>
+RESHAPE(v1d,v2d)<br>
+Where v1d is the 64880 long variable, and v2d is the 360*180 variable<br>
+<br>
+For the data2.dat, again try doing the 1 big variable trick.<br>
+<br>
+Good Luck, Mark<br>
+<br>
+<FONT color="0000,0000,0000"><br>
+</FONT>On Friday, July 20, 2001, at 01:06 PM, Aiguo Dai wrote:<br>
+<br>
+<BLOCKQUOTE>Thanks, Mark. The reason I brought this issue up is because that many<br>
+large climate datasets have been put out in Fortran binary format<br>
+("write(1) title, dataMap" is a fairly common format). NetCDF<br>
+format has become popular in just last several years.<br>
+<br>
+My question is how to read map1 and map2 the following Fortran binary files:<br>
+<br>
+parameter(mi=360,mj=180,nobs=300)<br>
+character*80 title<br>
+real  year, month, map1(mi,mj),map2(mi,mj)<br>
+<br>
+open(1,form='unformatted',file='data1.dat')<br>
+open(2,form='unformatted',file='data2.dat')<br>
+<br>
+<br>
+do 10 n=1,nobs<br>
+write(1)title,map1<br>
+write(2)title,year,month,map1,map2<br>
+10   continue<br>
+<br>
+<br>
+Thanks again.<br>
+<br>
+<br>
+Aiguo Dai                                    email: adai@ucar.edu<br>
+Climate &amp; Global Dynamics Division           phone: 303-497-1357<br>
+National Center for Atmospheric Research     FAX  : 303-497-2699<br>
+P.O. Box 3000, 1850 Table Mesa Drive<br>
+Boulder, CO  80307<br>
+homepage: http://www.cgd.ucar.edu/cas/adai/<br>
+<br>
+<br>
+<br>
+On Fri, 20 Jul 2001, Mark Verschell wrote:<br>
+<br>
+<BLOCKQUOTE>Well, your letter is exactly why the ferret manual can't get into more<br>
+detail. There are an infinite number of convoluted ways of writing files<br>
+in ForTran (and many other programming languages). And thus, putting in<br>
+more than a few examples of the most straightforward examples would be a<br>
+wasted effort. Show one example and then a little change makes the<br>
+example invalid. Much better to write to NetCDF which can be done from a<br>
+ForTran program fairly easily and which would be a self-documenting file<br>
+in addition to being easily read by ferret.<br>
+<br>
+As to your particular question, I need more info, are you telling me<br>
+that you have a file that is really something like:<br>
+<br>
+&lt;80 character title><br>
+&lt;optional numbers><br>
+map1,map2,map3<br>
+&lt;80 character title><br>
+&lt;optional numbers><br>
+&lt;optional numbers><br>
+map1,map2,map3<br>
+(repeat)<br>
+<br>
+If so, this will take a lot of work to read in ferret and I would<br>
+suggest that you write a very small ForTran program that reformats the<br>
+file.<br>
+<br>
+Mark<br>
+<br>
+p.s. I replied just to you as I don't know if this would be of any<br>
+interest to the ferret_list in general. Maybe I need to write a little<br>
+FAQ on output choices.<br>
+<br>
+<br>
+On Friday, July 20, 2001, at 12:26 PM, Aiguo Dai wrote:<br>
+<br>
+<BLOCKQUOTE>Mark,<br>
+<br>
+I hate to bother you again, but it seems that you may be the right<br>
+person to<br>
+ask about this:<br>
+<br>
+If there is a title of character*80 ahead of each of the record in my<br>
+previous example, how could I skip the title (and sometimes a few<br>
+additional<br>
+real numbers in other cases)? Thank you very much in advance for your<br>
+help.<br>
+<br>
+I think the Ferret mannual should add more info and examples on reading<br>
+Fortran<br>
+binary files.<br>
+<br>
+<br>
+Aiguo Dai                                    email: adai@ucar.edu<br>
+Climate &amp; Global Dynamics Division           phone: 303-497-1357<br>
+National Center for Atmospheric Research     FAX  : 303-497-2699<br>
+P.O. Box 3000, 1850 Table Mesa Drive<br>
+Boulder, CO  80307<br>
+homepage: http://www.cgd.ucar.edu/cas/adai/<br>
+----- Original Message -----<br>
+From: "Aiguo Dai" &lt;adai@ucar.edu><br>
+To: &lt;ferret_users@ferret.wrc.noaa.gov><br>
+Sent: Friday, July 20, 2001 2:08 AM<br>
+Subject: Reading Fortran data files<br>
+<br>
+<br>
+Hello,<br>
+<br>
+I was trying to read Fortran 77 files similar to the following one:<br>
+<br>
+parameter(mi=72,mj=45,msea=5)<br>
+real map1(mi,mj),map2(mi,mj),map3(mi,mj)<br>
+<br>
+open(1,form='unformatted',file='data.dat')<br>
+<br>
+do is=1,msea<br>
+write(1)map1,map2,map3<br>
+enddo<br>
+<br>
+using Ferret scripts:<br>
+<br>
+def axis/x=180W:180E/npoint=72/unit="degrees_east" lon<br>
+def axis/y=90S:90N/npoint=45/unit="degrees_north" lat<br>
+def axis/t=1:5:1 time<br>
+def grid/x=lon/y=lat/t=time g5x4<br>
+file/format=unformatted/var=amp,pha,avg/col=9720/grid=g5x4 data.dat<br>
+!<br>
+set var/bad=-99999. amp<br>
+set var/bad=-99999. pha<br>
+<br>
+However, the maps for amp[l=1], ..., amp[l=5], and pha are incorrect.<br>
+<br>
+Any suggestions would be appreciated for reading this types of data<br>
+files (also for cases with only map1 and map2 written). Thanks lot.<br>
+<br>
+-Aiguo Dai, NCAR, Boulder, CO<br>
+</BLOCKQUOTE><br>
+<br>
+</BLOCKQUOTE><br>
+</BLOCKQUOTE> 
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00421.html">Re: Reading Fortran data files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00424.html">Map projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00421.html">Thread Prev</a>][<a href="msg00424.html">Thread Next</a>][<A HREF="threads.html#00423">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

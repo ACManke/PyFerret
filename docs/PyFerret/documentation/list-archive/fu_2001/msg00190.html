@@ -1,0 +1,189 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: How to extract length of axis to a symbol? -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Tue, 3 Apr 2001 18:01:24 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3ACA72B7.D3A990A9@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 8969C7C92A78D311869C0090278750B6B52D1A@cumulus.shore.mbari.org -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to extract length of axis to a symbol?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00189.html">Thread Prev</a>][<a href="msg00191.html">Thread Next</a>][<A HREF="threads.html#00190">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to extract length of axis to a symbol?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;McCann, Mike&quot; &lt;<A HREF="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to extract length of axis to a symbol?</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 03 Apr 2001 18:02:48 -0700</li>
+<li>Cc: &quot;'Andrew Wittenberg'&quot; &lt;<A HREF="mailto:andyw@DOMAIN.HIDDEN">andyw@xxxxxxxxxxxxxxxxxxxx</A>&gt;,       ferret_users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Organization: NOAA/Pacific Marine Environmental Laboratory</li>
+<li>References: &lt;<a href="msg00189.html">8969C7C92A78D311869C0090278750B6B52D1A@cumulus.shore.mbari.org</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Mike,
+
+If I am understanding you correctly, what you are after is to know what the time
+index range becomes for a slug of data *after* it is regridded.
+
+It is easy to find the date range (as opposed to index range) and use it as
+follows:
+
+     define symbol tstart `U_COMPONENT,return=tstart`
+     define symbol tend `U_COMPONENT,return=tend`
+     SAVE/FILE=&quot;m1_adcp.nc&quot;/APPEND U_VEL_COMP[L=&quot;$TSTART&quot;:&quot;$TEND&quot;]
+
+The date range after regridding will in some cases be smaller than before
+regridding, since linear interpolation is not possible at the endpoints of the
+source data. However, if the date ranges of the files that you are appending are
+non-overlapping, I think the above procedure should work 100%.
+
+    - steve
+
+=====================================
+
+&quot;McCann, Mike&quot; wrote:
+
+&gt; Andrew, Ansley, et al.-
+&gt;
+&gt; Thanks!   That define works.  Now I need a little help
+&gt; getting the index range of a regridded variable.  The
+&gt; first section below writes a new netCDF file and then
+&gt; I want to append to it with additional data, yet unless
+&gt; I specify the index range the first set of data gets
+&gt; overwritten by the no_data values from the 2nd set of data.
+&gt;
+&gt; LET V_VEL_COMP = V3[gt=TNEW@LIN]
+&gt; SAVE/FILE=&quot;m1_adcp.nc&quot;/LLIMITS=1:($NTIME)/CLOBBER U_VEL_COMP,V_VEL_COMP
+&gt;
+&gt; USE
+&gt; &quot;/hosts/tornado/vol/vol0/oasis/deployments/m1/199606/m1/netcdf/m1_adcp_19960
+&gt; 110_NarrowBand.nc&quot;
+&gt; LET U1 = missing(U_COMPONENT_FLAG, -9999)
+&gt; LET U2 = IF U1 EQ 0 THEN 1
+&gt; LET U3 = U_COMPONENT * U2
+&gt; LET U_VEL_COMP = U3[gt=TNEW@LIN]
+&gt; LET V1 = missing(V_COMPONENT_FLAG, -9999)
+&gt; LET V2 = IF V1 EQ 0 THEN 1
+&gt; LET V3 = V_COMPONENT * V2
+&gt; LET V_VEL_COMP = V3[gt=TNEW@LIN]
+&gt;
+&gt; (How do I get the $LSTART &amp; $LEND values that are needed for this?)
+&gt;
+&gt; SAVE/FILE=&quot;m1_adcp.nc&quot;/APPEND
+&gt; U_VEL_COMP[L=$LSTART:$LEND],V_VEL_COMP[L=$LSTART:$LEND]
+&gt;
+&gt; Again, thanks in advance,
+&gt; Mike
+&gt;
+&gt; --
+&gt; Mike McCann   (mccann@mbari.org)
+&gt; Group Leader, Information Applications Group
+&gt; Monterey Bay Aquarium Research Institute
+&gt; 7700 Sandholdt Road
+&gt; Moss Landing, CA 95039-9644
+&gt; Voice: (831) 775-1769   Fax: (831) 775-1646 <A  HREF="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</A>
+&gt;
+&gt; &gt; -----Original Message-----
+&gt; &gt; From: Andrew Wittenberg [<A  HREF="mailto:andyw@splash.Princeton.EDU">mailto:andyw@splash.Princeton.EDU</A>]
+&gt; &gt; Sent: Tuesday, April 03, 2001 2:58 PM
+&gt; &gt; To: McCann, Mike
+&gt; &gt; Cc: ferret_users
+&gt; &gt; Subject: Re: How to extract length of axis to a symbol?
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Tue, 3 Apr 2001, McCann, Mike wrote:
+&gt; &gt;
+&gt; &gt; &gt; After defining an axis, e.g.:
+&gt; &gt; &gt;
+&gt; &gt; &gt; DEFINE AXIS/T=($TMIN):($TMAX):7200/UNITS=seconds TNEW
+&gt; &gt; &gt;
+&gt; &gt; &gt; How do I get the number of points in the axis and assign
+&gt; &gt; &gt; the number to a symbol?
+&gt; &gt;
+&gt; &gt; Hi Mike,
+&gt; &gt;
+&gt; &gt; Give this a try:
+&gt; &gt;
+&gt; &gt; yes? define symbol num_points `t[gt=tnew],r=lsize`
+&gt; &gt; yes? say ($num_points)
+&gt; &gt;
+&gt; &gt; Andrew
+&gt; &gt;
+&gt; &gt; ----------------------------------------------------------------------
+&gt; &gt; Andrew Wittenberg          Program in Atmospheric and Oceanic Sciences
+&gt; &gt; andyw@splash.princeton.edu                        Princeton University
+&gt; &gt; ----------------------------------------------------------------------
+&gt; &gt;
+&gt; &gt;
+
+--
+
+                |  NOAA/PMEL               |  ph. (206) 526-6080
+Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+                |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00189" href="msg00189.html">RE: How to extract length of axis to a symbol?</a></strong>
+<ul><li><em>From:</em> McCann, Mike</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00189.html">RE: How to extract length of axis to a symbol?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00191.html">RE: How to extract length of axis to a symbol?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00189.html">Thread Prev</a>][<a href="msg00191.html">Thread Next</a>][<A HREF="threads.html#00190">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

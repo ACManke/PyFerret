@@ -1,0 +1,321 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: How to fit data with a straight line -->
+<!--X-From-R13: Knat Vnvwha <anilnatNghan.zrgrbe.jvfp.rqh> -->
+<!--X-Date: Thu, 23 Mar 2000 15:29:27 &#45;0800 (PST) -->
+<!--X-Message-Id: 200003232316.AA03874@tuna.meteor.wisc.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How to fit data with a straight line</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00104.html">Thread Prev</a>][<a href="msg00108.html">Thread Next</a>][<A HREF="threads.html#00105">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How to fit data with a straight line</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: How to fit data with a straight line</strong></li>
+<li><strong>From</strong>: <strong>Yang Haijun &lt;<A HREF="mailto:navyang@DOMAIN.HIDDEN">navyang@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 23 Mar 2000 17:16:11 -0600</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi, Steve,
+
+Thank you very much.
+
+As you said, I define axis like this
+
+  yes? def axis/t=1-jan-1945:31-dec-1993:365.25/units=days/edges tax1
+  yes? tmean=temp[gt=tax1@ave]
+  
+ instead of 
+ 
+  yes? def axis/t=1-jan-1945:31-dec-1993:365.25/units=days/edges/modulo tax1
+  yes? tmean=temp[gt=tax1@mod]
+ 
+ Then I use regresst
+ 
+  yes? let q = tmean
+  yes? let p = t[gt=tax1]
+  yes? go regresst
+  
+ and plot line
+ 
+  yes? plot/x=180/y=20 tmean
+  yes? plot/x=180/y=20/over qhat
+  
+ they work very well and I get what I want.
+ 
+ But here I have two problems more, 
+ 
+ 1) you must notice here I do not use
+ 
+  yes? set grid q
+  
+  If I use this line, then I would be pushed out of ferret,
+
+  yes? set grid q
+  yes? go regresst
+  yes? plot/x=180/y=20 qhat  
+  Segmentation fault (core dumped)
+  
+ 2) My data is 3 Dimensional, when I do 
+ 
+  yes? contour qhat[l=20]
+**ERROR: all data have same value: data are all flagged as bad
+  
+  I get error. But when I list data 'qhat'
+  
+  yes? list qhat
+  
+  qhat has value on every point and every time step
+  
+  If I list qhat like this,
+  
+  yes? list/l=20 qhat
+               SLOPE*P + INTERCEP
+             TIME: 02-JUL-1964 09:00
+      ... listing every   3th point
+           179E175W169W163W157W151W145W139W133W127W121W115W109W103W97W 91W 85W 79W 
+           41  44  47  50  53  56  59  62  65  68  71  74  77  80  83  86  89  92
+61N / 52:.........................................................................
+59N / 51:.........................................................................
+ ...
+ 
+  Now no values at all. I do not understand.
+  
+  So I draw contour like,
+  
+  yes? contour qhat[l=20:21@ave]
+  
+  I can get very good contours, just what I want. I am curious to get these problems.
+  
+ Thanks a lot.
+
+Haijun Yang
+ 
+ 
+
+ 
+  
+  
+&gt; From hankin@pmel.noaa.gov Thu Mar 23 15:24:52 2000
+&gt; Date: Thu, 23 Mar 2000 13:38:25 -0800
+&gt; From: Steve Hankin &lt;hankin@pmel.noaa.gov&gt;
+&gt; Subject: Re: How to fit data with a straight line
+&gt; To: Yang Haijun &lt;navyang@tuna.meteor.wisc.edu&gt;
+&gt; Cc: ferret_users@ferret.wrc.noaa.gov, verschell@neptune.gsfc.nasa.gov
+&gt; Organization: NOAA/Pacific Marine Environmental Laboratory
+&gt; Mime-Version: 1.0
+&gt; X-Mailer: Mozilla 4.5 [en] (WinNT; I)
+&gt; Content-Type: multipart/mixed; boundary=&quot;Boundary_(ID_pz8DKlw3VXY9Jm0qKRjiRQ)&quot;
+&gt; X-Accept-Language: en
+&gt; References: &lt;<a href="msg00103.html">200003230002.AA15416@tuna.meteor.wisc.edu</a>&gt;
+&gt; Content-Length: 25221
+&gt; 
+&gt; Hi Yang,
+&gt; 
+&gt; First I see a couple of more fundamental problems.
+&gt; 
+&gt;   1. The axis TAX is an year-by-year (non-modulo) axis. You have included a &quot;modulo&quot;
+&gt;      qualifier, but I think it does not belong there.
+&gt;   2. You have also asked for TEMP[gt=tax1@mod], modulo regridding. I believe what you
+&gt;      want is simple TEMP[gt=tax1@AVE] -- to average the (monthly) source points into
+&gt;      the (annual) destination cells.
+&gt; 
+&gt; Here is a complete session illustrating the type of calculation that you are
+&gt; attempting. I use a SIN function for synthetic data. The resulting GIF file is
+&gt; attached.
+&gt; 
+&gt;      yes? define axis/t=1-jan-1945:31-dec-1993:30/units=days tsrc
+&gt;      yes? let my_var = SIN(T[gt=tsrc]/500)
+&gt;      yes? plot my_var
+&gt;      yes? def axis/t=1-jan-1945:31-dec-1993:365.25/units=days/edges tax1
+&gt;      yes? let my_var_ann = my_var[gt=tax1@ave]
+&gt;      yes? plot/over/symbols my_var_ann
+&gt;      yes? go regresst
+&gt; 
+&gt;           ... Linear Regression Along the T Axis
+&gt;           ... Instructions:
+&gt;           Use the LET command to define new variables
+&gt;           Define the variable P as your independent (X) variable
+&gt;           Define the variable Q as your   dependent (Y) variable
+&gt;           Results will be variables &quot;SLOPE&quot;, &quot;INTERCEP&quot; and &quot;RSQUARE&quot;
+&gt;           QHAT will be the regression estimate
+&gt;           Note: If &quot;T&quot; is your independent variable then
+&gt;           ...   &quot;SET GRID Q&quot; after defining Q.
+&gt;           ...
+&gt; 
+&gt;      yes? let p = t[gt=tax1]
+&gt;      yes? let q = my_var_ann
+&gt;      yes? plot/over qhat
+&gt;      yes? frame/file=qhat.gif
+&gt; 
+&gt;     Happy Ferreting - steve
+&gt; 
+&gt; ================================================
+&gt; 
+&gt; Yang Haijun wrote:
+&gt; 
+&gt; &gt; Hi,
+&gt; &gt;
+&gt; &gt;   Thank you very much. Bu now I have another problem,
+&gt; &gt;
+&gt; &gt;   Suppose I have data temperature with 49 year x 12 months = 588 time steps
+&gt; &gt;
+&gt; &gt;  currently SET data sets:
+&gt; &gt;     1&gt; temp.nc  (default)
+&gt; &gt;  name     title                             I         J         K         L
+&gt; &gt;  TEMP     COADS SST                        1:97      1:57      ...       1:588
+&gt; &gt;  PERIOD   Averaging period                 ...       ...       ...       1:588
+&gt; &gt;
+&gt; &gt; 1)  First of all I get annual mean temp
+&gt; &gt;
+&gt; &gt;   yes? def axis/t=1-jan-1945:31-dec-1993:365.25/units=days/edges/modulo tax1
+&gt; &gt;   yes? let TMEAN = TEMP[gt=tax1@mod]
+&gt; &gt;
+&gt; &gt; 2)  Then I want to do regress for TMEAN
+&gt; &gt;
+&gt; &gt;   yes? let q = TMEAN
+&gt; &gt;   yes? let p = t
+&gt; &gt;   yes? set grid TMEAN
+&gt; &gt;   yes? go regresst
+&gt; &gt;
+&gt; &gt; Then I got error messages:
+&gt; &gt;
+&gt; &gt;  **ERROR: unknown defining grid: GT=TAX1@MOD --&gt; g=user-or-pseudo-var not allowed
+&gt; &gt;  set grid TMEAN
+&gt; &gt;  Command file, command group, or REPEAT execution aborted
+&gt; &gt;
+&gt; &gt;  Obviously the problem is due to 't', how to give 't' to p here?
+&gt; &gt;  And let ferret know this 't' is corresponding to TMEAN?
+&gt; &gt;
+&gt; &gt;  Thanks a lot.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Haijun Yang
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; &gt; From ferret_users-owner@ferret.wrc.noaa.gov Wed Mar 22 15:00:35 2000
+&gt; &gt; &gt; From: &quot;Mark Verschell&quot; &lt;verschell@neptune.gsfc.nasa.gov&gt;
+&gt; &gt; &gt; Date: Wed, 22 Mar 2000 15:45:57 -0500
+&gt; &gt; &gt; In-Reply-To: Yang Haijun &lt;navyang@tuna.meteor.wisc.edu&gt;
+&gt; &gt;         &quot;How to fit data with a straight line&quot; (Mar 22,  1:48pm)
+&gt; &gt; &gt; References: &lt;<a href="msg00101.html">200003221948.AA14779@tuna.meteor.wisc.edu</a>&gt;
+&gt; &gt; &gt; X-Mailer: Z-Mail (5.0.0 30July97)
+&gt; &gt; &gt; To: Yang Haijun &lt;navyang@tuna.meteor.wisc.edu&gt;,
+&gt; &gt;         ferret_users@ferret.wrc.noaa.gov
+&gt; &gt; &gt; Subject: Re: How to fit data with a straight line
+&gt; &gt; &gt; Mime-Version: 1.0
+&gt; &gt; &gt; Content-Type: text/plain; charset=us-ascii
+&gt; &gt; &gt; Sender: owner-ferret_users@ferret.wrc.noaa.gov
+&gt; &gt; &gt; Precedence: bulk
+&gt; &gt; &gt; Content-Length: 872
+&gt; &gt; &gt;
+&gt; &gt; &gt; Look at the .jnl files regress?.jnl that would be in $FER_DIR/go, since you are
+&gt; &gt; &gt; trying to do this versus time, you would use regresst.jnl. A simple example for
+&gt; &gt; &gt; your case:
+&gt; &gt; &gt;
+&gt; &gt; &gt; yes? let p=temperature
+&gt; &gt; &gt; yes? let q=t
+&gt; &gt; &gt; yes? set grid q
+&gt; &gt; &gt; yes? go regresst
+&gt; &gt; &gt;
+&gt; &gt; &gt; Then:
+&gt; &gt; &gt;
+&gt; &gt; &gt; yes? list slope, intercep, rsquare ! slope is b and intercep is a
+&gt; &gt; &gt;
+&gt; &gt; &gt; You can also plot this with
+&gt; &gt; &gt;
+&gt; &gt; &gt; yes? plot qhat
+&gt; &gt; &gt;
+&gt; &gt; &gt; Mark
+&gt; &gt; &gt;
+&gt; &gt; &gt; On Mar 22,  1:48pm, Yang Haijun wrote:
+&gt; &gt; &gt; &gt; Subject: How to fit data with a straight line
+&gt; &gt; &gt; &gt; Dear ferret users,
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt; I have a time-series data, say Temperature with 40 years, now I want to fit
+&gt; &gt; &gt; this data with a
+&gt; &gt; &gt; &gt; straight line, that is, I want to get this line:
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt;   Y = a + b*t
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt;  based on Temperature observations. Here Y is temperature, t is time step.
+&gt; &gt; &gt; How do I get 'a' and
+&gt; &gt; &gt; &gt; 'b'? Is there a function to do this in ferret?
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt;  Thank you very much,
+&gt; &gt; &gt; &gt;
+&gt; &gt; &gt; &gt;  Haijun Yang
+&gt; &gt; &gt; &gt;-- End of excerpt from Yang Haijun
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; 
+&gt; --
+&gt; 
+&gt;                 |  NOAA/PMEL               |  ph. (206) 526-6080
+&gt; Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+&gt;                 |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+&gt; 
+&gt; 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00104.html">Re: How to fit data with a straight line</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00108.html">Re: How to fit data with a straight line</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00104.html">Thread Prev</a>][<a href="msg00108.html">Thread Next</a>][<A HREF="threads.html#00105">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

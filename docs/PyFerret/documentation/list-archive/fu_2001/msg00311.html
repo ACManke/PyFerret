@@ -1,0 +1,137 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: reading ASCII data file -->
+<!--X-From-R13: Oaqerj Ivggraoret <naqljNfcynfu.Bevaprgba.SRG> -->
+<!--X-Date: Mon, 21 May 2001 08:01:55 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.GSO.4.03.10105210924280.26081&#45;100000@splash.Princeton.EDU -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.SOL.4.10.10105201750320.17971&#45;100000@tucson.Princeton.EDU -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: reading ASCII data file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00310.html">Thread Prev</a>][<a href="msg00312.html">Thread Next</a>][<A HREF="threads.html#00311">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: reading ASCII data file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Irina Marinov &lt;<A HREF="mailto:imarinov@DOMAIN.HIDDEN">imarinov@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: reading ASCII data file</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<A HREF="mailto:andyw@DOMAIN.HIDDEN">andyw@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 21 May 2001 11:00:21 -0400 (EDT)</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;<a href="msg00310.html">Pine.SOL.4.10.10105201750320.17971-100000@tucson.Princeton.EDU</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Sun, 20 May 2001, Irina Marinov wrote:
+
+&gt; I have many ASCII data files which have a header of 8 lines, 3 columns of
+&gt; data and then some 8 lines of unwanted text. Is there any way to skip the
+&gt; 8 lines of text at the end ? The command 
+&gt;    set data/ez/skip=8/columns=3/var=&quot;depth,data,stdev&quot; mydataset.dat 
+&gt; doesn't work because I have those 8 lines of unwanted text at the end. 
+
+Hi Irina, 
+
+Here are two suggestions.
+
+1) Define an input grid within Ferret:
+yes? sp echo &quot;let n =&quot; \`wc mydataset.dat | awk '{print $1}'\` &gt; tmp.jnl
+yes? go tmp
+yes? def axis/x=1:`n-16`:1 xax 
+yes? def grid/x=xax g
+yes? set data/ez/skip=8/col=3/var=&quot;depth,data,stdev&quot;/grid=g mydataset.dat
+
+This method gives you explicit control over the grid that the data is
+placed on -- you can change the &quot;def axis&quot; command to suit your needs.
+
+- or -
+
+2) Remove the offending lines outside of Ferret:
+Save the following shell script as &quot;cut_last&quot;:
+
+# Shell script: cut_last
+# Usage: cut_last nlines filename
+set keep = `wc $2 | awk '{print $1}'`
+@ keep = $keep - $1
+head -n $keep $2 &gt; $2.cut
+
+Then at the shell prompt do 
+
+% chmod +x cut_last
+% cut_last 8 mydataset.dat
+
+This method lets you read the resulting &quot;mydataset.dat.cut&quot; using your
+original idea.  The results will be placed on Ferret's &quot;EZ&quot; grid.
+
+Good luck!
+
+Andrew
+
+----------------------------------------------------------------------
+Andrew Wittenberg          Program in Atmospheric and Oceanic Sciences
+andyw@splash.princeton.edu                        Princeton University
+----------------------------------------------------------------------
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00310" href="msg00310.html">reading ASCII data file</a></strong>
+<ul><li><em>From:</em> Irina Marinov</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00310.html">reading ASCII data file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00312.html">Re: reading ASCII data file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00310.html">Thread Prev</a>][<a href="msg00312.html">Thread Next</a>][<A HREF="threads.html#00311">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Muti&#45;cdf files -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Wed, 23 Jan 2002 09:11:42 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.GSO.4.33.0201230814480.1159&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3C4DE43B.BC5BC462@igpp.ucla.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Muti-cdf files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00029.html">Thread Prev</a>][<a href="msg00034.html">Thread Next</a>][<A HREF="threads.html#00033">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Muti-cdf files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Xin Jin &lt;<a href="mailto:xjin@DOMAIN.HIDDEN">xjin@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Muti-cdf files</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 23 Jan 2002 09:11:40 -0800 (PST)</li>
+<li>Cc: &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00029.html">3C4DE43B.BC5BC462@igpp.ucla.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Xin,
+	There is a related question in the Mail Archives under the Ferret
+documentation page
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/ferret_mail_archives.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/ferret_mail_archives.html</a>
+
+Look at
+<a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00672.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00672.html</a>
+and the responses to it.  In particular note that the more complete
+flexibility of the MC descriptor only comes with the more recent
+versions, and the warning that the user must take care that what (s)he
+builds into the MC descriptor file makes sense.
+----------------------------------------------------------------------
+Here is a demo that may be close to the situation you face.  I've run
+it on 5.33 and all goes well with the exception of one warning message
+that I can't seem to eliminate but seems to have no effect.
+
+Step 1 : Create a descriptor file dec_cent.nc that will combines two
+         netCDF files decade.nc (10 years of annual &quot;sst&quot; data 1765-1774)
+         and century.nc (the following 100 years of annual data) into a
+         single series of 110 points.
+Things to note: 1) I've used D_TIME_UNIT = 31557600.0 to indicate years
+of length 365.25 days, 2) the S_START/S_END values are in years and are
+at my discretion - although it would match the contents of the files
+to use 1765,1774 and 1775,1874 I CAN CHOOSE TO OVERRIDE these times and
+make the data appear to span the period 1900-2009 as follows
+
+**********************************************************************
+* test of mc descriptor to combine decade &amp; century of annual data   *
+**********************************************************************
+ $FORMAT_RECORD
+      D_TYPE               = '  MC',
+      D_FORMAT             = '  1A',
+      D_SOURCE_CLASS       = 'MODEL OUTPUT',
+ $END
+ $BACKGROUND_RECORD
+      D_EXPNUM             = '0001',
+      D_MODNUM             = '  AA',
+      D_TITLE              = 'test data written by ferret',
+      D_TIME_UNIT          = 31557600.0,
+      D_TIME_MODULO        = .FALSE.,
+      D_ADD_PARM           = 15*' ',
+ $END
+ $MESSAGE_RECORD
+      D_MESSAGE            = ' ',
+      D_ALERT_ON_OPEN      = F,
+      D_ALERT_ON_OUTPUT    = F,
+ $END
+*************************************************
+ $EXTRA_RECORD
+ $END
+ $STEPFILE_RECORD
+      s_filename           = 'decade.nc',
+      S_AUX_SET_NUM        = 0,
+      S_START              = 1900,
+      S_END                = 1909,
+      S_DELTA              = 1.0,
+      S_NUM_OF_FILES       = 1,
+      S_REGVARFLAG         = ' ',
+ $END
+**************************************************
+ $EXTRA_RECORD
+ $END
+ $STEPFILE_RECORD
+   S_FILENAME           = 'century.nc',
+   S_AUX_SET_NUM        = 0,
+   S_START              = 1910,
+   S_END                = 2009,
+   S_DELTA              = 1.0,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ $END
+**************************************************
+ $STEPFILE_RECORD
+      s_filename           = '**END OF STEPFILES**'
+ $END
+**************************************************
+
+Step 2 : Create the two data files decade.nc and century.nc
+         and test their content. Then access them using the
+
+! the following axis definitions should each be on a single line
+def axis/t=&quot;1-jul-1765:12:00&quot;:&quot;1-jul-1774:12:00&quot;/units=days
+        /t0=&quot;1-jan-1750:00:00&quot;/npoints=10 tax1
+def axis/t=&quot;1-jul-1775:12:00&quot;:&quot;1-jul-1874:12:00&quot;/units=days
+        /t0=&quot;1-jan-1750:00:00&quot;/npoints=100 tax2
+let v1=mod(l[gt=tax1],5)/5 ; let v2=mod(l[gt=tax2],20)/20
+! see what the &quot;data&quot; look like
+set view upper ; plot v1,v2
+message
+!
+! then write them to netcdf files
+!
+def var/title=&quot;SST&quot; sst=v1 ; save/file=decade.nc/clobber sst
+def var/title=&quot;SST&quot; sst=v2 ; save/file=century.nc/clobber sst
+!
+! now reread the data files and overplot as a check
+!
+can var sst ! to get rid of the algebraically defined function
+use decade.nc ; use century.nc
+plot/over sst[d=1],sst[d=2]
+message
+!
+! delete the netCDF files then access them via dec_cent.des
+!
+can data/all
+set data dec_cent.des
+sho grid/all sst ; set view lower ; plot sst
+
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00029" href="msg00029.html">Muti-cdf files</a></strong>
+<ul><li><em>From:</em> Xin Jin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00029.html">Muti-cdf files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00034.html">Re: Muti-cdf files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00029.html">Thread Prev</a>][<a href="msg00034.html">Thread Next</a>][<A HREF="threads.html#00033">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

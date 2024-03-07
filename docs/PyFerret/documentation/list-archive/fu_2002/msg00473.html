@@ -1,0 +1,151 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: regridding problem (sub&#45;global to global lat&#45;long grid) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Wed, 9 Oct 2002 11:43:24 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3DA47993.51542BAD@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.SGI.4.21.0210091341450.2087173&#45;100000@whirlwind.atmosp.physics.utoronto.ca -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: regridding problem (sub-global to global lat-long grid)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00472.html">Thread Prev</a>][<a href="msg00474.html">Thread Next</a>][<A HREF="threads.html#00473">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: regridding problem (sub-global to global lat-long grid)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Lev Tarasoff &lt;<a href="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: regridding problem (sub-global to global lat-long grid)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 09 Oct 2002 11:46:43 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00472.html">Pine.SGI.4.21.0210091341450.2087173-100000@whirlwind.atmosp.physics.utoronto.ca</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Lev,
+<br>You should be able to do this kind of thing. I wonder if the trouble
+<br>has something to do with the regions you use for the data or some
+<br>such thing.&nbsp; I was able to do this:
+<p>1) Create a dataset on part of the globe, like your first set:
+<blockquote>yes? def axis/x=163w:8w:1/units=degrees xlonb
+<br>yes? def axis/y=36.75n:84.75n:0.25/units=degrees ylatb
+<br>yes? def grid/x=xlonb/y=ylatb gdk1
+<br>yes? let hd3a = x[g=gdk1]/10. + y[g=gdk1]/10.
+<br>yes? save/file=nonmod.nc hd3a</blockquote>
+2) New Ferret session, use this data along with some gridded modulo data
+<blockquote>use nonmod.nc
+<br>use levitus_climatology
+<br>show data
+<br>shade&nbsp; hd3a[d=1,g=glevitr]
+<br>shade temp[d=2,k=1] - hd3a[d=1,g=glevitr]</blockquote>
+Are you setting any regions?&nbsp; What kind of things are you doing
+<br>when you go to use the data?
+<p>Ansley Manke
+<p>Lev Tarasoff wrote:
+<blockquote TYPE=CITE>I'm trying to blend two data sets. One (variable
+hd3a) defined on
+<br>&nbsp;&nbsp;&nbsp; GRID GDK1
+<br>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+end
+<br>&nbsp;XLONB&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+156 r&nbsp;&nbsp; 163.5W&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+8.5W
+<br>&nbsp;YLATB&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+97 r&nbsp;&nbsp; 36.75N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+84.75N
+<br>The netcdf file was created in ferret.
+<br>I want to blend this data into data from another netcdf file (not
+<br>created in ferret) which has the global grid:
+<br>&nbsp;&nbsp;&nbsp; GRID GBA1
+<br>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+# pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+end
+<br>&nbsp;LON&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+360mr&nbsp;&nbsp; 179.5W(-179.5)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 179.5E
+<br>&nbsp;LAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+180 r&nbsp;&nbsp; 89.5S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+89.5N
+<p>however, when I try to regrid from GDK1 to GBA1, I get all data flagged
+<br>as bad data when using
+<br>hd3b=hd3a[g=GBA1]
+<p>If I try
+<br>hd3b=hd3a[g=GBA1@mod]
+<br>I get the following error:
+<br>&nbsp;**ERROR: regridding: @MOD regridding to a non-modulo axis: HD3A
+<p>Regridding variables from the 2nd data set to GRID GDK1 does work
+<br>however (non-modulo regridding).
+<p>help
+<p>thanks
+<p>Lev
+<p>Lev Tarasoff -&nbsp; Dept of Physics, University of Toronto,
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+60 St. George St., Toronto, Ontario, CANADA, M5S 1A7
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Tel (519)-821-3555&nbsp; Fax (416)-978-8905
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+email: lev@atmosp.physics.utoronto.ca</blockquote>
+--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00472" href="msg00472.html">regridding problem (sub-global to global lat-long grid)</a></strong>
+<ul><li><em>From:</em> Lev Tarasoff</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00472.html">regridding problem (sub-global to global lat-long grid)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00474.html">Re: regridding problem (sub-global to global lat-long grid)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00472.html">Thread Prev</a>][<a href="msg00474.html">Thread Next</a>][<A HREF="threads.html#00473">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

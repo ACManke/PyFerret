@@ -1,0 +1,207 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: reverse vertical coordinate -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Fri, 16 Nov 2001 16:21:36 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.GSO.4.33.0111161607230.9696&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.OSF.3.95.1011113143435.18526I&#45;100000@tuna.meteor.wisc.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: reverse vertical coordinate</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00609.html">Thread Prev</a>][<a href="msg00599.html">Thread Next</a>][<A HREF="threads.html#00618">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: reverse vertical coordinate</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Yang Haijun &lt;<A HREF="mailto:navyang@DOMAIN.HIDDEN">navyang@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: reverse vertical coordinate</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 16 Nov 2001 16:20:40 -0800 (PST)</li>
+<li>Cc: FERRET users mailing list &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00608.html">Pine.OSF.3.95.1011113143435.18526I-100000@tuna.meteor.wisc.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello All,
+A related question came up recently where a user had data where
+the z-axis in large netCDF files was atmospheric pressure in the order
+   1000,925,850,700,600,500,400,300,250,
+    200,150,100,70,50,30,20,10 millibars
+They wanted to contour the data using the corresponding heights
+for the standard atmosphere
+   0.1, 0.8, 1.5, 3.1, 4.4, 5.9, 7.8,10.2,11.8,
+  13.6,16.1,19.5,22.5,25.3,29.6,33.0,38.8 km
+
+While the SAMPLEK method referred to earlier in this mail thread
+is one way to handle this problem, here is another:
+
+    let zkm={-38.8,-33.0,-29.6,-25.3,-22.5,-19.5,-16.1,-13.6,
+             -11.8,-10.2,-7.8,-5.9,-4.4,-3.1,-1.5,-0.8,-0.1}
+    def axis/z/name=znew/from_data zkm
+    let airkm=air[gz=znew@asn]
+    fill/set airkm ; ppl yaxis,-0.1,-38.8 ; ppl axlsze,,-0.1 ; ppl fill
+
+Further details on the problem are to be found below for those
+interested.
+
+Mick Spillane
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+The original data was in the form of a set of large netCDF files
+for which the following CDL file is a proxy
+------------------------------------------------------
+netcdf revzaxis {
+dimensions:
+        lon = 5 ;
+        lat = 1 ;
+        level = 17 ;
+        time = UNLIMITED ; // (1 currently)
+variables:
+        float level(level) ;
+                level:units = &quot;millibar&quot; ;
+        float lat(lat) ;
+                lat:units = &quot;degrees_north&quot; ;
+                lat:long_name = &quot;Latitude&quot; ;
+        float lon(lon) ;
+                lon:units = &quot;degrees_east&quot; ;
+                lon:long_name = &quot;Longitude&quot; ;
+        double time(time) ;
+                time:units = &quot;hours since 1-1-1 00:00:0.0&quot; ;
+                time:long_name = &quot;Time&quot; ;
+        float air(time, level, lat, lon) ;
+                air:long_name = &quot;Air temperature&quot; ;
+                air:units = &quot;degC&quot; ;
+// global attributes:
+                :Comment = &quot;Unrealistic test data&quot; ;
+data:
+ level = 1000,925,850,700,600,500,400,300,250,
+         200,150,100,70,50,30,20,10;
+ lat = 10 ;
+ lon = 100,110,120,130,140 ;
+ time = 17435280 ;
+ air  = 17,27,37,47,57, 16,26,36,46,56, 15,25,35,45,55,
+        14,24,34,44,54, 13,23,33,43,53, 12,22,32,42,52,
+        11,21,31,41,51, 10,20,30,40,50,  9,19,29,39,49,
+         8,18,28,38,48,  7,17,27,37,47,  6,16,26,36,46,
+         5,15,25,35,45,  4,14,24,34,44,  3,13,23,33,43,
+         2,12,22,32,42,  1,11,21,31,41 ;
+}
+--------------------------------------------------------
+Notice in particular the ordering of the z-dimension variable
+&quot;level&quot;.  If this CDL file is made into a netcdf file
+          ncgen -o revzaxis.nc revzaxis.cdl
+and then revzaxis.nc opened in a Ferret session then Ferret
+reorders the z-axis
+
+         use revzaxis.nc
+         show grid/z air
+ name       axis              # pts   start                end
+ LON       LONGITUDE            5 r   100E                 140E
+ LAT       LATITUDE             1 r   10N                  10N
+ LEVEL     HEIGHT (millib      17 i-  10                   1000
+ TIME      TIME                 1 r   04-JAN-1990 00:00    04-JAN-1990
+00:00
+
+       K     Z                   ZBOX      ZBOXLO
+       1&gt;  10                    10        5
+       2&gt;  20                    10        15
+      ...
+      16&gt;  925                   75        887.5
+      17&gt;  1000                  75        962.5
+
+but interestingly contouring the variable &quot;air&quot; puts the 1000mb values
+at the bottom as one would wish (try the command &quot;fill air&quot;).
+
+But now we want to regrid by assignment to a vertical axis where height
+is in kilometers based on the standard atmosphere.  One would like to
+use a &quot;define axis/from_data&quot; but the reversal of the millibar values
+poses a problem.  The following
+    let zkm = {38.8,33.0,29.6,25.3,22.5,19.5,16.1,13.6,11.8,
+                            10.2,7.8,5.9,4.4,3.1,1.5,0.8,0.1}
+    def axis/z/name=znew/from_data zkm
+leads Ferret to complain of a non-monotonic (increasing) axis. So here is
+a trick to get around it:
+    def axis/z/name=znew/from_data/depth (-1)*zkm
+Now we can regrid by association
+    let airkm=air[gz=znew@asn]
+Now we can compare the two versions of the field
+    set view left  ; fill air   ! the millibar version
+    set view right ; fill airkm ! the kilometer version
+The only fly in the ointment is that the z-axis labels have an
+unsightly minus sign in front of them.  But Plotplus can handle that using
+a little known feature of the &quot;ppl axlsze,hx,hy&quot; command. If negative
+values are given for the label heights hx or hy then the values are
+multiplied by -1 before writing. So using
+    set view right ; fill/set airkm ; ppl axlsze,,-0.1 ; ppl fill
+rather than the simple &quot;fill airkm&quot; will save the day.
+
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00608" href="msg00608.html">reverse vertical coordinate</a></strong>
+<ul><li><em>From:</em> Yang Haijun</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00609.html">Re: reverse vertical coordinate</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00599.html">Re: Linux version of ferret printout and saving queries</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00609.html">Thread Prev</a>][<a href="msg00599.html">Thread Next</a>][<A HREF="threads.html#00618">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

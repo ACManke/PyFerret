@@ -1,0 +1,158 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: buggy postscript? -->
+<!--X-From-R13: Vrytr Oiyrfra <niyrNvv.hvo.ab> -->
+<!--X-Date: Wed, 4 Dec 2002 06:24:39 &#45;0800 (PST) -->
+<!--X-Message-Id: 72lm35x3oe.fsf@kongle.ii.uib.no -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>buggy postscript?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00603.html">Thread Prev</a>][<a href="msg00605.html">Thread Next</a>][<A HREF="threads.html#00604">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>buggy postscript?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>buggy postscript?</strong></li>
+<li><strong>From</strong>: <strong>Helge Avlesen &lt;<a href="mailto:avle@DOMAIN.HIDDEN">avle@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 04 Dec 2002 15:24:33 +0100</li>
+<li>Organization: Para//ab</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>User-agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Ferreters,
+I am trying to plot this file
+<a  href="http://www.ii.uib.no/~avle/meta-bugged.plt">http://www.ii.uib.no/~avle/meta-bugged.plt</a>   (1MB...)
+
+doing a 
+
+yes? sp gksm2ps -R -p portrait -l cps -o storm.ps metafile.plt
+greadgksm()  162 No item is left in GKS Metafile input
+
+goes ok, except from the no items left message that has not hurt
+before.
+
+viewing the ps file in gv gives almost all of the image except the white
+labels spotted e.g. here <a  href="http://www.ii.uib.no/~avle/ormen/100mabfiles/pic9.gif">http://www.ii.uib.no/~avle/ormen/100mabfiles/pic9.gif</a>
+and this error message:
+
+
+Error: /typecheck in --aload--
+Operand stack:
+   --nostringval--
+Execution stack:
+   %interp_exit   .runexec2   --nostringval--   --nostringval--   --nostringval--   2   %stopped_push   --nostringval--   --nostringval--   --nostringval--   false   1   %stopped_push   1   3   %oparray_pop   1   3   %oparray_pop   1   3   %oparray_pop   .runexec2   --nostringval--   --nostringval--   --nostringval--   2   %stopped_push   --nostringval--   --nostringval--   --nostringval--   --nostringval--
+Dictionary stack:
+   --dict:1009/1123(ro)(G)--   --dict:0/20(G)--   --dict:89/200(L)--
+Current allocation mode is local
+Current file position is 930782
+AFPL Ghostscript 7.04: Unrecoverable error, exit code 1
+
+
+get the same with the postscript file on linux,distill and other tools
+also fail reading the file.  is it possible to work around this, so I
+can get my white labels into a valid ps file?  ferret script to
+generate picture appended below
+
+-- 
+Helge
+
+
+
+
+SET WINDOW/ASPECT=1/SIZE=0.5
+DEFINE AXIS/X=1:115:1 xaxis
+DEFINE AXIS/Y=1:115:1 yaxis
+DEFINE GRID/X=xaxis/Y=yaxis modelgrid
+DEFINE SYMBOL DEPTH=100
+
+LET files= {\
+&quot;($DEPTH)mab-00000-115x115.data&quot;,\
+&quot;($DEPTH)mab-00600-115x115.data&quot;,\
+&quot;($DEPTH)mab-01200-115x115.data&quot;,\
+&quot;($DEPTH)mab-01800-115x115.data&quot;,\
+&quot;($DEPTH)mab-02400-115x115.data&quot;,\
+&quot;($DEPTH)mab-03000-115x115.data&quot;,\
+&quot;($DEPTH)mab-03300-115x115.data&quot;,\
+&quot;($DEPTH)mab-03600-115x115.data&quot;,\
+&quot;($DEPTH)mab-03900-115x115.data&quot;,\
+&quot;($DEPTH)mab-04200-115x115.data&quot;,\
+&quot;($DEPTH)mab-04500-115x115.data&quot;,\
+&quot;($DEPTH)mab-04800-115x115.data&quot;,\
+&quot;($DEPTH)mab-05100-115x115.data&quot;,\
+&quot;($DEPTH)mab-05400-115x115.data&quot;,\
+&quot;($DEPTH)mab-05700-115x115.data&quot;,\
+&quot;($DEPTH)mab-06000-115x115.data&quot; }
+
+LET filename= files[i=9] 
+
+FILE/VAR=u,v,s,t,w/GRID=modelgrid `filename` 
+SHADE/LEVELS=50 (u*u+v*v)^0.5 
+VECTOR/OVERLAY u,v 
+FILE/VAR=xcoo2,ycoo2,modeldepth/GRID=modelgrid model2-115x115.dat 
+CONTOUR/OVER/LEVELS=&quot;(300,600,100)&quot; modeldepth 
+FILE/VAR=mx,my,mlab/FORM=DELIMITED/DELIMITER=&quot; &quot; maalepos-grid.dat 
+PLOT/OVER/VS/TITLE=&quot;Stations&quot;/COLOR=white mx,my 
+LET fontsize=0.1
+PPL COLOR 6 100,100,100 
+REPEAT/L=1:13 (LET/QUIET lab = mlab[i=`L`];\
+               LET/QUIET xl=mx[i=`L`]+1 ;\
+               LET/QUIET yl=my[i=`L`] ;\
+               LABEL `xl`,`yl`,-1,0,`fontsize` @P6`lab` )
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00603.html">hovmoeller along arbitrary sections</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00605.html">Re: buggy postscript?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00603.html">Thread Prev</a>][<a href="msg00605.html">Thread Next</a>][<A HREF="threads.html#00604">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

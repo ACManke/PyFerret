@@ -1,0 +1,205 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: labeling a plot in a viewport -->
+<!--X-From-R13: Vrva Lryyr <mryyrNxazv.ay> -->
+<!--X-Date: Fri, 25 Oct 2002 20:00:43 &#45;0700 (PDT) -->
+<!--X-Message-Id: 20021025212150.GA6616@bcw014.knmi.nl -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>labeling a plot in a viewport</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00542.html">Thread Prev</a>][<a href="msg00562.html">Thread Next</a>][<A HREF="threads.html#00543">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>labeling a plot in a viewport</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>labeling a plot in a viewport</strong></li>
+<li><strong>From</strong>: <strong>Hein Zelle &lt;<a href="mailto:zelle@DOMAIN.HIDDEN">zelle@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 25 Oct 2002 23:21:50 +0200</li>
+<li>Importance: normal</li>
+<li>Mail-followup-to: Ferret Users mailing list &lt;ferret_users@ferret.wrc.noaa.gov&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>Thread-index: AcJ8m6q6CyAaWo2UQ1yqNLkyvTgRbA==</li>
+<li>User-agent: Mutt/1.4i</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Ferret users and developers,
+
+As a followup question on the previous one, I'd like to know how to
+use 'user' and 'global' coordinates when labelling a plot that is in a
+viewport which takes up only part of the page. Here's what I want to
+do: I have divided my page into 12 viewports, one for each month, just
+like the landscape3x2 script. (If anyone is interested, I now have a
+portrait2x6 script). I make a contour plot in the first viewport of,
+say, the january climatology.
+
+So far so good, but the title of the plot doesn't really fit in such a
+small viewport so I leave it off. Instead, I want to plot a label with
+'January' within the area of the plot. Ideally, I want this label to
+appear within a white box, so it doesn't run through the contour
+lines. The questions I ran into:
+
+- How do I specify label coordinates relative to the axes of the plot
+  if I don't know the data along the axis? It's a general script, so I
+  cannot assume that the left bottom corner is always 120E,30S.
+
+- How can I make a white box around a label? I was thinking of using a
+  very small 'label' viewport for this, but just as with the label I
+  don't know how to position this 'subviewport'. 
+
+- I draw the title of the plot in a 13th viewport at the bottom of the
+  page, specified with define viewport /axes. I found out that
+  relative coordinates (0.5,0.5 for a centered label) only work after
+  you plot something in that viewport. How do I 'initialize' a
+  viewport so that these relative coordinates work, without actually
+  plotting something in it?
+
+I will attach the two scripts to this mail so you can check them
+out. 12month.jnl defines the viewports (the 'label' viewports are
+commented out), 12plot.jnl is a general script to plot 12 months of a
+climatology.
+
+I hope someone can help with this, the result already looks pretty
+good but could be perfected some more.
+
+     Hein Zelle
+
+&gt;-----------------------------------------------------------------&lt;
+    Hein Zelle
+    Dept. of Oceographic Research
+    KNMI, The Netherlands
+    work:        zelle@knmi.nl     <a  href="http://www.knmi.nl/~zelle">http://www.knmi.nl/~zelle</a>
+    private:     hein@icce.rug.nl  <a  href="http://www.icce.rug.nl/~hein">http://www.icce.rug.nl/~hein</a>
+    Phone:       +31 (0)30 2206704
+&gt;-----------------------------------------------------------------&lt;
+--------------------------------------------------------------
+Zie ook/see also: <a  href="http://www.knmi.nl/maildisclaimer.html">http://www.knmi.nl/maildisclaimer.html</a> 
+</pre>
+<pre>\cancel mode verify
+
+! make a plot for each of the 12 months of variable $1
+
+! first check arguments
+query/ignore $1%&lt;Usage: 12plot [var] [title], [var] must have 12 time frames%
+
+! metafile on for plotting
+set mode metafile
+
+! set a reasonable window aspect ratio for paper
+set window /aspect=1.25         ! us letter = 1.294
+
+! set 12 viewports + 1 for the title
+go 12month
+
+! loop over each month
+! the label should really be plotted in a white box instead of across the plot
+repeat /l=1:12 (set viewport `l`; go margins 0.2 0.6 1.0 0.4; contour /set_up /nolab /levels=21c $1; ppl contour; label/nouser 0.2,0.1,-1,0,0.12 &quot;@p7Month `l`&quot; )
+
+! plot the title centered at the bottom of the page in a larger font
+set viewport 13
+! this should be 0.5,0.5 but that doesn't work as I don't plot anything
+! in the viewport. 5.5 is an estimated value which is not robust.
+label/nouser 5.5,0.5,0,0,0.2 $2%&quot;Climatology&quot;%
+
+! stop metafile mode
+cancel mode metafile
+
+! restore verify mode
+set mode /last verify
+</pre>
+<pre>! define 12 viewports for later use, arranged in 2 columns of 6.
+! intention is to use this for plotting one month of data in each plot,
+! to give a climatological overview.
+
+define viewport /xlimits=0,0.5 /ylimits=0.1,0.25     6
+define viewport /xlimits=0,0.5 /ylimits=0.25,0.4     5
+define viewport /xlimits=0,0.5 /ylimits=0.4,0.55     4
+define viewport /xlimits=0,0.5 /ylimits=0.55,0.7     3
+define viewport /xlimits=0,0.5 /ylimits=0.7,0.85     2
+define viewport /xlimits=0,0.5 /ylimits=0.85,1.0     1
+define viewport /xlimits=0.5,1 /ylimits=0.1,0.25     12
+define viewport /xlimits=0.5,1 /ylimits=0.25,0.4     11
+define viewport /xlimits=0.5,1 /ylimits=0.4,0.55     10
+define viewport /xlimits=0.5,1 /ylimits=0.55,0.7     9
+define viewport /xlimits=0.5,1 /ylimits=0.7,0.85     8
+define viewport /xlimits=0.5,1 /ylimits=0.85,1.0     7
+
+! define 12 'corner' viewports to plot the label into
+!  define viewport /xlimits=0,0.08 /ylimits=0.1,0.115   1l
+!  define viewport /xlimits=0,0.5 /ylimits=0.25,0.4     2l
+!  define viewport /xlimits=0,0.5 /ylimits=0.4,0.55     3l
+!  define viewport /xlimits=0,0.5 /ylimits=0.55,0.7     4l
+!  define viewport /xlimits=0,0.5 /ylimits=0.7,0.85     5l
+!  define viewport /xlimits=0,0.5 /ylimits=0.85,1.0     6l
+!  define viewport /xlimits=0.5,1 /ylimits=0.1,0.25     7l
+!  define viewport /xlimits=0.5,1 /ylimits=0.25,0.4     8l
+!  define viewport /xlimits=0.5,1 /ylimits=0.4,0.55     9l
+!  define viewport /xlimits=0.5,1 /ylimits=0.55,0.7     10l
+!  define viewport /xlimits=0.5,1 /ylimits=0.7,0.85     11l
+!  define viewport /xlimits=0.5,1 /ylimits=0.85,1.0     12l
+
+
+! define the 'title' viewport as the 13th.
+! I don't know how to plot the global title otherwise, as changing
+! the viewport or cancelling it will erase anything previously drawn there.
+
+define viewport /axes /xlimits=0,1 /ylimits=0,0.1    13
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00562" href="msg00562.html">Re: labeling a plot in a viewport</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00542.html">string arrays</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00562.html">Re: labeling a plot in a viewport</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00542.html">Thread Prev</a>][<a href="msg00562.html">Thread Next</a>][<A HREF="threads.html#00543">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

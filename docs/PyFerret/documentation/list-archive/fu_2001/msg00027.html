@@ -1,0 +1,130 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Read cdf files using fortran -->
+<!--X-From-R13: xrffyreNczry.abnn.tbi (Pvyyl Yrffyre) -->
+<!--X-Date: Fri, 12 Jan 2001 09:24:47 &#45;0800 (PST) -->
+<!--X-Message-Id: 200101121724.JAA17689@pontus.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Read cdf files using fortran</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00546.html">Thread Prev</a>][<a href="msg00026.html">Thread Next</a>][<A HREF="threads.html#00027">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Read cdf files using fortran</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>, <A HREF="mailto:jerperei@DOMAIN.HIDDEN">jerperei@xxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Read cdf files using fortran</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxx</A> (Billy Kessler)</strong></li>
+<li>Date: Fri, 12 Jan 2001 09:24:40 -0800 (PST)</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+It is usually easy to read cdf files using fortran. A simple
+subroutine which does that is pasted below, with comments. A
+useful tool is the unix command ncdump -h filename.cdf, which 
+shows you the header information in the netcdf file. In the
+example subroutine below, ncdump will give you the grid sizes
+(nx,ny,nt).
+
+The procedure is: 1) open the netcdf file; 2) read the variable
+number in the cdf file from the header; 3) read the data; 
+4) close the file.
+
+It is pretty straightforward for simple files. For more 
+complicated files, there is a lot of documentation in the 
+Ferret manual.
+
+Billy K
+-------------------------------------------------------------------------------------
+
+        subroutine cdf_read (fname,vname,nx,ny,nt,data)
+
+        include '/opt/local/include/netcdf.inc'	  ! system-specific
+
+        real data(nx,ny,nt)		! data grid to read
+
+        character *31 fname		! filename to read from
+        character *9 vname		! variable name to read
+
+        integer lower(3),upper(3)	! 3-dimensional array
+
+        integer dnum		! DNUM is the variable order number
+	integer ir		! IR is a flag for netcdf library calls
+c....................IR is returned by each call to the netcdf library. 
+c....................IR will be 0 for a successful call, 1 otherwise. 
+c....................I'm not using IR here, else set flags to test it.
+
+        data lower/1,1,1/	! lower contains the lower corner indices
+
+        upper(1)=nx		! upper contains the upper corner indices
+        upper(2)=ny
+        upper(3)=nt
+
+c.......................open the netcdf file for reading only (NCNOWRIT)
+        ncid=ncopn(fname,NCNOWRIT,ir)
+
+        dnum=ncvid(ncid,vname,ir)	! get the variable number DNUM
+					
+        call ncvgt(ncid,dnum,lower,upper,data,ir)    ! read the data
+
+        call ncclos(ncid,ir)		! close the file
+
+        return
+        end
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00546.html">Re: stretched axes</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00026.html">new Ferret FAQ's</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00546.html">Thread Prev</a>][<a href="msg00026.html">Thread Next</a>][<A HREF="threads.html#00027">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

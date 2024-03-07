@@ -1,0 +1,137 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: how to grid yt&#45;scattered data -->
+<!--X-From-R13: Bngevpx Xbrpxry <wbrpxryNzcpu&#45;znvam.zct.qr> -->
+<!--X-Date: Tue, 2 May 2000 08:55:11 &#45;0700 (PDT) -->
+<!--X-Message-Id: 00050217553602.00322@odysseus -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>how to grid yt-scattered data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00180.html">Thread Prev</a>][<a href="msg00182.html">Thread Next</a>][<A HREF="threads.html#00181">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>how to grid yt-scattered data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>how to grid yt-scattered data</strong></li>
+<li><strong>From</strong>: <strong>Patrick Joeckel &lt;<A HREF="mailto:joeckel@DOMAIN.HIDDEN">joeckel@xxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 2 May 2000 17:31:40 +0200</li>
+<li>Organization: Max Planck Institute for Chemistry</li>
+<li>Reply-to: <A HREF="mailto:joeckel@DOMAIN.HIDDEN">joeckel@xxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Dear Ferret-users,
+
+recently I posted a question to this mailing list describing the following
+problem:
+
+Assume you have point data (scattered data) over latitude and time and you like
+to compile a 'zonal average climatology' from it. How can you do that ?
+
+Below is a possible solution for everybody who is interested and has a similar
+problem. Hope anybody can use it.
+
+Yours,
+           Patrick Joeckel
+
+! --yt-gridding demo ------------------------------------------
+! read (e.g.) an ascii-file with the data in 3 columns
+! day is from 1 to 365, latitude from -90 to +90, value is the data to grid
+file/var=&quot;day,lat,value&quot; data.txt
+
+! now define the grid, the climatology should be based on
+! here a 5-deg latitude interval is chosen, and a 1-day time interval
+! respectively
+DEFINE AXIS/y=-90:90:5/unit=lat yax
+DEFINE AXIS/t=&quot;01-Jan-0001&quot;:&quot;31-Dec-0001&quot;/npoints=365 tax
+DEFINE GRID/y=yax/t=tax gyt
+
+! define additionally an intermediate xz-grid for the 'gridding' process
+! the x-axis is used for the latitude dimension
+! it has to have the same intervals as the 'real' y-axis above 
+DEFINE AXIS/x=-90:90:5 xax
+! the z-axis is used for the time dimension
+! it has to have the same intervals as the 'real' t-axis above
+DEFINE AXIS/z=1:365:1 zax
+
+! with this intermediate grid, we can use the xz-regridding (external) function
+! of ferret
+LET data_pre = scatter2gridlaplace_xz (lat, day, value, x[gx=xax], z[gz=zax],5.,5)
+
+! finally, transform the data from the intermediate grid to the desired grid 
+! this does the x-&gt;y, z-&gt;t transformation
+let data_final = RESHAPE(data_pre,t[gt=gyt]+y[gy=gyt])
+
+! NOTE, that this does not work with a x-y intermediate grid, where y is
+! already used for longitude, since the RESHAPE-function does not transform
+! the x-axis into the t-axis
+! --------------------------------------------------------
+
+-- 
+---------------------------------------------------------------
+Patrick Joeckel
+Max Planck Institute for Chemistry
+Joh.-J. Becher Weg 27         
+55128 Mainz                   phone:++49-6131-305452      
+Germany                       fax  :++49-6131-305436     
+                             e-mail:joeckel@mpch-mainz.mpg.de
+                         <A  HREF="http://www.mpch-mainz.mpg.de/~joeckel">http://www.mpch-mainz.mpg.de/~joeckel</A>
+---------------------------------------------------------------
+Never trust an operating system you don't have sources for.
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00180.html">Passing variables</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00182.html">does 'set memory' work on Linux?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00180.html">Thread Prev</a>][<a href="msg00182.html">Thread Next</a>][<A HREF="threads.html#00181">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

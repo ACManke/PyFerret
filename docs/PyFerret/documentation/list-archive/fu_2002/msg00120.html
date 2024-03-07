@@ -1,0 +1,214 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: ferret "loses" some metadata... -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Wed, 6 Mar 2002 09:08:51 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C864C84.917AA1CC@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200203061559.IAA11053@sunray1.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: ferret &quot;loses&quot; some metadata...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00119.html">Thread Prev</a>][<a href="msg00122.html">Thread Next</a>][<A HREF="threads.html#00120">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: ferret &quot;loses&quot; some metadata...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Gary Strand &lt;<a href="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: ferret &quot;loses&quot; some metadata...</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 06 Mar 2002 09:06:12 -0800</li>
+<li>Cc: Ferret Users Mailing List &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00119.html">200203061559.IAA11053@sunray1.cgd.ucar.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Gary,
+
+The goal of complete control over the attributes in a netCDF file is a good one.
+It will be a major item in an upcoming Ferret release (V5.5?), but it has not been
+a goal thus far. The support for strings which was added in Ferret V5.4 is a step
+along that path. I'll raise a few of the the considerations by way of discussion.
+
+In the simplest case, where the output is an unmodified from an input file the
+problem sounds simple. Yet even there it is not. Should one retain the global
+attributes of the original file? Not in general, because variables from a different
+file may also be appended into the output file.  The user needs to be able to
+control both the global and variable attributes.
+
+It gets harder to generalize what to do when the variables may be modified. For
+example, if I issue
+    yes? SET VARIABLE/BAD=0.0 some_netcdf_file_variable
+    yes? SAVE/FILE=out.nc some_netcdf_file_variable
+Clearly I should modify the _FillValue attribute in the output file.  But should I
+retain the same title (long_name)? In most cases, yes, but not always. The user
+needs to be able to control this, too.
+
+The current version of Ferret simply ignores netCDF attributes that mean nothing to
+it.  Hence they are dropped in the output.  The future Ferret version in question
+will make all attributes available as special variables in your Ferret session
+(often string variables). It will allow you to inherit attributes during LET
+definitions and to flag which attributes should be included in SAVEs.  Details
+sketchy at this point, however.
+
+For now, the NCO toolkit is a big help controlling the output file attributes.
+Also, you can in many cases create an output file &quot;container&quot; to your liking first
+and then use Ferret to &quot;SAVE/APPEND&quot; values into it.  Neither is an ideal solution,
+I agree.
+
+Hope this helps.
+
+    - steve
+
+========================================
+
+Gary Strand wrote:
+
+&gt; What I mean is:
+&gt; -------------------------------------------------------------------------------
+&gt;  ! NOAA/PMEL TMAP
+&gt;  ! FERRET v5.40
+&gt;  ! Solaris 5.6 - 02/15/02
+&gt;  !  6-Mar-02 08:55
+&gt; use A.nc
+&gt; let tsb = ts
+&gt; save/file=B.nc tsb
+&gt; quit
+&gt; -------------------------------------------------------------------------------
+&gt;
+&gt; ncdump -h A.nc:
+&gt; -------------------------------------------------------------------------------
+&gt; netcdf A {
+&gt; dimensions:
+&gt;         time = UNLIMITED ; // (1 currently)
+&gt;         lat = 64 ;
+&gt;         lon = 128 ;
+&gt; variables:
+&gt;         float TS(time, lat, lon) ;
+&gt;                 TS:long_name = &quot;Surface temperature&quot; ;
+&gt;                 TS:units = &quot;K&quot; ;
+&gt;                 TS:time_rep = &quot;averaged&quot; ;
+&gt;         float lat(lat) ;
+&gt;                 lat:long_name = &quot;latitude&quot; ;
+&gt;                 lat:units = &quot;degrees_north&quot; ;
+&gt;         float lon(lon) ;
+&gt;                 lon:long_name = &quot;longitude&quot; ;
+&gt;                 lon:units = &quot;degrees_east&quot; ;
+&gt;         double time(time) ;
+&gt;                 time:long_name = &quot;simulation time&quot; ;
+&gt;                 time:units = &quot;days since 0000-09-01 00:00:00&quot; ;
+&gt;
+&gt; // global attributes:
+&gt;                 :Conventions = &quot;CSM NetCDF Convention Version 0.0&quot; ;
+&gt;                 :platform = &quot;Data converted from CCM History Tape Format&quot; ;
+&gt;                 :case = &quot;B11.07&quot; ;
+&gt;                 :title = &quot;&quot; ;
+&gt; [and a lot more info in the netCDF file]
+&gt; -------------------------------------------------------------------------------
+&gt;
+&gt; ncdump -h B.nc:
+&gt; -------------------------------------------------------------------------------
+&gt; netcdf B {
+&gt; dimensions:
+&gt;         LON = 128 ;
+&gt;         LAT = 64 ;
+&gt;         LATedges = 65 ;
+&gt;         TIME = UNLIMITED ; // (1 currently)
+&gt; variables:
+&gt;         double LON(LON) ;
+&gt;                 LON:units = &quot;degrees_east&quot; ;
+&gt;                 LON:modulo = &quot; &quot; ;
+&gt;                 LON:point_spacing = &quot;even&quot; ;
+&gt;         double LAT(LAT) ;
+&gt;                 LAT:units = &quot;degrees_north&quot; ;
+&gt;                 LAT:point_spacing = &quot;uneven&quot; ;
+&gt;                 LAT:edges = &quot;LATedges&quot; ;
+&gt;         double LATedges(LATedges) ;
+&gt;                 LATedges:edges = &quot; &quot; ;
+&gt;         double TIME(TIME) ;
+&gt;                 TIME:units = &quot;days since 0000-09-01 00:00:00&quot; ;
+&gt;                 TIME:time_origin = &quot;01-SEP-0000 00:00:00&quot; ;
+&gt;         float TSB(TIME, LAT, LON) ;
+&gt;                 TSB:missing_value = -1.e+34f ;
+&gt;                 TSB:_FillValue = -1.e+34f ;
+&gt;                 TSB:long_name = &quot;TS&quot; ;
+&gt;                 TSB:history = &quot;From A.nc&quot; ;
+&gt;
+&gt; // global attributes:
+&gt;                 :history = &quot;FERRET V5.40    6-Mar-02&quot; ;
+&gt; }
+&gt; -------------------------------------------------------------------------------
+&gt;
+&gt; Is there any particular reason FERRET can't maintain all the metadata from the
+&gt; file, especially when the data is completely unchanged?
+&gt;
+&gt; --
+&gt; /\        Gary Strand (303) 497-1336                                NCAR ML262A
+&gt;   \_][    www.cgd.ucar.edu/ccr/strandwg                      1850 Table Mesa Dr
+&gt;       \___strandwg@ucar.edu                       Boulder, Colorado, USA  80305
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00119" href="msg00119.html">ferret &quot;loses&quot; some metadata...</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00119.html">ferret &quot;loses&quot; some metadata...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00122.html">how to list the axis values?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00119.html">Thread Prev</a>][<a href="msg00122.html">Thread Next</a>][<A HREF="threads.html#00120">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

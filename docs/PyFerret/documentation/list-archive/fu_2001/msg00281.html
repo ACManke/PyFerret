@@ -1,0 +1,215 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: writing several .nc files to 1 file -->
+<!--X-From-R13: Perag O [pRnavry <tgr328eNibeyba.rnf.tngrpu.rqh> -->
+<!--X-Date: Mon, 7 May 2001 12:03:31 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.LNX.4.30.0105071439550.31017&#45;100000@vorlon.eas.gatech.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.WNT.4.10.10105060930590.&#45;344243@preinstalledcom -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: writing several .nc files to 1 file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00279.html">Thread Prev</a>][<a href="msg00280.html">Thread Next</a>][<A HREF="threads.html#00281">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: writing several .nc files to 1 file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: writing several .nc files to 1 file</strong></li>
+<li><strong>From</strong>: <strong>Brent A McDaniel &lt;<A HREF="mailto:gte328r@DOMAIN.HIDDEN">gte328r@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 07 May 2001 15:02:33 -0400 (EDT)</li>
+<li>In-reply-to: &lt;<a href="msg00279.html">Pine.WNT.4.10.10105060930590.-344243@preinstalledcom</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+
+
+Hi Emilio and Ferreters,
+
+I'm still having trouble with this.  I semi-follow what you're saying but
+I'm having trouble defining the z axis.  I have other files that use the
+same z axis that I'm trying to create so I thought I could just use the
+axis from another file.  The file airanom.1957.nc has the same 17 vertical
+levels that I'm trying to create (unevenly spaced) so I tried:
+yes? define axis/from_data/name=test/z airanom[d=1]
+
+which returned:
+**ERROR: improper grid or axis definition: data for DEFINE AXIS/FROM_VARIABLE is ambiguous
+
+I then tried to skip the define statement with
+yes? let zstamp=z[gz=airanom[d=1]] * 0
+yes? let aoz=ao[d=2]+zstamp[k=1]
+yes? save/file=verttest.nc/clobber/klimits=1:17/k=1 aoz
+ LISTing to file verttest.nc
+ **ERROR: invalid command: Exceeds grid limits: klimits=1:17
+          Variable: AOZ
+
+which is obviously bad.
+
+So I next defined my own axis:
+yes? define axis/units=mb/depth my_zax = {10,20,30,50,70,100,150,200,250,300,400,500,600,700,850,925,1000}
+
+and tried to do the same thing:
+yes? LET zstamp = Z[GZ=my_zax] * 0
+yes? LET aoz = ao[d=2] + zstamp[K=1]
+yes? SAVE/FILE=verttest.nc/KLIMITS=1:17/CLOBBER/K=1 aoz
+ LISTing to file verttest.nc
+ **ERROR: invalid command: Exceeds grid limits: KLIMITS=1:17
+          Variable: AOZ
+
+
+Can anyone help me out please?  I'm at a loss.
+
+Thanks as always,
+
+Brent
+
+
+On Sun, 6 May 2001, Emilio Mayorga wrote:
+
+&gt;
+&gt; Hi Brent,
+&gt;
+&gt; In your SAVE statement, I imagine ao[d=1] is the variable from one of the
+&gt; files, as is. Also, I'm guessing you're not working with Ferret's
+&gt; multi-file netcdf scheme.  I will make a suggestion that I haven't tested,
+&gt; but it's something that's worked in the time dimension.
+&gt;
+&gt; It seems you need to first define the common Z axis with DEFINE AXIS. Say
+&gt; the name is &quot;depth&quot;. You have irregularly spaced values, and I can't
+&gt; remember right now how to create such an axis. After the axis is created,
+&gt; create a &quot;z stamp&quot; variable:
+&gt;
+&gt; LET zstamp = Z[GZ=depth] * 0
+&gt; Now to write the first ao z-slice, define a new ao variable to stamp ao
+&gt; with its z value:
+&gt; LET aoz = ao[d=1] + zstamp[K=1]
+&gt;
+&gt; Now you can write this first value into the file
+&gt; SAVE/FILE=verttest.nc/KLIMITS=1:17/CLOBBER/K=1 aoz
+&gt;
+&gt; For subsequent z slices, eg, K=5:
+&gt; LET aoz = ao[d=1] + zstamp[K=5]
+&gt; SAVE/FILE=verttest.nc/APPEND/K=5 aoz
+&gt;
+&gt; Of course, you should add the title and units info to aoz if you want to
+&gt; preserve it, and you should probably put this together in a script file
+&gt; and use REPEAT/K=1:17
+&gt;
+&gt; I hope this works, and good luck.
+&gt;
+&gt; Emilio Mayorga
+&gt; ________________________________________________________________
+&gt; University of Washington
+&gt; School of Oceanography			emiliom@u.washington.edu
+&gt; Box 357940				ph. (206) 221-6756
+&gt; Seattle, WA  98195-7940	  USA		FAX (206) 685-3351
+&gt; <A  HREF="http://boto.ocean.washington.edu/staff_pages/emilio">http://boto.ocean.washington.edu/staff_pages/emilio</A>
+&gt;
+&gt; On Fri, 4 May 2001, Brent A McDaniel wrote:
+&gt;
+&gt; &gt;
+&gt; &gt; Hi Ferret Users,
+&gt; &gt;
+&gt; &gt; Hopefully this should be an easy problem for the more experienced users.
+&gt; &gt; I've got 17 netcdf that I want to combine into 1 netcdf file.  They all
+&gt; &gt; are of dimension 144x37x1 (no time) of the same variable (ao).  The 144x37
+&gt; &gt; are the same but they each have a different z-axis. (1000, 925, 850,
+&gt; &gt; 700....)  I want to combine them into a 144x37x17 file.  I tried the
+&gt; &gt; simple brute force technique of
+&gt; &gt; save/file=verttest.nc/klimits=1:17/clobber ao[d=1]
+&gt; &gt; and got the message
+&gt; &gt;  LISTing to file verttest.nc
+&gt; &gt;  **ERROR: invalid command: Exceeds grid limits: klimits=1:17
+&gt; &gt;           Variable: AO
+&gt; &gt;
+&gt; &gt; For completeness, here's the output of show data/full
+&gt; &gt; yes? show data/full 1
+&gt; &gt;      currently SET data sets:
+&gt; &gt;     1&gt; ./airanom.1000.1000.nc
+&gt; &gt;
+&gt; &gt;  name     title                             I         J         K
+&gt; &gt; L
+&gt; &gt;  AO       (TEST97*-1)/3600                 1:144     1:38      1:1
+&gt; &gt; ...
+&gt; &gt;                on grid GGP1 with -1.E+34 for missing data
+&gt; &gt;              X=1.2W(-1.2):1.2W  Y=3.8S:91.2N  Z=999.5:1001
+&gt; &gt;
+&gt; &gt; Can someone help me out please?
+&gt; &gt;
+&gt; &gt; Thanks in advance,
+&gt; &gt;
+&gt; &gt; Brent
+&gt; &gt;
+&gt; &gt;
+&gt;
+
+-- 
+Brent A. McDaniel
+
+Dept of Earth and Atmospheric Sciences
+Georgia Institute of Technology
+Atlanta, Ga.  USA
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00279" href="msg00279.html">Re: writing several .nc files to 1 file</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00279.html">Re: writing several .nc files to 1 file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00280.html">Re: writing several .nc files to 1 file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00279.html">Thread Prev</a>][<a href="msg00280.html">Thread Next</a>][<A HREF="threads.html#00281">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

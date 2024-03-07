@@ -1,0 +1,190 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: trouble with saving 3D data -->
+<!--X-From-R13: [hlva Inat <zhlvaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 6 Nov 2000 13:00:20 &#45;0800 (PST) -->
+<!--X-Message-Id: 3A071B93.9B4ED6ED@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>trouble with saving 3D data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00486.html">Thread Prev</a>][<a href="msg00489.html">Thread Next</a>][<A HREF="threads.html#00488">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>trouble with saving 3D data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret user list &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;,       &quot;<A HREF="mailto:sciapp@DOMAIN.HIDDEN">sciapp@xxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:sciapp@DOMAIN.HIDDEN">sciapp@xxxxxxxxxxxxx</A>&gt;, <A HREF="mailto:q@DOMAIN.HIDDEN">q@xxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>trouble with saving 3D data</strong></li>
+<li><strong>From</strong>: <strong>Muyin Wang &lt;<A HREF="mailto:muyin@DOMAIN.HIDDEN">muyin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 06 Nov 2000 12:58:59 -0800</li>
+<li>Organization: PMEL/NOAA</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello
+ What I am trying to do here is to calculate the atmosphere thickness. I have to
+seperate the bottom layer with the rest layers as I have to use the surface
+temperature field. So what I did is to calculate the 1st level's height, and
+then use a rep/ command to compute the rest of the layers. However, when I save
+the file, I always got warnings like
+&quot;*** NOTE: Invalid K axis limits ignored: HGT&quot;
+and then ferret overwrite my first level's data. Below is my scipt, and I  did
+specify the level at each by giving /k=`k`,
+but, after running my script in ferret, what I got is the 2nd level's data over
+wrote the 1st one, and at the end, at level k=1, I got &quot;invalid data&quot; assigned
+to the last level! It seems that Ferret &quot;shifted&quot; the level by one.
+How could I avoid this?
+Thank for your suggestions.
+Muyin
+
+! cal_hgt.jnl
+! To compute the height field from Temp based on TOVS analysis
+!
+can data/all
+can region/all
+can var/all
+
+use &quot;/home/aegir2/muyin/cdf/tovs_monthly.cdf&quot;
+use &quot;/home/aegir2/muyin/cdf/tovs_monthly_crs.cdf&quot;
+
+set mem/size=30
+
+let Rd = 287  !j kg-1s-1
+let g = 9.81
+!Define z grid with iregular space
+define axis/units=mb/z zlevs={50,70,100,300,400,500,600,700,850,900,1000}
+
+!Define 2D grid
+define grid/x=temp[d=2]/y=temp[d=2]/t=temp[d=2] g2d
+
+let tm = 0*z[g=g2d]
+let p10 = 1*z[g=temp[d=2]]
+let hgt = 0*temp[d=2,g=temp[d=2]]
+
+!Compute thickness layer by layer
+
+set region/l=1
+
+let tm = 0.5*(sktemp[d=2]+temp[d=2,k=10])
+let/title=&quot;Geo Height&quot; hgt = rd *tm*ln(press[d=1]/p10[k=10])/g
+save/clob/rigid/file=tovs_hgt_monthly.cdf/llimits=1:228/klimits=1:10/k=10 hgt
+
+rep/k=9:1:-1 (go cal_h_slab.jnl )
+
+!can region/l
+!set region/l=2:10
+
+!let tm = 0.5*(sktemp[d=2]+temp[d=2,k=10])
+!let/title=&quot;Geo Height&quot; hgt = rd *tm*ln(press[d=1]/p10[k=10])/g
+!save/app/rigid/file=tovs_hgt_monthly.cdf/llimits=1:228/k=10 hgt
+
+!rep/k=9:1:-1 (go cal_h_slab.jnl)
+
+and cal_h_slab.jnl is like this:
+
+let tm = 0.5*(temp[d=2,k=`k+1`]+temp[d=2,k=`k`])
+let/title=&quot;Geo Height&quot; hgt = rd/g*tm*ln(p10[k=`k+1`]/p10[k=`k`])
+save/app/rigid/file=tovs_hgt_monthly.cdf/llimits=1:228/k=`k` hgt</pre>
+<pre>
+! cal_hgt.jnl
+! To compute the height field from Temp based on TOVS analysis
+!
+can data/all
+can region/all
+can var/all
+
+use &quot;/home/aegir2/muyin/cdf/tovs_monthly.cdf&quot;
+use &quot;/home/aegir2/muyin/cdf/tovs_monthly_crs.cdf&quot;
+
+set mem/size=30
+
+let Rd = 287  !j kg-1s-1
+let g = 9.81
+!Define z grid with iregular space
+define axis/units=mb/z zlevs={50,70,100,300,400,500,600,700,850,900,1000}
+
+!Define 2D grid
+define grid/x=temp[d=2]/y=temp[d=2]/t=temp[d=2] g2d
+
+let tm = 0*z[g=g2d]
+let p10 = 1*z[g=temp[d=2]]
+let hgt = 0*temp[d=2,g=temp[d=2]]
+
+!Compute thickness layer by layer
+
+set region/l=1
+
+let tm = 0.5*(sktemp[d=2]+temp[d=2,k=10])
+let/title=&quot;Geo Height&quot; hgt = rd *tm*ln(press[d=1]/p10[k=10])/g
+save/clob/rigid/file=tovs_hgt_monthly.cdf/llimits=1:228/klimits=1:10/k=10 hgt
+
+rep/k=9:1:-1 (go cal_h_slab.jnl )
+
+!can region/l
+!set region/l=2:10
+
+!let tm = 0.5*(sktemp[d=2]+temp[d=2,k=10])
+!let/title=&quot;Geo Height&quot; hgt = rd *tm*ln(press[d=1]/p10[k=10])/g
+!save/app/rigid/file=tovs_hgt_monthly.cdf/llimits=1:228/k=10 hgt
+
+!rep/k=9:1:-1 (go cal_h_slab.jnl)
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00489" href="msg00489.html">Re: trouble with saving 3D data</a></strong>
+<ul><li><em>From:</em> Mick Spillane</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00486.html">controlling large tics</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00489.html">Re: trouble with saving 3D data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00486.html">Thread Prev</a>][<a href="msg00489.html">Thread Next</a>][<A HREF="threads.html#00488">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

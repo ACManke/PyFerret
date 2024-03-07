@@ -1,0 +1,214 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: RE: How to extract length of axis to a symbol? -->
+<!--X-From-R13: "[pQnaa, [vxr" <zppnaaNzonev.bet> -->
+<!--X-Date: Wed, 4 Apr 2001 08:48:31 &#45;0700 (PDT) -->
+<!--X-Message-Id: 8969C7C92A78D311869C0090278750B6B52D1C@cumulus.shore.mbari.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>RE: How to extract length of axis to a symbol?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00190.html">Thread Prev</a>][<a href="msg00188.html">Thread Next</a>][<A HREF="threads.html#00191">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: How to extract length of axis to a symbol?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;'Steve Hankin'&quot; &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;,       ferret_users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>RE: How to extract length of axis to a symbol?</strong></li>
+<li><strong>From</strong>: <strong>&quot;McCann, Mike&quot; &lt;<A HREF="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 04 Apr 2001 08:48:17 -0700</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Steve,
+
+Thanks.  That was too simple for me to consider.  For the mail
+archive, it works with:
+
+SAVE/FILE=&quot;m1_adcp.nc&quot;/APPEND U_VEL_COMP[T=&quot;$TSTART&quot;:&quot;$TEND&quot;]
+                                         ^ (not L)
+-Mike
+
+--
+Mike McCann   (mccann@mbari.org)
+Group Leader, Information Applications Group
+Monterey Bay Aquarium Research Institute
+7700 Sandholdt Road
+Moss Landing, CA 95039-9644
+Voice: (831) 775-1769   Fax: (831) 775-1646 <A  HREF="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</A>
+
+
+&gt; -----Original Message-----
+&gt; From: Steve Hankin [<A  HREF="mailto:hankin@pmel.noaa.gov">mailto:hankin@pmel.noaa.gov</A>]
+&gt; Sent: Tuesday, April 03, 2001 6:03 PM
+&gt; To: McCann, Mike
+&gt; Cc: 'Andrew Wittenberg'; ferret_users
+&gt; Subject: Re: How to extract length of axis to a symbol?
+&gt; 
+&gt; 
+&gt; Hi Mike,
+&gt; 
+&gt; If I am understanding you correctly, what you are after is to 
+&gt; know what the time
+&gt; index range becomes for a slug of data *after* it is regridded.
+&gt; 
+&gt; It is easy to find the date range (as opposed to index range) 
+&gt; and use it as
+&gt; follows:
+&gt; 
+&gt;      define symbol tstart `U_COMPONENT,return=tstart`
+&gt;      define symbol tend `U_COMPONENT,return=tend`
+&gt;      SAVE/FILE=&quot;m1_adcp.nc&quot;/APPEND U_VEL_COMP[L=&quot;$TSTART&quot;:&quot;$TEND&quot;]
+&gt; 
+&gt; The date range after regridding will in some cases be smaller 
+&gt; than before
+&gt; regridding, since linear interpolation is not possible at the 
+&gt; endpoints of the
+&gt; source data. However, if the date ranges of the files that 
+&gt; you are appending are
+&gt; non-overlapping, I think the above procedure should work 100%.
+&gt; 
+&gt;     - steve
+&gt; 
+&gt; =====================================
+&gt; 
+&gt; &quot;McCann, Mike&quot; wrote:
+&gt; 
+&gt; &gt; Andrew, Ansley, et al.-
+&gt; &gt;
+&gt; &gt; Thanks!   That define works.  Now I need a little help
+&gt; &gt; getting the index range of a regridded variable.  The
+&gt; &gt; first section below writes a new netCDF file and then
+&gt; &gt; I want to append to it with additional data, yet unless
+&gt; &gt; I specify the index range the first set of data gets
+&gt; &gt; overwritten by the no_data values from the 2nd set of data.
+&gt; &gt;
+&gt; &gt; LET V_VEL_COMP = V3[gt=TNEW@LIN]
+&gt; &gt; SAVE/FILE=&quot;m1_adcp.nc&quot;/LLIMITS=1:($NTIME)/CLOBBER 
+&gt; U_VEL_COMP,V_VEL_COMP
+&gt; &gt;
+&gt; &gt; USE
+&gt; &gt; 
+&gt; &quot;/hosts/tornado/vol/vol0/oasis/deployments/m1/199606/m1/netcdf
+&gt; /m1_adcp_19960
+&gt; &gt; 110_NarrowBand.nc&quot;
+&gt; &gt; LET U1 = missing(U_COMPONENT_FLAG, -9999)
+&gt; &gt; LET U2 = IF U1 EQ 0 THEN 1
+&gt; &gt; LET U3 = U_COMPONENT * U2
+&gt; &gt; LET U_VEL_COMP = U3[gt=TNEW@LIN]
+&gt; &gt; LET V1 = missing(V_COMPONENT_FLAG, -9999)
+&gt; &gt; LET V2 = IF V1 EQ 0 THEN 1
+&gt; &gt; LET V3 = V_COMPONENT * V2
+&gt; &gt; LET V_VEL_COMP = V3[gt=TNEW@LIN]
+&gt; &gt;
+&gt; &gt; (How do I get the $LSTART &amp; $LEND values that are needed for this?)
+&gt; &gt;
+&gt; &gt; SAVE/FILE=&quot;m1_adcp.nc&quot;/APPEND
+&gt; &gt; U_VEL_COMP[L=$LSTART:$LEND],V_VEL_COMP[L=$LSTART:$LEND]
+&gt; &gt;
+&gt; &gt; Again, thanks in advance,
+&gt; &gt; Mike
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Mike McCann   (mccann@mbari.org)
+&gt; &gt; Group Leader, Information Applications Group
+&gt; &gt; Monterey Bay Aquarium Research Institute
+&gt; &gt; 7700 Sandholdt Road
+&gt; &gt; Moss Landing, CA 95039-9644
+&gt; &gt; Voice: (831) 775-1769   Fax: (831) 775-1646 
+<A  HREF="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</A>
+&gt;
+&gt; &gt; -----Original Message-----
+&gt; &gt; From: Andrew Wittenberg [<A  HREF="mailto:andyw@splash.Princeton.EDU">mailto:andyw@splash.Princeton.EDU</A>]
+&gt; &gt; Sent: Tuesday, April 03, 2001 2:58 PM
+&gt; &gt; To: McCann, Mike
+&gt; &gt; Cc: ferret_users
+&gt; &gt; Subject: Re: How to extract length of axis to a symbol?
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Tue, 3 Apr 2001, McCann, Mike wrote:
+&gt; &gt;
+&gt; &gt; &gt; After defining an axis, e.g.:
+&gt; &gt; &gt;
+&gt; &gt; &gt; DEFINE AXIS/T=($TMIN):($TMAX):7200/UNITS=seconds TNEW
+&gt; &gt; &gt;
+&gt; &gt; &gt; How do I get the number of points in the axis and assign
+&gt; &gt; &gt; the number to a symbol?
+&gt; &gt;
+&gt; &gt; Hi Mike,
+&gt; &gt;
+&gt; &gt; Give this a try:
+&gt; &gt;
+&gt; &gt; yes? define symbol num_points `t[gt=tnew],r=lsize`
+&gt; &gt; yes? say ($num_points)
+&gt; &gt;
+&gt; &gt; Andrew
+&gt; &gt;
+&gt; &gt; ----------------------------------------------------------------------
+&gt; &gt; Andrew Wittenberg          Program in Atmospheric and Oceanic Sciences
+&gt; &gt; andyw@splash.princeton.edu                        Princeton University
+&gt; &gt; ----------------------------------------------------------------------
+&gt; &gt;
+&gt; &gt;
+
+--
+
+                |  NOAA/PMEL               |  ph. (206) 526-6080
+Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+                |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00190.html">Re: How to extract length of axis to a symbol?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00188.html">about ferret5.22</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00190.html">Thread Prev</a>][<a href="msg00188.html">Thread Next</a>][<A HREF="threads.html#00191">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

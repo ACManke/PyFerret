@@ -1,0 +1,222 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: labeling a plot in a viewport -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Fri, 1 Nov 2002 15:01:12 &#45;0800 (PST) -->
+<!--X-Message-Id: 3DC308A3.9DF57850@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20021025212150.GA6616@bcw014.knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: labeling a plot in a viewport</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00543.html">Thread Prev</a>][<a href="msg00544.html">Thread Next</a>][<A HREF="threads.html#00562">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: labeling a plot in a viewport</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hein Zelle &lt;<a href="mailto:zelle@DOMAIN.HIDDEN">zelle@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: labeling a plot in a viewport</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 01 Nov 2002 15:05:07 -0800</li>
+<li>Cc: Ferret Users mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00543.html">20021025212150.GA6616@bcw014.knmi.nl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Hein,
+Good questions!
+
+   - How do I specify label coordinates relative to the axes of the plot
+      if I don't know the data along the axis? It's a general script, so I
+     cannot assume that the left bottom corner is always 120E,30S.
+
+You can get information about the axes, among other things, from
+symbols that are defined by Ferret when you make a plot.  After
+plotting, say:
+  yes? SHOW SYMBOL
+and you'll see a long list of the symbols that have been defined.
+You can use ppl$xmin, ppl$xmax, ppl$ymin, ppl$ymax to
+generate label positions.  This works whether you're in a
+viewport or not.  So for example to put a label near the top
+inside the plot:
+
+yes? use coads_climatology
+yes? set view ul
+yes? shade/L=1 sst
+yes? show symbol
+
+yes? let xmid = ( ($ppl$xmax) - ($ppl$xmin) )/2
+yes? let ytop = 0.9* (($ppl$ymax) )
+yes? label/user `xmid`, `ytop`, -1, 0, 0.15, &quot;my label&quot;
+
+( Note the definition of ytop might give unexpected results
+if the value ppl$ymax were negative.  To be completely
+general you would want to be more careful!)
+
+   - I draw the title of the plot in a 13th viewport at the bottom of the
+     page, specified with define viewport /axes. I found out that
+     relative coordinates (0.5,0.5 for a centered label) only work after
+     you plot something in that viewport. How do I 'initialize' a
+     viewport so that these relative coordinates work, without actually
+     plotting something in it?
+
+There needs to be some kind of plot in order for Ferret to know
+the scaling of space in the veiwport, and be able to position a
+label.  The plot symbols need to be set, as we saw above.  You
+could do a plot like this, shaded all in white, and then put the label
+on.  The label position is relative to the i=1:2 and j=1:2 axes
+which are defined even though they aren't plotted on the shade plot.
+
+yes? set view ur
+yes? shade/noaxes/nolabels/i=1:2/j=1:2/nokey/pal=white   (i+j)
+yes? label/nouser 1.5,1.5,0, 0, 0.15 &quot;centered label only&quot;
+
+Or, here is a way of adding a box anywhere on your page which
+contains a label. I'll just use the pre-defined viewports for an
+example, and I will fill the box with red to make it obvious.
+You could do a box of any color, anywhere on the page.
+The viewport definition is relative to the entire page, and it can
+overlap other viewports.  The /AXES qualifier on the DEFINE
+VIEWPORT command indicates that the viewport definition
+is the location of the axes.  This way we can fill in the entire
+plot with a color, and use the coordinates of the axes to
+position the label.  The /TEXT qualifier makes the text size in
+the viewport the same as it would be in the full window;
+which makes it easier to control the size of the label.
+
+yes? use coads_climatology
+yes? set view upper; shade/l=2 sst
+yes? set view lower; shade/l=4 sst
+
+yes? define view/xlim=0.4:0.6/ylim=0.45:0.5/axes/text=1 little_box
+yes? set view little_box
+yes? shade/noax/nolab/i=1:2/j=1:2/pal=red i+j
+yes? label/user 1.5 1.1 0 0, 0.15 @crtext in box
+
+Hein Zelle wrote:
+
+&gt; Dear Ferret users and developers,
+&gt;
+&gt; As a followup question on the previous one, I'd like to know how to
+&gt; use 'user' and 'global' coordinates when labelling a plot that is in a
+&gt; viewport which takes up only part of the page. Here's what I want to
+&gt; do: I have divided my page into 12 viewports, one for each month, just
+&gt; like the landscape3x2 script. (If anyone is interested, I now have a
+&gt; portrait2x6 script). I make a contour plot in the first viewport of,
+&gt; say, the january climatology.
+&gt;
+&gt; So far so good, but the title of the plot doesn't really fit in such a
+&gt; small viewport so I leave it off. Instead, I want to plot a label with
+&gt; 'January' within the area of the plot. Ideally, I want this label to
+&gt; appear within a white box, so it doesn't run through the contour
+&gt; lines. The questions I ran into:
+&gt;
+&gt; - How do I specify label coordinates relative to the axes of the plot
+&gt;   if I don't know the data along the axis? It's a general script, so I
+&gt;   cannot assume that the left bottom corner is always 120E,30S.
+&gt;
+&gt; - How can I make a white box around a label? I was thinking of using a
+&gt;   very small 'label' viewport for this, but just as with the label I
+&gt;   don't know how to position this 'subviewport'.
+&gt;
+&gt; - I draw the title of the plot in a 13th viewport at the bottom of the
+&gt;   page, specified with define viewport /axes. I found out that
+&gt;   relative coordinates (0.5,0.5 for a centered label) only work after
+&gt;   you plot something in that viewport. How do I 'initialize' a
+&gt;   viewport so that these relative coordinates work, without actually
+&gt;   plotting something in it?
+&gt;
+&gt; I will attach the two scripts to this mail so you can check them
+&gt; out. 12month.jnl defines the viewports (the 'label' viewports are
+&gt; commented out), 12plot.jnl is a general script to plot 12 months of a
+&gt; climatology.
+&gt;
+&gt; I hope someone can help with this, the result already looks pretty
+&gt; good but could be perfected some more.
+&gt;
+&gt;      Hein Zelle
+&gt;
+&gt; &gt;-----------------------------------------------------------------&lt;
+&gt;     Hein Zelle
+&gt;     Dept. of Oceographic Research
+&gt;     KNMI, The Netherlands
+&gt;     work:        zelle@knmi.nl     <a  href="http://www.knmi.nl/~zelle">http://www.knmi.nl/~zelle</a>
+&gt;     private:     hein@icce.rug.nl <a  href="http://www.icce.rug.nl/~hein">http://www.icce.rug.nl/~hein</a>
+&gt;     Phone:       +31 (0)30 2206704
+&gt; &gt;-----------------------------------------------------------------&lt;
+&gt; --------------------------------------------------------------
+&gt; Zie ook/see also: <a  href="http://www.knmi.nl/maildisclaimer.html">http://www.knmi.nl/maildisclaimer.html</a>
+&gt;
+&gt;   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+&gt;                  Name: 12plot.jnl
+&gt;    12plot.jnl    Type: Plain Text (text/plain)
+&gt;              Encoding: 7BIT
+&gt;
+&gt;                   Name: 12month.jnl
+&gt;    12month.jnl    Type: Plain Text (text/plain)
+&gt;               Encoding: 7BIT
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00543" href="msg00543.html">labeling a plot in a viewport</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00543.html">labeling a plot in a viewport</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00544.html">title</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00543.html">Thread Prev</a>][<a href="msg00544.html">Thread Next</a>][<A HREF="threads.html#00562">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

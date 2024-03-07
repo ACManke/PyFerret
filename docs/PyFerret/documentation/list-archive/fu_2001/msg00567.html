@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Curvilinear data, mp_fland, and mp_graticule... -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Fri, 26 Oct 2001 09:59:05 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3BD99638.DE854360@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200110251754.LAA01121@olympic.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Curvilinear data, mp_fland, and mp_graticule...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00565.html">Thread Prev</a>][<a href="msg00568.html">Thread Next</a>][<A HREF="threads.html#00567">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Curvilinear data, mp_fland, and mp_graticule...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Gary Strand &lt;<A HREF="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Curvilinear data, mp_fland, and mp_graticule...</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<A HREF="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 26 Oct 2001 09:58:32 -0700</li>
+<li>Cc: Ferret Users Mailing List &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>References: &lt;<a href="msg00565.html">200110251754.LAA01121@olympic.cgd.ucar.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Gary,
+
+Part of this is the same kind of problem described in the FAQ:
+
+<A  HREF="http://ferret.wrc.noaa.gov/Ferret/FAQ/graphics/working_with_go_fland.html">http://ferret.wrc.noaa.gov/Ferret/FAQ/graphics/working_with_go_fland.html</A>
+
+The mp_fland.jnl script has the same arguments as fland.jnl so you
+should be able to fix the land mask with
+
+&gt; go mp_fland 60 black &quot; &quot; &quot; &quot; x=0:360
+
+I'd also try playing round with setting the region specifically to
+20:380 when you plot your data because those are the settings you pass
+to the map projection script.
+
+If you don't get it working you can send me a single XY slice of your
+data files and I'll have a go at it.
+
+
+-- Jon Callahan
+
+
+
+
+
+Gary Strand wrote:
+&gt; 
+&gt; I've been hammering away at trying to get a picture of some curvilinear data
+&gt; properly overlaid with mp_graticule, and it just ain't working. The graticule
+&gt; lines quit at 0E, as does the mp_fland.
+&gt; 
+&gt; Also, the image longitudinal extent is that of the data itself, regardless of
+&gt; how I tweak the arguments to mp_lambert_cyl. The jnl file:
+&gt; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+&gt; use &quot;/data/pcm/B06.33/ocn/B06.33.ocn.2010-01.nc&quot;
+&gt; use &quot;/fs/cgd/data0/strandwg/ferret/data/pcm1_grid.nc&quot;
+&gt; !
+&gt; let plto = temp[d=1,l=1,k=1]
+&gt; !
+&gt; set mem/siz=64
+&gt; !
+&gt; let xmin =   20; let xmax = 380 ; let ymin = -90; let ymax =  90
+&gt; let xdel =   30; let ydel =  15
+&gt; let mid_lon = `xmin+(xmax-xmin)/2` ; let mid_lat = `ymin+(ymax-ymin)/2`
+&gt; !
+&gt; go mp_lambert_cyl `mid_lon` `mid_lat`
+&gt; let mp_lambda = lon[d=pcm1_grid.nc] * deg2rad
+&gt; let mp_phi    = lat[d=pcm1_grid.nc] * deg2rad
+&gt; set grid `ignore0(plto),return=grid`
+&gt; !
+&gt; can region; set reg/j=1:288
+&gt; shade/set/noax/nolabel/lev=(-4,34,2)/title=&quot;&quot; plto*mp_mask, x_page, y_page
+&gt; ppl shade
+&gt; ppl axset 1 1 1 1
+&gt; !
+&gt; ! background
+&gt; go mp_lambert_cyl `mid_lon` `mid_lat`
+&gt; set region/x=`xmin`:`xmax`/y=`ymin`:`ymax`
+&gt; go mp_graticule `xmin` `xmax` `xdel` `ymin` `ymax` `ydel`
+&gt; go mp_fland 60 black
+&gt; go mp_land 1
+&gt; !
+&gt; frame/file=POP_CE.gif
+&gt; !
+&gt; quit
+&gt; -------------------------------------------------------------------------------
+&gt; 
+&gt; And POP_CE.gif:
+&gt; 
+&gt;   ------------------------------------------------------------------------
+&gt;                     Name: POP_CE.gif
+&gt;    POP_CE.gif       Type: GIF Image (image/gif)
+&gt;                 Encoding: base64
+&gt;              Description: POP_CE.gif
+&gt; 
+&gt;   ------------------------------------------------------------------------
+&gt; --
+&gt; Gary Strand
+&gt; strandwg@ucar.edu
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00565" href="msg00565.html">Curvilinear data, mp_fland, and mp_graticule...</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00565.html">Curvilinear data, mp_fland, and mp_graticule...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00568.html">vertical alignment of labels</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00565.html">Thread Prev</a>][<a href="msg00568.html">Thread Next</a>][<A HREF="threads.html#00567">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

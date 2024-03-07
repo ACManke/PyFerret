@@ -1,0 +1,219 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: North to South Latitude (reversed) axis in ASCII data file -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Thu, 13 Dec 2001 10:07:24 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C18EEF1.D4D4A8DC@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.GSO.4.33.0112120946540.28025&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: North to South Latitude (reversed) axis in ASCII data file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00649.html">Thread Prev</a>][<a href="msg00651.html">Thread Next</a>][<A HREF="threads.html#00650">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: North to South Latitude (reversed) axis in ASCII data file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Mick Spillane &lt;<A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A>&gt;,       Steve Cocks &lt;<A HREF="mailto:scocks@DOMAIN.HIDDEN">scocks@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: North to South Latitude (reversed) axis in ASCII data file</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<A HREF="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 13 Dec 2001 10:09:53 -0800</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00649.html">Pine.GSO.4.33.0112120946540.28025-100000@heron.pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi everyone,
+<p>Mick gives a useful discussion of working with reversing North/South
+<br>ordering, and a good example using SAMPLEJ function to flip the
+<br>axis, essentially using.
+<p>I just want to mention another method -- write a NetCDF file, and
+<br>apply the USE/ORDER qualifer to read back the data and indicate the
+<br>reversed axis.&nbsp; See "ORDER, for USE" in the <a href="http://ferret.pmel.noaa.gov/Ferret/Documentation/Users_Guide/current/fer_html.htm">Users
+Guide</a> index.
+<p>In Mick's example, once the reversed data are read in, we could
+<br>SAVE the data to a NetCDF file, and then read it back in with
+<br>USE/ORDER=X-Y&nbsp; to indicate that the Y axis is reversed.
+<p>! Read the reversed-data file specifying geographic units on the axes;
+<br>! the plot shows the data inverted.
+<p>&nbsp;&nbsp;&nbsp;&nbsp; def axis/y=59.5:49.5:1/units=degrees_north
+yfer
+<br>&nbsp;&nbsp;&nbsp;&nbsp; def axis/x=348.5:362.5/npoints=15/units=degrees_east
+xfer
+<br>&nbsp;&nbsp;&nbsp;&nbsp; def grid/x=xfer/y=yfer gin
+<br>&nbsp;&nbsp;&nbsp;&nbsp; file/form=(15f7.0)/col=15/ord=xy/g=gin/var=v
+test.file
+<br>&nbsp;&nbsp;&nbsp;&nbsp; fill/lev=(0,1000,100) v
+<p>!&nbsp; Save this as a NetCDF file.
+<br>&nbsp;&nbsp;&nbsp;&nbsp; save/clobber/file=reverse_north.cdf v
+<p>&nbsp;&nbsp;&nbsp;&nbsp; can data/all
+<br>&nbsp;&nbsp;&nbsp;&nbsp; can var/all
+<br>&nbsp;&nbsp;&nbsp;&nbsp; set win/new
+<p>!&nbsp; Read it in; the -Y indicates that the Y axis is inverted.
+<p>&nbsp;&nbsp;&nbsp;&nbsp; use/order=x-y reverse_north.cdf&nbsp;
+<br>&nbsp;&nbsp;&nbsp;&nbsp; fill/lev=(0,1000,100) v
+<br>&nbsp;
+<p>Ansley Manke
+<br>&nbsp;
+<p>Mick Spillane wrote:
+<blockquote TYPE=CITE>Probably many of us have encountered data files where
+the ordering is
+<br>NORTH to SOUTH rather than ferret's preferred SOUTH to NORTH.&nbsp;
+There
+<br>may be prior solutions in the archives for ways to get around this
+<br>but I missed them while searching.&nbsp; So here is a response to a
+user.
+<br>Apologies if it is a wheel that you have already invented.
+<br>Mick Spillane
+<br>--------------------------------------------------------------------
+<br>Hi Steve,
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ferret has a preference
+for geographic axes that are ordered
+<br>from south to north, and east to west.&nbsp; For example if you wanted
+to
+<br>define a grid from 10N to 10S and 10E to 10W you might try
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; def axis/x=10E:10W/npoints=21
+x21
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; def axis/y=10N:10S/npoints=21
+y21
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; def grid/x=x21/y=y21 g21
+<br>but when you check it ...
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; show grid/y g21
+<br>... you find that Ferret has imposed its preference to reorder your
+grid
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp; Y&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+YBOX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; YBOXLO
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1>&nbsp; 10S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10.5S
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2>&nbsp; 9S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9.5S
+<br>...
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 20>&nbsp; 9N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8.5N
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 21>&nbsp; 10N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9.5N
+<br>from south to north.
+<br>In the case of the x-axis it goes the other way around the earth
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; show grid/x g21
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+XBOX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; XBOXLO
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1>&nbsp; 10E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+17&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.5E
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2>&nbsp; 27E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+17&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 18.5E
+<br>...
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 20>&nbsp; 27W&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+17&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 35.5W
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 21>&nbsp; 10W&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+17&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 18.5W
+<p>In the case of data input via netCDF files this is not much of a problem.
+<br>The axis order can be defined in either direction and Ferret will read
+<br>it and convert axes and data consistently to its preferred order.
+<p>In your case you want to read in data ordered NORTH to SOUTH. Here is
+a
+<br>demo using the coarse etopo60 topography around GreatBritain and Ireland
+<br>of how SAMPLEJ can solve the problem. Cut and paste the steps below
+to
+<br>see how it works.
+<p>! make the test data file, ordered west to east but NORTH to SOUTH
+<br>use etopo60
+<br>region/i=329:343/j=138:150
+<br>fill/lev=(0,1000,100) rose ! shows the normally-oriented chart
+<br>list/nohead/form=(15f7.0)/j=150/ord=xy/file=test.file rose
+<br>repeat/j=149:138:-1 (list/nohead/form=(18f7.0)/ord=xy/app/file=test.file
+<br>rose)
+<p>! remove etopo60 and cancel region
+<br>can data 1 ; can region
+<p>! now make a grid to read back the NORTH to SOUTH data ...
+<br>def axis/x=1:15:1 xin ; def axis/y=1:13:1 yin
+<br>def grid/x=xin/y=yin gin
+<br>file/form=(15f7.0)/col=15/ord=xy/g=gin/var=v test.file
+<br>! ... and confirm that it is upside-down
+<br>fill/lev=(0,1000,100) v
+<p>! then define the sampling to rectify it ...
+<br>let yr=14-y[g=gin]
+<br>let vr=samplej(v,yr)
+<br>! ... and check it out
+<br>fill/lev=(0,1000,100) vr
+<p>! now we need to assign the rectified data to the geographic grid
+<p>! define the axes in ferret-preferred order
+<br>def axis/x=348.5:362.5/npoints=15/units=degrees_east xfer
+<br>def axis/y=47.5:59.5/npoints=13/units=degrees_north yfer
+<br>def grid/x=xfer/y=yfer gfer
+<br>let vfer=vr[g=gfer,gx=@asn,gy=@asn]
+<br>fill/lev=(0,1000,100) vfer
+<p>! finally access the etopo60 data again and confirm that all is well
+<br>use etopo60 ; contour/over/lev=(0,1000,100) rose
+<p>Using the SAMPLEI function one could handle an input ASCII file that
+<br>was ordered EAST to WEST, and probably SAMPLEIJ could serve to fix
+<br>data where both axes were non-ferret-preferred.
+<p>Mick
+<p>|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+<br>|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+<br>|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+<br>|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+<br>|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00649" href="msg00649.html">North to South Latitude (reversed) axis in ASCII data file</a></strong>
+<ul><li><em>From:</em> Mick Spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00649.html">North to South Latitude (reversed) axis in ASCII data file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00651.html">plot_swath problems</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00649.html">Thread Prev</a>][<a href="msg00651.html">Thread Next</a>][<A HREF="threads.html#00650">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

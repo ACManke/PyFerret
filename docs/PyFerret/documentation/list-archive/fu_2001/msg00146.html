@@ -1,0 +1,155 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: strange thing about the grid -->
+<!--X-From-R13: [hlva Inat <zhlvaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 15 Mar 2001 11:42:04 &#45;0800 (PST) -->
+<!--X-Message-Id: 3AB11B0A.3D53C2E9@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>strange thing about the grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00144.html">Thread Prev</a>][<a href="msg00150.html">Thread Next</a>][<A HREF="threads.html#00146">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>strange thing about the grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret user list &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>strange thing about the grid</strong></li>
+<li><strong>From</strong>: <strong>Muyin Wang &lt;<A HREF="mailto:muyin@DOMAIN.HIDDEN">muyin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 15 Mar 2001 11:42:02 -0800</li>
+<li>Organization: PMEL/NOAA</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello, there: I have this weird thing with my underlying grid, and could not
+figure out why. Here is what happened:
+I have a 52 year monthly mean data from NCEP reanalysis. The underlying t axis
+is irregular and centered on the 15/16th of each month. I was trying to extract
+a particular month from that long time series by doing
+let mar = temp[l=3:624:12]
+let apr = temp[l=4:624:12]
+....
+
+But, the problem is that I can only do ONE MONTH per time. If I had more than
+one definition, the ferret would give me the same value/grid of apr as mar. Here
+is an example:
+
+yes? show grid mar
+    GRID (G002)
+ name       axis              # pts   start                end
+ LON       LONGITUDE          144mr   0E                   2.5W
+ LAT37_73  LATITUDE            37 r   0                    90N
+ LEVEL     HEIGHT (millib      17 i-  10                   1000
+ (AX006)   TIME                52 i   16-MAR-1948 12:00    16-MAR-1999 12:00
+yes? show grid apr
+    GRID (G002)
+ name       axis              # pts   start                end
+ LON       LONGITUDE          144mr   0E                   2.5W
+ LAT37_73  LATITUDE            37 r   0                    90N
+ LEVEL     HEIGHT (millib      17 i-  10                   1000
+ (AX006)   TIME                52 i   16-MAR-1948 12:00    16-MAR-1999 12:00
+yes? 
+
+But if I do
+yes? can var mar
+yes? show grid apr
+    GRID (G002)
+ name       axis              # pts   start                end
+ LON       LONGITUDE          144mr   0E                   2.5W
+ LAT37_73  LATITUDE            37 r   0                    90N
+ LEVEL     HEIGHT (millib      17 i-  10                   1000
+ (AX005)   TIME                52 i   16-APR-1948 00:00    16-APR-1999 00:00
+
+Now the definition for apr is correct, and values are fine, too. It seems that
+ferret only can recognize one definition like that, the first one.
+
+However, if I define a  regular monthly grid like
+yes? define axis/t=15-jan-1948:15-dec-1999:30.44/units=days treg
+yes? define grid/t=treg grdnew
+
+and then regrid the data to this new evenly spaced grid
+
+yes? let tnew = temp[g=grdnew]
+yes? let mar = tnew[l=3:624:12]
+yes? let apr = tnew[l=4:624:12]
+
+Now it works fine:
+
+yes? show grid mar,apr
+    GRID (G002)
+ name       axis              # pts   start                end
+ LON       LONGITUDE          144mr   0E                   2.5W
+ LAT37_73  LATITUDE            37 r   0                    90N
+ LEVEL     HEIGHT (millib      17 i-  10                   1000
+ (AX005)   TIME                52 r   15-MAR-1948 21:07    18-MAR-1999 03:50
+    GRID (G004)
+ name       axis              # pts   start                end
+ LON       LONGITUDE          144mr   0E                   2.5W
+ LAT37_73  LATITUDE            37 r   0                    90N
+ LEVEL     HEIGHT (millib      17 i-  10                   1000
+ (AX007)   TIME                52 r   15-APR-1948 07:40    17-APR-1999 14:24
+yes? 
+
+Any idea on what's going on?
+Thanks for your thought.
+Muyin
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00150" href="msg00150.html">Re: strange thing about the grid</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00144.html">How to interpolate irregular grid data into regular grid data?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00150.html">Re: strange thing about the grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00144.html">Thread Prev</a>][<a href="msg00150.html">Thread Next</a>][<A HREF="threads.html#00146">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

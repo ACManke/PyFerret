@@ -1,0 +1,156 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: temperature at a certain depth -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Mon, 16 Sep 2002 09:04:58 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.GSO.4.33.0209160758550.984&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: F216iuyalQ43wiiRJRV0001a457@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: temperature at a certain depth</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00435.html">Thread Prev</a>][<a href="msg00437.html">Thread Next</a>][<A HREF="threads.html#00436">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: temperature at a certain depth</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Namba Takaya &lt;<a href="mailto:takayanamba@DOMAIN.HIDDEN">takayanamba@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: temperature at a certain depth</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 16 Sep 2002 09:04:56 -0700 (PDT)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00435.html">F216iuyalQ43wiiRJRV0001a457@hotmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+	The data you supply as example pose a couple of difficulties
+for interpolating temperature at the depths you wish, but it is possible.
+
+1) the depths are non-monotonic increasing or decreasing
+   (31.90,32.00,31.80, ...) but the &quot;sorti&quot; function can handle this
+
+2) one of the output depths you request (0) is outside the range of input
+   depths in the data set - this may require a special definition, perhaps
+   defining the surface temperature as the shallowest value, provided it
+   is shallower than some tolerance
+
+So here is one way to get what you want
+
+file/form=free/var=tin,din c4s1.txt ! reads in the data &quot;as-is&quot;
+
+let idep=sorti(din) ! the indices for a monotonic non-decreasing axis
+let dep=samplei(din,idep) ; let temp=samplei(tin,idep) ! reordered data
+
+let zo=zsequence({0,5,10,15,20,25,30})  ! the output depths you require
+let tk=temp*dk      ! dk to be defined in the repeat loop below
+let to=tk[x=@sum]   ! &quot;integrate&quot; the kernel
+
+repeat/k=1:7 (let dk=dep[i=@weq:`zo`] ; list/nohead/form=(2f8.4) zo,to)
+
+If you cut and paste this into Ferret you will find all is well EXCEPT
+that a missing value is printed out for zo=0 . This is because depth=0
+is outside the range of depth data in this file.  A similar missing
+value would be printed if sampling did not go as deep as one or more of
+the requested output depths.  To pick a reasonable surface value you
+might try something like
+	let tol=0.5 ! if depth &lt; 0.5m is acceptably close to the surface
+	let t0m=if(dep[i=1] le tol)then temp[i=1] ; list t0m
+
+Mick
+
+|____spillane@pmel.noaa.gov____|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+The data example provided was
+&gt; temp(d)  depth(m)
+&gt; 29.68	31.9
+&gt; 29.68	32.0
+&gt; 29.68	31.8
+&gt; 29.68	31.0
+&gt; 29.69	30.2
+&gt; 29.73	28.7
+&gt; 29.75	27.6
+&gt; 29.76	26.4
+&gt; 29.76	25.4
+&gt; 29.76	24.0
+&gt; 29.75	22.8
+&gt; 29.75	21.9
+&gt; 29.75	20.6
+&gt; 29.75	19.4
+&gt; 29.76	18.1
+&gt; 29.81	16.8
+&gt; 29.82	15.5
+&gt; 29.82	14.0
+&gt; 29.83	12.7
+&gt; 29.81	11.3
+&gt; 29.78	9.8
+&gt; 29.78	8.7
+&gt; 29.82	7.0
+&gt; 29.90	5.7
+&gt; 29.97	4.1
+&gt; 29.99	2.9
+&gt; 29.95	1.3
+&gt; 29.9	0.1
+&gt;
+&gt; Takaya Namba
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00435" href="msg00435.html">temperature at a certain depth</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00435.html">temperature at a certain depth</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00437.html">Descriptor hard limitations</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00435.html">Thread Prev</a>][<a href="msg00437.html">Thread Next</a>][<A HREF="threads.html#00436">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

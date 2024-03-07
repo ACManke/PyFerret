@@ -1,0 +1,166 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Draw coastal line in different sea depth levels. -->
+<!--X-From-R13: @nzon Fnxnln <gnxnlnanzonNubgznvy.pbz> -->
+<!--X-Date: Wed, 25 Apr 2001 20:47:14 &#45;0700 (PDT) -->
+<!--X-Message-Id: F41gl4rhYQYx3G5aYY60000dcfb@hotmail.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Draw coastal line in different sea depth levels.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00259.html">Thread Prev</a>][<a href="msg00261.html">Thread Next</a>][<A HREF="threads.html#00260">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Draw coastal line in different sea depth levels.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Draw coastal line in different sea depth levels.</strong></li>
+<li><strong>From</strong>: <strong>Namba Takaya &lt;<A HREF="mailto:takayanamba@DOMAIN.HIDDEN">takayanamba@xxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 26 Apr 2001 03:47:11 +0000</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Dr. Mick Spillane
+
+Thank you for your script.
+
+I made it.
+
+One more thing I would like to know is xbox and ybox variables in your 
+script.
+Could you tell me what are these variables?
+
+Thank you again
+
+Takaya Namba
+
+&gt;From: Mick Spillane &lt;spillane@pmel.noaa.gov&gt;
+&gt;To: Namba Takaya &lt;takayanamba@hotmail.com&gt;
+&gt;CC: &lt;ferret_users@ferret.wrc.noaa.gov&gt;
+&gt;Subject: Re: Draw coastal line in different sea depth levels.
+&gt;Date: Wed, 25 Apr 2001 13:42:52 -0700 (PDT)
+&gt;
+&gt;Here is a way to draw the boundary of a mask using straight line
+&gt;segments for the top, bottom, left, and right edges of grid cells
+&gt;lying along the "land-sea" border.
+&gt;
+&gt;Example: The Gulf of Alaska
+&gt;
+&gt;use etopo20
+&gt;region/x=180:270/y=45:60
+&gt;shade rose
+&gt;
+&gt;let mask=if(rose[d=1] gt 0)then 1 else 0
+&gt;go bounder
+&gt;
+&gt;where bounder.jnl is the following script
+&gt;
+&gt;  ! bounder.jnl : drawing the "land-sea" edge in a mask
+&gt;
+&gt;def grid/like=mask gm
+&gt;let xl=x[g=gm]-xbox[g=gm]/2 ; let xr=x[g=gm]+xbox[g=gm]/2
+&gt;let yb=y[g=gm]-ybox[g=gm]/2 ; let yt=y[g=gm]+ybox[g=gm]/2
+&gt;! the left edge
+&gt;let ylb=if(mask[x=@ddb] ne 0)then yb else 999
+&gt;let ylt=if(mask[x=@ddb] ne 0)then yt else 999
+&gt;! the right edge
+&gt;let yrb=if(mask[x=@ddf] ne 0)then yb else 999
+&gt;let yrt=if(mask[x=@ddf] ne 0)then yt else 999
+&gt;! the bottom edge
+&gt;let xbl=if(mask[y=@ddb] ne 0)then xl else 999
+&gt;let xbr=if(mask[y=@ddb] ne 0)then xr else 999
+&gt;! the top edge
+&gt;let xtl=if(mask[y=@ddf] ne 0)then xl else 999
+&gt;let xtr=if(mask[y=@ddf] ne 0)then xr else 999
+&gt;
+&gt;! list all edges to the file bounds.d ...
+&gt;list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/clob xl,ylb,xl,ylt
+&gt;list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/app  xr,yrb,xr,yrt
+&gt;list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/app  xbl,yb,xbr,yb
+&gt;list/nohead/form=(4f8.2,' 999 999')/file=bounds.d/app  xtl,yt,xtr,yt
+&gt;! ... then use grep to exclude the interior cells ...
+&gt;sp rm bounds2.d                ! this may require the user to type y
+&gt;sp grep -v 999.00 bounds.d &gt; bounds2.d
+&gt;
+&gt;file/form=free/var=xx,yy/col=6 bounds2.d
+&gt;set var/bad=999 xx ; set var/bad=999 yy
+&gt;can region
+&gt;plot/o/nolab/vs/line=1 xx,yy
+&gt;
+&gt;------
+&gt;Note that if a very large region were set, or the mask had a very fine
+&gt;resolution, the number of points in bounds2.d might exceed the 20000
+&gt;or so default limit and the read statement would need to be replaced
+&gt;with a gridded read.
+&gt;
+&gt;Mick Spillane
+&gt;
+&gt;
+&gt;|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+&gt;|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+&gt;|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+&gt;|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+&gt;|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+&gt;
+&gt;
+
+_________________________________________________________________________
+Get Your Private, Free E-mail from MSN Hotmail at <A HREF="http://www.hotmail.com">http://www.hotmail.com</A>.
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00261" href="msg00261.html">Re: Draw coastal line in different sea depth levels.</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00259.html">Re: Draw coastal line in different sea depth levels.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00261.html">Re: Draw coastal line in different sea depth levels.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00259.html">Thread Prev</a>][<a href="msg00261.html">Thread Next</a>][<A HREF="threads.html#00260">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

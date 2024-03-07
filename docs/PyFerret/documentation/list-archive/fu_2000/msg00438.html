@@ -1,0 +1,207 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Get edges on axis -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Wed, 11 Oct 2000 10:25:50 &#45;0700 (PDT) -->
+<!--X-Message-Id: 39E49DA8.AFE6C41C@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 39E4D334.2DC1C66F@lsce.saclay.cea.fr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Get edges on axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00436.html">Thread Prev</a>][<a href="msg00437.html">Thread Next</a>][<A HREF="threads.html#00438">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Get edges on axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Patrick Brockmann &lt;<A HREF="mailto:brock@DOMAIN.HIDDEN">brock@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Get edges on axis</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 11 Oct 2000 10:04:40 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00436.html">39E4D334.2DC1C66F@lsce.saclay.cea.fr</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+
+Patrick Brockmann wrote:
+
+&gt; Hi Ferreters,
+&gt;
+&gt; Is there a way to get edges of an axis ?
+&gt;
+&gt; Z[g=VAR] gives center of boxes
+&gt; ZBOX[g=VAR] gives thickness of layers
+&gt;
+&gt; Is there a ZEDGE ?
+
+Hi Patrick,
+
+You ask hard (good) questions!
+
+You can recover the grid cell edges as follows:
+    LET zboxes = ZBOX[gz=my_var]
+    LET zbox_deep_lims = offset + zboxes[k=1:27@rsum]
+The value of &quot;offset&quot; you have to determine from an outside knowledge of the
+lower limit of the very first grid cell -- I cannot think of a general way
+to ask Ferret for this. (I could easily add one ... should I consider it?)
+
+&gt; Thanks
+&gt; Patrick
+&gt;
+&gt; PS:
+&gt; 1) I cannot get them from the only two previous expressions
+&gt; since I don't have the starting point of the edge.
+&gt; 2) What about GDT conventions, more explicite since you
+&gt; have bounds_depth(depth,2) with
+&gt; bounds_depth(depth,1) equal to upper limit and
+&gt; bounds_depth(depth,2) equal to lower limit
+
+The use of separate lower and upper grid cell bounds in GDT is not just a
+convenience -- it implies a more general data model of &quot;disjoint&quot; cells. It
+allows axes to contain undefined regions -- voids that violate the
+assumption of continuity. This violates the Ferret data model where, for
+example, the concept of integration (e.g. Z=@IIN) depends on an assumed
+continuity. (Do you know of a gridded application that really supports this
+model?)
+
+Nonetheless, IFF you can assume that the axis is continuous (i.e.
+bounds_depth[J=2,I=@SHF] = bounds_depth[J=1]), then you can use Ferret
+commands to define a Z axis from bounds_depth. The variable bounds_depth
+will appear within Ferret as a dependent variable:
+
+    LET my_edges = IF k eq `kmax` THEN bounds_depth[i=`kmax`,j=2] else bounds_depth[j=1,gx=abstract]
+    DEFINE AXIS/EDGES/Z/DEPTH/UNITS=meters myzax = my_edges[k=1:`kmax`]
+
+The axis myzax will have the correct edges, but not necessarily the correct
+axis point locations. You can use g=myzax@asn in cases where the cell
+boundaries are vital -- SHADE or to perform integrations.
+
+    - steve
+
+&gt; Two exemples:
+&gt;
+&gt; **********************************************************************
+&gt; ZAXLEVITR = 0, 10, 20, 30, 50, 75, 100, 150, 200, 300, 400, 600, 800,
+&gt; 1000,
+&gt;     1200, 1500, 2000, 3000, 4000, 5000 ;
+&gt;
+&gt;  ZAXLEVITRedges = 0, 5, 15, 25, 40, 62.5, 87.5, 125, 175, 250, 350, 500,
+&gt; 700,
+&gt;     900, 1100, 1350, 1750, 2500, 3500, 4500, 5000 ;
+&gt;
+&gt; ************************************************************************
+&gt;
+&gt; ZWOCE = 0, 25, 50, 75, 100, 150, 200, 250, 300, 350, 400, 500, 600, 700,
+&gt;
+&gt;     800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800,
+&gt; 1900,
+&gt;     2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000,
+&gt; 3100,
+&gt;     3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000, 4200, 4400,
+&gt; 4600,
+&gt;     4800, 5000 ;
+&gt;
+&gt;  ZWOCEedges = -12.5, 12.5, 37.5, 62.5, 87.5, 125, 175, 225, 275, 325,
+&gt; 375,
+&gt;     450, 550, 650, 750, 850, 950, 1050, 1150, 1250, 1350, 1450, 1550,
+&gt; 1650,
+&gt;     1750, 1850, 1950, 2050, 2150, 2250, 2350, 2450, 2550, 2650, 2750,
+&gt; 2850,
+&gt;     2950, 3050, 3150, 3250, 3350, 3450, 3550, 3650, 3750, 3850, 3950,
+&gt; 4100,
+&gt;     4300, 4500, 4700, 4900, 5100 ;
+&gt;
+&gt; With the GDT convention, first example gives
+&gt; ************************************************************************
+&gt;
+&gt; DEPTH = 0, 10, 20, 30, 50, 75, 100, 150, 200, 300, 400, 600, 800, 1000,
+&gt;     1200, 1500, 2000, 3000, 4000, 5000 ;
+&gt;
+&gt; BOUNDS_DEPTH =
+&gt;   0, 5, 15, 25, 40, 62.5, 87.5, 125, 175, 250, 350, 500, 700, 900, 1100,
+&gt;
+&gt;     1350, 1750, 2500, 3500, 4500,
+&gt;   5, 15, 25, 40, 62.5, 87.5, 125, 175, 250, 350, 500, 700, 900, 1100,
+&gt; 1350,
+&gt;     1750, 2500, 3500, 4500, 5000 ;
+&gt;
+&gt; Thanks
+&gt; Patrick
+&gt;
+&gt; --
+&gt; Patrick BROCKMANN (LSCE/CNRS-CEA Saclay)
+&gt; Laboratoire des Sciences du Climat et de l'Environnement
+&gt; Unite mixte de recherche CNRS-CEA
+&gt; L'Orme des Merisiers - Bat.701 - CEA/Saclay
+&gt; 91191 GIF sur YVETTE cedex - FRANCE
+&gt; Tel : 01 69 08 86 79 - Fax : 01 69 08 77 16
+&gt; <A  HREF="mailto:brock@lsce.saclay.cea.fr">mailto:brock@lsce.saclay.cea.fr</A>
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00436" href="msg00436.html">Get edges on axis</a></strong>
+<ul><li><em>From:</em> Patrick Brockmann</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00436.html">Get edges on axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00437.html">Vectors and hi/lo labels...</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00436.html">Thread Prev</a>][<a href="msg00437.html">Thread Next</a>][<A HREF="threads.html#00438">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

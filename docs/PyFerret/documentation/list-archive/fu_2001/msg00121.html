@@ -1,0 +1,154 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: grid -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Mon, 12 Mar 2001 11:33:12 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.SOL.3.96.1010312110625.5758B&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3.0.6.32.20010312131721.00e9c7b0@132.203.71.58 -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00120.html">Thread Prev</a>][<a href="msg00124.html">Thread Next</a>][<A HREF="threads.html#00121">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Guillaume Descamps &lt;<A HREF="mailto:gdescamp@DOMAIN.HIDDEN">gdescamp@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: grid</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 12 Mar 2001 11:30:58 -0800 (PST)</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;<a href="msg00120.html">3.0.6.32.20010312131721.00e9c7b0@132.203.71.58</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Guillaume,
+	For data in a netCDF file there is a nifty /order= option to
+the &quot;use&quot; command that allows you to flip the data any way you like.
+And of course its easy to convert gridded ascii data into netcdf
+too using Ferret.
+
+For example
+&gt; ferret
+...
+yes? sp echo &quot;1 2 3 4&quot; &gt; testdata.ascii
+yes? sp echo &quot;11 12 13 14&quot; &gt;&gt; testdata.ascii
+yes? sp echo &quot;21 22 23 24&quot; &gt;&gt; testdata.ascii
+yes? ! so now we have an ascii file of data on a 4x3 x,y grid
+yes? ! lets read it in
+yes? def axis/x=1:4:1 xax ; def axis/y=10:30:10 yax
+yes? def grid/x=xax/y=yax grd
+yes? file/form=free/col=4/g=grd/var=v testdata.ascii
+yes? list v
+              1      2      3      4    
+              1      2      3      4
+ 10   / 1:   1.00   2.00   3.00   4.00
+ 20   / 2:  11.00  12.00  13.00  14.00
+ 30   / 3:  21.00  22.00  23.00  24.00
+
+yes? ! now copy the data to a netcdf file
+yes? save/file=testdata.cdf v
+yes? ! and read it in again.  if the /order argument to &quot;use&quot; is not
+yes? ! included the data will be exactly as before
+yes? use testdata.cdf
+yes? list v
+              1      2      3      4    
+              1      2      3      4
+ 10   / 1:   1.00   2.00   3.00   4.00
+ 20   / 2:  11.00  12.00  13.00  14.00
+ 30   / 3:  21.00  22.00  23.00  24.00
+
+yes? ! but WITH the /order argument you can get what you want
+yes? can data/all
+yes? use/order=x-y testdata.cdf
+yes? list v
+              1      2      3      4    
+              1      2      3      4
+ 10   / 1:  21.00  22.00  23.00  24.00
+ 20   / 2:  11.00  12.00  13.00  14.00
+ 30   / 3:   1.00   2.00   3.00   4.00
+
+Note that you could flip left to right with /order=-xy or both with
+/order=-x-y.  Unfortunately, although the ascii read has a /order
+option, its purpose is to specify whether x or y is varying fastest
+in the data file and it cannot do the flipping of axis direction
+you need.
+
+Apologies if this explanation is too verbose, but since until going
+to the manual I didn't know how to do this, probably others in the
+user community will benefit as I did.  Those Ferret guys are
+devilishly clever and seem to have thought of most things. This
+stuff is in the 5.22 documentation under Command qualifiers for 
+SET  DATA_SET/FORMAT on the web at
+ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/current/fer_html.htm
+
+Regards,
+Mick
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00120" href="msg00120.html">grid</a></strong>
+<ul><li><em>From:</em> Guillaume Descamps</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00120.html">grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00124.html">increasing performance with list/repeat indices</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00120.html">Thread Prev</a>][<a href="msg00124.html">Thread Next</a>][<A HREF="threads.html#00121">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

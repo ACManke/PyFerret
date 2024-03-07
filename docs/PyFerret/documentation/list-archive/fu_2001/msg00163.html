@@ -1,0 +1,583 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: two variables in one plot (quick question -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Mon, 19 Mar 2001 09:53:56 &#45;0800 (PST) -->
+<!--X-Message-Id: 3AB647C3.CDD9FEA5@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: two variables in one plot (quick question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00162.html">Thread Prev</a>][<a href="msg00164.html">Thread Next</a>][<A HREF="threads.html#00163">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: two variables in one plot (quick question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: two variables in one plot (quick question</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<A HREF="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 19 Mar 2001 09:54:11 -0800</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello Gaorz,
+This is due to a bug in the jnl script right_axis_plot, which has been
+fixed
+and will be released with the next Ferret version.  (by the way, I found
+
+this in the Ferret mail archives, but only after setting the search to
+look
+for &quot;right_yaxis_plot&quot; in the Subject Header of the messages,  as well
+as
+the default search of the Message Body of the emails.  Just a search
+hint!)
+
+For now here is the corrected script  right_axis_plot.jnl
+
+Ansley Manke
+
+
+\cancel mode verify
+! right_yaxis_plot.jnl
+
+! Description: Overlay a plot of one variable using an axis on the right
+
+! Overlay a second variable on a plot placing the vertical axis on the
+right
+! The routine left_axis_plot should be used before this.
+
+!  *acm* 6/19/2000 fix bug in aline call as suggested by M.Verschell
+
+! usage:
+!   yes? GO right_yaxis_plot expression_to_plot [scale] [key] [hgt]
+[args]
+
+! 1  exprn - FERRET expression to be plotted
+! 2 optional:   scale - &quot;low,high,delta&quot; in quotes for axis scaling
+! 3 optional: key - title string documenting the variable to be plotted
+! 4 optional: hgt - PLOT+ character height for key string [default 0.12]
+
+! 5 optional: &quot;args&quot; specifies all other %yaxis options
+[&quot;,,,,,(1PG10.3)&quot;]
+!  (see PLOT+ Users' Guide, chapter 10)
+
+!  example: temp and salt on same plot
+! yes? SET REGION/L=0:500
+! yes? GO left_axis_plot temp
+! yes? GO right_axis_plot salt
+!  or (for example)
+!  GO right_axis_plot salt &quot;33,36,0.5&quot; &quot;My Salinity&quot; 0.25
+&quot;,2,,+1,.13,(I2)&quot;
+
+! initialize  (FERRET initializes PLOT+ through &quot;plot/set&quot;)
+plot/set $1
+ppl title
+ppl labs
+ppl set axov_midpoint 'ppl$ylen' / 2.0
+ppl set axov_ylabpos 'axov_midpoint' - 0.5
+ppl set axov_xlabpos 'ppl$xlen' + 0.65
+ppl set axov_aline_start 'axov_midpoint' - 2.2
+ppl set axov_aline_end 'axov_midpoint' - 0.7
+ppl set axov_aline_xpos  'ppl$xlen' + 0.7
+
+! always a red line
+ppl pen 1,2
+
+! use this labelling scheme to get good black and white hard copy
+ppl ylab
+ppl labs/nouser 1,'axov_xlabpos','axov_ylabpos',+1 $3&quot;@AS'labtit'&quot;
+ppl hlabs 1,$4&quot;0.12&quot;
+ppl rlabs 1,-90
+
+! lay on the new axis
+ppl %range 'PPL$YMIN1','PPL$YMAX1',10
+ppl %yaxis/nouser
+$2&quot;'ppl$range_low','ppl$range_high','ppl$range_inc'&quot;,'ppl$xlen',$5&quot;,,,+1,,(1PG10.3)&quot;
+
+! draw the plot
+ppl window off
+ppl plot/over
+! set up the line specimen
+ppl aline/nouser
+1,'axov_aline_xpos','axov_aline_start','axov_aline_xpos','axov_aline_end'
+
+! clean up
+ppl window on
+ppl axset 1,1,1,1
+ppl rlabs 1,0
+ppl pen 1,1
+set mode/last verify
+
+
+
+
+
+Gaorz wrote:
+
+I have tested the multi_variable_demo.jnl, and it worked fine. But when
+I used it to plot my own data it
+
+worked in another way (please see the attached figure). I don't know
+why? The data and script file I
+used are listed below. Please help me. I'm impatient for  a reply .
+Thank you in advance.
+--------------my.jnl
+set mode verify
+define axis/t=10-apr-1998:09-apr-1999:1/unit=day tax
+define grid/t=tax gax2
+file/var=&quot;tiso,ciso&quot;/grid=gax2 d:\pp8\curl\t&amp;ciso_s1.asc
+set reg/t=01-oct-1998:31-mar-1999
+
+go left_axis_plot   Tiso
+go right_axis_plot  Ciso
+
+frame/file=d:\pp8\curl\T&amp;Ciso_s1b.gif
+
+
+I have tested the multi_variable_demo.jnl, and it worked fine. But when
+I used it to plot my own data it
+worked in another way (please see the attached figure). I don't know
+why? The data and script file I
+used are listed below. Please help me. I'm impatient for  a reply .
+Thank you in
+advance.--------------my.jnlset mode verify
+
+  define axis/t=10-apr-1998:09-apr-1999:1/unit=day tax
+  define grid/t=tax gax2
+  file/var=&quot;tiso,ciso&quot;/grid=gax2 d:\pp8\curl\t&amp;ciso_s1.asc
+  set reg/t=01-oct-1998:31-mar-1999 go left_axis_plot   Tiso
+  go right_axis_plot  Ciso frame/file=d:\pp8\curl\T&amp;Ciso_s1b.gif
+-------data(N=365)   -0.83   -0.15
+     -0.91   -0.19
+     -0.96   -0.22
+     -1.00   -0.25
+     -1.02   -0.28
+     -1.02   -0.30
+     -1.00   -0.32
+     -0.96   -0.35
+     -0.89   -0.37
+     -0.81   -0.39
+     -0.71   -0.41
+     -0.59   -0.41
+     -0.46   -0.42
+     -0.31   -0.42
+     -0.16   -0.42
+     -0.01   -0.42
+      0.15   -0.42
+      0.31   -0.42
+      0.46   -0.38
+      0.59   -0.35
+      0.72   -0.31
+      0.83   -0.27
+      0.93   -0.24
+      1.00   -0.20
+      1.05   -0.16
+      1.08   -0.10
+      1.10   -0.03
+      1.08    0.04
+      1.05    0.11
+      1.00    0.17
+      0.93    0.24
+      0.85    0.31
+      0.76    0.35
+      0.65    0.40
+      0.54    0.45
+      0.42    0.50
+      0.30    0.54
+      0.19    0.59
+      0.07    0.64
+     -0.04    0.62
+     -0.14    0.60
+     -0.23    0.58
+     -0.31    0.56
+     -0.38    0.54
+     -0.44    0.52
+     -0.49    0.50
+     -0.52    0.43
+     -0.54    0.36
+     -0.56    0.29
+     -0.56    0.22
+     -0.55    0.15
+     -0.53    0.08
+     -0.50    0.01
+     -0.47   -0.05
+     -0.43   -0.11
+     -0.39   -0.17
+     -0.35   -0.22
+     -0.30   -0.28
+     -0.25   -0.34
+     -0.21   -0.40
+     -0.16   -0.41
+     -0.12   -0.42
+     -0.07   -0.43
+     -0.03   -0.44
+      0.01   -0.45
+      0.04   -0.46
+      0.07   -0.47
+      0.10   -0.44
+      0.12   -0.40
+      0.14   -0.36
+      0.15   -0.32
+      0.16   -0.28
+      0.16   -0.25
+      0.15   -0.21
+      0.15   -0.16
+      0.14   -0.11
+      0.12   -0.06
+      0.10   -0.02
+      0.08    0.03
+      0.05    0.08
+      0.02    0.13
+     -0.01    0.13
+     -0.04    0.14
+     -0.06    0.14
+     -0.09    0.15
+     -0.12    0.15
+     -0.14    0.15
+     -0.16    0.16
+     -0.17    0.11
+     -0.18    0.07
+     -0.19    0.03
+     -0.19   -0.01
+     -0.18   -0.05
+     -0.17   -0.10
+     -0.16   -0.14
+     -0.13   -0.16
+     -0.11   -0.17
+     -0.08   -0.19
+     -0.05   -0.20
+     -0.01   -0.22
+      0.02   -0.24
+      0.06   -0.25
+      0.10   -0.20
+      0.14   -0.14
+      0.17   -0.08
+      0.21   -0.03
+      0.24    0.03
+      0.27    0.08
+      0.30    0.14
+      0.32    0.22
+      0.34    0.30
+      0.35    0.37
+      0.36    0.45
+      0.37    0.53
+      0.37    0.61
+      0.36    0.69
+      0.36    0.70
+      0.35    0.72
+      0.33    0.73
+      0.32    0.75
+      0.29    0.77
+      0.27    0.78
+      0.24    0.80
+      0.21    0.73
+      0.18    0.67
+      0.15    0.60
+      0.11    0.54
+      0.07    0.47
+      0.03    0.40
+     -0.01    0.34
+     -0.05    0.24
+     -0.10    0.15
+     -0.14    0.05
+     -0.18   -0.04
+     -0.22   -0.14
+     -0.26   -0.23
+     -0.29   -0.33
+     -0.32   -0.38
+     -0.35   -0.44
+     -0.38   -0.49
+     -0.39   -0.55
+     -0.41   -0.60
+     -0.42   -0.65
+     -0.42   -0.71
+     -0.42   -0.70
+     -0.41   -0.70
+     -0.40   -0.69
+     -0.38   -0.69
+     -0.37   -0.68
+     -0.35   -0.68
+     -0.33   -0.67
+     -0.31   -0.67
+     -0.29   -0.66
+     -0.27   -0.65
+     -0.25   -0.65
+     -0.24   -0.64
+     -0.23   -0.63
+     -0.23   -0.63
+     -0.23   -0.69
+     -0.24   -0.75
+     -0.25   -0.80
+     -0.26   -0.86
+     -0.28   -0.92
+     -0.29   -0.98
+     -0.31   -1.04
+     -0.33   -1.08
+     -0.34   -1.12
+     -0.35   -1.16
+     -0.35   -1.20
+     -0.34   -1.24
+     -0.32   -1.28
+     -0.29   -1.33
+     -0.25   -1.13
+     -0.20   -0.93
+     -0.13   -0.73
+     -0.05   -0.53
+      0.05   -0.34
+      0.15   -0.14
+      0.27    0.06
+      0.39    0.46
+      0.52    0.87
+      0.66    1.28
+      0.79    1.68
+      0.92    2.09
+      1.05    2.49
+      1.16    2.90
+      1.27    3.07
+      1.35    3.23
+      1.42    3.40
+      1.47    3.57
+      1.50    3.74
+      1.50    3.90
+      1.49    4.07
+      1.44    3.72
+      1.38    3.36
+      1.29    3.00
+      1.18    2.65
+      1.06    2.29
+      0.92    1.94
+      0.76    1.58
+      0.60    1.07
+      0.43    0.55
+      0.26    0.04
+      0.09   -0.48
+     -0.08   -1.00
+     -0.25   -1.51
+     -0.40   -2.03
+     -0.55   -2.19
+     -0.68   -2.36
+     -0.80   -2.53
+     -0.90   -2.70
+     -0.99   -2.87
+     -1.07   -3.04
+     -1.14   -3.20
+     -1.19   -3.04
+     -1.23   -2.87
+     -1.26   -2.70
+     -1.28   -2.54
+     -1.29   -2.37
+     -1.29   -2.20
+     -1.29   -2.04
+     -1.29   -1.84
+     -1.28   -1.65
+     -1.26   -1.45
+     -1.24   -1.26
+     -1.22   -1.07
+     -1.19   -0.87
+     -1.16   -0.68
+     -1.12   -0.55
+     -1.08   -0.43
+     -1.03   -0.30
+     -0.97   -0.17
+     -0.91   -0.04
+     -0.84    0.08
+     -0.76    0.21
+     -0.67    0.33
+     -0.57    0.45
+     -0.47    0.57
+     -0.36    0.69
+     -0.25    0.81
+     -0.13    0.93
+      0.00    1.04
+      0.12    1.09
+      0.25    1.14
+      0.38    1.18
+      0.50    1.23
+      0.62    1.27
+      0.74    1.32
+      0.85    1.37
+      0.95    1.27
+      1.04    1.17
+      1.13    1.07
+      1.20    0.97
+      1.26    0.87
+      1.32    0.77
+      1.35    0.67
+      1.38    0.55
+      1.39    0.42
+      1.40    0.30
+      1.39    0.18
+      1.37    0.06
+      1.34   -0.06
+      1.30   -0.18
+      1.24   -0.17
+      1.18   -0.16
+      1.12   -0.14
+      1.04   -0.13
+      0.95   -0.11
+      0.87   -0.10
+      0.77   -0.09
+      0.67    0.00
+      0.57    0.08
+      0.47    0.16
+      0.36    0.25
+      0.25    0.33
+      0.14    0.41
+      0.04    0.49
+     -0.07    0.47
+     -0.17    0.44
+     -0.27    0.41
+     -0.37    0.39
+     -0.45    0.36
+     -0.54    0.33
+     -0.61    0.30
+     -0.68    0.17
+     -0.75    0.04
+     -0.80   -0.10
+     -0.84   -0.23
+     -0.88   -0.36
+     -0.91   -0.49
+     -0.93   -0.63
+     -0.94   -0.70
+     -0.94   -0.77
+     -0.93   -0.84
+     -0.92   -0.91
+     -0.90   -0.99
+     -0.87   -1.06
+     -0.83   -1.13
+     -0.80   -1.06
+     -0.75   -0.99
+     -0.70   -0.91
+     -0.65   -0.84
+     -0.60   -0.77
+     -0.54   -0.70
+     -0.48   -0.63
+     -0.42   -0.50
+     -0.36   -0.36
+     -0.31   -0.23
+     -0.25   -0.10
+     -0.20    0.03
+     -0.15    0.16
+     -0.10    0.29
+     -0.05    0.36
+     -0.01    0.42
+      0.03    0.49
+      0.06    0.56
+      0.09    0.62
+      0.12    0.69
+      0.14    0.75
+      0.16    0.71
+      0.17    0.66
+      0.18    0.62
+      0.19    0.58
+      0.19    0.53
+      0.19    0.49
+      0.19    0.44
+      0.19    0.36
+      0.19    0.28
+      0.18    0.19
+      0.18    0.11
+      0.17    0.02
+      0.17   -0.06
+      0.17   -0.14
+      0.17   -0.16
+      0.17   -0.18
+      0.17   -0.20
+      0.17   -0.22
+      0.18   -0.23
+      0.20   -0.25
+      0.21   -0.27
+      0.23   -0.22
+      0.25   -0.16
+      0.27   -0.11
+      0.30   -0.06
+      0.32   -0.01
+      0.35    0.04
+      0.38    0.10
+      0.41    0.12
+      0.43    0.15
+      0.45    0.17
+      0.47    0.19
+      0.48    0.22
+      0.49    0.24
+      0.49    0.27
+      0.49    0.23
+      0.48    0.19
+      0.46    0.15
+      0.43    0.11
+      0.40    0.07
+      0.36    0.02
+      0.31   -0.02
+      0.26   -0.05
+      0.20   -0.09
+      0.14   -0.12
+      0.08   -0.16
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+(206)526-6246
+
+
+
+
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+(206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00162.html">about usage of GKSM2PS</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00164.html">Multifile (MC) netcdf descriptor files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00162.html">Thread Prev</a>][<a href="msg00164.html">Thread Next</a>][<A HREF="threads.html#00163">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

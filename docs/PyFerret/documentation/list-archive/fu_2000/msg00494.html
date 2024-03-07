@@ -1,0 +1,155 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Keys for line plots -->
+<!--X-From-R13: xrffyreNczry.abnn.tbi (Pvyyl Yrffyre) -->
+<!--X-Date: Tue, 14 Nov 2000 14:21:57 &#45;0800 (PST) -->
+<!--X-Message-Id: 200011142221.OAA15167@pontus.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Keys for line plots</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00492.html">Thread Prev</a>][<a href="msg00493.html">Thread Next</a>][<A HREF="threads.html#00494">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Keys for line plots</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>, <A HREF="mailto:tony.hirst@DOMAIN.HIDDEN">tony.hirst@xxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Keys for line plots</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxx</A> (Billy Kessler)</strong></li>
+<li>Date: Tue, 14 Nov 2000 14:21:53 -0800 (PST)</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+&gt; I would like to be able to move the key and also change the 
+&gt; labelling on the keys produced for line plots using the ferret
+&gt; command PLOT.  Please let me know how this may be done.
+
+Hi Tony -
+
+Here is a rather cumbersome alternative that lets you 
+put a legend anywhere on the plot. Put the attached 
+script (legline.go) in your path. Then:
+
+plot/nolab .... your_variables		! /nolab removes the default key
+
+go legline.go x_value x_length y_value line_type char_ht label_text
+go legline.go ...
+go legline.go ...
+... for as many legend lines as you want ...
+
+where the 6 arguments are described at the head of the script below.
+
+This script works best when the y-axis is positive up. The legend 
+lines will be not quite right for a negative-up axis (e.g. depth).
+In that case use the second script below. 
+
+The other oddity is that if the label text begins with a number, 
+then you must specify @sr (or whatever font you are using) first: 
+
+go legline.go x_value x_length y_value line_type char_ht &quot;@sr2 EOF pairs&quot;
+
+Billy K
+
+----------------------------------------------------------------
+! script legline.go
+\can mode verify
+! make a legend line and its label
+! arg1 = x-value of line starting point (user units)
+! arg2 = length of line (user units)
+! arg3 = y-value of line
+! arg4 = line type (number 1-19)
+! arg5 = text character height
+! arg6 = label text (must be in double-quotes for more than one word)
+! only gets label position right for positive-up axes
+
+define symbol xend `$1+$2`
+define symbol txstart `($xend)+$2/10`
+ppl %range ($ppl$ymin1) ($ppl$ymax1) 10         ! get axis range user units
+define symbol drop `$5/2`                       ! half char hgt in inches
+define symbol txypos `($3)-(($drop))*((($ppl$range_high))-(($ppl$range_low)))/($ppl$ylen)`
+! set pen for a dummy line number (not to interfere)
+ppl pen,77,$4
+ppl aline 77 $1 $3 ($xend) $3 
+label ($txstart) ($txypos) -1 0 $5 $6
+set mode/last verify
+
+----------------------------------------------------------------
+! script legline-negaxis.go
+\can mode verify
+! for negative axis (e.g.depth), reverse low/high in definition of txypos
+! make a legend line and its label
+! arg1=x-value of line starting point (user units)
+! arg2=length of line (user units)
+! arg3=y-value of line
+! arg4=line type (number 1-19)
+! arg5=text character height
+! arg6=label text
+! only gets label position right for positive-up axes
+
+define symbol xend `$1+$2`
+define symbol txstart `($xend)+$2/10`
+ppl %range ($ppl$ymin1) ($ppl$ymax1) 10         ! get axis range user units
+define symbol drop `$5/2`                       ! half char hgt in inches
+define symbol txypos `($3)-(($drop))*((($ppl$range_low))-(($ppl$range_high)))/($ppl$ylen)`
+! set pen for a dummy line number (not to interfere)
+ppl pen,77,$4
+ppl aline 77 $1 $3 ($xend) $3 
+label ($txstart) ($txypos) -1 0 $5 $6
+set mode/last verify
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00492.html">Keys for line plots</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00493.html">A routine to thicken metafile.plt lines for printing</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00492.html">Thread Prev</a>][<a href="msg00493.html">Thread Next</a>][<A HREF="threads.html#00494">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

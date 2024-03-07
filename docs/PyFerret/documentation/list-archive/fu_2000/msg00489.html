@@ -1,0 +1,143 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: trouble with saving 3D data -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Tue, 7 Nov 2000 09:11:10 &#45;0800 (PST) -->
+<!--X-Message-Id: 3A083718.48459A05@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3A071B93.9B4ED6ED@pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: trouble with saving 3D data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00488.html">Thread Prev</a>][<a href="msg00490.html">Thread Next</a>][<A HREF="threads.html#00489">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: trouble with saving 3D data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Muyin Wang &lt;<A HREF="mailto:muyin@DOMAIN.HIDDEN">muyin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: trouble with saving 3D data</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<A HREF="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 07 Nov 2000 09:08:40 -0800</li>
+<li>Cc: ferret user list &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;,       &quot;<A HREF="mailto:sciapp@DOMAIN.HIDDEN">sciapp@xxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:sciapp@DOMAIN.HIDDEN">sciapp@xxxxxxxxxxxxx</A>&gt;, <A HREF="mailto:q@DOMAIN.HIDDEN">q@xxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00488.html">3A071B93.9B4ED6ED@pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+&gt;
+
+Hi Muyin,
+    I think what you need to do is to define the &quot;combined&quot; temperature variable on
+a
+new grid.  Then you can either do the integration right away on that variable, or
+perhaps write the new variable to a netcdf file if it would simplify other tasks.
+    Here is a demo of what I have in mind
+ ! NOAA/PMEL TMAP
+ ! Program FERRET
+ ! Version 5.22 - 07/27/00
+ !  7-Nov-00 08:29
+
+def axis/x=1000:5000:1000 xax ; def axis/y=100:400:100 yax
+def axis/z=10:30:10 zax3 ; def axis/t=1:2:1 tax
+def grid/x=xax/y=yax/z=zax3/t=tax gxyzt
+
+! in the above zax3 and the grid gxyzt is for the non-surface data
+! which we define in this example as
+
+let temp=x[g=gxyzt]+y[g=gxyzt]+z[g=gxyzt]+t[g=gxyzt]
+
+!-----------------------------------------------------------------
+
+def grid/x=xax/y=yax/t=tax gxyt
+
+! the grid gxyt above is for the surface data defined in this example as
+
+let surf=x[g=gxyt]+y[g=gxyt]+t[g=gxyt]
+
+!-----------------------------------------------------------------
+
+! now introduce a z-axis and grid that combines surface and non-surface
+
+def axis/z=0:30:10 zax4
+def grid/x=xax/y=yax/z=zax4/t=tax grd
+
+! and define a combined variable
+
+let combo=if(z eq 0)then surf[g=grd] else temp[g=grd]
+
+list combo
+
+! looks good, so save it to a netCDF file
+
+save/file=combo.nc combo
+
+
+
+--
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00488" href="msg00488.html">trouble with saving 3D data</a></strong>
+<ul><li><em>From:</em> Muyin Wang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00488.html">trouble with saving 3D data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00490.html">nolabels ???</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00488.html">Thread Prev</a>][<a href="msg00490.html">Thread Next</a>][<A HREF="threads.html#00489">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

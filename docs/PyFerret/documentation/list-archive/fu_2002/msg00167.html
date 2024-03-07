@@ -1,0 +1,205 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Anomaly Problem -->
+<!--X-From-R13: Egrir Qbpxf <fpbpxfNnevry.zrg.gnzh.rqh> -->
+<!--X-Date: Tue, 26 Mar 2002 13:27:33 &#45;0800 (PST) -->
+<!--X-Message-Id: 3CA0E7B9.EAAB6A43@ariel.met.tamu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.33.0203261307090.32399&#45;100000@vorlon.eas.gatech.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Anomaly Problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00162.html">Thread Prev</a>][<a href="msg00177.html">Thread Next</a>][<A HREF="threads.html#00167">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Anomaly Problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brent A McDaniel &lt;<a href="mailto:gte328r@DOMAIN.HIDDEN">gte328r@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Anomaly Problem</strong></li>
+<li><strong>From</strong>: <strong>Steve Cocks &lt;<a href="mailto:scocks@DOMAIN.HIDDEN">scocks@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 26 Mar 2002 15:27:21 -0600</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;Pine.LNX.4.33.0203261307090.32399-100000@vorlon.eas.gatech.edu&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Brent,
+
+That worked just fine.  Thanks for your help.
+
+
+Scocks
+Atmospheric Sciences
+Texas A&amp;M University
+
+
+
+
+Brent A McDaniel wrote:
+
+&gt; Steve,
+&gt;
+&gt; I'll try to help you out a bit but I don't think I can answer all your
+&gt; questions.  First off, the @asn transformation.  I use this very often and
+&gt; find it extremely useful.  Basically, it is a blind association.  A
+&gt; relevant example would be to subtract out a daily climatology from a bunch
+&gt; of yearly data.  Let's call the climat.  dailyclim.nc with the var clim
+&gt; and the data files air.1970.nc, air.1971.nc etc with the variable air.
+&gt;
+&gt; To get the anomalies, you'd do something like:
+&gt;
+&gt; use dailyclim.nc
+&gt; use air.1970.nc
+&gt; use air.1971.nc
+&gt; let anom70=air[d=2]-clim[d=1,gt=`air[d=2],return=GRID`@asn]
+&gt; ...
+&gt;
+&gt; The way I've defined the anomalies is very handy as you don't have to
+&gt; manually enter the grid name of the yearly files, the grid name is
+&gt; returned by the `...,return...` statement.  This is very handy when you're
+&gt; writing a script to do many years or variables.  The @asn transformation
+&gt; simple maps the time from the clim to the time of the var you're mapping
+&gt; it to.  In this example, it would take the first point of the climatology
+&gt; and set the time to jan-1, 1970 (provided that's what the date
+&gt; for l=1 for air.1970.nc is).  The values themselves aren't altered, just
+&gt; the time stamp.  You'll notice that I only regridded the time axis, this
+&gt; is because my climatologies are fully 3-d, on the same spatial grid as the
+&gt; data.  If this wasn't the case, you'd do the same type of thing with the
+&gt; other variables.
+&gt;
+&gt; I hope this helps out with what @asn is doing.  I emailed Ansley a while
+&gt; back about increasing the documentation for @asn in the manual as it's
+&gt; extremely useful and commonplace and she said it was planned.
+&gt;
+&gt; &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;
+&gt; I just re-read your post.  Oftentimes when I'm doing this with ferret,
+&gt; when I can break things up into steps, I will.  This seems to help in not
+&gt; confusing it with axis/grid problems.  In your case, I would calculate the
+&gt; climatology first and save it to a file.  Look at it, see if it looks
+&gt; correct, that way you know that step is correct.
+&gt;
+&gt; Once that's done, you could calculate the precip anomalies by doing
+&gt; something like:
+&gt; let precipanom=precipclim-avgPrec[`proper stuff to get the right
+&gt; grid`@asn]
+&gt;
+&gt; I hope this helps.
+&gt;
+&gt; Oh, one other caveat.  If you do it in parts, ie calculate the climatology
+&gt; and save to a file, cancel the variables once you saved it to a file.
+&gt; Otherwise, ferret can get confused as to what you're referencing.
+&gt;
+&gt; in other words.
+&gt;
+&gt; save/file=clim.nc dailyclim
+&gt; cancel/var dailyclim
+&gt; use clim.nc
+&gt;
+&gt; will work properly.
+&gt;
+&gt; --Brent
+&gt;
+&gt; &gt;
+&gt; &gt; I am running into problems calculating seasonal anomalies.
+&gt; &gt; Specifically, I created a seasonal climatology for a variable, create an
+&gt; &gt; average for the entire time of record for the same variable, then try to
+&gt; &gt; take the difference:
+&gt; &gt; **********************
+&gt; &gt; use climatological_axes.cdf
+&gt; &gt; def grid/t=seasonal_reg season_old
+&gt; &gt; let tnew =t[g=season_old] - 24*31 ! Move the time axis back 31 days so
+&gt; &gt; will  be centered on Ja, Ap, Jy, Oc -- time units are hours
+&gt; &gt; def axis/from_data/t/name=tseason_new/units=hours/t0=1-jan-0000/modulo
+&gt; &gt; tnew
+&gt; &gt; def grid/t=tseason_new season_new
+&gt; &gt; **********************
+&gt; &gt; set data precip97_01.nc
+&gt; &gt; **********************
+&gt; &gt; let precip_new=precip[d=2,t=1-sep-1998:31-aug-2001] ! create a new time
+&gt; &gt; axis for variable
+&gt; &gt;
+&gt; &gt; let avgPrec=precip[d=2,t=1-sep-1998:31-aug-2001@ave]    !create avg of
+&gt; &gt; precip from 1sep98-31aug01
+&gt; &gt;
+&gt; &gt; list/x=153w/y=20s precip_new[d=2,gt=season_new@mod, l=4]-avgPrec
+&gt; &gt; _______________________________________________________________
+&gt; &gt; The result I get from Ferret is:
+&gt; &gt;
+&gt; &gt; list/x=153w/y=20s precip_new[d=2,gt=season_new@mod, l=4]-avgPrec
+&gt; &gt;  **ERROR: illegal limits: AVGPREC is not in the range T=01-JAN
+&gt; &gt; 00:12:24:15-DEC-1901 05:49
+&gt; &gt;           Axis extremes are T=31-DEC-1996 12:00:31-AUG-2001 12:00
+&gt; &gt; list/x=153w/y=20s precip_new[d=2,gt=season_new@mod, l=4]-avgPrec
+&gt; &gt; Command file, command group, or REPEAT execution aborted
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; I experimented around with the @asn function using stuff I saw from the
+&gt; &gt; mail archives and manual but couldn't get this to work either.  Can
+&gt; &gt; anyone help me with this?  Thanks.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Scocks
+&gt; &gt; TAMU
+&gt; &gt;
+&gt;
+&gt; --
+&gt; Brent A. McDaniel
+&gt;
+&gt; Dept of Earth and Atmospheric Sciences
+&gt; Georgia Institute of Technology
+&gt; Atlanta, Ga.  USA
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00162.html">Anomaly Problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00177.html">Re: Anomaly Problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00162.html">Thread Prev</a>][<a href="msg00177.html">Thread Next</a>][<A HREF="threads.html#00167">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: set region subtlety (and point correlation script) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Tue, 16 Apr 2002 10:56:09 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3CBC6651.CAD4CD40@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 3CB50CC1.1CBC7563@princeton.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: set region subtlety (and point correlation script)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00214.html">Thread Prev</a>][<a href="msg00213.html">Thread Next</a>][<A HREF="threads.html#00216">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: set region subtlety (and point correlation script)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Rob Scott &lt;<a href="mailto:rscott@DOMAIN.HIDDEN">rscott@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: set region subtlety (and point correlation script)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 16 Apr 2002 10:58:42 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00211.html">3CB50CC1.1CBC7563@princeton.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hello everyone,
+<p>I want to add a further clarification of the question Rob brought up.
+<br>The heart of the question is in the application of a region when using
+a
+<br>grid-changing function such as RESHAPE.&nbsp; See this FAQ for more
+on
+<br>SET REGION and grid-changing functions:
+<br><A HREF="">http://www.ferret.noaa.gov/Ferret/FAQ/analysis/gridchanging_fcns.html</A>
+<p>A note right off -- Rob asked if it takes more memory to define a region
+<br>with a qualifier on the variable, as in:
+<p>&nbsp;&nbsp; let sst_np = sst[GX=xax_np,y=35N:45N@AVE]
+<p>The answer is that it does not take more memory, and often it is the
+best
+<br>or only way to be clear about the region you want to apply to a variable.
+<p>If LIST commands are inserted into Rob's script at the different stages
+<br>of the calculation, it gives correct results up until the RESHAPE operation.
+<br>Now, RESHAPE is a grid-changing function.&nbsp; Any limits made with
+<br>SET REGION apply to the result grid of the expression involving
+<br>RESHAPE, not to the input arguments.&nbsp; The arguments need their
+<br>own region specifications, when a region is needed.
+<p>When sst_np is defined with qualifying region definition,
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let sst_np = sst[GX=xax_np,y=35N:45N@AVE]
+<p>then the RESHAPE operation at the end of the script has as its first
+<br>argument a variable that contains its own region information, Y=35:45.
+<br>This Y region is applied to the variable before it is used in RESHAPE.
+<p>But in the version of the script with
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; set region /y=35N:45N;&nbsp;
+let sst_np = sst[GX=xax_np,y=@AVE]
+<p>the first argument to RESHAPE does not contain its own Y limits AND
+<br>IT WILL NOT inherit the limits given in SET REGION.&nbsp;&nbsp; Again,
+the
+<br>SET REGION limits apply to the *result* grid of the expression, which
+<br>is the grid of "dummy" in this script, and dummy has no Y limits.&nbsp;
+Since
+<br>no Y limits are given within the sst_np definition, and all the subsequent
+<br>variables that depend on sst_np, the evaluation of RESHAPE will
+<br>default to the full span of the sst Y axis.&nbsp; (One should be able
+to see
+<br>this difference using SET MODE DIAGNOSTIC output.)&nbsp; To correctly
+<br>impose the Y limits you could insert "Y=35:45" to modify the first
+argument:
+<p>&nbsp;&nbsp; reshape(covar[y=35N:45N], dummy[k=4])
+<p>OR, best of all, just use the definition where sst_np has the region
+qualifier
+<p>&nbsp;&nbsp;&nbsp; sst_np = sst[GX=xax_np,y=35N:45N@AVE]
+<br>&nbsp;
+<p>Ansley Manke
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p>Rob Scott wrote:
+<blockquote TYPE=CITE>&nbsp;
+<br>Ferret Users:
+<p>I've encountered a problem using set region that makes me uneasy.
+<br>Should these two lines,
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; set region /y=35N:45N
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let sst_np = sst[GX=xax_np,y=@AVE]
+<p>not give the same numerical results as these:
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let sst_np = sst[GX=xax_np,y=35N:45N@AVE]
+<p>?? I avoided the latter because I thought it was harder on memory, no?
+<p>Well they give different results in the following script
+<p>Rob Scott
+<p>(hopefully someone may find it useful for doing point correlations)
+<p>! Description: get the point correlation of 1D SST field
+<br>!-------------------------------------------------------
+<p>set data coads_climatology
+<br>define axis/x=140E:130W:1/units=longitude/edges xax_np
+<p>!-------------------------------------------------------
+<br>! the following gets the wrong answer
+<br>!-------------------------------------------------------
+<p>set region /y=35N:45N
+<br>let sst_np = sst[GX=xax_np,y=@AVE]
+<p>!-------------------------------------------------------
+<br>! but this would make it work:
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+**&nbsp;&nbsp;&nbsp;&nbsp; let sst_np = sst[GX=xax_np,y=35N:45N@AVE]&nbsp;&nbsp;
+**
+<br>!-------------------------------------------------------
+<br>&nbsp;
+<p>!-------------------------------------------------------
+<br>! keep q fixed:
+<br>! move p in zonal direction, find acvf = &lt;p q>
+<br>!-------------------------------------------------------
+<br>let q = sst_np[x=145W]
+<br>!-------------------------------------------------------
+<br>! setup NetCDF file to hold the answer
+<br>!-------------------------------------------------------
+<br>let dummy = x[GX=xax_np]
+<br>let/title="SST Autocovariance" acvf = (1/0) * x[GX=xax_np]
+<br>save/clobber/file=sst_acvf.cdf acvf
+<br>!-------------------------------------------------------
+<br>! for all p points, get acvf
+<br>! save to NetCDF (use RESHAPE to get it on the right grid)
+<br>! save to ASCII (for comparison)
+<br>!-------------------------------------------------------
+<br>repeat/k=1:5 (let p = sst_np[i=`k`]; go variance; \
+<br>LIST/FORMAT=(1X,E14.7)/FILE="sst_acvf.dat"/CLOBBER/NOHEAD covar ; \
+<br>LET acvf = reshape(covar,dummy[i=`k`]) ; \
+<br>SAVE/APPEND/FILE=sst_acvf.cdf acvf)
+<pre>--&nbsp;
+Postal Address:
+
+Program in Atmospheric and Oceanic Sciences
+P.O. Box CN710, Sayre Hall
+Princeton, NJ 08544-0710
+USA
+
+Tel: 609-452-6519&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; o__&nbsp;&nbsp;&nbsp; ____&nbsp;
+Fax: 609-987-5063&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; _,>/'_&nbsp; -----
+E-mail: rscott@princeton.edu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (_) \(_) ------</pre>
+&nbsp;</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00211" href="msg00211.html">set region subtlety (and point correlation script)</a></strong>
+<ul><li><em>From:</em> Rob Scott</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00214.html">Re: set region subtlety (and point correlation script)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00213.html">select daytime data only</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00214.html">Thread Prev</a>][<a href="msg00213.html">Thread Next</a>][<A HREF="threads.html#00216">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

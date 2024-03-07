@@ -1,0 +1,195 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Creating 3D grid from scattered data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Tue, 22 Aug 2000 11:30:38 &#45;0700 (PDT) -->
+<!--X-Message-Id: 39A2C6E6.A53C48E5@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 8969C7C92A78D311869C0090278750B64D0B5F@cumulus.shore.mbari.org -->
+<!--X-Reference: 399B1EA0.BBA589D0@pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Creating 3D grid from scattered data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00352.html">Thread Prev</a>][<a href="msg00361.html">Thread Next</a>][<A HREF="threads.html#00363">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Creating 3D grid from scattered data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Creating 3D grid from scattered data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<A HREF="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 22 Aug 2000 11:31:02 -0700</li>
+<li>Cc: &quot;McCann, Mike&quot; &lt;<A HREF="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</A>&gt;,       &quot;'<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>'&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>References: &lt;<a href="msg00349.html">8969C7C92A78D311869C0090278750B64D0B5F@cumulus.shore.mbari.org</a>&gt;&lt;<a href="msg00352.html">399B1EA0.BBA589D0@pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi  Steve
+
+Re Mike McCann's question -
+
+The scat2grid*xy  functions are set up to inherit a time axis, but not a Z from the
+third argument.  The reason is that the first three arguments (xpts, ypts, f(xpts,ypts))
+are lists of points which may reside on any of the spatial axes.  One could change
+the function to inherit a Z axis but it would require more checking of the arguments'
+grids.
+-Ansley
+
+
+Steve Hankin wrote:
+
+&gt; hi Mike,
+&gt;
+&gt; Since it appears that you have only 5 points on your Z axis (?) there is a
+&gt; simple solution possible:
+&gt;
+&gt;     LET VZ0  = scatter2gridlaplace_xy( **arguments at Z=0** )
+&gt;     LET VZ25 = scatter2gridlaplace_xy( **arguments at Z=25** )
+&gt;     LET VZ50 = ...
+&gt;     LET VZ75 = ...
+&gt;     LET VZ100 = ...
+&gt;
+&gt;     DEF AXIS/Z=0:100:25/DEPTH  zaxis
+&gt;
+&gt;     LET V  = IF K[GZ=zaxis] EQ 1 THEN VZ0  ELSE V2
+&gt;     LET V2 = IF K[GZ=zaxis] EQ 2 THEN VZ25 ELSE V3
+&gt;     LET V3 = IF K[GZ=zaxis] EQ 3 THEN VZ50 ELSE V4
+&gt;     LET V4 = IF K[GZ=zaxis] EQ 4 THEN VZ75 ELSE VZ100
+&gt;
+&gt; Your variable &quot;V&quot; is now the function of Z that you desire.
+&gt;
+&gt; This approach is not the ideal solution. Ideally the function
+&gt; scatter2gridlaplace_xy() should inherit the Z axis from the arguments XPTS,
+&gt; YPTS, and F. In this case, as long as the variable you provide as &quot;F&quot; is,
+&gt; itself a function of Z, so, too will the result be. I suspect it was a simple
+&gt; oversight that the function does not work this way. We will look into fixing
+&gt; this. Note that the function *does* inherit correctly in this manner on the T
+&gt; axis.
+&gt;
+&gt;     - steve
+&gt;
+&gt; ===========================================================
+&gt;
+&gt; &quot;McCann, Mike&quot; wrote:
+&gt;
+&gt; &gt; Hi,
+&gt; &gt;
+&gt; &gt; I have a set of scattered ocean observations that I'd like
+&gt; &gt; to grid into a 3D volume.  The strategy I'm considering is
+&gt; &gt;
+&gt; &gt; 1. Create horizontal sections and grid to a level with
+&gt; &gt;    scatter2gridlaplace_xy()
+&gt; &gt;
+&gt; &gt; 2. Assemble these sections into a 3D volume following the
+&gt; &gt;    multiple-slab example:
+&gt; &gt;
+&gt; &gt; yes? DEF AXIS/x=1:360:1  xaxis
+&gt; &gt; yes? DEF AXIS/y=1:180:1  yaxis
+&gt; &gt; yes? DEF AXIS/Z=0:100:25/DEPTH  zaxis
+&gt; &gt; yes? DEF GRID/X=xaxis/Y=yaxis/Z=zaxis uv_grid
+&gt; &gt; yes? DEF AXIS/Z=0:0:1  zaxis1
+&gt; &gt; yes? DEF GRID/LIKE=uv_grid/Z=zaxis1  uv_grid1
+&gt; &gt; yes? FILE/GRID=uv_grid1/BAD=-999/VAR=&quot;u,v&quot;  uv.data1
+&gt; &gt; yes? LET/TITLE=&quot;My U data&quot;  u1 = u[G=uv_grid]
+&gt; &gt; yes? LET/TITLE=&quot;My V data&quot;  v1 = v[G=uv_grid]
+&gt; &gt; yes? SAVE/FILE=uv1_5z.cdf/KLIMITS=1:5  u1, v1
+&gt; &gt; yes? CANCEL DATA uv.data1
+&gt; &gt; yes? DEF AXIS/Z=25:25:1  zaxis1
+&gt; &gt; yes? FILE/GRID=uv_grid1/BAD=-999/VAR=&quot;u,v&quot;  uv.data2
+&gt; &gt; yes? SAVE/FILE=uv1_5z.cdf/APPEND  u1,v1
+&gt; &gt; . . .
+&gt; &gt;
+&gt; &gt; My problem is that I need to get the output of scatter2gridlaplace_xy()
+&gt; &gt; onto a 3D grid where the Z axis is a single value.  How can I do this?
+&gt; &gt;
+&gt; &gt; I tried
+&gt; &gt; SET VAR/GRID=newgrid &lt;variable_from scatter2gridlaplace_xy()&gt;
+&gt; &gt; but I get an error.
+&gt; &gt;
+&gt; &gt; I think I can list the level out to an ascii file, then read it back
+&gt; &gt; in onto the 3D grid, but I'd rather not have to do this.  Is there
+&gt; &gt; a more efficient way?
+&gt; &gt;
+&gt; &gt; Thanks in advance,
+&gt; &gt; Mike
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Mike McCann   (mccann@mbari.org)
+&gt; &gt; Group Leader, Information Applications Group
+&gt; &gt; Monterey Bay Aquarium Research Institute
+&gt; &gt; 7700 Sandholdt Road
+&gt; &gt; Moss Landing, CA 95039-9644
+&gt; &gt; Voice: (831) 775-1769   Fax: (831) 775-1646 <A  HREF="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</A>
+&gt;
+&gt; --
+&gt;
+&gt;                 |  NOAA/PMEL               |  ph. (206) 526-6080
+&gt; Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+&gt;                 |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00349" href="msg00349.html">Creating 3D grid from scattered data</a></strong>
+<ul><li><em>From:</em> McCann, Mike</li></ul></li>
+<li><strong><a name="00352" href="msg00352.html">Re: Creating 3D grid from scattered data</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00352.html">Re: Creating 3D grid from scattered data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00361.html">RE: Creating 3D grid from scattered data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00352.html">Thread Prev</a>][<a href="msg00361.html">Thread Next</a>][<A HREF="threads.html#00363">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

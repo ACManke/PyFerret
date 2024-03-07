@@ -1,0 +1,138 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Calculating stream function from known velocity field. -->
+<!--X-From-R13: xrffyreNczry.abnn.tbi (Pvyyl Yrffyre) -->
+<!--X-Date: Tue, 15 May 2001 20:46:01 &#45;0700 (PDT) -->
+<!--X-Message-Id: 200105160345.UAA13596@pontus.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Calculating stream function from known velocity field.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00305.html">Thread Prev</a>][<a href="msg00304.html">Thread Next</a>][<A HREF="threads.html#00306">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Calculating stream function from known velocity field.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Calculating stream function from known velocity field.</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxx</A> (Billy Kessler)</strong></li>
+<li>Date: Tue, 15 May 2001 20:45:58 -0700 (PDT)</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+Thanks, Ned, for those precise definitions. Ned is correct. 
+I would usually use a streamfunction only for the vertically-
+integrated flow, for example the Sverdrup streamfunction. One
+also sees streamfunctions of the zonally-integrated flow in the 
+(y,z) plane. However, those situations do come up with some 
+regularity, and they certainly are relevant for model solutions 
+(that conserve mass).
+
+Streamlines (tangent to the flow) are useful for visualization 
+even when the flow is divergent, I think. For example dynamic 
+height contours are streamlines of the geostrophic flow (but 
+they are not a streamfunction because of the variation of f).
+
+For an example of &quot;Montgomery streamlines&quot; (geostrophic flow along an 
+isopycnal): <A  HREF="http://www.pmel.noaa.gov/~kessler/salinity/fig-ccc-color.gif">http://www.pmel.noaa.gov/~kessler/salinity/fig-ccc-color.gif</A>
+These show a divergent field, since u_g=(-1/f)d(Psi)/dy, v_g=(1/f)d(Psi)/dx,
+and d(u_g)/dx+d(v_g)/dy=(-beta/f)v_g.ne.0. That means the distance
+between adjacent streamlines does not indicate the transport (as it 
+would for a streamfunction), but the streamlines are still everywhere 
+parallel to the flow.
+
+The script to find these streamlines (from Levitus) is:
+---------------------------------------------------
+! script to find the Montgomery (1937) streamlines from Levitus.
+! geostrophic streamlines (relative to 1000db) on an isopycnal.
+! &quot;Montgomery Streamfunction&quot; is DH_a + alpha_a*p, where _a indicates anomaly
+! units: Phi=10*DH in dyn-m -&gt; Phi in m2/s2 (geopotential)
+!        P in Pa: 1db = 10^4 Pa = 10^4 kg/m/s2
+!        alpha in m3/kg
+!        So MSF units are m2/s2.
+! arg1=sigma-t value of isopycnal surface
+
+set dat ocean_atlas_annual
+
+let/q rho=rho_un(salt,temp,0)
+let/q sigmat=rho-1000
+let/q alpha0=1/rho_un(35,0,0)
+let/q alphaa=1/rho-alpha0
+let/q p=sigmat[z=@loc:$1]*1.e4
+let/q sigmaat1=sigmat[z=@weq:$1]
+
+! alpha is really a constant on an isopycnal!
+let/q alphac=1/(1000+$1)-alpha0
+let/q alphacp=alphac*p
+
+! find DH in dyn-cm
+! factors are: 100 to get dyn-cm; 1.e4 for p in Pa; 10 for geopot -&gt; DH
+let/q dh = (100*1.e4/10)*(alphaa[z=0:1000@din]-(alphaa[z=@iin]-alphaa*zbox/2))
+let/q dh2 = if temp[z=1000] then dh 		! blank where no T(1000)
+
+! divide DH by 100 -&gt; dyn-m. Then mult by 10 to get m2/s2 (geopotential)
+let/q phiat1a=(10/100)*dh2*sigmaat1
+let/q phiat1=phiat1a[z=0:1000@sum]
+
+let/q msf=phiat1+alphacp
+! Contours of MSF are the Montgomery streamlines (geostrophic flow
+! on the isopycnal sigma-t=$1).
+---------------------------------------------------
+
+BK
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00305.html">Re: Calculating stream function from known velocity field.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00304.html">Syntax file for TextPad</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00305.html">Thread Prev</a>][<a href="msg00304.html">Thread Next</a>][<A HREF="threads.html#00306">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

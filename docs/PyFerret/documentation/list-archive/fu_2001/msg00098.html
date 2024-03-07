@@ -1,0 +1,233 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Ferret question -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Tue, 6 Mar 2001 10:44:46 &#45;0800 (PST) -->
+<!--X-Message-Id: 3AA52FF2.5944143D@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3A9C5CB6.3C6C140F@pfeg.noaa.gov -->
+<!--X-Reference: 3A9C9AF1.B8B90700@pmel.noaa.gov -->
+<!--X-Reference: 3A9D5904.2DBA2796@pfeg.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Ferret question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00089.html">Thread Prev</a>][<a href="msg00090.html">Thread Next</a>][<A HREF="threads.html#00098">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Ferret question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:mpickett@DOMAIN.HIDDEN">mpickett@xxxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Ferret question</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 06 Mar 2001 10:44:02 -0800</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;3A9C5CB6.3C6C140F@pfeg.noaa.gov&gt; &lt;3A9C9AF1.B8B90700@pmel.noaa.gov&gt;&lt;<a href="msg00089.html">3A9D5904.2DBA2796@pfeg.noaa.gov</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Mark,
+
+Scanning your command lines I do not see where any interpolations are occurring. The command
+
+FILE/var=&quot;buoy,yr,mo,da,hr,mi,airt,spl,uwind,vwind,sst1&quot;/columns=11/grid=timegrid
+&quot;/disk46/mpickett/46030hr&quot;
+
+reads all of your variables in as irregularly-spaced time series. When you plot the data, the
+default style is to connect the points, but there is no numerical interpolation occurring. (Try
+PLOT/SYMBOL to mark the data points without a connecting line.)
+
+If you would like to place this data onto a regularly-spaced time axis with gaps at the points
+where no measurements exist there are several tools to help with this. If all of your points,
+(where they do exist) lie exactly on a regularized sampling scheme, you can define the regular
+axis using a standard DEFINE AXIS and regrid to this axis using GT=new_tax@XACT. This will
+retain the data where it exists, only (missing values at points where input values are absent.)
+
+If your points do not lie exactly on a regularized time sampling scheme you can still define a
+new axis of arbitrary regular time spacing. Regrid to it using either GT=new_tax (linear
+interpolation) or GT=new_tax@AVE (averaging). Then use the transformation @CDA and @CDB on your
+original irregular time axis to define a mask (LET my_mask = ...) that will remove any points
+where a valid measurement does not exist within limits that you specify in the mask definition.
+
+I confess that I do not grok the lines in which you attempt to regrid the time series data to a
+spatial grid ....
+
+    - steve
+
+====================================
+
+mpickett@upwell.pfeg.noaa.gov wrote:
+
+&gt; Help!
+&gt; I'm a new user and my Ferret commands are very basic.  I'm comparing global
+&gt; wind models with buoy data and am having problems handling the missing data in
+&gt; the ASCII buoy files.  Ferret seems to want to interpolate across any gaps in
+&gt; time in the buoy data.  I would like to have missing data in the gaps so I
+&gt; don't have any &quot;fake&quot; data in my comparisons.
+&gt; My backup plan is to fill the gaps with missing data values using a Fortran
+&gt; program then bring it into Ferret. I am wondering if there is something simple
+&gt; I can do in Ferret to put in missing data.
+&gt;
+&gt; Here is the code I'm using.  The derivative method I'm trying to use only works
+&gt; to remove large gaps.
+&gt;
+&gt; define axis/t=1:35040:1 tax1
+&gt; define grid/t=tax1 readgrid
+&gt; set
+&gt; data/ez/grid=readgrid/skip=0/var=&quot;buoy,yr,mo,da,hr,mi,airt,spl,uwind,vwind,sst1&quot;/columns=11
+&gt; &quot;/disk46/mpickett/46030hr&quot;
+&gt; show data
+&gt; let time=days1900(yr,mo,da)*24+hr
+&gt; define axis/from_data/t/units=hours/name=tax2/t0=&quot;01-jan-1900&quot; time
+&gt; define grid/t=tax2 timegrid
+&gt; set
+&gt; data/ez/skip=0/var=&quot;buoy,yr,mo,da,hr,mi,airt,spl,uwind,vwind,sst1&quot;/columns=11/grid=timegrid
+&gt; &quot;/disk46/mpickett/46030hr&quot;
+&gt; show data
+&gt; define axis/x=121.9w:121.89w:.01/units=degrees xaxis
+&gt; define axis/y=35.7n:35.71n:.01/units=degrees yaxis
+&gt; define axis/t=&quot;01-jan-1997&quot;:&quot;31-dec-2000:18:00&quot;:01/units=hours tax3
+&gt; define grid/x=xaxis/y=yaxis/t=tax3 spacegrid
+&gt; let zero=0*(i+j)
+&gt; let u=uwind[g=spacegrid]/-100.+zero
+&gt; let v=vwind[g=spacegrid]/-100.+zero
+&gt; let sst=sst1[g=spacegrid]/-100.+zero
+&gt;
+&gt; !Use to remove any interpolations done by Ferret
+&gt; let du=u[t=@ddf]
+&gt; let uclean= if abs(du) lt 5e-6 then (-99.99) else u
+&gt; let vclean= if abs(du) lt 5e-6 then (-99.99) else v
+&gt; let sstclean=if abs(du) lt 5e-6 then (-99.99) else sst
+&gt; set var/bad=-99.99 uclean
+&gt; set var/bad=-99.99 vclean
+&gt; set var/bad=-99.99 sstclean
+&gt;
+&gt; save/format=cdf/file=&quot;/disk46/mpickett/buoy_46030.nc&quot; uclean,vclean,sstclean
+&gt;
+&gt; Here is a sample of a ASCII buoy data file with a large time gap (some are only
+&gt; a few days and harder to detect).
+&gt;
+&gt; 46028 1997  7 17  0 50  144 10143  -865   541 1410
+&gt; 46028 1997  7 17  1 50  145 10141  -827   694 1410
+&gt; 46028 1997  7 17  2 50  145 10141  -636   785 1410
+&gt; 46028 1997  7 17  3 50  142 10139  -825   743 1410
+&gt; 46028 1997  7 17  4 50  141 10137  -750   750 1410
+&gt; 46028 1997  7 17  5 50  142 10135  -785   813 1410
+&gt; 46028 1997  7 17  6 50  141 10134  -797   743 1410
+&gt; 46028 1997  7 17  7 50  141 10129  -832   749 1410
+&gt; 46028 1997  7 17  8 50  141 10129  -848   530 1410
+&gt; 46028 1997  7 17  9 50  142 10131 -1008   328 1410
+&gt; 46028 1998  8 14 17 50  142 10164  -183   344 1600
+&gt; 46028 1998  8 14 18 50  144 10158  -290   196 1640
+&gt; 46028 1998  8 14 19 50  145 10156  -334   135 1640
+&gt; 46028 1998  8 14 20 50  145 10150  -547   221 1640
+&gt; 46028 1998  8 14 21 50  149 10147  -506   341 1640
+&gt; 46028 1998  8 14 22 50  151 10136  -357   457 1640
+&gt; 46028 1998  8 14 23 50  152 10135  -499   276 1640
+&gt;
+&gt; Thanks for any help anyone can provide.
+&gt; -Mark Pickett-
+&gt;
+&gt; Steve Hankin wrote:
+&gt;
+&gt; &gt; Hi Mark,
+&gt; &gt;
+&gt; &gt; I'm afraid that you havn't provided enough details to know for sure what the
+&gt; &gt; problem is.
+&gt; &gt;
+&gt; &gt; Can you send you question again, but include a fragment of the ASCII data
+&gt; &gt; file, which shows how missing values and times are represented, and also
+&gt; &gt; include your Ferret commands.
+&gt; &gt;
+&gt; &gt; May I suggest that you resubmit the question to ferret_users -- usually
+&gt; &gt; someone will have a quick answer.
+&gt; &gt;
+&gt; &gt;     - steve
+&gt; &gt;
+&gt; &gt; ===========================
+&gt; &gt;
+&gt; &gt; mpickett@upwell.pfeg.noaa.gov wrote:
+&gt; &gt;
+&gt; &gt; &gt; I'm stuck on a Ferret problem and was hoping you could give me some
+&gt; &gt; &gt; help.
+&gt; &gt; &gt; I'm loading ASCII buoy files to plot buoy winds over FNMOC model winds
+&gt; &gt; &gt; for comparisons.
+&gt; &gt; &gt; The buoy data has gaps when the instruments are broken.
+&gt; &gt; &gt; When I put the buoy data into a time grid, Ferret wants to interpolate
+&gt; &gt; &gt; across the missing times.
+&gt; &gt; &gt; I've tried to cancel mode interpolate and bad=-9999 but it still wants
+&gt; &gt; &gt; to fill those voids with a number.
+&gt; &gt; &gt; I'd like to fill the voids with &quot;....&quot; missing data.
+&gt; &gt; &gt; Do you have any ideas?
+&gt; &gt; &gt;
+&gt; &gt; &gt; My current plan is to use a Fortran routine on the buoy data to find the
+&gt; &gt; &gt; gaps and put in missing data.
+&gt; &gt; &gt; Then open it up into Ferret.
+&gt; &gt; &gt; Thanks,
+&gt; &gt; &gt; -Mark Pickett-
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00089" href="msg00089.html">Re: Ferret question</a></strong>
+<ul><li><em>From:</em> mpickett</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00089.html">Re: Ferret question</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00090.html">Re: polymark weird error</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00089.html">Thread Prev</a>][<a href="msg00090.html">Thread Next</a>][<A HREF="threads.html#00098">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

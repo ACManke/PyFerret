@@ -1,0 +1,161 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: string symbols -->
+<!--X-From-R13: Oaqerj Ivggraoret <naqljNfcynfu.Bevaprgba.SRG> -->
+<!--X-Date: Tue, 13 Mar 2001 15:10:25 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.GSO.4.03.10103131625220.10007&#45;100000@splash.Princeton.EDU -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20010313193501.21643.qmail@www.mail.usp.br -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: string symbols</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00131.html">Thread Prev</a>][<a href="msg00133.html">Thread Next</a>][<A HREF="threads.html#00132">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: string symbols</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Andrea Sardinha Taschetto &lt;<A HREF="mailto:andreast@DOMAIN.HIDDEN">andreast@xxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: string symbols</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<A HREF="mailto:andyw@DOMAIN.HIDDEN">andyw@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 13 Mar 2001 18:10:13 -0500 (EST)</li>
+<li>Cc: ferret_users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00131.html">20010313193501.21643.qmail@www.mail.usp.br</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Tue, 13 Mar 2001, Andrea Sardinha Taschetto wrote:
+&gt; My question is: 
+&gt; Is there any way to use recursive definitions and string symbols together? 
+&gt; Does anyone know how could I read and contour my data using something like:
+&gt; yes? REPEAT/l=1:5 (use data_($var`l`).cdf, contour ($var`l`)[l=1:12@ave])
+
+Try placing the command inside a .jnl file:
+-------------
+! plot_it.jnl
+use data_($var$1).cdf
+contour ($var$1)[l=1:12@ave]
+-------------
+and then call it from inside the loop:
+
+yes? REPEAT/l=1:5 (go plot_it `l`)
+
+That should work.
+
+Now the details... I think the problem here was that Ferret was looking
+for a symbol named literally var`l`, not var1,var2,... as you intended.  
+Ferret likes to evaluate string symbols right away, in this case before
+the REPEAT even ran.  Since var`l` didn't exist, Ferret replaced it with a
+blank.  Then the REPEAT command probably failed, since data_ .cdf didn't
+exist.
+
+If you run into this problem often and you don't want a lot of &quot;plot_it&quot;
+scripts floating around, you might be interested in a simple tool called
+&quot;embed_sym.jnl&quot; I wrote a while ago:
+
+---------------
+\can mode verify
+! Usage: go embed_sym prefix symbol [suffix pre_space suf_space]
+! Execute a command which is formed by embedding the symbol contents
+! between a prefix string and a suffix string.  Useful in REPEAT commands,
+! where immediate symbol evaluation sometimes causes problems.
+!
+! Ferret eats trailing spaces in string args, so the optional pre_space
+! and suf_space arguments indicate whether a space should (1) or
+! should not (0, default) be inserted after the prefix and before
+! the suffix, respectively.
+
+IF `$4&quot;0&quot;` THEN
+   IF `$5&quot;0&quot;` THEN
+      $1 ($$2) $3&quot; &quot;
+   ELSE
+      $1 ($$2)$3&quot; &quot;
+   ENDIF
+ELSE
+   IF `$5&quot;0&quot;` THEN
+      $1($$2) $3&quot; &quot;
+   ELSE
+      $1($$2)$3&quot; &quot;
+   ENDIF
+ENDIF
+
+set mode/last verify
+---------------
+
+In your case I'd use this tool as follows:
+
+yes? REPEAT/l=1:5 (go embed_sym &quot;use data_&quot; var`l` .cdf; 
+       go embed_sym contour var`l` [l=1:12@ave] 1)
+
+This may be overkill for your problem, but thought I'd pass it along!
+
+Cheers,
+
+Andrew
+
+----------------------------------------------------------------------
+Andrew Wittenberg          Program in Atmospheric and Oceanic Sciences
+andyw@splash.princeton.edu                Sayre Hall, Forrestal Campus
+                                                  Princeton University
+                                              Princeton, NJ 08544-0710
+----------------------------------------------------------------------
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00131" href="msg00131.html">string symbols</a></strong>
+<ul><li><em>From:</em> Andrea Sardinha Taschetto</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00131.html">string symbols</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00133.html">MLD&amp;TCD(2)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00131.html">Thread Prev</a>][<a href="msg00133.html">Thread Next</a>][<A HREF="threads.html#00132">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: index2grid external function -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 15 Jul 2002 10:48:34 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3D330AB5.A7777282@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>index2grid external function</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00355.html">Thread Prev</a>][<a href="msg00359.html">Thread Next</a>][<A HREF="threads.html#00358">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>index2grid external function</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>index2grid external function</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<a href="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 15 Jul 2002 10:47:33 -0700</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>All,
+
+Here is an external function (attached) I wrote to deal with an unusual
+gridded data format.  Using Ferret lingo you could describe the data as
+having the X and Y axes are unraveled and packed, i.e. all X and Y data
+points are stored on a single axis with any missing values removed.
+
+My goal was to recreate a usable gridded dataset from this data.  Here
+is an example of how to use the external function:
+
+use
+&quot;<a  href="http://ferret.pmel.noaa.gov/cgi-bin/dods/nph-dods/data/FreeForm/GLERL/gridded_fields/map_files/erie5km.map.dat&quot">http://ferret.pmel.noaa.gov/cgi-bin/dods/nph-dods/data/FreeForm/GLERL/gridded_fields/map_files/erie5km.map.dat&quot</a>;
+use
+&quot;<a  href="http://ferret.pmel.noaa.gov/cgi-bin/dods/nph-dods/data/FreeForm/GLERL/gridded_fields/FCAST/no_header.dat&quot">http://ferret.pmel.noaa.gov/cgi-bin/dods/nph-dods/data/FreeForm/GLERL/gridded_fields/FCAST/no_header.dat&quot</a>;
+
+define axis/x=1:24:1 x24
+define axis/y=1:80:1 y80
+define grid/y=y80/x=x24 g_80y24x
+let d = i[gx=g_80y24x] + j[gy=g_80y24x]
+
+let dep_field = index_to_grid(ii[d=1],jj[d=1],dep[d=1],d)
+let lat_field = index_to_grid(ii[d=1],jj[d=1],lat[d=1],d)
+let lon_field = index_to_grid(ii[d=1],jj[d=1],lon[d=1],d)
+let spd_field = index_to_grid(ii[d=1],jj[d=1],spd[i=2:1016,d=2],d)
+let dir_field = index_to_grid(ii[d=1],jj[d=1],dir[i=2:1016,d=2],d)
+
+
+
+-- Jonathan Callahan
+</pre>
+<pre>*
+* index_to_grid.F
+*
+* Jonathan Callahan
+* Feb 25th 2002
+*
+* This function reads in tuples (i,j,val) which correspond
+* to the FORTRAN indices of the value.  Some sites use this
+* method to compress data for gridded fields.
+*
+* The fourth argument contains the destination grid.
+*
+* The tuples are assumed to already be defined on an abstract
+* X and real Z and T axes.  The examples I have seen so far
+* are model output at a single level and multiple timesteps.
+* The tuple output only corresponds to the X and Y axes and 
+* is used instead of assigning bad flags or masks.
+*
+* Note that the FORTRAN indices I and J DO NOT correspond
+* to the Ferret indices I and J.  The following interpretation
+* is made:
+*
+* FORTRAN I = row number = FERRET J = latitude (perhaps oriented N-&gt;S)
+* FORTRAN J = col number = FERRET I = longitude
+
+
+*
+* In this subroutine we provide information about
+* the function.  The user configurable information 
+* consists of the following:
+*
+* descr              Text description of the function
+*
+* num_args           Required number of arguments
+*
+* axis_inheritance   Type of axis for the result
+*                       ( CUSTOM, IMPLIED_BY_ARGS, NORMAL, ABSTRACT )
+*                       CUSTOM          - user defined axis
+*                       IMPLIED_BY_ARGS - same axis as the incoming argument
+*                       NORMAL          - the result is normal to this axis
+*                       ABSTRACT        - an axis which only has index values
+*
+* piecemeal_ok       For memory optimization:
+*                       axes where calculation may be performed piecemeal
+*                       ( YES, NO )
+* 
+*
+* For each argument we provide the following information:
+*
+* name               Text name for an argument
+*
+* unit               Text units for an argument
+*
+* desc               Text description of an argument
+*
+* axis_influence     Are this argument's axes the same as the result grid?
+*                       ( YES, NO )
+*
+* axis_extend       How much does Ferret need to extend arg limits relative to result 
+*
+
+
+      SUBROUTINE index_to_grid_init(id)
+
+      INCLUDE 'ferret_cmn/EF_Util.cmn'
+
+      INTEGER id, arg
+
+      CALL ef_version_test(ef_version)
+
+* **********************************************************************
+*                                            USER CONFIGURABLE PORTION |
+*                                                                      |
+*                                                                      V
+
+      CALL ef_set_desc(id,
+     . 'puts (I,J,VAL) tuples on grid of D' )
+
+      CALL ef_set_num_args(id, 4)
+      CALL ef_set_axis_inheritance(id, IMPLIED_BY_ARGS, 
+     .     IMPLIED_BY_ARGS, IMPLIED_BY_ARGS, IMPLIED_BY_ARGS)
+      CALL ef_set_piecemeal_ok(id, NO, NO, NO, NO)
+
+      arg = 1
+      CALL ef_set_arg_name(id, arg, 'I')
+      CALL ef_set_arg_desc(id, arg, 'Fortran I index (row) of VAL ')
+      CALL ef_set_axis_influence(id, arg, NO, NO, NO, NO)
+
+      arg = 2
+      CALL ef_set_arg_name(id, arg, 'J')
+      CALL ef_set_arg_desc(id, arg, 'Fortran J index (column) of VAL')
+      CALL ef_set_axis_influence(id, arg, NO, NO, NO, NO)
+
+      arg = 3
+      CALL ef_set_arg_name(id, arg, 'VAL')
+      CALL ef_set_arg_desc(id, arg, 'Value at grid cell [I,J]')
+      CALL ef_set_axis_influence(id, arg, NO, NO, YES, YES)
+
+      arg = 4
+      CALL ef_set_arg_name(id, arg, 'D')
+      CALL ef_set_arg_desc(id, arg, 'destination grid taken from D')
+      CALL ef_set_axis_influence(id, arg, YES, YES, NO, NO)
+*                                                                      ^
+*                                                                      |
+*                                            USER CONFIGURABLE PORTION |
+* **********************************************************************
+
+      RETURN 
+      END
+
+
+*
+* In this subroutine we compute the result
+*
+      SUBROUTINE index_to_grid_compute(id, arg_1, arg_2, arg_3, arg_4,
+     .                                 result)
+
+      INCLUDE 'ferret_cmn/EF_Util.cmn'
+      INCLUDE 'ferret_cmn/EF_mem_subsc.cmn'
+
+      INTEGER id
+
+      REAL bad_flag(1:EF_MAX_ARGS), bad_flag_result
+      REAL arg_1(mem1lox:mem1hix, mem1loy:mem1hiy, 
+     .           mem1loz:mem1hiz, mem1lot:mem1hit)
+      REAL arg_2(mem2lox:mem2hix, mem2loy:mem2hiy,
+     .     mem2loz:mem2hiz, mem2lot:mem2hit)
+      REAL arg_3(mem3lox:mem3hix, mem3loy:mem3hiy,
+     .     mem3loz:mem3hiz, mem3lot:mem3hit)
+      REAL arg_4(mem4lox:mem4hix, mem4loy:mem4hiy,
+     .     mem4loz:mem4hiz, mem4lot:mem4hit)
+      REAL result(memreslox:memreshix, memresloy:memreshiy,
+     .            memresloz:memreshiz, memreslot:memreshit)
+
+* After initialization, the 'res_' arrays contain indexing information 
+* for the result axes.  The 'arg_' arrays will contain the indexing 
+* information for each variable's axes. 
+
+      INTEGER res_lo_ss(4), res_hi_ss(4), res_incr(4)
+      INTEGER arg_lo_ss(4,1:EF_MAX_ARGS), arg_hi_ss(4,1:EF_MAX_ARGS),
+     .     arg_incr(4,1:EF_MAX_ARGS)
+
+* **********************************************************************
+*                                            USER CONFIGURABLE PORTION |
+*                                                                      |
+*                                                                      V
+
+      INTEGER i,j,k,l
+      INTEGER i3,j3,k3,l3
+
+      INTEGER index_i,index_j
+
+      CALL ef_get_res_subscripts(id, res_lo_ss, res_hi_ss, res_incr)
+      CALL ef_get_arg_subscripts(id, arg_lo_ss, arg_hi_ss, arg_incr)
+      CALL ef_get_bad_flags(id, bad_flag, bad_flag_result)
+
+
+* First -- populate the result with bad flags.
+
+      DO 400 i=res_lo_ss(X_AXIS), res_hi_ss(X_AXIS)
+         DO 300 j=res_lo_ss(Y_AXIS), res_hi_ss(Y_AXIS)
+            DO 200 k=res_lo_ss(Z_AXIS), res_hi_ss(Z_AXIS)
+               DO 100 l=res_lo_ss(T_AXIS), res_hi_ss(T_AXIS)
+
+                     result(i,j,k,l) = bad_flag_result
+
+ 100           CONTINUE
+ 200        CONTINUE
+ 300     CONTINUE
+ 400  CONTINUE
+      
+
+* Second -- Loop over the K and L axes.
+*           Put the values where they belong.
+*
+*           Assumption: I,J,VAL are on the same grid.
+*           Assumption: I is the row # and is associated with a latitude
+*           Assumption: J is the col # and is associated with a longitude
+
+      i = res_lo_ss(X_AXIS)
+      j = res_lo_ss(Y_AXIS)
+      k = res_lo_ss(Z_AXIS)
+      l = res_lo_ss(T_AXIS)
+
+* Note: there should not be a Y axis on argument 3
+      j3 = arg_lo_ss(Y_AXIS,ARG3)
+
+      l3 = arg_lo_ss(T_AXIS,ARG3)
+      DO 700 l=res_lo_ss(T_AXIS), res_hi_ss(T_AXIS)
+         k3 = arg_lo_ss(Z_AXIS,ARG3)
+         DO 600 k=res_lo_ss(Z_AXIS), res_hi_ss(Z_AXIS)
+
+            DO 500 i3=arg_lo_ss(X_AXIS,ARG3), arg_hi_ss(X_AXIS,ARG3)
+               index_i = i - 1 + arg_2(i3,j3,k3,l3) 
+               index_j = j - 1 + arg_1(i3,j3,k3,l3)
+               result(index_i,index_j,k,l) = arg_3(i3,j3,k3,l3)
+ 500        CONTINUE
+
+            k3 = k3 + arg_incr(Z_AXIS,ARG3)
+ 600     CONTINUE
+         l3 = l3 + arg_incr(T_AXIS,ARG3)
+ 700  CONTINUE
+      
+*                                                                      ^
+*                                                                      |
+*                                            USER CONFIGURABLE PORTION |
+* **********************************************************************
+
+      RETURN 
+      END
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00355.html">defining varaible ii corresponding to x</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00359.html">mixed layer depth from 3D ocean temperature</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00355.html">Thread Prev</a>][<a href="msg00359.html">Thread Next</a>][<A HREF="threads.html#00358">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

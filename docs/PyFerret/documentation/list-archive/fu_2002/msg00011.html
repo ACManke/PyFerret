@@ -1,0 +1,254 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: changing the "time since" date in netcdf. -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Thu, 10 Jan 2002 10:27:23 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.GSO.4.33.0201100916590.5994&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.33.0201081333370.23918&#45;100000@vorlon.eas.gatech.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: changing the &quot;time since&quot; date in netcdf.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00010.html">Thread Prev</a>][<a href="msg00012.html">Thread Next</a>][<A HREF="threads.html#00011">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: changing the &quot;time since&quot; date in netcdf.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brent A McDaniel &lt;<a href="mailto:gte328r@DOMAIN.HIDDEN">gte328r@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: changing the &quot;time since&quot; date in netcdf.</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 10 Jan 2002 10:27:19 -0800 (PST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00010.html">Pine.LNX.4.33.0201081333370.23918-100000@vorlon.eas.gatech.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>EXECUTIVE SUMMARY: Brent's question was about how one could group together
+netCDF files, each with its own time origin and so containing only
+relative times 0,1,2,... say, using a descriptor.  Our initial
+communications were about ways to ease the burden of creating new files
+with a COMMON time origin. By chance I was later looking at a similar
+problem for another user and found that an MC descriptor file can in many
+(all?) cases OVERRIDE the time information embedded in the individual data
+files and so REMOVE THE NEED TO CREATE NEW FILES entirely. Hopefully the
+example below, which hopefully fits the bill for Brent, (but may result in
+a resounding duh... from those who truly understand how MC works) will
+prove useful to others.
+
+Hi Brent,
+	Another question very like yours came up locally just the day
+after we last communicated. In addressing it I tried something blindly
+and it worked - confirming my view that I know very little about MC
+descriptors.
+	The beauty of this is that IT DOES NOT require the creation
+of any new data files at all and when I tested it in the case of
+the files I used to simulate your situation it worked too!
+
+	It appears that the definition of the times in the descriptor
+file may in a way OVERRIDE the definitions in the individual files
+themselves.  Here is a demo for your case
+
+! step 1: create annual test files of daily values
+
+def axis/t=1-jan-1984:31-dec-1984:1/units=days/t0=&quot;1-jan-1984&quot; tax
+let v=t[gt=tax]+1000 ; save/clobber/file=d1984.nc v
+def axis/t=1-jan-1985:31-dec-1985:1/units=days/t0=&quot;1-jan-1985&quot; tax
+let v=t[gt=tax]+2000 ; save/clobber/file=d1985.nc v
+def axis/t=1-jan-1986:31-dec-1986:1/units=days/t0=&quot;1-jan-1986&quot; tax
+let v=t[gt=tax]+3000 ; save/clobber/file=d1986.nc v
+def axis/t=1-jan-1987:31-dec-1987:1/units=days/t0=&quot;1-jan-1987&quot; tax
+let v=t[gt=tax]+4000 ;save/clobber/file=d1987.nc v
+def axis/t=1-jan-1988:31-dec-1988:1/units=days/t0=&quot;1-jan-1988&quot; tax
+let v=t[gt=tax]+5000 ; save/clobber/file=d1988.nc v
+
+Now we have 5 netcdf files, each with its separate time origin, and
+each with its (relative) daily time axis
+TAX = 0,1,2,...,365,366 for 1984 and 1988
+TAX = 0,1,2,...,365     for the non-leap years
+
+Step 2: I next grabbed an MC descriptor from another project and
+edited in an arbitrary time origin (31-dec-1899:00) and the S_START
+and S_END values that would concatenate the 5 years of data and
+make them to APPEAR to span the years 1904-1908!
+
+Cut and paste the descriptor below naming it say brent.des then
+verify the result using the following Ferret commands
+
+!Step 3 : examining the combined files
+use brent
+sho grid/all v
+    GRID GEQ2
+ name       axis              # pts   start              end
+ normal    X
+ normal    Y
+ normal    Z
+ TIME1     TIME              1827 r   01-JAN-1904 00:00  31-DEC-1908 00:00
+plot/sym=20 v
+
+Here is the descriptor file brent.des
+
+ *************************************************
+ *  Test MC descriptor file for Brent's problem  *
+ *************************************************
+ $FORMAT_RECORD
+   D_TYPE               = '  MC',
+   D_FORMAT             = '  1A',
+   D_SOURCE_CLASS       = 'GRIDDED DATA',
+   D_SOURCE             = 'test',
+   D_SUBSOURCE          = ' ',
+ $END
+ $BACKGROUND_RECORD
+   D_EXPNUM             = '    ',
+   D_MODNUM             = '    ',
+   D_TITLE              = 'Test data',
+   D_FORCING_SET        = '    ',
+   D_T0TIME             = '31-DEC-1899:00',
+   D_TIME_UNIT          = 86400.0,
+   D_TIME_MODULO        = .false.,
+   D_NTEGRATE_TSTEP     = 1.0,
+   D_TIME_RUN           = ' ',
+   D_WHO_RANIT          = 'mcs',
+   D_TIME_MADE          = '10-jan-2002',
+   D_WHO_MADEIT         = ' ',
+   D_AUX_MODNUM         =  6*' ',
+   D_ADD_PARM           = 15*' ',
+   D_GRID_FILENAME      =  6*' ',
+ $END
+ $MESSAGE_RECORD
+   D_MESSAGE            = ' ',
+   D_ALERT_ON_OPEN      = F,
+   D_ALERT_ON_OUTPUT    = F,
+ $END
+ **************************************************
+ $EXTRA_RECORD
+ $END
+ $STEPFILE_RECORD
+   S_FILENAME           = 'd1984.nc',
+   S_AUX_SET_NUM        = 0,
+   S_START              = 1461,
+   S_END                = 1826,
+   S_DELTA              = 1.0,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ $END
+ **************************************************
+ $EXTRA_RECORD
+ $END
+ $STEPFILE_RECORD
+   S_FILENAME           = 'd1985.nc',
+   S_AUX_SET_NUM        = 0,
+   S_START              = 1827,
+   S_END                = 2191,
+   S_DELTA              = 1.0,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ $END
+ **************************************************
+ $EXTRA_RECORD
+ $END
+ $STEPFILE_RECORD
+   S_FILENAME           = 'd1986.nc',
+   S_AUX_SET_NUM        = 0,
+   S_START              = 2192,
+   S_END                = 2556,
+   S_DELTA              = 1.0,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ $END
+ **************************************************
+ $EXTRA_RECORD
+ $END
+ $STEPFILE_RECORD
+   S_FILENAME           = 'd1987.nc',
+   S_AUX_SET_NUM        = 0,
+   S_START              = 2557,
+   S_END                = 2921,
+   S_DELTA              = 1.0,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ $END
+ **************************************************
+ $EXTRA_RECORD
+ $END
+ $STEPFILE_RECORD
+   S_FILENAME           = 'd1988.nc',
+   S_AUX_SET_NUM        = 0,
+   S_START              = 2922,
+   S_END                = 3287,
+   S_DELTA              = 1.0,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ $END
+ **************************************************
+ $STEPFILE_RECORD
+   S_FILENAME           = '**END OF STEPFILES**'
+ $END
+ **************************************************
+
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00010" href="msg00010.html">changing the &quot;time since&quot; date in netcdf.</a></strong>
+<ul><li><em>From:</em> Brent A McDaniel</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00010.html">changing the &quot;time since&quot; date in netcdf.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00012.html">Re: changing the &quot;time since&quot; date in netcdf.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00010.html">Thread Prev</a>][<a href="msg00012.html">Thread Next</a>][<A HREF="threads.html#00011">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: a problem with FFTA -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Tue, 14 May 2002 10:15:35 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3CE146FE.A168719E@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 12007e1241bd.1241bd12007e@ono.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: a problem with FFTA</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00263.html">Thread Prev</a>][<a href="msg00269.html">Thread Next</a>][<A HREF="threads.html#00264">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: a problem with FFTA</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:arv@DOMAIN.HIDDEN">arv@xxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: a problem with FFTA</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 14 May 2002 10:18:55 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00263.html">12007e1241bd.1241bd12007e@ono.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Antonio,
+The FFT functions require that  he time axis be regular; that is,
+have constant time steps.  The COADS data you're using has a
+monthly axis where different months have different lengths.  If you
+say &quot;SHOW GRID sst&quot;, you will see that in the &quot;# points&quot; column the
+listing is &quot;456 i&quot;, with the i indicating an irregular axis.   (In the FFT
+demo, the monthly Navy winds are already on a regular time axis.)
+
+You can regrid sst to a regular time axis, and then call FFTA.   Something
+along these lines will solve your problem:
+
+!  here is one of the COADS datasets; accessed via DODS
+
+use &quot;<a  href="http://www.cdc.noaa.gov/cgi-bin/nph-nc/Datasets/coads/1degree/global/enh/sst.mean.nc&quot">http://www.cdc.noaa.gov/cgi-bin/nph-nc/Datasets/coads/1degree/global/enh/sst.mean.nc&quot</a>;
+
+!   Use SHOW GRID to get the range of time.  Define a regular
+!   time axis and regrid the sst data to it.
+
+SHOW GRID sst
+DEF AXIS/T=01-JAN-1960:01-DEC-1997:1/UNITS=months regt
+LET reg_sst = sst[GT=regt]
+
+SHOW GRID reg_sst
+
+!   Define the time series for which to compute the FFT
+LET fft_sst = reg_sst[x=10w:6w@ave,y=45n:38n@ave]
+PLOT fft_sst
+
+!   Compute and plot the FFT series.
+LET fft_sstfft = FFTA(fft_sst[l=1:456])
+PLOT fft_sstfft
+Ansley Manke
+
+arv@ono.com wrote:
+
+&gt; Hi,
+&gt;
+&gt; I've followed the instructions within the demo file:  ef_fft_demo.jnl
+&gt;
+&gt; My data is as follows:
+&gt;
+&gt; yes? show data/variables
+&gt;      currently SET data sets:
+&gt;     1&gt; ./sst38N_34N.10W_6W.nc  (default)
+&gt;      COADS 1-degree Enhanced
+&gt;  name     title                             I         J
+&gt; K         L
+&gt;  SST      Sea Surface Temperature Monthly  1:4       1:4       ...
+&gt; 1:456
+&gt;              degC on grid GOV1 with 650.31 &amp; 32766 for missing data
+&gt;              X=10W:6W  Y=34N:38N
+&gt;
+&gt;   time range: 01-JAN-1960 00:00 to 01-DEC-1997 00:00
+&gt;
+&gt; so I've made:
+&gt;
+&gt; LET FFT_sst = sst[x=10w:6w@ave,y=34n:38n@ave]
+&gt; LET FFT_sstfft = ffta(FFT_sst[l=1:456])
+&gt;
+&gt; then
+&gt;
+&gt; PLOT FFT_sstfft
+&gt;
+&gt; and I get:
+&gt;
+&gt; yes? plot FFT_sstfft
+&gt;
+&gt; Bailing out of external function &quot;ffta&quot;:
+&gt;          Time axis must be a regular axis
+&gt;  **ERROR: : error in external function
+&gt;
+&gt; Any idea. I think I've set right the time axis and if I plot just
+&gt; FFT_sst I get the right graphic
+&gt;
+&gt; Thanks
+&gt;
+&gt; Antonio Rodríguez
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00269" href="msg00269.html">Re: a problem with FFTA</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00263" href="msg00263.html">a problem with FFTA</a></strong>
+<ul><li><em>From:</em> arv</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00263.html">a problem with FFTA</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00269.html">Re: a problem with FFTA</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00263.html">Thread Prev</a>][<a href="msg00269.html">Thread Next</a>][<A HREF="threads.html#00264">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

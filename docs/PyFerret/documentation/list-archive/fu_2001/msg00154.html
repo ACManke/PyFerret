@@ -1,0 +1,142 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Quicker loading into fortran? -->
+<!--X-From-R13: [vpury Prynaq <orynaqNQSDQO.G[bagerny.QO> -->
+<!--X-Date: Fri, 16 Mar 2001 08:36:05 &#45;0800 (PST) -->
+<!--X-Message-Id: 200103161635.LAA45438@eluard.CERCA.UMontreal.CA -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.3.96.1010316122312.17873J&#45;100000@achilles -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Quicker loading into fortran?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00153.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Quicker loading into fortran?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Quicker loading into fortran?</strong></li>
+<li><strong>From</strong>: <strong>Michel Beland &lt;<A HREF="mailto:beland@DOMAIN.HIDDEN">beland@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 16 Mar 2001 11:35:57 -0500 (EST)</li>
+<li>In-reply-to: &lt;<a href="msg00153.html">Pine.GSO.3.96.1010316122312.17873J-100000@achilles</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello Richard,
+
+&gt; I'm currently loading data into Fortran to do some fiddly analysis and
+&gt; then dumping out again. Currently I'm saving to Fortran using:
+&gt; 
+&gt; The data I have is on a grid with i=1:41, j=1:19, k=1:1 and l=1:7200
+&gt; 
+&gt; After plenty of looking through the archive to find a way to load in
+&gt; and out of fortran, my method is to:
+&gt; 
+&gt; 1) Dump into fortran format using:
+&gt; 
+&gt; list/file=jet.dat/format=unformatted/order=z mag[i=1:41,j=1:19,l=1:7200]
+&gt; 
+&gt; 2) Read into fortran using:
+&gt; 
+&gt; 	parameter(ix=41,iy=19,it=7200)
+&gt; 	dimension u(ix,iy,it)
+&gt; 	open(11,file=&quot;c:jet.dat&quot;,form=&quot;unformatted&quot;,access=&quot;direct&quot;)
+&gt; 	do l=1,it
+&gt; 	do j=1,iy
+&gt; 	do i=1,ix
+&gt; 	read(11) u(i,j,l)
+&gt; 	end do
+&gt; 	end do
+&gt; 	end do
+&gt; 
+&gt; However - the reading in of the data seems to take quite a while. Does
+&gt; anybody know of a quicker method for reading ferret data into fortran?
+
+There are several things wrong with your Fortran code.  First, you
+should declare the record length with RECL= when you open a file with
+ACCESS='DIRECT'.  Second, you should specify the record being read in
+the read statement, with REC=, when the file is open with
+ACCESS='DIRECT'.  Third, maybe you should open the file with sequential
+access anyway.  It depends how Ferret's list command writes to the file.
+Fourth, it would be much faster to read the file in one READ statement
+instead of 5608800 READ statements, getting rid of the DO loops:
+
+       parameter(ix=41,iy=19,it=7200)
+       dimension u(ix,iy,it)
+       open(11,file='c:jet.dat',form='unformatted')
+       READ(11) u
+
+(provided that sequential access is correct and provided that you can
+write the file with list to have only one record).
+
+-- 
+Michel Béland (beland@CERCA.UMontreal.CA)  téléphone   : (514) 369-5223
+analyste en calcul scientifique            télécopieur : (514) 369-3880
+RQCHP (Réseau québécois de calcul de haute performance)  www.rqchp.qc.ca
+CERCA (Centre de recherche en calcul appliqué)    www.cerca.umontreal.ca
+5160, boul. Décarie, bureau 400(423), Montréal (Québec), Canada, H3X 2H9
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00155" href="msg00155.html">Re: Quicker loading into fortran?</a></strong>
+<ul><li><em>From:</em> Jonathan Callahan</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00153" href="msg00153.html">Quicker loading into fortran?</a></strong>
+<ul><li><em>From:</em> Richard Dixon</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00153.html">Quicker loading into fortran?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00155.html">Re: Quicker loading into fortran?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00153.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: symbols in subscript unrecognized? -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 20 Apr 2000 13:24:07 &#45;0700 (PDT) -->
+<!--X-Message-Id: 38FF6790.2369726A@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 38FEF107.533CB3A1@climate.unibe.ch -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: symbols in subscript unrecognized?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00167.html">Thread Next</a>][<A HREF="threads.html#00166">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: symbols in subscript unrecognized?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Daniel Müller &lt;<A HREF="mailto:mueller@DOMAIN.HIDDEN">mueller@xxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: symbols in subscript unrecognized?</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 20 Apr 2000 13:24:48 -0700</li>
+<li>Cc: Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Organization: NOAA/Pacific Marine Environmental Laboratory</li>
+<li>References: &lt;<a href="msg00165.html">38FEF107.533CB3A1@climate.unibe.ch</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Daniel,
+
+I will hazard a guess that your variable &quot;rvar&quot; is a user-defined
+variable
+(i.e. defined by LET rvar = xxx)
+In Ferret version 5.0 and earlier you could not issue a
+    SHOW GRID user_var
+command unless the user variable had previously been loaded (See
+<A  HREF="http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/partII.html#SHOW">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/partII.html#SHOW</A>
+GRID).  I believe that two SHOW GRID commands in a row also behaved like
+	LOAD var; SHOW GRID var
+
+In Ferret version 5.1 this restriction has been lifted.
+
+    - steve
+
+====================================
+
+Daniel Müller wrote:
+
+&gt; Hi ferret users
+&gt;
+&gt; Here is another thing i don't quite understand. I have a script which
+&gt; gets some parameters (i.e. names of variables) and defines some symbols
+&gt; for those. It then calls a subscript and hands some parameters to this
+&gt; one. Now look at the following script(s) and the error it produces:
+&gt;
+&gt;    go calc_correlation_map ($var_reg) PC_reg
+&gt;     !-&gt; go calc_correlation_map rvar PC_reg
+&gt;    !
+&gt; ---------------------------------------------------------------------------
+&gt;    ! Description: calculates correlation map based of ERA data &amp; indexes
+&gt;
+&gt;    ! arguments  : $1 : variable name            [MSL]
+&gt;    !            : $2 : correlation type         [point, NAO, SOI,
+&gt; NAO_JONES,
+&gt;    !                                             NAO_NCEP,
+&gt; NAO_NCEP_DJFM
+&gt;    !                                             PminEpoint,SminEpoint
+&gt;    !                                             PminEwGL, SminEwGL,
+&gt;    !                                             SH_AOI, PC_reg
+&gt; ]
+&gt;    !            : $3 : longitude
+&gt;    !            : $4 : latitude
+&gt;    !            : $5 : lag                      [0.]
+&gt;    !            : $6 : file name
+&gt;    !
+&gt;    !
+&gt; --------------------------------------------------------------------------------
+&gt;
+&gt;    define symbol var_cc = $1%MSL%          ! Processed Variable to
+&gt; correlate to
+&gt;     !-&gt; define symbol var_cc = rvar                ! Processed Variable
+&gt; to correlate to
+&gt;    define symbol type = $2%point%          ! Type of regression
+&gt;     !-&gt; define symbol type = PC_reg                ! Type of regression
+&gt;    define symbol lon = $3%20w%             ! longitude for point
+&gt; regression
+&gt;     !-&gt; define symbol lon = 20w            ! longitude for point
+&gt; regression
+&gt;    define symbol lat = $4%60N%             ! latitude for point
+&gt; regression
+&gt;     !-&gt; define symbol lat = 60N            ! latitude for point
+&gt; regression
+&gt;    define symbol lag = $5%0%               ! lag
+&gt;     !-&gt; define symbol lag = 0              ! lag
+&gt;    define symbol file_name = $6%file%      ! file (regridding for
+&gt; NAO_NCEP only)
+&gt;     !-&gt; define symbol file_name = file     ! file (regridding for
+&gt; NAO_NCEP only)
+&gt;
+&gt;
+&gt;    ! -------------------------------------------------------------------
+&gt;    ! calculate normalized variable
+&gt;      go calc_normal_var ($var_cc)
+&gt;     !-&gt; go calc_normal_var rvar
+&gt;    !
+&gt; ---------------------------------------------------------------------------
+&gt;    ! Description: calculate normalized variable var
+&gt;    !
+&gt;    ! Comment    : this script uses a number of working variable
+&gt; ($var)_dummy
+&gt;    !              1) Use an expilicit region for the calculation.
+&gt;    !              2) File must be set befor running the script
+&gt;    !
+&gt;    ! Output     : Var_norm       -&gt;  normalized variable var
+&gt;    !            : Var_std        -&gt;  standard deviation of variable var
+&gt;    !
+&gt;    ! author     : ChA  08/97 [christof@climate.unibe.ch]
+&gt;    ! adapted by : DM 09/1999 [mueller@climate.unibe.ch]
+&gt;    !
+&gt;    ! Usage      : GO calc_normal_var varibale_name
+&gt;    !
+&gt;    ! arguments  : $1 : variable name            [MSL]
+&gt;    !
+&gt;    !
+&gt; ---------------------------------------------------------------------------
+&gt;    !cancel mode verify
+&gt;    ! - define symbol var
+&gt;    define symbol var = $1%MSL%
+&gt;      !-&gt; define symbol var = rvar
+&gt;
+&gt;    show grid ($var)
+&gt;     !-&gt; show grid rvar
+&gt;     **ERROR: invalid command: grid for rvar is not available.
+&gt;              (LOAD this variable and try SHOW GRID again.)
+&gt;    show grid rvar
+&gt;    Command file, command group, or REPEAT execution aborted
+&gt;    yes? show grid ($var)
+&gt;     !-&gt; show grid rvar
+&gt;        GRID GIC1
+&gt;     name       axis              # pts   start                end
+&gt;     LONGITUDE LONGITUDE          144mr   0E                   2.5W
+&gt;     LATITUDE  LATITUDE            29 r   20N                  90N
+&gt;     normal    Z
+&gt;     TIME1     T (MON)            472 r   23485                23956
+&gt;    yes?
+&gt;
+&gt;
+&gt; So it seems, that the command show grid ($var) does work when back in
+&gt; ferret typed in manually, but doesn't in the subscript.
+&gt; I invoke the show grid command, because the following command in my
+&gt; script,
+&gt;    define symbol min_L = `($var),RETURN=LSTART`
+&gt; causes ferret tho hang for several minutes and then to terminate itself
+&gt; without any further error massage.
+&gt;
+&gt; The variable rvar is defined as follows:
+&gt;    define symbol fn=pres.mon.mean.jan1958_apr1997.des.20_90
+&gt;    define symbol klimavar=pres_des
+&gt;    ...
+&gt;    use &quot;/usr/users/mueller/dataset/mout/($fn).data.cdf&quot;
+&gt;    let rvar=($klimavar)[d=2]
+&gt;
+&gt; which seems to be correct, because the following datasets are open:
+&gt;
+&gt;    yes? show data
+&gt;         currently SET data sets:
+&gt;        1&gt;
+&gt; /usr/users/mueller/dataset/Wallace/AO_index_jan1958_apr1997.cdf
+&gt;     name     title                             I         J
+&gt; K         L
+&gt;     AOI      AO Index                         ...       ...
+&gt; ...       1:472
+&gt;
+&gt;        2&gt;
+&gt; /usr/users/mueller/dataset/mout/pres.mon.mean.jan1958_apr1997.des.20_90.data.cdf
+&gt;     name     title                             I         J
+&gt; K         L
+&gt;     PRES_DES SLP_DESEASONED                   1:144     1:29
+&gt; ...       1:472
+&gt;     TREND_STEIG                               1:144     1:29
+&gt; ...       ...
+&gt;     TREND_ABSN                                1:144     1:29
+&gt; ...       ...
+&gt;     PRES_DES_MEAN                             1:144     1:29
+&gt; ...       ...
+&gt;
+&gt;        3&gt;
+&gt; /usr/users/mueller/dataset/ncep/pres.mon.mean.jan1958_apr1997.cdf
+&gt;     name     title                             I         J
+&gt; K         L
+&gt;     PRES     Monthly mean surface pressure    1:144     1:73
+&gt; ...       1:472
+&gt;
+&gt;        4&gt;
+&gt; /usr/users/mueller/dataset/mout/weight_my/pres.mon.mean.jan1958_apr1997.des.20_90.DeTrend.DeMean.cdf
+&gt; (default)
+&gt;     name     title                             I         J
+&gt; K         L
+&gt;     EXPVAR   Explained Variance               ...       ...
+&gt; 1:472     ...
+&gt;     DEXPVAR  Error  Explained Variance        ...       ...
+&gt; 1:472     ...
+&gt;     EOF                                       1:144     1:29
+&gt; 1:472     ...
+&gt;     PC                                        ...       ...
+&gt; 1:472     1:472
+&gt;     PRES_DES_CALC                                1:144     1:29
+&gt; ...       1:472
+&gt;
+&gt;    yes?
+&gt;
+&gt; Is there anybody who can tell me what's happening (or why it isn't)? And
+&gt; even more: Does anybody know a workaround for this?
+&gt;
+&gt; Thank you in advance!
+&gt;
+&gt; Daniel
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00165" href="msg00165.html">symbols in subscript unrecognized?</a></strong>
+<ul><li><em>From:</em> Daniel Müller</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00165.html">symbols in subscript unrecognized?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00167.html">max number of variables</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00165.html">Thread Prev</a>][<a href="msg00167.html">Thread Next</a>][<A HREF="threads.html#00166">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

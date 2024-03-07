@@ -1,0 +1,269 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Beware! Time assignment change from older versions of Ferret -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Mon, 4 Mar 2002 11:36:35 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C83CD1E.30BE50CB@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: v04210102b8a45fba7221@[206.55.228.53] -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Beware! Time assignment change from older versions of Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00112.html">Thread Prev</a>][<a href="msg00109.html">Thread Next</a>][<A HREF="threads.html#00114">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Beware! Time assignment change from older versions of Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Lynn deWitt &lt;<a href="mailto:ldewitt@DOMAIN.HIDDEN">ldewitt@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Beware! Time assignment change from older versions of Ferret</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 04 Mar 2002 11:38:07 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00107.html">v04210102b8a45fba7221@[206.55.228.53]</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi everyone,
+After a few offline exchnages with Lynn, we've come to an understanding
+of the files Lynn brought up.  Thanks also to Wolfgang for reporting what
+you see.
+
+There is a standard in use by NOAA/CDC, which applies the 2-day offset
+when the time origin is T0 = 1-jan-0001:00:00, and the data starts after the
+year 1582.   I believe this is the case with the Reynolds and NCEP data
+Lynn mentions.  Version 5.4 of Ferret reads these files correctly, as does
+Version 5.22 (5.33 apparently had a bug that caused it not to apply the
+2-day offset.)  This calendar is a &quot;blended&quot; Julian/Gregorian calendar.
+
+When the time origin is other than 1-jan-0001 Ferret uses a &quot;proleptic&quot;
+Gregorian calendar, that is it uses the current standard calendar for all
+time.  Thus the definition of a year is consistent for all time with no
+offsets.
+
+Lynn notes that both the NCEP and Reynolds data files indicate that they
+are COARDS compliant in their header info.  The COARDS convention
+says that the time variable should follow the udunits convention.  This
+means that Ferret V 5.22 and V 5.4 give the &quot;correct&quot; times for these files.
+So if those who create files that are COARDS compliant actually follow
+through and use the udunits calendar one would know that Ferret 5.22
+or 5.4 reads them correctly.
+
+Ansley Manke
+
+Lynn deWitt wrote:
+
+&gt; Ferret users,
+&gt;
+&gt;      While writing up this posting I found the answer in the mail archives at:
+&gt;
+&gt; <a  href="http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_99/tmp/msg00060.html">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_99/tmp/msg00060.html</a>
+&gt;
+&gt; but thought I'd post it anyway in case anyone else is having similar
+&gt; trouble --- and as a warning to long-time users who still have work
+&gt; around that they've done in older versions.  Note that the following
+&gt; only applies to files with reference start times before about the
+&gt; year 1500, but some commonly used files, such as some Reynolds sst
+&gt; files, have reference times like this.
+&gt;
+&gt;       I was trying to update some work I did a few years ago, and was
+&gt; having trouble reproducing the previous work.  I finally tracked the
+&gt; problem to a behavior change in assigning time stamps between v 4.91
+&gt; (which I was using at the time I did the previous work) and v 5.22
+&gt; which I'm using now.
+&gt;
+&gt;      Compare the listings below done on the same Reynolds sst file
+&gt; (downloaded from cdc.noaa.gov) using exactly the same commands but
+&gt; with different versions of Ferret.   The sst listed at each grid
+&gt; point in time is consistent, but the assigned day-month-year is
+&gt; different by two days between the two versions of Ferret.   For
+&gt; example (see complete listing and commands below) for identical grid
+&gt; points:
+&gt;
+&gt;        V 4.91 :                                       V5.22:
+&gt;   01-DEC-1984 00 / 162:  16.81  29-NOV-1984 00 / 162:  16.81
+&gt;   08-DEC-1984 00 / 163:  16.61  06-DEC-1984 00 / 163:  16.61
+&gt;   15-DEC-1984 00 / 164:  15.75  13-DEC-1984 00 / 164:  15.75
+&gt;
+&gt;    This two day change had a fairly significant affect on the results
+&gt; when performing various averaging!  The answer, as I interpret Steve
+&gt; Hankin's e-mail from the archives, is that they made a change in
+&gt; version 5.0 to be more consistent with the udunits convention.  This
+&gt; affects files with reference start times before about the year 1500.
+&gt; The particular Reynolds sst file I was using shows the following in
+&gt; and ncdump:
+&gt;
+&gt;          double time(time) ;
+&gt;                  time:units = &quot;days since 1-1-1 00:00:00&quot; ;
+&gt;                  time:long_name = &quot;Time&quot; ;
+&gt;                  time:actual_range = 723483., 726465. ;
+&gt;                  time:delta_t = &quot;0000-00-07 00:00:00&quot; ;
+&gt;                  time:avg_period = &quot;0000-00-07 00:00:00&quot; ;
+&gt;
+&gt; Now I just need to figure out whether the v 4.91 calendar (Gregorian)
+&gt; or the v5.0 (udunits) gives me the correct calendar day for the
+&gt; Reynolds SST datasets so I can combine the data in analyses with
+&gt; other data sets.  I would assume they use udunits.  Anyone know?
+&gt;
+&gt; Anyway, beware!
+&gt;
+&gt;     Lynn
+&gt;
+&gt; ----------Listings using v 4.91----------
+&gt;
+&gt;          NOAA/PMEL TMAP
+&gt;          Program FERRET (GUI)
+&gt;          Version 4.91 - 05/19/98
+&gt;          28-Feb-02 12:10
+&gt;
+&gt; yes? set data &quot;Reynolds_sst/sst.wkmean.1981-1989.nc&quot;
+&gt; yes? set region/i=231/j=126
+&gt; yes? list sst[t=1-dec-1984:1-feb-1985]
+&gt;               Weekly Means of Sea Surface Temperature (degC)
+&gt;               LATITUDE: 35.5N
+&gt;               DATA SET:
+&gt; /disk04/products/Derived/Reynolds_sst/sst.wkmean.1981-1989.nc
+&gt;                          129.5W
+&gt;                          231
+&gt;   01-DEC-1984 00 / 162:  16.81
+&gt;   08-DEC-1984 00 / 163:  16.61
+&gt;   15-DEC-1984 00 / 164:  15.75
+&gt;   22-DEC-1984 00 / 165:  15.51
+&gt;   29-DEC-1984 00 / 166:  14.93
+&gt;   05-JAN-1985 00 / 167:  14.98
+&gt;   12-JAN-1985 00 / 168:  14.83
+&gt;   19-JAN-1985 00 / 169:  15.06
+&gt;   26-JAN-1985 00 / 170:  14.35
+&gt;   02-FEB-1985 00 / 171:  14.06
+&gt;
+&gt; yes? list t[gt=sst,l=1:10]
+&gt;               T
+&gt;               axis TIME
+&gt;               DATA SET: Reynolds_sst/sst.wkmean.1981-1989.nc
+&gt;   31-OCT-1981 00 /  1:  723483.
+&gt;   07-NOV-1981 00 /  2:  723490.
+&gt;   14-NOV-1981 00 /  3:  723497.
+&gt;   21-NOV-1981 00 /  4:  723504.
+&gt;   28-NOV-1981 00 /  5:  723511.
+&gt;   05-DEC-1981 00 /  6:  723518.
+&gt;   12-DEC-1981 00 /  7:  723525.
+&gt;   19-DEC-1981 00 /  8:  723532.
+&gt;   26-DEC-1981 00 /  9:  723539.
+&gt;   02-JAN-1982 00 / 10:  723546.
+&gt; yes?
+&gt;
+&gt; ----------Listings using v 5.22----------
+&gt;
+&gt;          NOAA/PMEL TMAP
+&gt;          Program FERRET
+&gt;          Version 5.22 - 08/23/00
+&gt;          28-Feb-02 12:17
+&gt;
+&gt; yes? set data &quot;Reynolds_sst/sst.wkmean.1981-1989.nc&quot;
+&gt; yes? set region/i=231/j=126
+&gt; yes? list sst[t=1-dec-1984:1-feb-1985]
+&gt;               Weekly Means of Sea Surface Temperature (degC)
+&gt;               LATITUDE: 35.5N
+&gt;               DATA SET: Reynolds_sst/sst.wkmean.1981-1989.nc
+&gt;                          129.5W
+&gt;                          231
+&gt;   29-NOV-1984 00 / 162:  16.81
+&gt;   06-DEC-1984 00 / 163:  16.61
+&gt;   13-DEC-1984 00 / 164:  15.75
+&gt;   20-DEC-1984 00 / 165:  15.51
+&gt;   27-DEC-1984 00 / 166:  14.93
+&gt;   03-JAN-1985 00 / 167:  14.98
+&gt;   10-JAN-1985 00 / 168:  14.83
+&gt;   17-JAN-1985 00 / 169:  15.06
+&gt;   24-JAN-1985 00 / 170:  14.35
+&gt;   31-JAN-1985 00 / 171:  14.06
+&gt;
+&gt; yes? list t[gt=sst,l=1:10]
+&gt;               T
+&gt;               axis TIME
+&gt;               DATA SET: Reynolds_sst/sst.wkmean.1981-1989.nc
+&gt;   29-OCT-1981 00 /  1:  723483.
+&gt;   05-NOV-1981 00 /  2:  723490.
+&gt;   12-NOV-1981 00 /  3:  723497.
+&gt;   19-NOV-1981 00 /  4:  723504.
+&gt;   26-NOV-1981 00 /  5:  723511.
+&gt;   03-DEC-1981 00 /  6:  723518.
+&gt;   10-DEC-1981 00 /  7:  723525.
+&gt;   17-DEC-1981 00 /  8:  723532.
+&gt;   24-DEC-1981 00 /  9:  723539.
+&gt;   31-DEC-1981 00 / 10:  723546.
+&gt;
+&gt; yes?
+&gt;
+&gt; --------------------------------------------
+&gt; Lynn deWitt
+&gt;
+&gt; ldewitt@pfeg.noaa.gov
+&gt;
+&gt; Pacific Fisheries Environmental Laboratories
+&gt; 1352 Lighthouse Avenue
+&gt; Pacific Grove, CA 93950-2097
+&gt; (831)-648-9036
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00107" href="msg00107.html">Beware! Time assignment change from older versions of Ferret</a></strong>
+<ul><li><em>From:</em> Lynn deWitt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00112.html">Re: Beware! Time assignment ...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00109.html">wrap the label to the next line</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00112.html">Thread Prev</a>][<a href="msg00109.html">Thread Next</a>][<A HREF="threads.html#00114">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

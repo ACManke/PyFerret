@@ -1,0 +1,191 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Problem in reading ascii files -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Fri, 6 Apr 2001 08:48:54 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3ACDE509.1CABCF4E@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200103261609.SAA26019@obelix.saclay.cea.fr -->
+<!--X-Reference: 3ABF81F8.D0283811@pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Problem in reading ascii files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00178.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00197">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Problem in reading ascii files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jonathan Callahan &lt;<A HREF="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Problem in reading ascii files</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 06 Apr 2001 08:47:21 -0700</li>
+<li>Cc: Estelle Laurendeau &lt;<A HREF="mailto:laurend@DOMAIN.HIDDEN">laurend@xxxxxxxxxxxxxxxxxx</A>&gt;,       <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00177.html">200103261609.SAA26019@obelix.saclay.cea.fr</a>&gt;&lt;<a href="msg00178.html">3ABF81F8.D0283811@pmel.noaa.gov</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Estelle,
+
+The source of the problem in the lines of script that you sent is a bug in
+the DEFINE AXIS command. For the case where the axis is a single point
+defining the axis with the syntax
+    &quot;def axis/x/from_data/name=myxaxis xpos&quot;
+leads to an invalid axis in V5.22.
+
+The easy work-around is to use the syntax
+    def axis/npoints=1/x=`xpos` myxaxis
+
+This problem has been fixed in V5.3.
+
+    - steve
+
+=============
+
+Jonathan Callahan wrote:
+
+&gt; Estelle,
+&gt;
+&gt; Steve Hankin, the master ferreter, is on vacation for a week and will be
+&gt; able to give a more thorough answer.  I see nothing wrong with your
+&gt; script and it does fail for me.  But you can get it to work by
+&gt; specifying an index value on the X axis.
+&gt;
+&gt; save/clobber/i=1/file=&quot;$1.nc&quot; c14
+&gt;
+&gt; Once it is saved as a NetCDF file it can be read in and is understood by
+&gt; Ferret.
+&gt;
+&gt; Bonne chance!
+&gt;
+&gt; -- Jonathan Callahan
+&gt;
+&gt; Estelle Laurendeau wrote:
+&gt; &gt;
+&gt; &gt; Hi Ferreters,
+&gt; &gt;
+&gt; &gt; I am currently dealing with read of ascii files with Ferret
+&gt; &gt;
+&gt; &gt; The goal is to create a proper netcdf file with a right spatial
+&gt; &gt; position for a variable running on time.
+&gt; &gt;
+&gt; &gt; more example.dat gives:
+&gt; &gt; --------------------------------------
+&gt; &gt; Year C14
+&gt; &gt; 1950.0 -54.0
+&gt; &gt; 1952.0 -66.0
+&gt; &gt; 1955.0 -54.0
+&gt; &gt; 1957.0 -40.0
+&gt; &gt; 1958.0 -44.5
+&gt; &gt; 1959.0 -20.0
+&gt; &gt; 1960.0 -18.0
+&gt; &gt; 1961.0 -12.0
+&gt; &gt; --------------------------------------
+&gt; &gt;
+&gt; &gt; more example.pos gives:
+&gt; &gt; --------------------------------------
+&gt; &gt; Latitude Longitude
+&gt; &gt; 16.83 -86.20
+&gt; &gt; --------------------------------------
+&gt; &gt;
+&gt; &gt; and here is my ferret script (read.jnl) to read them and
+&gt; &gt; save into a netcdf file:
+&gt; &gt;
+&gt; &gt; --------------------------------------
+&gt; &gt; file/col=2/var=ypos,xpos/skip=1 &quot;$1.pos&quot;
+&gt; &gt; def axis/x/from_data/name=myxaxis/units=degrees_east xpos
+&gt; &gt; def axis/y/from_data/name=myyaxis/units=degrees_north ypos
+&gt; &gt;
+&gt; &gt; file/col=2/var=year,c14/skip=1 &quot;$1.dat&quot;
+&gt; &gt; def axis/t/from_data/name=mytaxis/units=years year
+&gt; &gt;
+&gt; &gt; def grid/x=myxaxis/y=myyaxis/t=mytaxis mygrid
+&gt; &gt;
+&gt; &gt; file/col=2/var=year,c14/grid=mygrid/skip=1 &quot;$1.dat&quot;
+&gt; &gt;
+&gt; &gt; save/clobber/file=&quot;$1.nc&quot; c14
+&gt; &gt; --------------------------------------
+&gt; &gt;
+&gt; &gt; Try:
+&gt; &gt;
+&gt; &gt; go read example
+&gt; &gt;
+&gt; &gt; and please tell me what is wrong in this script
+&gt; &gt;
+&gt; &gt; Thanks in advance
+&gt; &gt; Regards
+&gt; &gt;
+&gt; &gt; Estelle Laurendeau
+&gt; &gt;
+&gt; &gt; Laboratoire des Sciences du Climat et de l'Environnement
+&gt; &gt; Unite mixte de recherche CNRS-CEA
+&gt; &gt; L'Orme des Merisiers - Bat.701 - CEA/Saclay
+&gt; &gt; 91191 GIF sur YVETTE cedex - FRANCE
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00177" href="msg00177.html">Problem in reading ascii files</a></strong>
+<ul><li><em>From:</em> Estelle Laurendeau</li></ul></li>
+<li><strong><a name="00178" href="msg00178.html">Re: Problem in reading ascii files</a></strong>
+<ul><li><em>From:</em> Jonathan Callahan</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00178.html">Re: Problem in reading ascii files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00179.html">Setting up new accounts</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00178.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00197">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: strang thing happend in doing loops over string array -->
+<!--X-From-R13: Oaqerj Ivggraoret <ngjNtsqy.abnn.tbi> -->
+<!--X-Date: Wed, 20 Nov 2002 06:59:52 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.LNX.4.44.0211200943130.20754&#45;100000@atw -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3DDAE2A3.5050606@igpp.ucla.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: strang thing happend in doing loops over string array</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00584.html">Thread Prev</a>][<a href="msg00586.html">Thread Next</a>][<A HREF="threads.html#00585">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: strang thing happend in doing loops over string array</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Xin Jin &lt;<a href="mailto:xjin@DOMAIN.HIDDEN">xjin@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: strang thing happend in doing loops over string array</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:atw@DOMAIN.HIDDEN">atw@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 20 Nov 2002 09:59:48 -0500 (EST)</li>
+<li>Cc: &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00584.html">3DDAE2A3.5050606@igpp.ucla.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Xin,
+
+Try this instead:
+
+let name = {&quot;a&quot;,&quot;b&quot;,&quot;c&quot;,&quot;d&quot;}
+repeat/i=1:4 (let n = name[i=`i`]; say `n`)
+
+In what you have below, it looks like Ferret is translating the symbol ii
+before it actually executes the &quot;define symbol&quot;.  My guess is that Ferret
+is taking several passes through the parenthesized commands; on the first
+pass it translates all the symbols, on the next pass it evaluates the
+backquotes, and on the final pass it evaluates the commands.  
+(Developers: Is this correct?  If so, perhaps it'd be better for Ferret to
+respect semicolons as it's doing its passes?)
+
+Andrew
+
++---------------------------------------+
+|  Andrew Wittenberg  |  GFDL/NOAA      |
+|  atw@gfdl.noaa.gov  |  Princeton, NJ  |
++---------------------------------------+
+
+On Tue, 19 Nov 2002, Xin Jin wrote:
+
+&gt; I have run this command in ferret v5.41 in linux system.
+&gt; 
+&gt; let name = {&quot;a&quot;,&quot;b&quot;,&quot;c&quot;,&quot;d&quot;}
+&gt; 
+&gt;  repeat/i=1:4 (define symbol ii `i`;SAY `name[i=($ii)]`)
+&gt; 
+&gt; I got 
+&gt; ---------------------------------------------------------
+&gt; 
+&gt; yes?  repeat/i=1:4 (define symbol ii `i`;SAY `name[i=($ii)]`)
+&gt;  !-&gt; repeat/i=1:4 (define symbol ii `i`;SAY `name[i= ]`)
+&gt; !-&gt; REPEAT: I=1
+&gt;  !-&gt; define symbol ii 1
+&gt;  **ERROR: command syntax: I=
+&gt; MESSAGE/CONTINUE `name[i= ]`
+&gt; Command file, command group, or REPEAT execution aborted
+&gt; ----------------------------------------------------------------------------------------
+&gt; 
+&gt; command
+&gt; 
+&gt;  repeat/i=1:4 (define symbol ii `i`;SAY `name[i=($ii)]`)
+&gt; 
+&gt; again and got
+&gt; ------------------------------------------------------------------------------
+&gt; !-&gt; repeat/i=1:4 (define symbol ii `i`;SAY `name[i=1]`)
+&gt; !-&gt; REPEAT: I=1
+&gt;  !-&gt; define symbol ii 1
+&gt;  !-&gt; MESSAGE/CONTINUE a
+&gt; a
+&gt; !-&gt; REPEAT: I=2
+&gt;  !-&gt; define symbol ii 2
+&gt;  !-&gt; MESSAGE/CONTINUE a
+&gt; a
+&gt; !-&gt; REPEAT: I=3
+&gt;  !-&gt; define symbol ii 3
+&gt;  !-&gt; MESSAGE/CONTINUE a
+&gt; a
+&gt; !-&gt; REPEAT: I=4
+&gt;  !-&gt; define symbol ii 4
+&gt;  !-&gt; MESSAGE/CONTINUE a
+&gt; a
+&gt; --------------------------------------------------
+&gt; command
+&gt; 
+&gt;  repeat/i=1:4 (define symbol ii `i`;SAY `name[i=($ii)]`)
+&gt; 
+&gt; once more  and got
+&gt; 
+&gt; ------------------------------------------------------------------
+&gt;  !-&gt; repeat/i=1:4 (define symbol ii `i`;SAY `name[i=4]`)
+&gt; !-&gt; REPEAT: I=1
+&gt;  !-&gt; define symbol ii 1
+&gt;  !-&gt; MESSAGE/CONTINUE d
+&gt; d
+&gt; !-&gt; REPEAT: I=2
+&gt;  !-&gt; define symbol ii 2
+&gt;  !-&gt; MESSAGE/CONTINUE d
+&gt; d
+&gt; !-&gt; REPEAT: I=3
+&gt;  !-&gt; define symbol ii 3
+&gt;  !-&gt; MESSAGE/CONTINUE d
+&gt; d
+&gt; !-&gt; REPEAT: I=4
+&gt;  !-&gt; define symbol ii 4
+&gt;  !-&gt; MESSAGE/CONTINUE d
+&gt; d
+&gt; ----------------------------------------------------
+&gt; 
+&gt; NONE of these are correct.
+&gt; 
+&gt; What's wrong with this loop
+&gt; 
+&gt; 
+&gt; Thanks
+&gt; 
+&gt; Xin
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00584" href="msg00584.html">strang thing happend in doing loops over string array</a></strong>
+<ul><li><em>From:</em> Xin Jin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00584.html">strang thing happend in doing loops over string array</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00586.html">about evenly data with edges definition</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00584.html">Thread Prev</a>][<a href="msg00586.html">Thread Next</a>][<A HREF="threads.html#00585">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Map projection -->
+<!--X-From-R13: Bny Xrerzl <wcnyNvpgc.gevrfgr.vg> -->
+<!--X-Date: Tue, 24 Jul 2001 05:54:30 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.GSO.4.05.10107241453320.5052&#45;200000@spclima3 -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Map projection</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00428.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00429">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Map projection</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Kang, Hyun-Suk&quot; &lt;<A HREF="mailto:hskang@DOMAIN.HIDDEN">hskang@xxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Map projection</strong></li>
+<li><strong>From</strong>: <strong>Pal Jeremy &lt;<A HREF="mailto:jpal@DOMAIN.HIDDEN">jpal@xxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 24 Jul 2001 14:54:22 +0200 (MET DST)</li>
+<li>Cc: Ferret Users Group &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+  Hi Hyun-Suk!
+
+I have included a script that computes the lat/lon info for a
+Lambert conformal conical projection.  It should be the same
+Lambert projection used by the MM5.  (I also have one for the
+rotated mercator projection for anyone who is interested).
+
+Hopefully this will save you some time.  Let me know if you have
+any questions implementing the projection with the 3-argument
+shade/fill command.
+
+
+  - Jeremy
+
+
+On Sat, 21 Jul 2001, Kang, Hyun-Suk wrote:
+
+&gt; Dear Ferret users,
+&gt; 
+&gt; I would like to use Ferret for visulalizing MM5 output.
+&gt; I use Lambert conformal map projection in MM5. 
+&gt; 
+&gt; Please let me know if you have any experience using Lambert conformal map projection
+&gt; (not equal lat/lon grids but equal distance grids).
+&gt; 
+&gt; Thanks.
+&gt; 
+&gt; Hyun-Suk
+&gt; ===========================================================
+&gt; Kang, Hyun-Suk
+&gt; 
+&gt; Atmospheric Sciences Program
+&gt; School of Earth and Environmental Sciences
+&gt; Seoul National Univerisity, Seoul 151-742, KOREA
+&gt; 
+&gt; Email: hskang@nwp2.snu.ac.kr
+&gt; Phone: 82-2-880-6760
+&gt; Fax: 82-2-885-4448
+&gt; 
+&gt; 
+</pre>
+<pre>
+let nxx=$1
+let nyy=$2
+let delx=$3
+let clatt=$4
+let clonn=$5
+let lattr=$6
+
+let xc=nxx*0.5
+let yc=nyy*0.5
+let my_x = delx*(i[i=1:`nxx`]-xc)
+let my_y = delx*(j[j=1:`nyy`]-yc)
+
+
+let Pi = 3.14159265
+let pifac=atan(1.)/45.            ! CONVERT DEGREES TO RADIANS
+let psi1=lattr*pifac
+let colat=90.-clatt                 ! COLAT OF CENTER
+let psi0=colat*pifac
+let rad2deg = 180.0 / Pi
+let earthr = 6.37e6   ! Earth Radius
+let grdfac = 0.716
+
+let rgrdf=1./grdfac
+let pi90=2.*atan(1.)              ! PI OVER TWO (90 DEGREES)
+let ans=earthr*sin(psi1)*rgrdf
+let pf=tan(psi1*0.5)/(-1*ans^rgrdf)
+let c1=-1*clonn-90.*rgrdf
+let arg1=tan(psi0*0.5)/tan(psi1*0.5)
+let c2=ans*(arg1)^grdfac
+! let c2=ans*(tan(psi0*0.5)/tan(psi1*0.5))^grdfac
+
+let xlp=atan2(my_y-c2,my_x)
+let r=abs(my_x/cos(xlp))
+let psi=abs(2.*atan(pf*(r^rgrdf)))        ! CO LATITUDE (RADIANS)
+let pfi=pi90-psi
+
+let my_new_lat = pfi/pifac
+let my_new_lon = xlp*rgrdf/pifac-c1
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00428.html">Re: Map projection</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00430.html">external functions on AIX</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00428.html">Thread Prev</a>][<a href="msg00430.html">Thread Next</a>][<A HREF="threads.html#00429">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

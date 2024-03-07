@@ -1,0 +1,262 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Dynamic height field -->
+<!--X-From-R13: xrffyreNczry.abnn.tbi (Pvyyl Yrffyre) -->
+<!--X-Date: Thu, 4 May 2000 23:01:02 &#45;0700 (PDT) -->
+<!--X-Message-Id: 200005050600.XAA13043@pontus.pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Dynamic height field</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00251.html">Thread Prev</a>][<a href="msg00190.html">Thread Next</a>][<A HREF="threads.html#00191">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Dynamic height field</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Dynamic height field</strong></li>
+<li><strong>From</strong>: <strong><A HREF="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxx</A> (Billy Kessler)</strong></li>
+<li>Date: Thu, 04 May 2000 23:00:59 -0700 (PDT)</li>
+<li>Cc: <A HREF="mailto:kessler@DOMAIN.HIDDEN">kessler@xxxxxxxxxxxxxxxxxxxx</A></li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+Hello Halldor -
+
+The problem is not as hard as you think. There is no reason to do 
+a double integral so as to use pressure as a vertical coordinate. 
+For almost all purposes I can think of, it is acceptable, normal
+practice to take z = p for these calculations. (There is a factor
+of 1.e4 to get pressure in Pa). The reason is that we use dynamic 
+ht not as an absolute value but only to compare with other dynamic 
+hts relative to the same level, and the errors due to taking p=z 
+tend to cancel. There is a mean bias of about 1.5%, but there is 
+virtually no spatial gradient to this bias, so no problem is 
+introduced in using the DH values. (Go ahead and check this with
+the Levitus data set: use dp/dz=-rho*g to find pressure, then plot
+p(x,y,z0) and you will see there are no gradients). This is explained 
+in more detail in many textbooks (for example see Pond and Pickard, 
+Introductory Dynamical Oceanography, sections 8.3 and 8.4). 
+
+Attached to this message are 4 scripts that do various dynamic ht
+calculations. The scripts are:
+
+lev-dh-xy.jnlb		! Basic dynamic ht in dyn-cm at one level relative 
+			! to another. The result is a function of (x,y).
+			! Arguments to the routine are: arg1=ref level,
+			! arg2=level at which DH is wanted
+
+lev-dh-theta-xy.jnlb	! Just like the above except uses potential temperature
+			! instead of in situ. This is somewhat more accurate
+			! since there can be gradients of DH introduced by the
+			! pressure effect on temperature. DH differences are 
+			! up to 1 dyn-cm for 0-1000m DH (on a background of
+			! about 150 dyn-cm, and up to about 2 dyn-cm rel 2000m)
+			! This routine requires the routine potemp.jnlb below.
+
+potemp.jnlb		! Messy long polynomial to get potential temperature
+			! from S,T,P. Called from lev-dh-theta-xy.jnlb. It
+			! defines lots of variables. 
+			! References given in the routine.
+
+montgomery-sf-lev.jnlb	! finds the &quot;Montgomery stream function&quot; (Montgomery,
+			! 1937, Bull.Am.Met.Soc., p210-212), which is analogous
+			! to dyn ht on an isopycnal surface: Ug = -1/f*d(MSF)/dy, 
+			! Vg = 1/f*d(MSF)/dx. Contours of the MSF are streamlines  
+			! of the geostrophic flow on the isopycnal (but it is not  
+			! a streamfunction because of the variation of f). See an 
+			! example and description of the use of the MSF in Kessler 
+			! (1999, JPO p2038-2049, Fig 5). --&gt; Please reference this 
+			! paper if you use this routine.
+			! Takes one argument which is the isopycnal to find MSF on.
+			! The routine is hardwired for MSF relative to 1000m; edit
+			! to change this (the ref level could be a passed argument).
+
+All these scripts are hardwired to work with the Levitus (1994) data set (with 
+filename ocean_atlas_annual). You will need to edit this filename or take it out. 
+Otherwise they should be pretty general.
+
+I hope there's no mistakes in these scripts!
+
+Billy K
+
+
+</pre>
+<pre>
+! find dynamic ht in ferret from Levitus
+! allows specification of ref and top levels
+! arg1=ref level
+! arg2=level of DH wanted
+
+set dat ocean_atlas_annual
+
+let/q alpha0 = 1/rho_un(35,0,0)
+let/q rho = rho_un(salt[d=ocean_atlas_annual],temp[d=ocean_atlas_annual],0)
+let/q sva = 1/rho - alpha0
+
+! factors are: 100 to get dyn-cm; 1.e4 for p in Pa; 10 for geopot -&gt; DH
+let/q dh = if sva[z=$1] then (100*1.e4/10)*sva[z=$2:$1@din]
+</pre>
+<pre>
+! find dynamic ht in ferret from Levitus
+! allows specification of ref and top levels
+! -theta uses potential temperature rather than temperature
+! arg1=ref level
+! arg2=level of DH wanted
+
+set dat ocean_atlas_annual
+
+! find potential temperature theta. 
+let zz=z[gz=temp[d=ocean_atlas_annual]]
+let z0=$2
+go potemp.jnlb		! find theta
+
+let/q alpha0 = 1/rho_un(35,0,0)
+let/q rhoth = rho_un(salt[d=ocean_atlas_annual],theta[d=ocean_atlas_annual],0)
+let/q svath = 1/rhoth - alpha0
+
+! factors are: 100 to get dyn-cm; 1.e4 for p in Pa; 10 for geopot -&gt; DH
+let/q dhth = if svath[z=$1] then (100*1.e4/10)*svath[z=$2:$1@din]
+
+! for 0-1000m DH in the Pacific, T-Theta DH differences are 0.5 to 0.9 dyn-cm
+! for 0-2000m DH in the Pacific, differences are 1-2 dyn-cm (of about 250)
+</pre>
+<pre>
+! script to find potential temperature
+! must have temperature(z)=temp, salinity(z)=salt, depth=zz, ref depth=z0
+! get theta
+
+! TO COMPUTE LOCAL POTENTIAL TEMPERATURE AT PR
+! USING BRYDEN 1973 POLYNOMIAL FOR ADIABATIC LAPSE RATE
+! AND RUNGE-KUTTA 4-TH ORDER INTEGRATION ALGORITHM.
+! REF: BRYDEN,H.,1973,DEEP-SEA RES.,20,401-408
+! FOFONOFF,N.,1977,DEEP-SEA RES.,24,489-491
+! UNITS:      
+!       PRESSURE        P0 (zz)  DECIBARS (meters)
+!       TEMPERATURE     TEMP     DEG CELSIUS (IPTS-68)
+!       SALINITY        SALT     (IPSS-78)
+!       REFERENCE PRS   PR (z0)  DECIBARS (meters)
+!       POTENTIAL TMP.  THETA    DEG CELSIUS 
+! CHECKVALUE: THETA= 36.89073 C,S=40 (IPSS-78),T0=40 DEG C,
+! P0=10000 DECIBARS,PR=0 DECIBARS             
+
+let h = z0 - z1
+let ds=salt-35
+let t1=temp
+let z1=zz
+let xk1a=(((-2.1687e-16*t1+1.8676e-14)*t1-4.6206e-13)*z1+ ((2.7759e-12*t1-1.1351e-10)*ds+ ((-5.4481e-14*t1+8.733e-12)*t1-6.7795e-10)*t1+1.8741e-8))*z1
+let xk2a=(-4.2393e-8*t1+1.8932e-6)*ds+((6.6228e-10*t1-6.836e-8)*t1+ 8.5258e-6)*t1+3.5803e-5
+let xka=h*(xk1a+xk2a)
+let t2=t1+xka/2
+let q1=xka
+let z2=z1+h/2
+let xk1b=(((-2.1687e-16*t2+1.8676e-14)*t2-4.6206e-13)*z2+ ((2.7759e-12*t2-1.1351e-10)*ds+ ((-5.4481e-14*t2+8.733e-12)*t2-6.7795e-10)*t2+1.8741e-8))*z2
+let xk2b=(-4.2393e-8*t2+1.8932e-6)*ds+((6.6228e-10*t2-6.836e-8)*t2+ 8.5258e-6)*t2+3.5803e-5
+let xkb=h*(xk1b+xk2b)
+let t3=t2 + 0.29289322*(xkb-q1)
+let q2= 0.58578644*xkb + 0.121320344*q1
+let xk1c=(((-2.1687e-16*t3+1.8676e-14)*t3-4.6206e-13)*z2+ ((2.7759e-12*t3-1.1351e-10)*ds+ ((-5.4481e-14*t3+8.733e-12)*t3-6.7795e-10)*t3+1.8741e-8))*z2
+let xk2c=(-4.2393e-8*t3+1.8932e-6)*ds+((6.6228e-10*t3-6.836e-8)*t3+ 8.5258e-6)*t3+3.5803e-5
+let xkc=h*(xk1c+xk2c)
+let t4=t3+ 1.707106781*(xkc-q2)
+let q3 = 3.414213562*xkc - 4.121320344*q2
+let z3=z2+h/2
+let xk1d=(((-2.1687e-16*t4+1.8676e-14)*t4-4.6206e-13)*z3+ ((2.7759e-12*t4-1.1351e-10)*ds+ ((-5.4481e-14*t4+8.733e-12)*t4-6.7795e-10)*t4+1.8741e-8))*z3
+let xk2d=(-4.2393e-8*t4+1.8932e-6)*ds+((6.6228e-10*t4-6.836e-8)*t4+ 8.5258e-6)*t4+3.5803e-5
+let xkd=h*(xk1d+xk2d)
+let theta=t4+(xkd-2*q3)/6
+
+
+
+</pre>
+<pre>
+! script to find the Montgomery (1937) stream function from Levitus rel 1000m.
+! arg1=sigma-t value of surface
+! streamfunction is the geostrophic streamlines on an isopycnal.
+! streamfunction is DH_a + alpha_a*p, where _a indicates anomaly
+! units: Phi=10*DH in m, Phi in m2/s2 (geopotential)
+!	 P in Pa: 1db = 10^4 Pa = 10^4 kg/m/s2
+!	 alpha in m3/kg
+!	 So streamfunction in m2/s2.
+! see a description and example of the use of this routine in 
+!   Kessler (1999, JPO, p2038-2049). Please reference this paper
+!   if you use this routine.
+
+set data ocean_atlas_annual
+
+let/q rho=rho_un(salt[d=ocean_atlas_annual],temp[d=ocean_atlas_annual],0)
+let/q sigmat=rho-1000
+let/q alpha0=1/rho_un(35,0,0)
+let/q alphaa=1/rho-alpha0[d=ocean_atlas_annual]
+let/q p=sigmat[z=@loc:$1]*1.e4
+let/q sigmaat1=sigmat[z=@weq:$1]
+
+! alpha is really a constant on an isopycnal!
+let/q alphac=1/(1000+$1)-alpha0[d=ocean_atlas_annual]
+let/q alphacp=alphac*p
+
+! find DH in dyn-cm
+! factors are: 1.e4 for p in Pa; 10 for geopotential -&gt; DH in dyn-m
+let/q dh = (1.e4/10)*(alphaa[z=0:1000@din]-(alphaa[z=@iin]-alphaa*zbox/2))
+let/q dhb = if temp[d=ocean_atlas_annual,z=1000] then dh ! blank where no T(1000)
+
+! Mult by 10 to get m2/s2 (geopotential)
+let/q phiat1a=10*dhb*sigmaat1
+let/q phiat1=phiat1a[z=0:1000@sum]
+
+let/q msf=phiat1+alphacp
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00251.html">Re: Sampling</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00190.html">polar projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00251.html">Thread Prev</a>][<a href="msg00190.html">Thread Next</a>][<A HREF="threads.html#00191">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

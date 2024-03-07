@@ -1,0 +1,181 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Descriptor hard limitations -->
+<!--X-From-R13: Bngevpx Pebpxznaa <Bngevpx.PebpxznaaNvcfy.whffvrh.se> -->
+<!--X-Date: Mon, 16 Sep 2002 09:18:38 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3D86040D.3DB74F95@ipsl.jussieu.fr -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Descriptor hard limitations</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00435.html">Thread Prev</a>][<a href="msg00438.html">Thread Next</a>][<A HREF="threads.html#00437">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Descriptor hard limitations</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Descriptor hard limitations</strong></li>
+<li><strong>From</strong>: <strong>Patrick Brockmann &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 16 Sep 2002 18:17:17 +0200</li>
+<li>Cc: <a href="mailto:Steven.C.Hankin@DOMAIN.HIDDEN">Steven.C.Hankin@xxxxxxxx</a>, Pascale Braconnot &lt;<a href="mailto:pasb@DOMAIN.HIDDEN">pasb@xxxxxxxxxxxxxxxxxx</a>&gt;,       Olivier Marti &lt;<a href="mailto:Olivier.Marti@DOMAIN.HIDDEN">Olivier.Marti@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi all,
+
+I frequently use descriptor files to work with collections of
+monthly netCDF model output.
+
+Unfortunately, it seems that there is an hard coded limitation in the size of filenames.
+I have tested that 60 characters is the maximum size for filename.
+It is definitevely not enough !
+
+I have lived with this problem by using symbolic links but even with this
+it is sometime difficult to deal with limited size filenames.
+Could you take this in consideration for future release ?
+
+Attached is a shell script to create a descriptor file from a collection of netCDF files.
+Files are aggregated considering l dimension (l=1 for file#1, l=2 for file#2, ....)
+which is sufficient for my current online diagnostic.
+
+Patrick
+
+--
+
+<a  href="mailto:Patrick.Brockmann@ipsl.jussieu.fr">mailto:Patrick.Brockmann@ipsl.jussieu.fr</a>
+01.44.27.21.10 --&gt; IPSL (Jussieu, Tour 26, 4eme)
+01.69.08.77.23 --&gt; LSCE (Orme des merissiers 701, 33B)
+<a  href="http://www.ipsl.jussieu.fr/~brocksce/">http://www.ipsl.jussieu.fr/~brocksce/</a>
+</pre>
+<pre>#!/bin/ksh
+
+#**************************************************************
+# Description: Generate a ferret descriptor file.
+#
+# Usage: descriptor_create /home/pasbcp/cplipsl/CPL03/CPL03_0001??30_histmth.nc &gt; file.des
+#
+# Notes:
+#  * Use absolute pathnames. 
+#  * Descriptor files are not written in a portable format since they
+#    are based on namelist format which are different from F90 and F77.
+#    See explanation given in the ferret FAQ:
+#    <a  href="http://ferret.wrc.noaa.gov/Ferret/FAQ/system/linux_mc_descriptors.html">http://ferret.wrc.noaa.gov/Ferret/FAQ/system/linux_mc_descriptors.html</a> 
+#    &quot;This error occurs because the descriptor was formatted for Fortran 77
+#     namelist reads, but the Linux version of Ferret was compiled using Fortran 90.
+#     Since Fortran 90 has a different format for namelist reads, the descriptor fails.&quot;
+#  * See linuxize_descriptors shell to translate existing descriptor files 
+#    to Linux platforms.
+#
+# Author: Patrick Brockmann
+# Contact: Patrick.Brockmann@ipsl.jussieu.fr
+# History:
+# Modification:
+#
+
+#---------------------------------------------
+machine=`uname`
+typeset -u machine
+if [ $machine = 'LINUX' ] ; then
+ namelist_begin='&amp;' 
+ namelist_end='/' 
+else
+ namelist_begin='$' 
+ namelist_end='$END' 
+fi
+
+#---------------------------------------------
+cat &lt;&lt;  END_DESCRIPTOR_HEADER
+ ${namelist_begin}FORMAT_RECORD
+   D_TYPE               = '  MC',
+   D_FORMAT             = '  1A',
+ ${namelist_end}
+ ${namelist_begin}BACKGROUND_RECORD
+   D_T0TIME             = '01-JAN-1800 00:00:00',
+ ${namelist_end}
+ ${namelist_begin}MESSAGE_RECORD
+ ${namelist_end}
+ ${namelist_begin}EXTRA_RECORD
+ ${namelist_end}
+END_DESCRIPTOR_HEADER
+
+#---------------------------------------------
+nb_file=1
+for file in $@ ; do
+    cat &lt;&lt;  END_DESCRIPTOR_MAIN
+ ${namelist_begin}STEPFILE_RECORD
+   S_FILENAME           = '$file',
+   S_AUX_SET_NUM        = 0,
+   S_START              = $nb_file,
+   S_END                = $nb_file,
+   S_DELTA              = 1,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ ${namelist_end}
+END_DESCRIPTOR_MAIN
+    let nb_file=nb_file+1
+done
+
+#---------------------------------------------
+cat &lt;&lt;  END_DESCRIPTOR_FOOTER
+ ${namelist_begin}STEPFILE_RECORD
+   S_FILENAME           = '**END OF STEPFILES**'
+ ${namelist_end} 
+END_DESCRIPTOR_FOOTER
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00438" href="msg00438.html">Re: Descriptor hard limitations</a></strong>
+<ul><li><em>From:</em> Richard D. Slater</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00435.html">temperature at a certain depth</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00438.html">Re: Descriptor hard limitations</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00435.html">Thread Prev</a>][<a href="msg00438.html">Thread Next</a>][<A HREF="threads.html#00437">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

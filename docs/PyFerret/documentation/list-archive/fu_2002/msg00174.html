@@ -1,0 +1,209 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: ZAXREPLACE and Sigma to Z depth -->
+<!--X-From-R13: Egrir Qbhfvaf <pbhfvafNyvzcrg.hzrbpr.znvar.rqh> -->
+<!--X-Date: Mon, 1 Apr 2002 10:36:50 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.LNX.4.10.10204011131250.29064&#45;100000@limpet.umeoce.maine.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>ZAXREPLACE and Sigma to Z depth</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00172.html">Thread Prev</a>][<a href="msg00181.html">Thread Next</a>][<A HREF="threads.html#00174">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>ZAXREPLACE and Sigma to Z depth</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>ZAXREPLACE and Sigma to Z depth</strong></li>
+<li><strong>From</strong>: <strong>Steve Cousins &lt;<a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 01 Apr 2002 13:36:47 -0500 (EST)</li>
+<li>Reply-to: <a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>I'm trying to do the conversion from Sigma layers to Z-depth for our
+Princeton Ocean Model (POM) data that is produced by Rich Signells NetCDF
+putcdf() function.
+
+The 15 Sigma layers are fractions of depth from 0.0 to -1.0.  There is a
+2D depth variable which has the true depth at each grid point.  My first
+goal is to get X,Y plots at specified depths in meters. My second goal is
+to get X,Z and Y,Z plots that use depth in meters as opposed to sigma
+layers.
+
+Here is the relevant NetCDF header information:
+
+
+netcdf pom.24day {
+dimensions:
+	xpos = 151 ;
+	ypos = 121 ;
+	zpos = 15 ;
+	time = UNLIMITED ; // (46 currently)
+variables:
+	float xpos(xpos) ;
+		xpos:long_name = &quot;Columns&quot; ;
+		xpos:units = &quot;column&quot; ;
+	float ypos(ypos) ;
+		ypos:long_name = &quot;Rows&quot; ;
+		ypos:units = &quot;row&quot; ;
+	float zpos(zpos) ;
+		zpos:long_name = &quot;Layer&quot; ;
+		zpos:units = &quot;sigma_level&quot; ;
+	float time(time) ;
+		time:units = &quot;days since 30-MAR-1998 00:00:00&quot; ;
+		time:time_origin = &quot;30-MAR-1998 00:00:0&quot; ;
+		time:modulo = &quot; &quot; ;
+	float depth(ypos, xpos) ;
+		depth:valid_range = 0.f, 5000.f ;
+		depth:long_name = &quot;Bathymetry&quot; ;
+		depth:units = &quot;meters&quot; ;
+		depth:missing_value = -99999.f ;
+	short temp(time, zpos, ypos, xpos) ;
+		temp:valid_range = -5.f, 30.f ;
+		temp:long_name = &quot;Temperature&quot; ;
+		temp:units = &quot;Celsius&quot; ;
+		temp:scale_factor = 0.0005340739f ;
+		temp:add_offset = 12.5f ;
+		temp:missing_value = -99999.f ;
+
+The sigma layer fractions look like:
+
+ zpos = 0, -0.015625, -0.03125, -0.0625, -0.125, -0.25, -0.375, -0.5, -0.625, 
+    -0.75, -0.875, -0.9375, -0.96875, -0.984375, -1 ;
+
+
+I've been looking at the User's Guide and the sigma_coordinate_demo.html
+but am not getting it to work.  If I try:
+
+     DEFINE AXIS/Z=0:5000:10/UNIT=meters/DEPTH zdepth
+     LET temp_on_depth = ZAXREPLACE(temp,depth, z[gz=zdepth])
+     LET temp_at_50 = temp_on_depth[Z=50]
+     SHADE/L=1 temp_at_50, 'X','Y'
+
+ferret produces:
+
+**ERROR: illegal limits: Z limits of data and depth fields must match
+SHADE/L=1 temp_at_50, 'X','Y'
+
+
+I think I understand this to mean that since the Z dimension of the
+temperature variable is only 15, I can't ask for temp_on_depth[Z=50].
+
+I'm obviously missing something fairly basic.  I would think that an
+interpolation would need to be done based on the Sigma Layers and the
+Depth variable.  At a given grid point, you could find the temperature 50
+meters down by doing something like (linear interpolation):
+       
+c    Make sure the total depth is at least 50 meters and calculate
+c    the fraction of depth that 50.0 meters is:
+     IF (depth(x,y) .gt. 50.0) 
+        fraction = 0.0 - (50.0 / depth(x,y))
+     else
+        temp_at_50 = -99999.0
+        GOTO 10
+     endif
+
+     do k=2,kb	! kb = number of sigma layers 
+        if (fraction .ge. zpos(k)) then
+c          Sandwich the depth between two layers:          
+           d_top = ABS(zpos(k-1) * depth(x,y))
+           d_bot = ABS(zpos(k) * depth(x,y))
+           d_diff = d_bot - d_top
+           d_frac = (50.0 - d_top) / d_diff
+
+c          Sandwich the temp between two layers:          
+           t_top = temp(time,k-1,y,x))
+           t_bot = temp(time,k,y,x)
+           t_diff = t_bot - t_top
+           temp_at_50 = (d_frac * t_diff) + t_top
+           GOTO 10
+        endif
+     enddo
+ 10  continue
+
+     print*,'Temperature at X,Y,50.0': temp_at_50
+
+
+I know this isn't bullet-proof (possible divide by zero) but I just
+wanted to show what I was thinking.  Is ZAXREPLACE supposed to be able to
+do something like this?
+
+My ultimate goal is to get LAS to be able to do this.  Any information,
+tips, suggestions are very welcome.
+
+Thanks,
+
+Steve
+_____________________________________________________________
+ Steve Cousins                 Email: cousins@umit.maine.edu
+ Research Associate            Phone: (207) 581-4302
+ Ocean Modeling Group
+ School of Marine Sciences     208 Libby Hall
+ University of Maine           Orono, Maine 04469
+
+
+
+
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00181" href="msg00181.html">Re: ZAXREPLACE and Sigma to Z depth</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00172.html">polar_2d</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00181.html">Re: ZAXREPLACE and Sigma to Z depth</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00172.html">Thread Prev</a>][<a href="msg00181.html">Thread Next</a>][<A HREF="threads.html#00174">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

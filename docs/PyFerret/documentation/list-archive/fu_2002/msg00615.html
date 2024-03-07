@@ -1,0 +1,274 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: reshape and get x axis data onto z axis -->
+<!--X-From-R13: Dbo Epbgg <efpbggNhgvt.vt.hgrknf.rqh> -->
+<!--X-Date: Wed, 4 Dec 2002 15:22:45 &#45;0800 (PST) -->
+<!--X-Message-Id: 5.1.1.5.2.20021204172114.00c478a0@utig.ig.utexas.edu -->
+<!--X-Content-Type: text/html -->
+<!--X-Reference: 5.1.1.5.2.20021126215854.022fba30@utig.ig.utexas.edu -->
+<!--X-Reference: 3DED08F1.BF7F7863@pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: reshape and get x axis data onto z axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00601.html">Thread Prev</a>][<a href="msg00617.html">Thread Next</a>][<A HREF="threads.html#00615">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: reshape and get x axis data onto z axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: reshape and get x axis data onto z axis</strong></li>
+<li><strong>From</strong>: <strong>Rob Scott &lt;<a href="mailto:rscott@DOMAIN.HIDDEN">rscott@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 04 Dec 2002 17:27:45 -0600</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00600.html">3DED08F1.BF7F7863@pmel.noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00594.html">5.1.1.5.2.20021126215854.022fba30@utig.ig.utexas.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+<br>
+Hi Ansley<br><br>
+Thanks very much for greatly clarifying the RESHAPE function.<br><br>
+Unfortunately the suggestion using ncdump and ncgen didn't work because
+the data is still in<br>
+the wrong order.<br><br>
+However, in that spirit, but using the LIST command to output to ASCII
+and the FILE command, together with <br>
+obvious choices of the /ORDER qualifier allowed me to force it onto the
+desired grid.<br><br>
+Thanks,<br>
+Rob<br><br>
+<br><br>
+<br><br>
+At 11:41 AM 12/3/2002 -0800, you wrote:<br>
+<blockquote type=cite class=cite cite>Hi Rob, <br>
+The RESHAPE function keeps the data in its internal order, <br>
+just wrapping it onto the newly specified grid.&nbsp; The last step 
+<br>
+you describe would require the function to shuffle the ordering <br>
+of the data which it doesn't do.&nbsp;&nbsp; Try this example to see what
+<br>
+is happening.&nbsp; I like to use STAT to see the size and shape <br>
+of the variables, but the LIST commands really show what's <br>
+going on. <br><br>
+yes? def axis/x=1:3:1 xax <br>
+yes? def axis/y y_irr = {1,3,4,5} <br>
+yes? def axis/z=1:5:1 zax <br>
+yes? let a = i[gx=xax] + 10*j[gy=y_irr] + 100*k[gz=zax] <br>
+yes? stat a <br>
+yes? list a <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+VARIABLE : I[GX=XAX] + 10*J[GY=Y_IRR] + 100*K[GZ=ZAX] <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SUBSET&nbsp;&nbsp; : 3 by 4 by 5 points (X-Y-Z) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 <br>
+&nbsp;---- K:1 Z:&nbsp;&nbsp; 1 <br>
+&nbsp;1&nbsp;&nbsp; / 1:&nbsp; 111.0&nbsp; 112.0&nbsp; 113.0 <br>
+&nbsp;3&nbsp;&nbsp; / 2:&nbsp; 121.0&nbsp; 122.0&nbsp; 123.0 <br>
+&nbsp;4&nbsp;&nbsp; / 3:&nbsp; 131.0&nbsp; 132.0&nbsp; 133.0 <br>
+&nbsp;5&nbsp;&nbsp; / 4:&nbsp; 141.0&nbsp; 142.0&nbsp; 143.0 <br>
+&nbsp;---- K:2 Z:&nbsp;&nbsp; 2 <br>
+&nbsp;1&nbsp;&nbsp; / 1:&nbsp; 211.0&nbsp; 212.0&nbsp; 213.0 <br>
+&nbsp;3&nbsp;&nbsp; / 2:&nbsp; 221.0&nbsp; 222.0&nbsp; 223.0&nbsp;&nbsp;
+... <br><br>
+yes? def axis/t=2:10:2 tnew <br>
+yes? sh axis tnew <br>
+yes? def grid/x=xax/y=y_irr/t=tnew zytgrid <br>
+yes? let dum = 0*x[g=zytgrid]+0*y[g=zytgrid]+0*t[g=zytgrid] <br>
+yes? stat dum <br><br>
+yes? let b = reshape(a,dum) <br>
+yes? stat b <br>
+yes? list b <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+VARIABLE : RESHAPE(A,DUM) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SUBSET&nbsp;&nbsp; : 3 by 4 by 5 points (X-Y-T) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 <br>
+&nbsp;---- L:1 T:&nbsp;&nbsp; 2 <br>
+&nbsp;1&nbsp;&nbsp; / 1:&nbsp; 111.0&nbsp; 112.0&nbsp; 113.0 <br>
+&nbsp;3&nbsp;&nbsp; / 2:&nbsp; 121.0&nbsp; 122.0&nbsp; 123.0 <br>
+&nbsp;4&nbsp;&nbsp; / 3:&nbsp; 131.0&nbsp; 132.0&nbsp; 133.0 <br>
+&nbsp;5&nbsp;&nbsp; / 4:&nbsp; 141.0&nbsp; 142.0&nbsp; 143.0 <br>
+&nbsp;---- L:2 T:&nbsp;&nbsp; 4 <br>
+&nbsp;1&nbsp;&nbsp; / 1:&nbsp; 211.0&nbsp; 212.0&nbsp; 213.0 <br>
+&nbsp;3&nbsp;&nbsp; / 2:&nbsp; 221.0&nbsp; 222.0&nbsp; 223.0 <br><br>
+yes? def axis/z=3:9:3 znew <br>
+yes? def grid/y=y_irr/z=znew/t=tnew yztgrid <br>
+yes? let dum =&nbsp; 0*y[g=yztgrid]+0*z[g=yztgrid]+0*t[g=yztgrid] <br>
+yes? stat dum <br><br>
+yes? let c = reshape(b,dum) <br>
+yes? stat c <br>
+yes? list c <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+VARIABLE : RESHAPE(B,DUM) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SUBSET&nbsp;&nbsp; : 4 by 3 by 5 points (Y-Z-T) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 <br>
+&nbsp;---- L:1 T:&nbsp;&nbsp; 2 <br>
+&nbsp;3&nbsp;&nbsp; / 1:&nbsp; 111.0&nbsp; 112.0&nbsp; 113.0&nbsp; 121.0
+<br>
+&nbsp;6&nbsp;&nbsp; / 2:&nbsp; 122.0&nbsp; 123.0&nbsp; 131.0&nbsp; 132.0
+<br>
+&nbsp;9&nbsp;&nbsp; / 3:&nbsp; 133.0&nbsp; 141.0&nbsp; 142.0&nbsp; 143.0
+<br>
+&nbsp;---- L:2 T:&nbsp;&nbsp; 4 <br>
+&nbsp;3&nbsp;&nbsp; / 1:&nbsp; 211.0&nbsp; 212.0&nbsp; 213.0&nbsp; 221.0
+<br>
+&nbsp;6&nbsp;&nbsp; / 2:&nbsp; 222.0&nbsp; 223.0&nbsp; 231.0&nbsp; 232.0
+<br>
+&nbsp; <br><br>
+You can see how the data is staying in its original order; the <br>
+K axis does not automatically contain the data from the I axis. <br>
+What you could do, is write a NetCDF file with the data at the <br>
+point where you have it in X, Y, and T.&nbsp; Use NCDUMP to write <br>
+this out in ASCII format, edit the file and rename the X axis <br>
+to a Z axis, also making sure the order of the axes listed in the <br>
+NetCDF file is correct in all the header sections of the file.&nbsp; Then
+<br>
+use NCGEN to create a file in the ordering you want. <br><br>
+Ansley Manke <br><br>
+Rob Scott wrote: <br>
+<blockquote type=cite class=cite cite>&nbsp; <br><br>
+Dear ferret <br><br>
+I have a netCDF file with a three dimensional field on the x, y, z axes.
+<br>
+I would like to use zaxreplace on the x axis data. (I believe this
+amazing function is currently only supported on the z-axis.) <br><br>
+I've managed to use RESHAPE to get the z axis data onto the t-axis, but
+when I try to use RESHAPE to get the x-axis data onto the <br>
+now vacant z-axis, it messes up the data. Am I trying to do the
+impossible? <br>
+<br>
+The manual states: <br><br>
+<font face="Times, Times">&quot;For any axis X,Y,Z, or T if the axis is
+the same in the input and output grids then the region from argument 1
+will be preserved in the output.</font> <br>
+<font face="Times, Times">This implies that when the above technique is
+used on multi-dimensional input, only the axes which differ between the
+input and output grids are affected by the RESHAPE
+operation.&quot;</font> <br>
+&nbsp; <br><br>
+Hence I've attempted to &quot;let ferret know&quot; that I want to move
+the x-data over to the z-axis, and leave y and t alone, by defining my
+output grid to have only one dimension in the x-direction, <br>
+In particular: <br><br>
+DEFINE AXIS/x=1:1:1
+xaxis_normal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! my attempt to make this a normal axis <br>
+DEFINE AXIS/z=1:5:1
+zaxis_new&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! (the old x - axis) <br>
+DEFINE GRID/LIKE=old_grid/ x= xaxis_normal/ z=zaxis_new&nbsp;&nbsp;
+output_grid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! I need to use LIKE to get the y-axis correct because it's irregular.
+<br><br>
+LET dummie = x[output_grid] * y[output_grid]&nbsp; * z[output_grid]&nbsp;
+*t[output_grid] <br><br>
+LET new_var = RESHAPE(old_var,dummie] <br>
+&nbsp; <br><br>
+But now <br>
+old_var[i=1]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+.NE.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; new_var[k=1] <br><br>
+Thanks for any advice, <br>
+Rob <br>
+&nbsp; <br><br>
+Rob Scott <br>
+Research Associate <br>
+Institute for Geophysics <br>
+University of Texas at Austin <br>
+4412 Spicewood Springs Rd. <br>
+Building 600 <br>
+Austin, TX <br>
+78759 <br><br>
+Office: +1-512-471-0375</blockquote>-- <br>
+Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246 <br>
+&nbsp; </blockquote>
+<x-sigsep><p></x-sigsep>
+Rob Scott<br>
+Research Associate<br>
+Institute for Geophysics<br>
+University of Texas at Austin<br>
+4412 Spicewood Springs Rd.<br>
+Building 600<br>
+Austin, TX<br>
+78759<br><br>
+Office: +1-512-471-0375
+
+
+
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00617" href="msg00617.html">Re: reshape and get x axis data onto z axis</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00594" href="msg00594.html">reshape and get x axis data onto z axis</a></strong>
+<ul><li><em>From:</em> Rob Scott</li></ul></li>
+<li><strong><a name="00600" href="msg00600.html">Re: reshape and get x axis data onto z axis</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00601.html">Re: reshape and get x axis data onto z axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00617.html">Re: reshape and get x axis data onto z axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00601.html">Thread Prev</a>][<a href="msg00617.html">Thread Next</a>][<A HREF="threads.html#00615">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

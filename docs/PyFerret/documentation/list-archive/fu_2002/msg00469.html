@@ -1,0 +1,189 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: FFTA encountered missing data a ... -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Wed, 2 Oct 2002 09:41:35 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3D9B2277.4B449D33@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 163b61c04a.1c04a163b6@ono.com -->
+<!--X-Reference: 3D99CB95.41660153@pmel.noaa.gov -->
+<!--X-Reference: 3D9AA96C.1050705@ono.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: FFTA encountered missing data a ...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00468.html">Thread Prev</a>][<a href="msg00471.html">Thread Next</a>][<A HREF="threads.html#00469">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: FFTA encountered missing data a ...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>antonio rodriguez &lt;<a href="mailto:arv@DOMAIN.HIDDEN">arv@xxxxxxx</a>&gt;,       &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: FFTA encountered missing data a ...</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 02 Oct 2002 09:44:39 -0700</li>
+<li>References: &lt;<a href="msg00466.html">163b61c04a.1c04a163b6@ono.com</a>&gt; &lt;<a href="msg00467.html">3D99CB95.41660153@pmel.noaa.gov</a>&gt;&lt;<a href="msg00468.html">3D9AA96C.1050705@ono.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Antonio,
+<br>First, we're going to replace the FFT function's error message
+<br>so that if you have sent in a 1-D time series, the error message
+<br>will just say "missing data at L = 1"&nbsp; rather than the confusing
+list
+<br>of&nbsp; indices&nbsp; -111 -111 -111&nbsp;&nbsp;&nbsp; 1
+<p>One thing you could do, if there is just one missing timestep, is
+<br>to skip that first value by sending&nbsp; variable[l=2:428]&nbsp; to
+the function.
+<p>Somebody on the list here might suggest the right way to deal
+<br>with missing time steps to get a good FFT analysis - a local
+<br>mean might be a better idea than the overall mean, as you'll
+<br>see from the example below.
+<p>If you want to get the mean and replace missing data with it, you
+<br>could do the following.&nbsp; I'll use a time series from the
+<br>COADS dataset, included with Ferret, to demonstrate.
+<blockquote>USE coads
+<br>SET REGION/X=180/Y=0
+<br>LET smean = sst[T=@AVE]
+<br>LIST smean
+<p>LET filled_sst = IF sst THEN sst ELSE smean
+<p>SET VIEW upper
+<br>PLOT sst
+<p>SET VIEW lower
+<br>PLOT filled_sst</blockquote>
+The IF statement is saying that if there is good data in the
+<br>variable, then use it, else replace by the mean.&nbsp; This is
+<br>called masking, and you can find it in the Users Guide under
+<br>"masking, IF-THEN-ELSE logic".
+<p>antonio rodriguez wrote:
+<blockquote TYPE=CITE>Hi Ansley,
+<p>Ansley Manke wrote:
+<p>> Hi Antonio,
+<br>> The FFT functions work on&nbsp; time series having no missing
+<br>> data. The error message indicates that the first time step of the
+<br>> data you're sending to the function has missing data.&nbsp; You might
+<br>> try listing the first few times of&nbsp; variable_mean[l=1:428] to
+<br>> see what's happening, or look at what is in the variable with
+<br>> the command
+<br>>
+<br>> yes? STAT variable_mean[l=1:428]
+<p>You are rigth I have 1 value flagged as bad data at this location:
+<br>(i,j,k,l) -111 -111 -111&nbsp;&nbsp;&nbsp; 1
+<p>How do I can overcome this problem? Maybe replacing the bad value with
+<br>the mean? but how?
+<p>Thanks in advance
+<p>Cheers,
+<p>Antonio
+<p>>
+<br>> Ansley Manke
+<br>>
+<br>> arv@ono.com wrote:
+<br>>
+<br>>
+<br>>>Hi,
+<br>>>
+<br>>>I've tried to perform the following FFTA analysis but I get this
+<br>>>result.Don't know where is my mistake
+<br>>>
+<br>>>Thanks in advance.
+<br>>>
+<br>>>Antonio Rodriguez
+<br>>>
+<br>>>use wind.nc
+<br>>>DEF AXIS/T=16-JAN-1967:17-AUG-2002:1/UNITS=months regt
+<br>>> *** NOTE: /UNIT=MONTHS is ambiguous ... using 1/12 of 365.2425 days
+<br>>>DEF AXIS/X=10W:6W:1 x10
+<br>>>DEF AXIS/y=34n:38n:1 y10
+<br>>>DEFINE GRID/x=x10/y=y10 g10x10
+<br>>>SET GRID g10x10
+<br>>>LET regular_variable = UV_MAG_MEAN[GT=regt]
+<br>>>LET variable_mean = regular_variable[x=10w:6w@ave,y=34n:38n@ave]
+<br>>>LET FFT_variable = FFTA(variable_mean[l=1:428])
+<br>>> PLOT FFT_variable
+<br>>> *** NOTE: CYC/MONTHS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+is ambiguous ...
+<br>>>using 1/12 of 365 days.
+<br>>>
+<br>>>Bailing out of external function "ffta":
+<br>>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FFTA encountered missing
+data at (i,j,k,l) -111 -111 -111&nbsp;&nbsp;&nbsp; 1
+<br>>> **ERROR: : error in external function
+<br>>>
+<br>>
+<br>> --
+<br>> Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp;
+Seattle WA&nbsp; (206)526-6246
+<br>>
+<br>>
+<br>>
+<br>></blockquote>
+--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00471" href="msg00471.html">Re: FFTA encountered missing data a ...</a></strong>
+<ul><li><em>From:</em> antonio rodriguez</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00466" href="msg00466.html">FFTA encountered missing data a ...</a></strong>
+<ul><li><em>From:</em> arv</li></ul></li>
+<li><strong><a name="00467" href="msg00467.html">Re: FFTA encountered missing data a ...</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00468" href="msg00468.html">Re: FFTA encountered missing data a ...</a></strong>
+<ul><li><em>From:</em> antonio rodriguez</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00468.html">Re: FFTA encountered missing data a ...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00471.html">Re: FFTA encountered missing data a ...</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00468.html">Thread Prev</a>][<a href="msg00471.html">Thread Next</a>][<A HREF="threads.html#00469">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: A routine to reverse ascii data order, -->
+<!--X-From-R13: Zri Fnenfbss <yriNngzbfc.culfvpf.hgbebagb.pn> -->
+<!--X-Date: Fri, 19 May 2000 11:39:25 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.SGI.4.10.10005191434470.7838&#45;100000@atmosp.physics.utoronto.ca -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>A routine to reverse ascii data order,</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00223.html">Thread Prev</a>][<a href="msg00225.html">Thread Next</a>][<A HREF="threads.html#00224">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>A routine to reverse ascii data order,</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>A routine to reverse ascii data order, </strong></li>
+<li><strong>From</strong>: <strong>Lev Tarasoff &lt;<A HREF="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxxxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 19 May 2000 14:39:22 -0400</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hopefully the new version of Ferret will handle reversed data
+order. But if you have data that needs to be reordered, you are
+welcome to use this fortran routine that will read in a file, copy any
+file header, reverse the line order of the data, and if specified, change
+the sign of a column.
+
+cheers
+
+Lev
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      program reverse
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      parameter(NDATMX=20000,NCOLMX=10)
+
+      real dat(NDATMX,NCOLMX)
+      real sdat(NCOLMX)
+      character*(60) skip
+      integer iu,iuo,i,j,ncol,nskip,nchangesign,iend,ij
+
+      iu=8
+      iuo=9
+
+      call askofil(iu, 'input file')
+      call asknfil(iuo,'reversed output file')
+      write(*,*) &quot;header size in # of lines of the beginning of the&quot;
+      write(*,*) &quot;file that are to be recopied to output as is&quot;
+      write(*,*) &quot; if column for sign change is &lt; 1, then no signs&quot;
+      write(*,*) &quot; are reversed&quot;
+      write(*,*) &quot;enter header size,# columns, column for sign change&quot;
+      read(*,*) nskip,ncol,nchangesign
+      if(nchangesign.gt.ncol) then
+         write(*,*)&quot;nchangesign too big&quot;
+         stop
+      endif
+      
+      if(nskip.gt.0) then
+       do i=1,nskip
+          read(iu,'(A)') skip
+          write(iuo,'(A)') skip         
+       enddo
+      endif
+
+      do i=1,NDATMX
+         ij=i
+         call colread(sdat,iend,ncol,iu)
+         if(iend.eq.1) goto 2
+         do j=1,ncol
+            dat(i,j)=sdat(j)
+         enddo
+      enddo
+      write(*,*)&quot;increase NDATMX in code&quot;
+      stop
+
+ 2    ij=ij-1
+      do i=ij,1,-1
+         if(nchangesign.gt.0) dat(i,nchangesign)=-dat(i,nchangesign)
+         do j=1,ncol
+            sdat(j)=dat(i,j)
+         enddo
+         call colwrite(sdat,ncol,iuo)
+      enddo
+      write(*,*)&quot;file successfully reversed&quot;
+
+      stop
+      end
+
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine colread(sdat,iend,ncol,iu)
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      
+      real sdat(NCOL)
+      integer iu,ncol,iend
+
+      iend=0
+      read(iu,*,end=1) sdat
+
+      goto 99
+
+ 1    iend=1
+ 99   return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine colwrite(sdat,ncol,iu)
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      
+      real sdat(NCOL)
+      integer iu,ncol
+
+      write(iu,*) sdat
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine asknfil(iu,fdescr)
+c     open new file
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      character*(40) fname
+      character*(*) fdescr
+
+
+      write(*,*)&quot;enter name of &quot;,fdescr
+      read(*,'(A)')fname
+      open(unit=iu,file=fname,status='new')
+      write(*,*)fname,&quot; is open&quot;
+
+      return
+      end
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine askofil(iu,fdescr)
+c     open old file
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      character*(40) fname
+      character*(*) fdescr
+
+
+      write(*,*)&quot;enter name of &quot;,fdescr
+      read(*,'(A)')fname
+      open(unit=iu,file=fname,status='old')
+      write(*,*)fname,&quot; is open&quot;
+
+      return
+      end
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+
+Lev Tarasoff -  Dept of Physics, University of Toronto,
+                60 St. George St., Toronto, Ontario, CANADA, M5S 1A7
+                Tel (416)-946-3019  Fax (416)-978-8905
+                email: lev@atmosp.physics.utoronto.ca
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00223.html">Running in Batch</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00225.html">muliple viewports one colorbar key</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00223.html">Thread Prev</a>][<a href="msg00225.html">Thread Next</a>][<A HREF="threads.html#00224">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

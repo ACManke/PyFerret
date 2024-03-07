@@ -1,0 +1,199 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Concatting data files -->
+<!--X-From-R13: "'Xrss Bbygba'" <fjc98wncNzrg.ernqvat.np.hx> -->
+<!--X-Date: Tue, 9 May 2000 03:49:27 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.GSO.3.96.1000509113907.13000H&#45;100000@titanic -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Concatting data files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00194.html">Thread Prev</a>][<a href="msg00199.html">Thread Next</a>][<A HREF="threads.html#00196">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Concatting data files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: Concatting data files</strong></li>
+<li><strong>From</strong>: <strong>&quot;'Jeff Polton'&quot; &lt;<A HREF="mailto:swp98jap@DOMAIN.HIDDEN">swp98jap@xxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 9 May 2000 11:46:47 +0100 (BST)</li>
+<li>Reply-to: &quot;'Jeff Polton'&quot; &lt;<A HREF="mailto:swp98jap@DOMAIN.HIDDEN">swp98jap@xxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+Inresponse to my request for help in concatting data files into a time
+series when all the files had the same time set, Lynn deWitt provided the
+following solution.
+(The trick being to specify the time attributed to the variable you 
+concatting as you timestamp it).
+	Jeff
+
+
+USE test1.cdf, test2.cdf, test3.cdf
+
+! define the p axis
+DEFINE AXIS/T=1:3:1 tp
+DEFINE GRID/T=tp gp
+
+! define the &quot;zero&quot; value
+LET zero = T[g=gp] * 0
+
+! define the time-stamped variable
+LET adv_stamped = zero + intjadv[t=330000]
+
+! save all 3 sets in a time series
+REPEAT/L=1:3 (SET DATA `L`; SAVE/APPEND/FILE=test.nc adv_stamped)
+
+
+There's something about the time axis in your cdf files  - maybe because
+the time is the same in all of them - that requires it be set specifically.
+the following is an ncdump of the output file:
+
+
+&gt; ncdump test.nc
+netcdf test {
+dimensions:
+        Z63_63 = 1 ;
+        TP = UNLIMITED ; // (3 currently)
+variables:
+        double Z63_63(Z63_63) ;
+                Z63_63:units = &quot;D&quot; ;
+                Z63_63:point_spacing = &quot;even&quot; ;
+        double TP(TP) ;
+        float ADV_STANPED(TP, Z63_63) ;
+                ADV_STANPED:missing_value = -1.e+34f ;
+                ADV_STANPED:_FillValue = -1.e+34f ;
+                ADV_STANPED:long_name = &quot;ZERO + INTJADV[T=330000]&quot; ;
+                ADV_STANPED:history = &quot;From test1&quot; ;
+
+// global attributes:
+                :history = &quot;FERRET V4.91 (GUI) 08-May-00&quot; ;
+data:
+
+ Z63_63 = 0.981900274753571 ;
+
+ TP = 1, 2, 3 ;
+
+ ADV_STANPED =
+  -1.736489e-14,
+  -1.33962e-14,
+  -9.226068e-15 ;
+}
+
+
+Lynn
+
+
+--------------------------------------------
+Lynn deWitt
+
+ldewitt@pfeg.noaa.gov
+
+Pacific Fisheries Environmental Laboratories
+1352 Lighthouse Avenue
+Pacific Grove, CA 93950-2097
+(831)-648-9036
+
+&gt;------------------------------------------------------------
+&gt;Hello,
+&gt;
+&gt;I am trying to produce a times series for a variable from a number of
+&gt;files. I have tried various methods including the &quot;timestamping&quot; and the
+&gt;other methods found in the recent `Re: Concatting data from &quot;degenerate&quot;
+&gt;files...`
+&gt;I sent out a similar request for help last week and it was pointed out
+&gt;that I didn't really give enough information, so here is a code sample:
+&gt;
+&gt;
+&gt;!------ ! code to concat 3 data files to concat.cdf
+&gt;
+&gt;! We now have 3 new files
+&gt;! GO test
+&gt;
+&gt;! initialize the files
+&gt;USE test1.cdf, test2.cdf, test3.cdf
+&gt;
+&gt;! define the p axis
+&gt;DEFINE AXIS/T=1:3:1 tp
+&gt;DEFINE GRID/T=tp gp
+&gt;
+&gt;! define the &quot;zero&quot; value
+&gt;LET zero = T[g=gp] * 0
+&gt;
+&gt;! define the time-stamped variable
+&gt;LET adv_stamped = zero + intjadv
+&gt;
+&gt;! save all 3 sets in a time series
+&gt;REPEAT/X=1:3 (SET DATA `X`; SAVE/APPEND/FILE=concat.cdf adv_stamped)
+&gt;
+&gt;EXIT
+&gt;!------
+&gt;
+&gt;The problem is that the script, at each time step, writes the same value
+&gt;to each element of the concatination vector. It repeats this process
+&gt;three times. 
+&gt;I can't fathom how to get each value to its own element only.
+&gt;Incase you feel this is a worthy challenge I've included the three data
+&gt;files test{1,2,3}.cdf
+&gt;Thankyou for your time,
+&gt;        Jeff
+
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00194.html">[no subject]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00199.html">working with NetCDF file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00194.html">Thread Prev</a>][<a href="msg00199.html">Thread Next</a>][<A HREF="threads.html#00196">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

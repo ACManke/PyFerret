@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: increasing performance with list/repeat indices -->
+<!--X-From-R13: Dhffryy Tvrqyre <svrqyreNznevar.pfveb.nh> -->
+<!--X-Date: Mon, 12 Mar 2001 16:04:05 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.SOL.3.95.1010313103503.8714B&#45;100000@inverse -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.30.0103121730110.21110&#45;100000@vorlon.eas.gatech.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: increasing performance with list/repeat indices</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00124.html">Thread Prev</a>][<a href="msg00126.html">Thread Next</a>][<A HREF="threads.html#00125">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: increasing performance with list/repeat indices</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Re: increasing performance with list/repeat indices</strong></li>
+<li><strong>From</strong>: <strong>Russell Fiedler &lt;<A HREF="mailto:fiedler@DOMAIN.HIDDEN">fiedler@xxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 13 Mar 2001 11:03:57 +1100 (EDT)</li>
+<li>In-reply-to: &lt;<a href="msg00124.html">Pine.LNX.4.30.0103121730110.21110-100000@vorlon.eas.gatech.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+
+Brent,
+
+I think that this a problem with strided netcdf IO. You are attempting to
+read/write out values every 144 locations in your files. The most
+efficient method of access is via contiguous blocks. This means that
+looping over the time axis should give the best performance (144x71x17
+size blocks). Looping over depth will give ok performance (144x71) and
+striding over x will give the worst.
+
+I created the following test program to illustrate this
+
+def axis/x=1:144:1 xax
+def axis/y=1:71:1 yax
+def axis/z=1:17:1 zax
+def axis/t=1:365:1 tax
+let x1=x[gx=xax]+y[gy=yax]+z[gz=zax]+t[t=tax]
+sp rm f1.nc
+! fastest &quot;l&quot;
+repeat/l=1:365 save/file=f1.nc/llimits=1:365/append x1
+sp rm f1.nc
+
+! ok &quot;k&quot;
+repeat/k=1:17 save/file=f1.nc/klimits=1:17/append x1
+
+! you might want to kill this one... &quot;i&quot;
+sp rm f1.nc
+repeat/i=1:144 save/file=f1.nc/ilimits=1:144/append x1 
+
+
+It might be even faster to 'block' the loop over l so that it reads
+
+repeat/l=1:361:5 save/file=f1.nc/llimits=1:365/append/l=`l:`l+4` x1
+
+On the other hand I notice that you are using the northern hemisphere so
+the k loop may be the just as  efficient as the l loop for input at least
+since these blocks are each 144x37
+
+Cheers,
+Russ Fiedler
+
+On Mon, 12 Mar 2001, Brent A McDaniel wrote:
+
+&gt; 
+&gt; Greetings Ferret Users,
+&gt; 
+&gt; After discussing this with Ansley he asked that I post it to the Users
+&gt; Group to see if someone else has experience with this.
+&gt; 
+&gt; Background: I calculated the climatology for 1957-1999 of air temperature
+&gt; using ferret.  The climatology is 144x73x17x365.  I then smoothed it using
+&gt; a 91 point window.  I want to subtract the climatology out from the
+&gt; original files to get the anomalies. (the original files are
+&gt; 144x73x17x365(or6) as well).  I'm also only saving the northern
+&gt; hemisphere, hence the j=36:73.
+&gt; 
+&gt; Here's a sample of what I'm doing:
+&gt; 
+&gt; yes? use airclimsmooth91.nc
+&gt; yes? use air.1987.nc
+&gt; yes? let airanom=air[d=2]-dailyclim[d=1,gt=GSJ1@asn]
+&gt; repeat/i=1:144 save/ilimits=1:144/file=&quot;/data/ncep/aanom.1957.nc&quot;/append
+&gt; airanom[j=36:73,l=1:365]
+&gt; yes? quit
+&gt; 
+&gt; 
+&gt; !where GSJ1 is the grid name of air.1987.nc
+&gt; 
+&gt; 
+&gt; This works but takes quite a long time (approx 8 hours per 1 annual data
+&gt; file).  I'm now thinking that repeating over the z-axis might save some time as it
+&gt; would decrease the number of times information was written to disk from
+&gt; 144 to 17 per file although I haven't tried it (it might not work due to
+&gt; memory issues which is why I'm using the repeat command in the first
+&gt; place).
+&gt; 
+&gt; Does anyone else have experience with this or know of a more efficient
+&gt; solution?
+&gt; 
+&gt; 
+&gt; Cheers,
+&gt; 
+&gt; Brent
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00124" href="msg00124.html">increasing performance with list/repeat indices</a></strong>
+<ul><li><em>From:</em> Brent A McDaniel</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00124.html">increasing performance with list/repeat indices</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00126.html">Thermocline depth</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00124.html">Thread Prev</a>][<a href="msg00126.html">Thread Next</a>][<A HREF="threads.html#00125">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

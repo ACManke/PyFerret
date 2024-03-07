@@ -1,0 +1,201 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: How to extract length of axis to a symbol? -->
+<!--X-From-R13: "[pQnaa, [vxr" <zppnaaNzonev.bet> -->
+<!--X-Date: Tue, 3 Apr 2001 14:35:03 &#45;0700 (PDT) -->
+<!--X-Message-Id: 8969C7C92A78D311869C0090278750B6B52D17@cumulus.shore.mbari.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>How to extract length of axis to a symbol?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00183.html">Thread Prev</a>][<a href="msg00186.html">Thread Next</a>][<A HREF="threads.html#00185">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>How to extract length of axis to a symbol?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret_users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>How to extract length of axis to a symbol?</strong></li>
+<li><strong>From</strong>: <strong>&quot;McCann, Mike&quot; &lt;<A HREF="mailto:mccann@DOMAIN.HIDDEN">mccann@xxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 03 Apr 2001 14:34:51 -0700</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Quick question, I hope...
+
+After defining an axis, e.g.:
+
+DEFINE AXIS/T=($TMIN):($TMAX):7200/UNITS=seconds TNEW
+
+How do I get the number of points in the axis and assign
+the number to a symbol?
+
+
+(This is for a go file that I'm writing to combine separate
+mooring deployment netCDF files into a single netCDF file
+that contains all the data on a single grid.)
+
+Thanks in advance,
+Mike
+
+--
+Mike McCann   (mccann@mbari.org)
+Group Leader, Information Applications Group
+Monterey Bay Aquarium Research Institute
+7700 Sandholdt Road
+Moss Landing, CA 95039-9644
+Voice: (831) 775-1769   Fax: (831) 775-1646 <A  HREF="http://www.mbari.org/rd/iag.htm">http://www.mbari.org/rd/iag.htm</A>
+
+
+&gt; -----Original Message-----
+&gt; From: Steve Hankin [<A  HREF="mailto:hankin@pmel.noaa.gov">mailto:hankin@pmel.noaa.gov</A>]
+&gt; Sent: Thursday, March 15, 2001 6:14 PM
+&gt; To: Andrew Wittenberg
+&gt; Cc: ferret_users
+&gt; Subject: Re: How to extract file name to symbol?
+&gt; 
+&gt; 
+&gt; Hi Andrew,
+&gt; 
+&gt; There will be a clean solution to this in Ferret V5.3 where 
+&gt; you will have
+&gt; 
+&gt;     `my_var,return=dset`      - to get the data set name
+&gt;     `my_var,return=dsetnum`   - to get the data set number
+&gt;     `my_var,return=dsetpath`  - to get the full data set name&amp;path
+&gt; 
+&gt; In V5.22 the following kludge will capture the data set name 
+&gt; and title as
+&gt; symbols
+&gt; 
+&gt;      use coads_climatology
+&gt;      plot/set sst[i=1,j=1,l=1]
+&gt;      !show symbols   ! the whole list of 'em
+&gt;      show symbol LAB($LABNUM_DATITL)
+&gt;      show symbol LAB($LABNUM_DSET)
+&gt; 
+&gt; The kludge needed to get the full path is uglier. I think 
+&gt; you'd have to do
+&gt; something like
+&gt; 
+&gt;      use coads_climatology
+&gt;      list sst[i=1,j=1,l=1]
+&gt;      list/clobber/file=out.dat sst[i=1,j=1,l=1]
+&gt;      sp head -5 out.dat | tail -1 | sed 's/^.*DATA SET:/DEFINE SYMBOL
+&gt;      dpath/' &gt;out.jnl
+&gt;      go out.jnl
+&gt;      show symbol dpath
+&gt; 
+&gt; Incidentally, V5.3 also has a way to grab the output of any 
+&gt; Unix command as a
+&gt; string variable. But that's just frustrating knowledge at 
+&gt; this point, isn't
+&gt; it!
+&gt; 
+&gt;     - steve
+&gt; 
+&gt; ============================================
+&gt; 
+&gt; Andrew Wittenberg wrote:
+&gt; 
+&gt; &gt; Does anyone know how to get the complete file name 
+&gt; corresponding to a
+&gt; &gt; dataset number, and place it in a string symbol?  Ferret 
+&gt; will display the
+&gt; &gt; info with, e.g.,
+&gt; &gt;
+&gt; &gt; yes? show data/brief 4
+&gt; &gt;      currently SET data sets:
+&gt; &gt;     4&gt; /net/atw/dynamic/predict/cz/diags/diag439/climatology.nc
+&gt; &gt;
+&gt; &gt; but I can't figure out how to get hold of that file name so 
+&gt; I can use it
+&gt; &gt; in a script.  Is it stored in an internal ppl symbol 
+&gt; somewhere?  Or is
+&gt; &gt; there any way to send the output of &quot;show data&quot; to a file?
+&gt; &gt;
+&gt; &gt; Thanks for any help you can give,
+&gt; &gt;
+&gt; &gt; Andrew
+&gt; &gt;
+&gt; &gt; 
+&gt; ----------------------------------------------------------------------
+&gt; &gt; Andrew Wittenberg          Program in Atmospheric and 
+&gt; Oceanic Sciences
+&gt; &gt; andyw@splash.princeton.edu                Sayre Hall, 
+&gt; Forrestal Campus
+&gt; &gt;                                                   Princeton 
+&gt; University
+&gt; &gt;                                               Princeton, NJ 
+&gt; 08544-0710
+&gt; &gt; 
+&gt; ----------------------------------------------------------------------
+&gt; 
+&gt; --
+&gt; 
+&gt;                 |  NOAA/PMEL               |  ph. (206) 526-6080
+&gt; Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+&gt;                 |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+&gt; 
+&gt; 
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00187" href="msg00187.html">Re: How to extract length of axis to a symbol?</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg</li></ul></li>
+<li><strong><a name="00186" href="msg00186.html">Re: How to extract length of axis to a symbol?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00183.html">Plotting data points on contour plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00186.html">Re: How to extract length of axis to a symbol?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00183.html">Thread Prev</a>][<a href="msg00186.html">Thread Next</a>][<A HREF="threads.html#00185">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

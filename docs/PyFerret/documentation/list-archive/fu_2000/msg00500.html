@@ -1,0 +1,188 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: How does one truncate map&#45;projections plots? -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 20 Nov 2000 10:56:23 &#45;0800 (PST) -->
+<!--X-Message-Id: 3A1973F5.50212697@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.SGI.4.10.10011151706480.20755&#45;100000@atmosp.physics.utoronto.ca -->
+<!--X-Reference: 3A19634B.6693A415@pmel.noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How does one truncate map-projections plots?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00498.html">Thread Prev</a>][<a href="msg00499.html">Thread Next</a>][<A HREF="threads.html#00500">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How does one truncate map-projections plots?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How does one truncate map-projections plots?</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<A HREF="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 20 Nov 2000 10:56:53 -0800</li>
+<li>Cc: Lev Tarasoff &lt;<A HREF="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxxxxxxxxxxxxxxxxxxxxxx</A>&gt;,       <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00498.html">Pine.SGI.4.10.10011151706480.20755-100000@atmosp.physics.utoronto.ca</a>&gt;&lt;3A19634B.6693A415@pmel.noaa.gov&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Lev,
+
+Actually, the solution pretty simple if not obvious.  No additional
+scripts are necessary.  The map project scripts convert from lon/lat to
+page coordinates.  For accurate representation of the map projection
+your aspect ratio should be set so that one horizontal unit of page
+coordinates equals one vertical unit of page coordinates.  That's what
+the mp_aspect.jnl script does:  it calculates the range of page
+coordinates and sets the aspect ratio accordingly.  You can see what's
+happening with the following:
+
+yes? use etopo20
+yes? set region/x=250:380/y=54:90
+yes? go mp_orthographic 315 72    ! centered on the selected region
+yes? go mp_grid rose
+yes? go mp_aspect print           ! prints the aspect ratio but doesn't
+set it
+The appropriate aspect ratio is 0.57616
+
+To understand where this comes from do this:
+
+yes? show sym/all
+...
+PPL$XLEN = &quot;9.127&quot;
+PPL$YLEN = &quot;5.259&quot;
+...
+yes? list `($ppl$ylen/($ppl$xlen)`
+ !-&gt; list 0.5762
+ 
+          0.5762
+
+If you go ahead and generate the plot, letting mp_aspect.jnl set the
+aspect ratio, you'll have a map more or less centered on Greenland but
+with way too much other stuff.  
+
+yes? go mp_aspect                 ! actually set the aspect ratio
+yes? let mask_rose = rose * mp_mask
+yes? shade/lev=20c/pal=dark_land_sea mask_rose, x_page, y_page
+
+However, because of the page coordinates listed on the axes we know what
+area we want.  It looks like horizontal coordinates -.15:1.5 and
+vertical coordinates -2.5:2.5 would generate a nice map of Greenland. 
+Using the same region, we can set a new aspect ratio ourselves and
+truncate the plot appropriately, leaving off the page coordinate axes
+for the final plot:
+
+yes? set win/aspect = `.5/.3`
+yes?
+shade/lev=20c/pal=dark_land_sea/hlimits=-.15:.15/vlimits=-.25:.25/noaxes
+mask_rose, x_page, y_page
+
+This technique should work with any of the map projection scripts,
+
+Good luck,
+
+
+-- Jonathan Callahan
+
+
+Steve Hankin wrote:
+&gt; 
+&gt; Hi Lev,
+&gt; 
+&gt; The &quot;mp_ scripts all define internally simple translations from &quot;world
+&gt; coordinates&quot; (lat/long) into page coordinates (on either a [0,1] or
+&gt; [-1,1] coordinate system -- I don't recall)
+&gt; 
+&gt; I suspect it would be a straightforward matter to create a modified
+&gt; script which took as an additional argument a &quot;magnification factor&quot; so
+&gt; that it projected into, say, a [-2,2] space instead of [-1,1]. Then the
+&gt; clipping of the edges would occur naturally as a result of the plot
+&gt; rectangle being defined as [-1,1]
+&gt; 
+&gt; I have not actually tried this ...
+&gt; 
+&gt;     - steve
+&gt; 
+&gt; =======================
+&gt; 
+&gt; Lev Tarasoff wrote:
+&gt; 
+&gt; &gt; I would like to use mp_orthographic to plot my Greenland data, but I
+&gt; &gt; need to truncate the sides of the plot. (Since plotting regions are
+&gt; &gt; always rectangular on a lat-long grid, and on account of the N-S
+&gt; &gt; divergence of lines of longitude, the plots end up with a lot of
+&gt; &gt; ocean.) I've tried the margins GO routine with negative x limits, but
+&gt; &gt; area maps and contour lines shift relative to each other. Any ideas?
+&gt; &gt;
+&gt; &gt; Thanks
+&gt; &gt;
+&gt; &gt; Lev
+&gt; &gt;
+&gt; &gt; Lev Tarasoff -  Dept of Physics, University of Toronto,
+&gt; &gt;                 60 St. George St., Toronto, Ontario, CANADA, M5S 1A7
+&gt; &gt;                 Tel (416)-946-3019  Fax (416)-978-8905
+&gt; &gt;                 email: lev@atmosp.physics.utoronto.ca
+&gt; 
+&gt; --
+&gt; 
+&gt;                 |  NOAA/PMEL               |  ph. (206) 526-6080
+&gt; Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+&gt;                 |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00498" href="msg00498.html">How does one truncate map-projections plots?</a></strong>
+<ul><li><em>From:</em> Lev Tarasoff</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00498.html">How does one truncate map-projections plots?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00499.html">Ferret 5.2 on Linux</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00498.html">Thread Prev</a>][<a href="msg00499.html">Thread Next</a>][<A HREF="threads.html#00500">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

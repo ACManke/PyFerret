@@ -1,0 +1,172 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Coordinate systems... -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Wed, 24 Jul 2002 15:22:39 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3D3F275C.4CBF96DF@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200207241823.g6OINLZ01547@sunray3.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Coordinate systems...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00370.html">Thread Prev</a>][<a href="msg00373.html">Thread Next</a>][<A HREF="threads.html#00372">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Coordinate systems...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Gary Strand &lt;<a href="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Coordinate systems...</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 24 Jul 2002 15:17:00 -0700</li>
+<li>Cc: Ferret Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="msg00370.html">200207241823.g6OINLZ01547@sunray3.cgd.ucar.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Gary,
+
+I think we can fix most of this with a combination of some new external function,
+which we could write to support coordinate transformations, and some further
+understanding of how things work.  I would like to ask you to illustrate the
+situations that you find most difficult and to propose the external functions that
+you would find useful (offline probably to be preferred to minimize traffic).
+
+Regarding your specific example
+    &quot;label 50% 50% 0 0 0.5 @AS10&quot;
+what you need is (example)
+
+     PLOT/VS/LINE/I=1:314/hlim=-300:300/vlim=-300:300 i*cos(i/20),i*sin(i/20)
+
+     !show sym
+
+     label/nouser `($PPL$XLEN)/2`,`($PPL$YLEN)/2`,0,0,0.5 @as10
+
+     pause
+
+     label/nouser `($PPL$XLEN)/2`,`(($PPL$YLEN)-0.5)/2`,0,0,0.5 @as10
+
+This uses the symbols that store the axis lengths and the /nouser qualifier to
+indicate the use of the page measurement coordinate system, rater than the
+numerical axis units of the plot.  Note that since the fonts are *text* by default
+it positions the baseline of the text string.  By subtracting 0.5 of the symbol
+height you can center them.
+
+Two aside suggestions
+
+  1. for point-and-click positioning try &quot;yes? label ,,,0,0.5 @as10&quot;
+     and then position the mouse over the plot. A menu will let you specify
+     justification and then click to position the text.  The position you clicked
+     will be confirmed on the screen and stored in a symbol for batch use later.
+     (The &quot;arrow&quot; and &quot;line&quot; menu options allow you to annotate plots.)
+  2. yes? plot/vs/overlay/nolab/symbol=2/size=.2 0,0
+     can put any symbol from the PM font (plot marks) directly on a specified
+     point  -- (0,0) (see yes? GO show_symbols  and  GO show_88_syms)
+
+As to defining window sizes in pixels, there is a script called set_pixel_size.jnl
+to do this.  Ferret is not image-oriented, it uses scalable, continuous graphics
+primitives, so the pixel size of a window is a device dependent afterthought.
+Admittedly, it is a very common need, though.
+
+    - steve
+
+============
+
+Gary Strand wrote:
+
+&gt; Am I the only one who gets frustrated by the way various coordinate systems are
+&gt; defined and used in FERRET?
+&gt;
+&gt; For example, plot space is defined in inches, viewports are defined in frac-
+&gt; tions, and various other things can be defined in terms of inches or in the
+&gt; units of the underlying data. Toss in viewports, and/or changing the window
+&gt; size and the aspect ratio, and it can become very challenging. More than once
+&gt; I've had to resort to trial and error to get things in the right place, since
+&gt; (at least to me) I'm not sure which units work where on the plot I'm making.
+&gt;
+&gt; I've gone through a similar exercise with GrADS (the 'vpage' and 'parea' com-
+&gt; mands could drive one crazy) but GrADS did have a couple nice transformation
+&gt; functions one could use to make life a wee bit easier - one could go from
+&gt; data coordinates to page coordinates and vice versa.
+&gt;
+&gt; I guess what I'm asking for is a unified system of coordinate specification,
+&gt; or a way one could specify which coordinate system one would like, that could
+&gt; take into account the various manipulations of window size and aspect ratio
+&gt; such that (say) a label specified like
+&gt;
+&gt; &quot;label 50% 50% 0 0 0.5 @AS10&quot;
+&gt;
+&gt; puts a &quot;10&quot; exactly smack-dab in the center.
+&gt;
+&gt; Also, to make window sizing easier, would it be possible to define window sizes
+&gt; directly, in terms of (say) pixels, so that one could say:
+&gt;
+&gt; set window/pixels/size=640x480
+&gt;
+&gt; and get a window exactly 640 pixels by 480?
+&gt;
+&gt; Thanks for listening to my rant(s).
+&gt;
+&gt; --
+&gt; /\        Gary Strand (303) 497-1336                                NCAR ML262A
+&gt;   \_][    www.cgd.ucar.edu/ccr/strandwg                      1850 Table Mesa Dr
+&gt;       \___strandwg@ucar.edu                       Boulder, Colorado, USA  80305
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00370" href="msg00370.html">Coordinate systems...</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00370.html">Coordinate systems...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00373.html">Nonuniform Grids</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00370.html">Thread Prev</a>][<a href="msg00373.html">Thread Next</a>][<A HREF="threads.html#00372">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

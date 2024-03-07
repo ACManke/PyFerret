@@ -1,0 +1,287 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: rho_un output -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Wed, 18 Oct 2000 08:46:30 &#45;0700 (PDT) -->
+<!--X-Message-Id: 39EDC470.21E5D027@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 39EDBFCE.87C26BC8@whoi.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: rho_un output</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00444.html">Thread Prev</a>][<a href="msg00450.html">Thread Next</a>][<A HREF="threads.html#00447">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: rho_un output</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Karen Bice &lt;<A HREF="mailto:kbice@DOMAIN.HIDDEN">kbice@xxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: rho_un output</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Wed, 18 Oct 2000 08:40:32 -0700</li>
+<li>Cc: Ferret mailing list &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>References: &lt;<a href="msg00444.html">39EDBFCE.87C26BC8@whoi.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Karen,
+
+Attached is the actual code that Ferret uses to compute the RHO_UN function.
+
+    - steve
+
+===========================================
+
+Karen Bice wrote:
+
+&gt; I have a netcdf file that contains temperature and salinity on an XYZ
+&gt; grid. I am trying to use the rho_un function to calculate density.
+&gt;
+&gt; When I say
+&gt; let density = rho_un(temp, sal, Z[G=temp])
+&gt; I get density values that can't be right.
+&gt;
+&gt; For example, for a specific X,Y location, values look like this (the
+&gt; first column is depth in cm):
+&gt;                 TEMP    SAL   DENS
+&gt; 1250     /  1:  27.61  36.76  1019.
+&gt; 3750     /  2:  27.62  36.78  1029.
+&gt; 6250     /  3:  27.64  36.80  1039.
+&gt; 11250    /  4:  27.64  36.82  1057.
+&gt; 18750    /  5:  27.58  36.84  1081.
+&gt; 41250    /  6:  24.83  36.10  1139.
+&gt; 68750    /  7:  20.58  35.46  1192.
+&gt; 111250   /  8:  16.30  35.11  1261.
+&gt; 151250   /  9:  14.24  34.97  1323.
+&gt; 188750   / 10:  13.30  34.90  1384.
+&gt; 238750   / 11:  12.60  34.85  1481.
+&gt; 301250   / 12:  12.17  34.83  1648.
+&gt;
+&gt; But, more reasonable UNESCO values for in situ densities (in kg/m^3) for
+&gt; these T,S values would be:
+&gt;  1250     /  1:  1023.93
+&gt;  3750     /  2:  1024.04
+&gt;  6250     /  3:  1024.15
+&gt;  11250    /  4:  1024.38
+&gt;  18750    /  5:  1024.73
+&gt;  41250    /  6:  1025.99
+&gt;  68750    /  7:  1027.92
+&gt;  111250   /  8:  1030.60
+&gt;  151250   /  9:  1032.71
+&gt;  188750   / 10:  1034.48
+&gt;  238750   / 11:  1036.73
+&gt;  301250   / 12:  1039.44
+&gt;
+&gt; I know that rho_un expects Z in decibars (according to the user's
+&gt; guide), so I figured that it was using the actual depth values. But even
+&gt; if that were the case, those depths, interpreted as pressures in
+&gt; decibars shouldn't yield densities like those in my first list above.
+&gt;
+&gt; Is the output of rho_un actually something other than kg/m^3?
+&gt; Can anyone tell me what I am doing wrong here and how I can get good
+&gt; density values out of rho_un?
+&gt;
+&gt; Thanks very much.
+&gt;
+&gt; --
+&gt; Karen L. Bice, Assistant Scientist              Mail Stop #23
+&gt; Dept. of Geology and Geophysics                 phone: (508) 289-3320
+&gt; Woods Hole Oceanographic Institution            FAX:   (508) 457-2187
+&gt; Woods Hole, MA          USA 02543-1541
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+</pre>
+<pre>
+        REAL FUNCTION RHO_UNESCO(salinity, temperature, pressure)
+
+*
+*
+*  This software was developed by the Thermal Modeling and Analysis
+*  Project(TMAP) of the National Oceanographic and Atmospheric
+*  Administration's (NOAA) Pacific Marine Environmental Lab(PMEL),
+*  hereafter referred to as NOAA/PMEL/TMAP.
+*
+*  Access and use of this software shall impose the following
+*  obligations and understandings on the user. The user is granted the
+*  right, without any fee or cost, to use, copy, modify, alter, enhance
+*  and distribute this software, and any derivative works thereof, and
+*  its supporting documentation for any purpose whatsoever, provided
+*  that this entire notice appears in all copies of the software,
+*  derivative works and supporting documentation.  Further, the user
+*  agrees to credit NOAA/PMEL/TMAP in any publications that result from
+*  the use of this software or in any product that includes this
+*  software. The names TMAP, NOAA and/or PMEL, however, may not be used
+*  in any advertising or publicity to endorse or promote any products
+*  or commercial entity unless specific written permission is obtained
+*  from NOAA/PMEL/TMAP. The user also understands that NOAA/PMEL/TMAP
+*  is not obligated to provide the user with any support, consulting,
+*  training or assistance of any kind with regard to the use, operation
+*  and performance of this software nor to provide the user with any
+*  updates, revisions, new versions or &quot;bug fixes&quot;.
+*
+*  THIS SOFTWARE IS PROVIDED BY NOAA/PMEL/TMAP &quot;AS IS&quot; AND ANY EXPRESS
+*  OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+*  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+*  ARE DISCLAIMED. IN NO EVENT SHALL NOAA/PMEL/TMAP BE LIABLE FOR ANY SPECIAL,
+*  INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+*  RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+*  CONTRACT, NEGLIGENCE OR OTHER TORTUOUS ACTION, ARISING OUT OF OR IN
+*  CONNECTION WITH THE ACCESS, USE OR PERFORMANCE OF THIS SOFTWARE. 
+*
+*
+* The 1980 UNESCO International Equation of State (IES80)
+* *sh* 8/5/92 - adapted from C version supplied by John Osborne, PMEL
+
+*       This calculates rho (density kg/m^3) at salinity, 
+*	temperature, and pressure.  This will be potential density if 
+*	temperature is potential temperature.  The routine uses the high 
+*	pressure equation of state from Millero et al. 1980 and the one-
+*	atmosphere equation of state from Millero and Poisson 1981 as
+*	reported in Gill 1982.  The notation follows Millero et al. 1980
+*	and Millero and Poisson 1981.
+*	
+*	Note: the routine takes p in decibars and converts to bars for
+*	the calculations.
+*	
+* References:	Millero, F.J., et al., 1980, Deep-Sea Res., 27A, 255-264.
+*  Millero, F.J. and Alain Poisson, 1981, Deep-Sea Res., 28A, 625-629.
+*  Gill, A.E., 1982, Atmosphere-Ocean Dynamics, Academic Press, Inc., 662 pp. 
+*	
+*	Input Units:
+*			S: psu	T: deg. C	p: decibars.
+*			
+*	Output Units:
+*			rho: kg/m^3
+*			
+*	Check values:
+*			rho = 999.96675 	for S = 0,  T = 5,  p = 0
+*			rho = 1027.675465 	for S = 35, T = 5,  p = 0
+*			rho = 1062.538172 	for S = 35, T = 25, p = 10000.
+			
+* calling argument declaraions:
+        REAL salinity, temperature, pressure
+
+* internal variable declarations:
+	REAL S, T, p, rootS
+	REAL a, b, c, d, e
+	REAL Aw, Bw, Kw
+	REAL A2, B2, C2, Kzero, K
+	REAL rhoW, rhoZero
+	
+* initialize
+	S = salinity
+	T = temperature
+	p = pressure / 10.
+	rootS = SQRT (S)
+		
+* rhoW is the density of pure water at temperature T.
+	rhoW = ((((6.536332e-09 * T - 1.120083e-06) * T + 1.001685e-04)
+     .		* T - 9.095290e-03) * T + 6.793952e-02) * T + 999.842594
+	
+	A2 = (((5.3875e-09 * T - 8.2467e-07) * T + 7.6438e-05)
+     .		* T - 4.0899e-03) * T + 8.24493e-01
+				
+	B2 = (-1.6546e-06 * T + 1.0227e-04) * T - 5.72466e-03
+				
+	C2 = 4.8314e-04
+
+* rhoZero is the one-atmosphere density of seawater
+	rhoZero	= (C2 * S + B2 * rootS + A2) * S + rhoW
+	
+	IF ( pressure .EQ. 0.0 ) THEN
+	   RHO_UNESCO = rhoZero
+	   RETURN
+        ENDIF
+
+	a = ((-6.1670e-05 * T + 1.09987e-02) * T - 6.03459e-01) * T
+     .		+ 54.6746
+			
+	b = (-5.3009e-04 * T + 1.6483e-02) * T + 7.944e-02
+	
+	c = (-1.6078e-06 * T - 1.0981e-05) * T + 2.2838e-03
+	
+	d = 1.91075e-04
+	
+	e = (9.1697e-10 * T + 2.0816e-08) * T - 9.9348e-07
+	
+	Aw = ((-5.77905e-07 * T + 1.16092e-04) * T + 1.43713e-03) * T
+     .	       + 3.239908
+			
+	Bw = (5.2787e-08 * T - 6.12293e-06) * T + 8.50935e-05
+
+* Kw is the secant bulk modulus of pure water at temperature T.	
+	Kw = (((-5.155288e-05 * T + 1.360477e-02) * T - 2.327105)
+     .		* T + 148.4206) * T + 19652.21
+
+* Kzero is the secant bulk modulus of seawater at one atmosphere.
+	Kzero = (b * rootS + a) * S + Kw
+
+* K is the secant bulk modulus of seawater at (S, T, p).		
+	K = ((e * p + d * rootS + c) * S + Bw * p + Aw) * p + Kzero
+	
+	RHO_UNESCO = rhoZero / (1.0 - (p / K))
+	
+	RETURN
+	END
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00444" href="msg00444.html">rho_un output</a></strong>
+<ul><li><em>From:</em> Karen Bice</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00444.html">rho_un output</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00450.html">Re: rho_un output</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00444.html">Thread Prev</a>][<a href="msg00450.html">Thread Next</a>][<A HREF="threads.html#00447">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

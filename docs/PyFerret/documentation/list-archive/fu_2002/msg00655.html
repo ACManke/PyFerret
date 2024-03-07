@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: monthly in daily -->
+<!--X-From-R13: [vpx Ecvyynar <fcvyynarNczry.abnn.tbi> -->
+<!--X-Date: Fri, 27 Dec 2002 17:10:26 &#45;0800 (PST) -->
+<!--X-Message-Id: Pine.GSO.4.33.0212271636460.13792&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200212272340.gBRNeuu31364@sequoia.Atmos.Berkeley.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: monthly in daily</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00654.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00655">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: monthly in daily</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Celine Bonfils &lt;<a href="mailto:celine@DOMAIN.HIDDEN">celine@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: monthly in daily</strong></li>
+<li><strong>From</strong>: <strong>Mick Spillane &lt;<a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 27 Dec 2002 17:10:23 -0800 (PST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00654.html">200212272340.gBRNeuu31364@sequoia.Atmos.Berkeley.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Celine,
+	Assuming that the monthly data are located near the center of
+each month then two cases arise
+
+1) you don't need the daily to monthly differences before mid-Jan
+   and after mid-Dec : this is the easiest case
+2) you need to compare the daily data with interpolated monthlies
+   at all days of the year : this requires a modulo axis.
+
+Both cases are demonstrated below.  There may be more elegant solutions
+from users who do this more often than I but I believe this should work
+for you.
+
+A) generate a test monthly series by creating the files celine.cdl and
+   celine_mod.cdl follows:
+----------------------
+netcdf celine {
+dimensions:
+         TIME =   12 ;
+variables:
+         double TIME(TIME) ;
+                TIME:units = &quot;days since 1900-01-01 00:00:00&quot; ;
+                TIME:time_origin = &quot;1-JAN-1900&quot; ;
+                TIME:point_spacing = &quot;uneven&quot; ;
+                TIME:modulo = &quot; &quot; ;
+         float  V(TIME) ;
+data:
+  TIME =
+    32887.5, 32917.0, 32946.5, 32977.0, 33007.5, 33038.0,
+    33068.5, 33099.5, 33130.0, 33160.5, 33191.0, 33221.5;
+  V =
+    1, 3, 5, 7, 5, 3, 1, -1, -3, -5, -3, -1 ;
+}
+--------------------
+netcdf celine_mod {
+...
+                TIME:modulo = &quot; &quot; ;
+...
+(celine_mod.cdl is identical to celine.cdl except for these two lines)
+
+then create a netCDF file (celine.cdf and celine_mod.cdf) by the command
+	ncgen -n celine.cdl
+	ncgen -n celine_mod.cdl
+
+B) Run the following in Ferret
+        ! make a demo daily data series
+	def axis/t=1-jan-1990:31-dec-1990:1/units=days tax
+	def grid/t=tax grd
+	let vday=5*sin(l[g=grd]*atan(1.)/45)
+	use celine                    ! the non-modulo axis version
+	set view upper ; plot v[d=1],vday
+	let v1=v[d=1,g=grd,gt=@lin]
+	plot/o v1-0.5               ! offset for clarity - notice that
+                                      ! the ends of the year are missing
+	use celine_mod                ! now use modulo version
+	set view lower ; plot v[d=2],vday
+        let v2=v[d=2,g=grd,gt=@lin]
+        plot/o v2-0.5               ! offset for clarity - now the whole
+                                    ! year is available
+        list vday-v2
+ 01-JAN-1990 00 /   1:  0.121
+ 02-JAN-1990 00 /   2:  0.141
+ 03-JAN-1990 00 /   3:  0.162
+ 04-JAN-1990 00 /   4:  0.182
+ 05-JAN-1990 00 /   5:  0.202
+...
+ 27-DEC-1990 00 / 361:  0.387
+ 28-DEC-1990 00 / 362:  0.408
+ 29-DEC-1990 00 / 363:  0.428
+ 30-DEC-1990 00 / 364:  0.449
+ 31-DEC-1990 00 / 365:  0.469
+
+Hope this helps.  Depending on the format of your monthly data you will
+need to edit in the &quot;modulo&quot; to its CDL file or define the grid axis
+that reads it to be modulo.  See &quot;modulo&quot; in the user guide.
+
+Mick
+
+|____spillane@pmel.noaa.gov____|
+|__Room 2070 Bldg#3 NOAA/PMEL__|
+|____Phone_:_(206)526-6780_____|
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00654" href="msg00654.html">monthly in daily</a></strong>
+<ul><li><em>From:</em> Celine Bonfils</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00654.html">monthly in daily</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00654.html">Thread Prev</a>][Thread Next][<A HREF="threads.html#00655">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: Missing Values -->
+<!--X-From-R13: Oaqerj Ivggraoret <naqljNfcynfu.Bevaprgba.SRG> -->
+<!--X-Date: Fri, 16 Aug 2002 11:40:40 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.GSO.4.03.10208161408310.17182&#45;100000@splash.Princeton.EDU -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3D5D3C1C.406D7D37@ariel.met.tamu.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Missing Values</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00393.html">Thread Prev</a>][<a href="msg00396.html">Thread Next</a>][<A HREF="threads.html#00394">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Missing Values</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Steve Cocks &lt;<a href="mailto:scocks@DOMAIN.HIDDEN">scocks@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Missing Values</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:andyw@DOMAIN.HIDDEN">andyw@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 16 Aug 2002 14:39:44 -0400 (EDT)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00393.html">3D5D3C1C.406D7D37@ariel.met.tamu.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>On Fri, 16 Aug 2002, Steve Cocks wrote:
+&gt; I then compute the divergence from the same u and v components and
+&gt; write the data to *.nc file.  Lo and behold, now I have 256 missing
+&gt; values, over twice as many.
+&gt; 
+&gt; 1)  What is ferret doing to produce the extra missing values?
+
+To compute the divergence you need to compute horizontal differences.  
+Say you're using centered differences -- then if you're a valid point,
+say, east of a missing value, you can't compute the centered difference of
+u in x because you lack information.  Ferret &quot;does the right thing&quot; and
+outputs a missing value at that point.  This is why the result has more
+missing values than the input data.
+
+If you really want the gradient (despite imperfect information) at those
+neighboring points, you have several options: (1) Use a forward or
+backward difference there (do this by filling in the @ddc missing values
+using what you get from @ddf and @ddb).  (2) Fill the missing values
+*before* differencing by using @fln or @fnr, then compute the difference,
+then re-mask.  (3) Fill the missing values *after* differencing, then
+re-mask.  You'll have to decide what makes most sense for your
+application.
+
+&gt; 2)  In the future to track this problem, how can I get ferret to plot
+&gt; the missing value points on a horizontal map? (Tried
+&gt; &quot;fill/pal=grey/level(-1.0E+34)/nolab variable&quot;  and it didn't work)
+
+&quot;shade variable&quot; should automatically show the missing values as white
+&quot;holes&quot; in the data.  You could also say
+   shade/lev=(1) IF missing(variable,-9999) EQ -9999 THEN 1
+
+&gt; 3)  Whenever the shade or fill command is given for a variable does:
+&gt; 
+&gt;      a) Ferret ignor the missing value and plots an average of the
+&gt; nearest neighbors to the missing value?
+&gt;      b)  Ferret  not plot the value at all unless told to?
+
+SHADE plots the actual grid BOXES, and colors in the non-missing points.
+FILL (or CONTOUR) uses a mixture of bilinear &amp; spline interpolation to
+produce a smooth contour field through the grid POINTS.  Missing points
+are ignored for the FILL calculation, so they appear as &quot;holes&quot; in the
+contour field.  And because each gridpoint is typically in the center of
+its gridbox, the missing areas usually look a bit larger than with SHADE.
+
+Hope that helps,
+
+Andrew
+
+----------------------------------------------------------------------
+Andrew Wittenberg          Program in Atmospheric and Oceanic Sciences
+andyw@splash.princeton.edu                        Princeton University
+----------------------------------------------------------------------
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00393" href="msg00393.html">Missing Values</a></strong>
+<ul><li><em>From:</em> Steve Cocks</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00393.html">Missing Values</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00396.html">A workaround to run the 5.40 binaries in Redhat 7.3</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00393.html">Thread Prev</a>][<a href="msg00396.html">Thread Next</a>][<A HREF="threads.html#00394">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

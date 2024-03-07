@@ -1,0 +1,182 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: saving a variable to existing nc file -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 3 May 2001 16:35:37 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3AF1EB98.A19F97C0@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.WNT.4.21.0105031546220.149&#45;100000@urubu.u.washington.edu -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: saving a variable to existing nc file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00275.html">Thread Prev</a>][<a href="msg00277.html">Thread Next</a>][<A HREF="threads.html#00276">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: saving a variable to existing nc file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Emilio Mayorga &lt;<A HREF="mailto:emiliom@DOMAIN.HIDDEN">emiliom@xxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: saving a variable to existing nc file</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 03 May 2001 16:36:56 -0700</li>
+<li>Cc: &quot;Ferret User's Group&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Organization: NOAA/Pacific Marine Environmental Laboratory</li>
+<li>References: &lt;<a href="msg00275.html">Pine.WNT.4.21.0105031546220.149-100000@urubu.u.washington.edu</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Emilio,
+
+[Its been a long time!]
+
+I suspect (??) that you are attemping to save a subset region, only of the new
+variable??
+
+Try these lines to see if you get the same behavior, which does not reproduce
+the problem that you've reported.
+
+     /export/home/ja3/hankin/tmp&gt; ferret
+     yes? use coads_climatology
+     yes? save/x=130e:80w/y=20s:20n/file=test.nc/clobber sst,airt ! a
+     test file - 75x20x12
+      LISTing to file test.nc
+     yes? quit
+
+     /export/home/ja3/hankin/tmp&gt; ferret
+     yes? use test.nc
+     yes? let new = sst+airt
+     yes? save/append/file=test.nc new   ! add a new variable to it
+      LISTing to file test.nc
+     yes? quit
+
+     ==&gt; NOTE THAT THEY ALL SHARE THE SAME COORDINATE AXES
+     /export/home/ja3/hankin/tmp&gt; ncdump -h test.nc
+     netcdf test {
+     dimensions:
+             COADSX56_130 = 75 ;
+             COADSY36_55 = 20 ;
+             TIME = UNLIMITED ; // (12 currently)
+     variables:
+     .
+     .
+     .
+
+If you want to share the full coordinate axes, despite the fact that you are
+saving only a subset you can use the /ilimits and /jlimits (etc.) to force the
+full region to be written:
+
+     /export/home/ja3/hankin/tmp&gt; ferret
+     yes? use coads_climatology
+     yes? save/x=130e:80w/y=20s:20n/file=test.nc/clobber sst,airt ! a
+     test file
+      LISTing to file test.nc
+     yes? q
+
+     /export/home/ja3/hankin/tmp&gt; ferret
+     yes? use test.nc
+     yes? let new = sst+airt
+     yes? save/append/file=test.nc/ilimits=1:75/jlimits=1:20
+     new[x=170e:170w]
+      LISTing to file test.nc
+     yes? q
+
+     /export/home/ja3/hankin/tmp&gt; ferret
+     yes? use test.nc
+     yes? shade/l=1 new    ! note the 170e:170w band embedded within
+     missing values
+
+    - steve
+
+=========================
+
+Emilio Mayorga wrote:
+
+&gt; I want to save a variable into an existing netcdf file. This variable is
+&gt; defined in ferret using, say, LET var = var1 + var2, where var1 and var2
+&gt; are variables from the netcdf file; the dimensionality of the new variable
+&gt; is the same as the other ones (XYT, where T in the nc file is the record
+&gt; dimension). But when I save it, Ferret creates 3 new coordinate variables
+&gt; to support var. Is it possible to force Ferret to use the existing
+&gt; coordinate variables when saving a new variable?
+&gt;
+&gt; Thanks.
+&gt;
+&gt; Emilio Mayorga
+&gt; ________________________________________________________________
+&gt; University of Washington
+&gt; School of Oceanography                  emiliom@u.washington.edu
+&gt; Box 357940                              ph. (206) 221-6756
+&gt; Seattle, WA  98195-7940   USA           FAX (206) 685-3351
+&gt; <A  HREF="http://boto.ocean.washington.edu/staff_pages/emilio">http://boto.ocean.washington.edu/staff_pages/emilio</A>
+
+--
+
+                |  NOAA/PMEL               |  ph. (206) 526-6080
+Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+                |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00277" href="msg00277.html">Re: saving a variable to existing nc file</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00275" href="msg00275.html">saving a variable to existing nc file</a></strong>
+<ul><li><em>From:</em> Emilio Mayorga</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00275.html">saving a variable to existing nc file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00277.html">Re: saving a variable to existing nc file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00275.html">Thread Prev</a>][<a href="msg00277.html">Thread Next</a>][<A HREF="threads.html#00276">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

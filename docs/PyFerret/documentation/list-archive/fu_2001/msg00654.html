@@ -1,0 +1,403 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Useful (?) perl script -->
+<!--X-From-R13: "Dvpuneq R. Eyngre" <eqfyngreNfcynfu.Bevaprgba.SRG> -->
+<!--X-Date: Thu, 13 Dec 2001 12:01:49 &#45;0800 (PST) -->
+<!--X-Message-Id: 200112131959.OAA06787@splash.Princeton.EDU -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Useful (?) perl script</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00653.html">Thread Prev</a>][<a href="msg00658.html">Thread Next</a>][<A HREF="threads.html#00654">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Useful (?) perl script</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></strong></li>
+<li><strong>Subject</strong>: <strong>Useful (?) perl script</strong></li>
+<li><strong>From</strong>: <strong>&quot;Richard D. Slater&quot; &lt;<A HREF="mailto:rdslater@DOMAIN.HIDDEN">rdslater@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 13 Dec 2001 15:00:22 -0500</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi all,
+
+I bet that you're all wishing that I get back to work and stop flooding this 
+mailing list :-). Well, hopefully this will be of use to some people. I don't 
+think that I ever sent it in, so please forgive me if my senility has caught 
+up with me.
+
+I have a perl script which, given a list of netCDF files, will generate a 
+ferret descriptor file for use as a multiple file dataset. There is 
+documentation in the script, but I am willing to answer questions. Please read 
+the comments at the beginning of the script first, though.
+
+There is ample room for modification, but it worked well for me. Feel free to 
+modify it to your heart's content.
+
+Here is an example of its use (from the script):
+
+Example:
+  ferret_des.pl --t0 01-JAN-1001 --title doodad /path/to/file[123] &gt; out.des
+
+		where the three files: /path/to/file1, /path/to/file2,
+		and /path/to/file3 will be processed and will use
+		January 1, 1001 as its time 0 and doodad will be the
+		title of the dataset. The output will be
+		in out.des in the current working directory.
+
+Enjoy,
+
+Rick Slater
+</pre>
+<pre>
+#! /usr/bin/perl -w
+#
+# ferret_des.pl:
+#
+#	A utility to create a Ferret multiple dataset descriptor file
+#	given a list of constituent netCDF files. The descriptor file
+#	is written to standard output.
+#
+# Usage: ferret_des.pl [--t0 ferret_time_string]
+#		       [--title string]
+#		       [--[no]f90]
+#		       file [files]
+#
+#	where:
+#
+#	ferret_time_string: is a standard Ferret time string used
+#		as time zero. Default = 01-JAN-0001.
+#	string: is a character string to be used as the title for the
+#		dataset
+#	--f90: indicates that namelists should be in F90 syntax,
+#	       otherwise use the standard ferret format (DEC?)
+#	files: is a list of files that makes up the time-series
+#		(these should (must?) be the full path names)
+#		(they need not be in order, the program will
+#		sort them)
+#
+# Example:
+#	ferret_des.pl --t0 01-JAN-1001 --title doodad /path/to/file[123] &gt; out.des
+#
+#		where the three files: /path/to/file1, /path/to/file2,
+#		and /path/to/file3 will be processed and will use
+#		January 1, 1001 as its time 0 and doodad will be the
+#		title of the dataset. The output will be
+#		in out.des in the current working directory.
+#
+# How it works:
+#	ncdump -c is executed on each file and the output is
+#	processed to determine the first and last time steps in the
+#	file. The delta time is calculated as the difference between
+#	the first two time points, or &quot;1&quot; if there is only one time
+#	point. The file name is then used in each stepfile record.
+#	Therefore, the file names given should be the full path names.
+#
+# Notes:
+#	There are some assumptions made in this program:
+#	1) ncdump is in the user's PATH.
+#	2) the time variable is called &quot;time&quot;. This may not be a problem
+#	   since Ferret may require that?
+#	3) the time points within a file are evenly spaced. This seems
+#          to be an assumption of the descriptor files in general.
+#
+#	Finally, there is room for several personalization options
+#	to be added, such as username, etc. These have not been
+#	added yet since they do not seem to be needed, but are cosmetic.
+#	Still, they would be easy to add, and are left as an exercise
+#	for the users.
+#
+
+use strict;
+
+use Getopt::Long;
+
+my $line;
+
+use vars qw( $t0 $title $f90 );
+
+#
+#	set some defaults
+#
+
+$t0 = &quot;01-JAN-0001&quot;;
+$title = &quot;none&quot;;
+$f90 = 0;
+
+my $Usage = &lt;&lt;EOF;
+ferret_des.pl: [--t0 ferret_time_string]	# default: 01-JAN-0001
+	       [--title string]			# default: none
+	       [--[no]f90]			# default: not F90
+	       file [files]\n
+EOF
+
+#
+#	process the options
+#
+
+my($result) = GetOptions ('t0=s' =&gt; \$t0
+			, 'title=s' =&gt; \$title
+			, 'f90!' =&gt; \$f90
+			 );
+
+die $Usage unless ($result &amp;&amp; scalar(@ARGV));
+
+#
+#	print the boilerplate at the beginning of the descriptor file
+#
+
+if ($f90) {
+
+    print &lt;&lt;EOF;
+ &amp;FORMAT_RECORD
+   D_TYPE               = '  MC',
+   D_FORMAT             = '  1A',
+   D_SOURCE_CLASS       = 'MODEL OUTPUT',
+   D_SOURCE             = 'COAD',
+   D_SUBSOURCE          = 'GLOBAL',
+ /
+ &amp;BACKGROUND_RECORD
+   D_EXPNUM             = '    ',
+   D_MODNUM             = '    ',
+   D_TITLE              = '$title',
+   D_FORCING_SET        = '    ',
+   D_T0TIME             = '$t0',
+   D_TIME_UNIT          = 1.0,
+   D_TIME_MODULO        = .false.,
+   D_NTEGRATE_TSTEP     = 1.0,
+   D_TIME_RUN           = '14-jun-1999',
+   D_WHO_RANIT          = 'rds',
+   D_TIME_MADE          = '14-jun-1999',
+   D_WHO_MADEIT         = 'me',
+   D_AUX_MODNUM         =  6*' ',
+   D_ADD_PARM           = 15*' ',
+   D_GRID_FILENAME      =  6*' ',
+ /
+ &amp;MESSAGE_RECORD
+   D_MESSAGE            = ' ',
+   D_ALERT_ON_OPEN      = F,
+   D_ALERT_ON_OUTPUT    = F,
+ /
+ &amp;EXTRA_RECORD
+ /
+EOF
+
+} else {
+
+    print &lt;&lt;EOF;
+ \$FORMAT_RECORD
+   D_TYPE               = '  MC',
+   D_FORMAT             = '  1A',
+   D_SOURCE_CLASS       = 'MODEL OUTPUT',
+   D_SOURCE             = 'COAD',
+   D_SUBSOURCE          = 'GLOBAL',
+ \$END
+ \$BACKGROUND_RECORD
+   D_EXPNUM             = '    ',
+   D_MODNUM             = '    ',
+   D_TITLE              = '$title',
+   D_FORCING_SET        = '    ',
+   D_T0TIME             = '$t0',
+   D_TIME_UNIT          = 1.0,
+   D_TIME_MODULO        = .false.,
+   D_NTEGRATE_TSTEP     = 1.0,
+   D_TIME_RUN           = '14-jun-1999',
+   D_WHO_RANIT          = 'rds',
+   D_TIME_MADE          = '14-jun-1999',
+   D_WHO_MADEIT         = 'me',
+   D_AUX_MODNUM         =  6*' ',
+   D_ADD_PARM           = 15*' ',
+   D_GRID_FILENAME      =  6*' ',
+ \$END
+ \$MESSAGE_RECORD
+   D_MESSAGE            = ' ',
+   D_ALERT_ON_OPEN      = F,
+   D_ALERT_ON_OUTPUT    = F,
+ \$END
+ **************************************************
+ \$EXTRA_RECORD
+ \$END
+EOF
+
+}
+
+#
+#	set up a hash to hold the times and file names so that we
+#	can sort them later
+#
+
+my %files;
+
+#
+#	process the netCDF files
+#
+
+foreach my $file (@ARGV) {
+
+    #
+    #	call ncdump -c for the file (unless the file does not exist)
+    #
+
+    next unless -e $file;
+    open FILE, &quot;ncdump -c $file|&quot; or die &quot;Couldn't ncdump $file: $!\n&quot;;
+
+    #
+    # process the file by first concatenating incomplete lines (lines
+    # ending in a comma) (code fragment after Perl Cookbook)
+    #
+
+    while (defined($line = &lt;FILE&gt;)) {
+    	chomp $line;
+	if ($line =~ /,\s*$/) {
+	    $line .= &lt;FILE&gt;;
+	    redo unless eof(FILE);
+	}
+
+    #
+    # split the line which contains the times and calculate delta
+    # then save the values for printing later
+    #
+
+	if ($line =~ /^\s*time\s*=\s*([\d,. ]+)\s*;\s*$/i) {
+	    my @numbers = split /\s*,\s*/, $1;
+	    $numbers[$#numbers] =~ s/ *$//;
+	    my $delta = $#numbers ? $numbers[1] - $numbers[0] : 1;
+
+	#
+	# check to make sure that this time-step does not already
+	# exist in another file
+	# 
+
+	    if (exists($files{$numbers[0]})) {
+	        die &quot;Files $file and&quot; . $files{$numbers[0]}{&quot;name&quot;} .
+		    &quot; both start with time-step $numbers[0]\n&quot;;
+	    }
+
+	#
+	# save the information for printing later
+	#
+
+	    $files{$numbers[0]}{&quot;name&quot;} = $file;
+	    $files{$numbers[0]}{&quot;last&quot;} = $numbers[$#numbers];
+	    $files{$numbers[0]}{&quot;delta&quot;} = $delta;
+	}
+    }
+}
+
+#
+#	print out the stepfile records in numerical order by time
+#	of first time-step
+#
+
+foreach my $time (sort {$a &lt;=&gt; $b} keys %files) {
+
+    my $file = $files{$time}{&quot;name&quot;};
+    my $last = $files{$time}{&quot;last&quot;};
+    my $delta = $files{$time}{&quot;delta&quot;};
+
+    if ($f90) {
+	print &lt;&lt;EOF ;
+ &amp;STEPFILE_RECORD
+   S_FILENAME           = '$file',
+   S_AUX_SET_NUM        = 0,
+   S_START              = $time,
+   S_END                = $last,
+   S_DELTA              = $delta,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ /
+EOF
+	    } else {
+		print &lt;&lt;EOF ;
+ \$STEPFILE_RECORD
+   S_FILENAME           = '$file',
+   S_AUX_SET_NUM        = 0,
+   S_START              = $time,
+   S_END                = $last,
+   S_DELTA              = $delta,
+   S_NUM_OF_FILES       = 1,
+   S_REGVARFLAG         = ' ',
+ \$END
+EOF
+    }
+}
+
+#
+#	print out the boilerplate at the end
+#
+
+if ($f90) {
+
+    print &lt;&lt;EOF3;
+ &amp;STEPFILE_RECORD
+   S_FILENAME           = '**END OF STEPFILES**'
+ /
+EOF3
+
+} else {
+
+    print &lt;&lt;EOF3;
+
+ **************************************************
+ \$STEPFILE_RECORD
+   S_FILENAME           = '**END OF STEPFILES**'
+ \$END
+ **************************************************
+EOF3
+
+}
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00653.html">Ferret hard limits</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00658.html">Installing in Suse 6.4 problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00653.html">Thread Prev</a>][<a href="msg00658.html">Thread Next</a>][<A HREF="threads.html#00654">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

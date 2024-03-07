@@ -1,0 +1,220 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: RE: Descriptor hard limitations -->
+<!--X-From-R13: "Tneene, Bnhy R" <TneeneBN@OHA.@OHK.[WZ> -->
+<!--X-Date: Wed, 18 Sep 2002 13:45:25 &#45;0700 (PDT) -->
+<!--X-Message-Id: 23E4371F6124D411B59B00805F9FA97101974C41@navont3.navo.navy.mil -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>RE: Descriptor hard limitations</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00441.html">Thread Prev</a>][<a href="msg00515.html">Thread Next</a>][<A HREF="threads.html#00442">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: Descriptor hard limitations</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;'Ansley Manke '&quot; &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;,       &quot;'Richard D. Slater '&quot; &lt;<a href="mailto:rdslater@DOMAIN.HIDDEN">rdslater@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>RE: Descriptor hard limitations</strong></li>
+<li><strong>From</strong>: <strong>&quot;Farrar, Paul D&quot; &lt;<a href="mailto:FarrarP@DOMAIN.HIDDEN">FarrarP@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 18 Sep 2002 15:40:27 -0500</li>
+<li>Cc: &quot;'Patrick Brockmann '&quot; &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxxxxxxxxxxx</a>&gt;,       &quot;'<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxxx</a> '&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Well...If you want one that's giving us fits at NAVOCEANO, it's Ferret's
+handling of fill values for packed netcdf data.
+
+For netcdf variable of type &quot;float&quot;, Ferret will convert values of
+NF_FILL_FLOAT
+to Ferret's &quot;undefined&quot;, which is great. However, because of the size of our
+datasets (see the NAVOCEANO DODS server), we have to pack many variables,
+using the attributes &quot;add_offset&quot; and &quot;scale_factor&quot;, into a shorter form--
+usually type &quot;float&quot; (4 byte float) to &quot;short&quot; (2 byte integer). Ferret will
+correctly unpack (Hooray!) almost everything. What it won't unpack properly
+is the fill values of the &quot;short&quot; type. It will not unpack the &quot;short&quot;
+netcdf
+fill value to the &quot;float&quot; netcdf value. We cannot get around this by using
+&quot;short&quot;s that unpack to NF_FILL_FLOAT because then we cannot get a usable
+range for the data (the fills are very extreme values). We are now defining 
+the netcdf attribute &quot;_FillValue&quot; to a value that is not within a valid data
+
+range, but still packable. Then the application program (written in Ferret)
+has 
+to set instances of this value to Ferret &quot;undefined&quot; for proper handling by
+things
+like contouring. To do this, the application program needs to know the value
+of
+the &quot;_FillValue&quot; attribute, but Ferret won't allow you to read it from the
+dataset:
+you have to look at a dataset dump to find it, then rewrite the application 
+program for that particular dataset.
+
+So we need:
+1. When Ferret unpacks a packed netcdf dataset, it should convert the netcdf
+fill in the packed type to an &quot;undefined&quot; value in Ferret.
+2. If &quot;_FillValue&quot; or &quot;missing_data&quot; attributes are present, it should
+convert
+data (packed or nonpacked) with those values to &quot;undefined&quot;
+
+Down the road I would like:
+3. Support for CF convention compression supported (presumably by a
+function.)
+4. Ferret able to read arbitrary attributes (both global and variable) of a
+netcdf
+dataset and assign their values to Ferret variables and strings. We really
+need
+this, mainly for plot labeling.
+
+Paul Farrar
+
+-----Original Message-----
+From: Ansley Manke
+To: Richard D. Slater
+Cc: Patrick Brockmann; ferret_users@ferret.pmel.noaa.gov;
+ansley@pmel.noaa.gov
+Sent: 9/18/02 2:04 PM
+Subject: Re: Descriptor hard limitations
+
+Hi Rick, and everyone,
+Thanks for letting us know about your frustrations.  We can
+raise all of these limits, and will do so in the next release after
+version 5.41.
+
+In general, please do tell us when you're running into any kind
+of roadblock with Ferret.  Ferret users are stretching Ferret
+to its limits in all kinds of ways, and we don't always hear about
+it.  Most of these hard limits are because much of the core source
+code in Ferret is f77 code.  Sometimes array dimensions can
+simply be increased, or other minor changes can be made to
+lift restrictions without too much trouble.
+
+We're also working on a document that will list the values of
+limits that are built in to Ferret.  I'll post a note about that when
+it's available.
+
+Ansley Manke
+
+&quot;Richard D. Slater&quot; wrote:
+
+&gt; &gt; Hi all,
+&gt; &gt;
+&gt; &gt; I frequently use descriptor files to work with collections of
+&gt; &gt; monthly netCDF model output.
+&gt; &gt;
+&gt; &gt; Unfortunately, it seems that there is an hard coded limitation in
+the size of filenames.
+&gt; &gt; I have tested that 60 characters is the maximum size for filename.
+&gt; &gt; It is definitevely not enough !
+&gt; &gt;
+&gt; &gt; I have lived with this problem by using symbolic links but even with
+this
+&gt; &gt; it is sometime difficult to deal with limited size filenames.
+&gt; &gt; Could you take this in consideration for future release ?
+&gt;
+&gt; I believe that this limit was extended in 5.33? I know that I also had
+to circumvent this problem, but don't believe that it is an issue any
+longer.
+&gt;
+&gt; However, I keep bumping into many other hard limits in ferret. These
+are:
+&gt;
+&gt; 1) 30 open files. Managing results from 6 models, 2 versions per
+model, often multiple variables in different variables. A limit of 30
+can be exhausted quite quickly.
+&gt;
+&gt; 2) something like 50,000 points? Have run into this when using ferret
+to perform global, possibly masked, integrations over the above files.
+&gt;
+&gt; 3) 500 variables, ran into this when trying to work around (1) by
+combining variables into smaller number of files.
+&gt;
+&gt; 4) Some limit on number of axes. Run into this when iterating over a
+page trying to get things just right.
+&gt;
+&gt; I've gotten to the point, because of (1), I will close all open files
+after each plot (not page, mind you) and sometimes for each line on a
+plot. This might be causing me to hit some of the other limits, and
+oculd be less efficient, but is often the only way that I can make some
+of the plots.
+&gt;
+&gt; Limits (2) and (4) cause ferret to crash. Not sure about (3), but
+don't think so.
+&gt;
+&gt; A couple of final comments/requests. First, I had asked sometime
+before whether these hard limits (and any others) could be documented
+somewhere, but a brief perusal of the dosumentation didn't show
+anything. Could someone point me to such documentation if it exists, or
+produce it if it doesn't?
+&gt;
+&gt; Second, would it be possible to have a version of ferret which does
+not have these limits, but is just limited to available memory? Or maybe
+thses limits could be dependent on the amount of memory that you
+allocate for ferret?
+&gt;
+&gt; It is getting very tiring having to deal with these limits all of the
+time. Enough so that even though I like ferret very much I am looking
+for alternatives.
+&gt;
+&gt; I am currently running version 5.40 under linux.
+&gt;
+&gt; Rick Slater
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA
+(206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00441.html">Re: Descriptor hard limitations</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00515.html">Re: Descriptor hard limitations</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00441.html">Thread Prev</a>][<a href="msg00515.html">Thread Next</a>][<A HREF="threads.html#00442">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

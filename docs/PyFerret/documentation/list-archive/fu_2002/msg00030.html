@@ -1,0 +1,284 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Closure on Averaging w/masked data -->
+<!--X-From-R13: Egrir Qbpxf <fpbpxfNnevry.zrg.gnzh.rqh> -->
+<!--X-Date: Wed, 23 Jan 2002 07:33:58 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C4ED7E2.C4AEE3E5@ariel.met.tamu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Closure on Averaging w/masked data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00029.html">Thread Prev</a>][<a href="msg00031.html">Thread Next</a>][<A HREF="threads.html#00030">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Closure on Averaging w/masked data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Closure on Averaging w/masked data</strong></li>
+<li><strong>From</strong>: <strong>Steve Cocks &lt;<a href="mailto:scocks@DOMAIN.HIDDEN">scocks@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 23 Jan 2002 09:33:54 -0600</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Ferreteers,
+
+The attached thread of emails provides closure to the problem I had with
+using @average or @shn:n command with masked data.  Specifically, I
+wanted  to make sure an average or running mean was using a specified
+number of gridpoints vice one or two for the calculations.
+
+***************************************************************************************
+
+MESSAGE # 1Hello again,
+
+I have a rather simple, perhaps 'duh' like question to ask concerning
+the way ferret treats masked data points.  I have a variables called
+Divergence/Convergence  (calculated from scatterometer data).  The
+Div/Con values are masked for data points where there is land and
+adjacent coastlines, and the same mask has been applied throughout the
+dataset.  This means New Guinea,  Celebes, some of the smaller islands
+etc are assigned &quot;missing values.&quot;  Now, if I use the following subset
+of commands (already opened data, yada , yada, yada):
+
+define symbol hl = hlimits=120:270:10
+define symbol vl = vlimits=-60:20:10
+define symbol dl = level =(-0.000016,0.000016,0.0000004)
+
+fill/set/($hl)/nolab/($dl) Div[y=5n:5s@ave,l=379:743@shn:3]  ! Looking
+at an average latitude band from 5S to 5N
+
+I expected to find on the hovmoller diagram blank regions for all times
+near Celebes Island (120 to 123 or so E longitude) and New Guinear (135
+to ~145E).  Instead, it looked like Ferret made averages across the
+region skipping the data voids (masked data) and making an average with
+what data was available.   So my questions are:
+
+1) Exactly how does Ferret handle missing data within latitude bands on
+running means?
+
+2) How can I get Ferret not to average when there are large data voids
+over a given region (or latitude band)?
+
+Thanks in advance.
+
+Scocks
+Atmospheric Sciences
+Texas A&amp;M
+
+*******************************************************
+
+MESSAGE #2
+&gt; Hi Steve,
+&gt;         @ave will give you a value, even if there is only one point in
+
+&gt; the range of latitude.  Is this your problem? If you want to exclude
+&gt; longitudes with less than some threshold of valid points you could
+define
+&gt; a mask based on @ngd - eg
+&gt;         let ave=if(v[y=@ngd] ge 5)then v[y=@ave]
+&gt; if you only wanted to use zonal positions where at least 5 meridional
+&gt; values are available.
+&gt; Mick
+&gt; |--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+&gt; |-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+&gt; |--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+&gt; |-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+&gt; |-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+***********************************************************************
+
+MESSAGE #3
+
+Hi Mick,
+
+Yes, that was the problem.   Unfortunately
+I ran into a couple of snags , one directly related to the current
+problem,
+and one related to a previous problem.  The following is a portion of
+the
+script I used to create a Hovmoller diagram of convergence using a file
+that
+has 839 time steps (one day each):
+
+!  Test trig functs on y and x axis and set axis grids to that on netcdf
+
+file
+list /x=170e/y=20s cos(x[g=u]*d2r), sin(y[g=u]*d2r), tan(x[g=u]*d2r)
+
+             DATA SET: /rlp/scocks/qscat_99_01mask.nc
+             LONGITUDE: 170E
+             Y: 66
+ Column  1: EX#1 is COS(X[G=U]*D2R)
+ Column  2: EX#2 is SIN(Y[G=U]*D2R)
+ Column  3: EX#3 is TAN(X[G=U]*D2R)
+           EX#1    EX#2    EX#3
+I / *:   -0.9848 -0.3420 -0.1763
+
+
+let Div=(uwnd[x=@ddc]+vwnd[y=@ddc]-(vwnd/r)*tan(y*d2r))     ! The
+divergence
+equation
+
+list /x=170e/y=20s sin(y[g=u]*d2r), Div[l=1]  ! Test divergence equation
+
+
+
+ *** NOTE: Ambiguous coordinates on Y axis:
+(UWND[X=@DDC]+VWND[Y=@DDC]-(VWND/R)*TAN(Y*D2R))
+             DATA SET: /rlp/scocks/qscat_99_01mask.nc
+             LONGITUDE: 171
+             LATITUDE: 20S
+             TIME: 1
+ Column  1: EX#1 is SIN(Y[G=U]*D2R)
+ Column  2: DIV is (UWND[X=@DDC]+VWND[Y=@DDC]-(VWND/R)*TAN(Y*D2R))
+           EX#1        DIV
+I / *:   -0.3420  1.177E-05
+
+*************************************************************************************************
+
+QUESTION # 1:  I thought if I used a previous command to set the y axis
+to
+the grid on the netcdf file it would continue through the rest of the
+program.
+Why am I still getting a &quot;ambibuous coordinates on Yaxis&quot; error?
+************************************************************************************************
+
+
+
+
+Let band=if(Div[y=@ngd] ge 10) then Div[y=5s:15s@ave,l=13:378@shn:3]  !
+The
+if statement
+
+   fill/set/($hl)/nolab/($dl) band              !01aug99-31jul00; hl, dl
+
+defined in statements not included
+
+ !-&gt; CONTOUR/FILL/set/hlimits=120:270:10/nolab/level
+=(-0.000016,0.000016,0.0000004) band
+
+ **ERROR: inconsistent sizes of data regions: T axis
+          DIV[Y=5S:15S@AVE,L=13:378@SHN:3] has 366 points
+(L=013:378@SHN:3)
+          expression has 839 points (L=001:839)
+CONTOUR/FILL/set/hlimits=120:270:10/nolab/level
+=(-0.000016,0.000016,0.0000004)
+band
+Command file, command group, or REPEAT execution aborted
+
+***********************************************************************************************
+
+QUESTION #2:  I am only requesting a portion of the data file, so why
+does
+ferret give me the &quot;inconsistent sizes of data regions&quot; error?
+**********************************************************************************************
+
+Would greatly appreciate your comments.  Thanks in advance.
+
+Scocks
+TAMU
+
+
+*********************************************************************************************
+
+MESSAGE 4
+
+|--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+|-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+|--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+|-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+|-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+
+On Tue, 22 Jan 2002, Steve Cocks wrote:
+&gt;
+&gt; let Div=(uwnd[x=@ddc]+vwnd[y=@ddc]-(vwnd/r)*tan(y*d2r))     ! The
+divergence
+&gt; equation
+&gt;
+&gt; QUESTION # 1:  I thought if I used a previous command to set the y
+axis to
+&gt; the grid on the netcdf file it would continue through the rest of the
+&gt; program.
+&gt; Why am I still getting a &quot;ambibuous coordinates on Yaxis&quot; error?
+
+ANSWER: Ferret has no way to know what &quot;y&quot; you mean in the tan(y*d2r)
+        portion of the definition.  Better always to be explicit - in
+        this case I imagine you intend y[g=vwnd]
+
+
+QUESTION 2:
+&gt; Let band=if(Div[y=@ngd] ge 10) then Div[y=5s:15s@ave,l=13:378@shn:3]
+! The
+&gt; if statement
+&gt;
+&gt;    fill/set/($hl)/nolab/($dl) band              !01aug99-31jul00; hl,
+dl
+
+ANSWER: Here you are trying to do too much in one step
+        &quot;if(Div[y=@ngd] ge 10)&quot; addresses the entire time axis but in
+the
+        &quot;then&quot; you curtail the time axis
+        Better to use something like
+                let meridav=if(Div[y=5s:15s@ngd] ge 10) then Div
+                fill meridav[l=13:378@shn:3
+
+Mick
+
+
+
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00029.html">Muti-cdf files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00031.html">Shade/Levels</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00029.html">Thread Prev</a>][<a href="msg00031.html">Thread Next</a>][<A HREF="threads.html#00030">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

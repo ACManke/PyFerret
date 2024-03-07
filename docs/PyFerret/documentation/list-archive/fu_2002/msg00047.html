@@ -1,0 +1,315 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: change Origin of Axes -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Mon, 28 Jan 2002 10:54:39 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C559E88.84BB8EEA@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.GSO.4.33.0201170842270.1929&#45;100000@heron.pmel.noaa.gov -->
+<!--X-Reference: 3C4720C4.BC8AE004@noaa.gov -->
+<!--X-Reference: 3C55855E.4CB8DEC0@pmel.noaa.gov -->
+<!--X-Reference: 3C5591B5.8DE0B375@noaa.gov -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: change Origin of Axes</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00046.html">Thread Prev</a>][<a href="msg00023.html">Thread Next</a>][<A HREF="threads.html#00047">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: change Origin of Axes</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Yunyao Qu &lt;<a href="mailto:Yunyao.Qu@DOMAIN.HIDDEN">Yunyao.Qu@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: change Origin of Axes</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 28 Jan 2002 10:55:04 -0800</li>
+<li>Cc: Mick Spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;, <a href="mailto:spillane@DOMAIN.HIDDEN">spillane@xxxxxxxxxxxxx</a>,       ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;Pine.GSO.4.33.0201170842270.1929-100000@heron.pmel.noaa.gov&gt;&lt;3C4720C4.BC8AE004@noaa.gov&gt; &lt;3C55855E.4CB8DEC0@pmel.noaa.gov&gt;&lt;<a href="msg00046.html">3C5591B5.8DE0B375@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi Frank,
+<br>Thanks for posting back to the group with the answer.&nbsp; Just a
+<br>note on one point. -- starting with Version 5.22 the YLIMITS
+<br>qualifier became VLIMITS.
+<p>For the issue of missing and fill values, note this section from the
+<br>Users' Guide in the description of using NetCDF files in Ferret
+<br>(Ch 3, sec 1.6.1).&nbsp; I've put a setence in bold type.&nbsp; Once
+the
+<br>data is read in, Ferret recognizes only one missing value flag.
+<p>&nbsp; For NetCDF input data sets the missing value flag(s) is
+<br>&nbsp; indicated by the values of the attributes "missing_value" and
+<br>&nbsp; "_FillValue." If both attributes are defined to have different
+<br>&nbsp; values both will be recognized and used by Ferret as missing
+<br>&nbsp; value indicators, <b>however the occurrences of _FillValue will</b>
+<br><b>&nbsp; be replaced with the value of missing_value as the data are</b>
+<br><b>&nbsp; read into Ferret's memory cache so that only a single missing</b>
+<br><b>&nbsp; value flag is apparent inside of Ferret</b>. The command
+<br>&nbsp; SET VARIABLE/BAD= can also be applied to NetCDF variables,
+<br>&nbsp; thereby temporarily setting a user-imposed value for _FillValue.
+<p>But you could set the variable to some particular value at the locations
+<br>you want to mark.&nbsp; This flag would not be the same as the missing
+value,
+<br>and shade it with, for example:
+<p>shade var/lev=(0,1000,100)&nbsp;&nbsp;&nbsp; ! the normal range of the
+data
+<br>shade/over/lev=(-9999)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! the value of your flag
+<p>Ansley Manke
+<p>Yunyao Qu wrote:
+<blockquote TYPE=CITE>Because the data set is just a 512*512 matrix(and
+we have the lat-lon position description for each point value also), a
+simple way to change the origin of Axes is using YLIMITS=hi:lo instead
+of YLIMITS=lo:hi in SHADE command for this data set.
+<br>As for differentiating the Missing values and Fill Values(secondary
+invalid values) in one file, we just sacrifice this, and contour the lat
+and lon lines to mark the user interested&nbsp; region(it is north or south
+hemisphere in this scenario).
+<p>It seems we could specify TWO invalid values( one by Missing, another
+by _Fill) in Ferret User Guide, can we?
+<br>If the answer is YES, can we draw it in different colors?
+<p>Thanks,
+<br>Frank
+<p>Ansley Manke wrote:
+<p>> Hi Frank,
+<br>> Did you get a satisfactory solution to your questions?&nbsp; If so
+could
+<br>> you post the answer back to the Ferret Users's list, so there is
+<br>> a resolution there which others might find?
+<br>>
+<br>> Ansley
+<br>>
+<br>> Yunyao Qu wrote:
+<br>>
+<br>> > Hi, Mick,
+<br>> >
+<br>> > Sorry for not clear declaring. The coordinate is NOT REAL lat-lon
+representation. It is a virtual 512x512 matrix
+<br>> > dimension.
+<br>> > I attached&nbsp; 2 sample files you can see its dimensiont.
+<br>> > I tested&nbsp; (SHADE var x_page y_page, mp_....,etc) ,&nbsp; they
+work fine in lat-lon gridded data. But this kind of&nbsp; virtual
+<br>> > COL and ROW data ....
+<br>> >
+<br>> > Thanks
+<br>> > Frank QU
+<br>> >
+<br>> > Mick Spillane wrote:
+<br>> >
+<br>> > > Hi Frank,
+<br>> > >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Judging from
+your figure, which I take it is basically an
+<br>> > > mp_stereographic_north projection of your data, it is just the
+<br>> > > longitude that is flipped - I can see that Africa is backward
+but
+<br>> > > the north pole is where it ought to be.
+<br>> > >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Ferret commands
+you give are not the ones that made this
+<br>> > > plot, at least not in my limited understanding of the mp_* demos.
+<br>> > > In the commands for making a polar stereographic plot in my demo
+<br>> > > below you will see the variable x_page that holds the "x" part
+of
+<br>> > > the transformation. The simplest way for you to fix your problem
+<br>> > > may be to replace x_page by (-1)*x_page in your shade command(s).
+<br>> > > There is also a variable "MP_CENTRAL_MERIDIAN" that you may choose
+<br>> > > to use to put a different meridian at 12 o'clock.
+<br>> > >
+<br>> > > My demo:
+<br>> > >
+<br>> > > ! flipping longitudes in a polar stereographic plot
+<br>> > >
+<br>> > > use etopo60
+<br>> > > set grid rose
+<br>> > >
+<br>> > > set win/aspect=1:ax
+<br>> > > ppl axset,0,0,0,0 ; ppl axlabp,0,0
+<br>> > >
+<br>> > > go mp_stereographic_north
+<br>> > > region/x=0:360/y=0:90
+<br>> > >
+<br>> > > ! first shade in the normal way (longitude is correct here)
+<br>> > >
+<br>> > > shade/nolab/nokey rose, x_page, y_page
+<br>> > >
+<br>> > > ! then flip/"correct" longitudes and use new MP_CENTRAL_MERIDIAN
+<br>> > >
+<br>> > > message
+<br>> > >
+<br>> > > let MP_CENTRAL_MERIDIAN=45
+<br>> > > shade/nolab/nokey rose, (-1)*x_page, y_page
+<br>> > >
+<br>> > > |--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+<br>> > > |-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+<br>> > > |--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+<br>> > > |-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+<br>> > > |-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+<br>> > >
+<br>> > > On Thu, 17 Jan 2002, Yunyao Qu wrote:
+<br>> > >
+<br>> > > > Hi, Mick,
+<br>> > > > My problem is EXACTLY as what you said:"....that when you plot
+it the "map"
+<br>> > > > is upsidedown....".
+<br>> > > > So, We would like to change it back when plot it.
+<br>> > > > The data set is simply&nbsp; a (row, col) matrix NetCDF file.
+<br>> > > >
+<br>> > > > The following is script
+<br>> > > > ================
+<br>> > > > USE SAA_Descriptor
+<br>> > > > SET REGION/Y=90:0/X=180:-180/T=280683
+<br>> > > > SHADE/LEVELS=1/nokey/noaxis water_vapor //&nbsp; get label
+<br>> > > > shade/LEVELS=1/nolab/nokey/noaxis/over/pal=black missing(water_vapor,0)
+//
+<br>> > > > plot missing data
+<br>> > > > SHADE/NOAXES/LEVELS=23/over/key/nolab water_vapor // plot image
+<br>> > > > shade/over/nolab/pal=grey/noaxis/lev=(0) water_vapor // plot
+special bad data
+<br>> > > >
+<br>> > > > ==================
+<br>> > > > The generated&nbsp; image also attached. We would like its
+upside down.
+<br>> > > > <a href="">http://wwwdev.saa.noaa.gov/VisData/EDRMAPNH14/GIF/2001_12_31-20:00:00-EDRMAPNH14-water_vapor-1_512_1_512-0.5.GIF</a>
+<br>> > > >
+<br>> > > > Thanks,
+<br>> > > > Frank
+<br>> > > >
+<br>> > > >
+<br>> > > >
+<br>> > > >
+<br>> > > >
+<br>> > > >
+<br>> > > > Mick Spillane wrote:
+<br>> > > >
+<br>> > > > > Hi Frank,
+<br>> > > > >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Its not quite
+clear to me what problem you are dealing with.
+<br>> > > > > Sometimes an xy dataset is ordered opposite to the Ferret
+norm of
+<br>> > > > > south to north/west to east so that when you plot it the
+"map" is
+<br>> > > > > upsidedown.
+<br>> > > > >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In some cases
+it is possible to orient the plot in the way
+<br>> > > > > desired using the ppl xaxis and ppl yaxis commands; in other
+cases
+<br>> > > > > one has to be more tricky.
+<br>> > > > >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I suggest
+you first take a look at the user group mail
+<br>> > > > > archives
+<br>> > > > >
+<br>> > > > > <a href="">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/ferret_mail_archives.html</a>
+<br>> > > > >
+<br>> > > > > where for example in 2001 you will find at least two notes
+that may
+<br>> > > > > deal with a situation like yours:
+<br>> > > > > <a href="">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00649.html</a>
+<br>> > > > > <a href="">http://ferret.wrc.noaa.gov/Ferret/Mail_Archives/fu_2001/msg00650.html</a>
+<br>> > > > >
+<br>> > > > >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In general
+it may be useful to be more specific in your query -
+<br>> > > > > for example describe the format of your dataset, cut and
+paste lines
+<br>> > > > > from your ferret session that show how you accessed the data
+and plotted
+<br>> > > > > it, etc.
+<br>> > > > >
+<br>> > > > > Mick
+<br>> > > > >
+<br>> > > > > |--****--****-*---*---***--***--|____spillane@pmel.noaa.gov____|
+<br>> > > > > |-*__---*-----*--*-*--*--*-*--*-|_SCIENCE APPLICATIONS SUPPORT_|
+<br>> > > > > |--***--*-----*-*---*-***--***--|____EPIC/Ferret/PlotPlus______|
+<br>> > > > > |-----*-*-----*-*****-*----*----|__Room 2070 Bldg#3 NOAA/PMEL__|
+<br>> > > > > |-****---****-*-*---*-*----*----|____Phone_:_(206)526-6780_____|
+<br>> > > >
+<br>> > > > --
+<br>> > > > Yunyao "Frank" Qu
+<br>> > > > Satellite Active Archive (SAA)
+<br>> > > > NESDIS, NOAA
+<br>> > > >
+<br>> > > >
+<br>> >
+<br>> > --
+<br>> > Yunyao "Frank" Qu
+<br>> > Satellite Active Archive (SAA)
+<br>> > NESDIS, NOAA
+<br>> >
+<br>> >&nbsp;&nbsp; ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<br>> >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Name: 20011231_200000.cdf
+<br>> >&nbsp;&nbsp;&nbsp; 20011231_200000.cdf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Type: Channel File (application/x-cdf)
+<br>> >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Encoding: base64
+<br>> >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Download Status: Not downloaded with message
+<br>>
+<br>> --
+<br>> Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp;
+Seattle WA&nbsp; (206)526-6246
+<p>--
+<br>Yunyao "Frank" Qu
+<br>Satellite Active Archive (SAA)
+<br>NESDIS, NOAA</blockquote>
+
+<p>--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00046" href="msg00046.html">Re: change Origin of Axes</a></strong>
+<ul><li><em>From:</em> Yunyao Qu</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00046.html">Re: change Origin of Axes</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00023.html">Neutral surface density.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00046.html">Thread Prev</a>][<a href="msg00023.html">Thread Next</a>][<A HREF="threads.html#00047">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

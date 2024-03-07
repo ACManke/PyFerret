@@ -1,0 +1,180 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: 360 day years -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Tue, 21 Mar 2000 16:44:20 &#45;0800 (PST) -->
+<!--X-Message-Id: 38D81777.C800EF93@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 38D7A10D.64F854FB@knmi.nl -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: 360 day years</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00098.html">Thread Prev</a>][<a href="msg00101.html">Thread Next</a>][<A HREF="threads.html#00100">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: 360 day years</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Thijs van Reenen &lt;<A HREF="mailto:reenenv@DOMAIN.HIDDEN">reenenv@xxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: 360 day years</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 21 Mar 2000 16:44:39 -0800</li>
+<li>Cc: Ferret &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>Organization: NOAA/Pacific Marine Environmental Laboratory</li>
+<li>References: &lt;<a href="msg00098.html">38D7A10D.64F854FB@knmi.nl</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Thijs,
+
+The quick solution is is to &quot;associate&quot; your model time axis with a corresponding
+Gregorian time axis for purposes of plotting. The details:
+
+The spacing of points in time on your days-360 time axis would be correctly
+represented by
+
+    DEFINE AXIS/T=15-FEB-1900:15-FEB-2000:90/units=days t360_seasons
+
+But this leads to the problem you are seeing -- as illustrated by this look at
+the &quot;Feb&quot; season each year, which &quot;drifts&quot; about 5 days per year
+
+     yes? show axis/l=1:20:4 t360_seasons
+      name       axis              # pts   start                end
+      T360_SEASONS TIME            407 r   15-FEB-1900    02-MAR-2000
+     T0 = 01-JAN-1900
+                L     T                 BOX_SIZE       TIME_STEP (DAYS)
+                1&gt;  15-FEB-1900 00:00:00  90             45
+                5&gt;  10-FEB-1901 00:00:00  90             405
+                9&gt;  05-FEB-1902 00:00:00  90             765
+               13&gt;  31-JAN-1903 00:00:00  90             1125
+               17&gt;  26-JAN-1904 00:00:00  90             1485
+
+Now, a Gregorian seasonal time axis with 4 equal-length seasons could be defined
+with
+
+yes? DEFINE AXIS/T=15-FEB-1900:15-FEB-2000:`365.2485/4,prec=9`/units=days tGreg_seasons
+
+and has no long term &quot;drift&quot; problems:
+
+     yes? show axis/l=1:200:`4*10` tGreg_seasons
+      name       axis              # pts   start                end
+      TGREG_SEASONS TIME           401 r   15-FEB-1900    15-FEB-2000
+     T0 = 01-JAN-1900
+                L     T                 BOX_SIZE       TIME_STEP (DAYS)
+                1&gt;  15-FEB-1900 00:00:00  91.31213       45
+               41&gt;  15-FEB-1910 11:38:27  91.31213       3697.485
+               81&gt;  15-FEB-1920 23:16:54  91.31213       7349.97
+              121&gt;  15-FEB-1930 10:55:22  91.31213       11002.46
+              161&gt;  15-FEB-1940 22:33:49  91.31213       14654.94
+
+
+(A more exact time axis is explained in
+
+ <A  HREF="http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/partII.html#V5.0_DEFINE">http://ferret.wrc.noaa.gov/Ferret/Documentation/Users_Guide/v50/partII.html#V5.0_DEFINE</A> AXIS$/EDGES)
+
+If you have a variable, MY_VAR, defined on a time axis like t360_seasons you can
+make a nice plot of it using
+
+    yes? PLOT MY_VAR[GT=tGreg_seasons@ASN]
+
+where the &quot;@ASN&quot; denotes regridding by association.
+
+Note that we are working on more automated solutions to this problem for future
+versions of Ferret.
+
+Thanks for your question.
+
+    - steve
+
+================================================
+
+Thijs van Reenen wrote:
+
+&gt; Hello,
+&gt;
+&gt; My model produces seasonal output, each season (jfm, amj, ...) lasting for 90
+&gt; days. I would like to Ferret to use the 360-day model year so that the
+&gt; time-references on the plots will correspond to the model months.
+&gt;
+&gt; How can I achieve this?
+&gt;
+&gt; Thanks!
+&gt; --
+&gt;    ____________________________________________________________
+&gt;   |                                                            |
+&gt;   | Name   : Thijs van Reenen                                  |_
+&gt;   | Adress : Royal Netherlands Meteorological Institute (KNMI) | |
+&gt;   |          P.O. Box 201, 3730 AE De Bilt, The Netherlands    | |
+&gt;   | Tel    : +31 30 2206366                                    | |
+&gt;   | Fax    : +31 30 2202570                                    | |
+&gt;   | Email  : reenenv@knmi.nl                                   | |
+&gt;   | URL    : www.knmi.nl/~reenenv/                             | |
+&gt;   |____________________________________________________________| |
+&gt;     |____________________________________________________________|
+
+--
+
+                |  NOAA/PMEL               |  ph. (206) 526-6080
+Steve Hankin    |  7600 Sand Point Way NE  |  FAX (206) 526-6744
+                |  Seattle, WA 98115-0070  |  hankin@pmel.noaa.gov
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00098" href="msg00098.html">360 day years</a></strong>
+<ul><li><em>From:</em> Thijs van Reenen</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00098.html">360 day years</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00101.html">How to fit data with a straight line</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00098.html">Thread Prev</a>][<a href="msg00101.html">Thread Next</a>][<A HREF="threads.html#00100">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

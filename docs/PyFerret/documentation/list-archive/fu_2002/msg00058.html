@@ -1,0 +1,182 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: bug? -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 31 Jan 2002 11:07:30 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C599578.64454197@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 200201310937.KAA23362@giub.unibe.ch -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: bug?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00056.html">Thread Prev</a>][<a href="msg00060.html">Thread Next</a>][<A HREF="threads.html#00058">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: bug?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Nicolas Schneider &lt;<a href="mailto:schneid@DOMAIN.HIDDEN">schneid@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: bug?</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 31 Jan 2002 11:05:28 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00056.html">200201310937.KAA23362@giub.unibe.ch</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>[This message pertains to odd behaviors regarding ambiguous axis orientations in Ferret]
+
+Hi Nicolas,
+
+Thanks for pointing this out. The misbehavior that you observed can be reproduced in the
+very simple lines:
+
+     yes? DEFINE AXIS/X=1:1681:1 tot_x  ! subset of the 2D-region with 1681 grid-pts
+     yes? LET tot_grd = X[GX=tot_x]
+     yes? SHOW GRID tot_grd
+
+Now change the axis definition to
+
+     yes? DEFINE AXIS/X=130e:80w:2/units=degrees tot_x
+
+and you'll see the problem disappear.  However, using this new definition, one gets an error
+as expected from
+
+     yes? let v2 = Y[gy=tot_x]
+     yes? show grid v2
+
+since it does not make sense to use a longitude axis in a &quot;Y&quot; pseudo-variable.
+
+It turns out that when the orientation of an axis is ambiguous, Ferret may use the name of
+the axis to resolve the ambiguity. That is what is happening in your example. The starting
+letter &quot;t&quot; of &quot;tot_x&quot; erroneously makes Ferret think that your axis is T-oriented.
+
+I will look into changing this behavior.  Meantime, the work-around that you suggested is
+right on target.
+
+    - steve
+
+====================================
+
+Nicolas Schneider wrote:
+
+&gt; Dear Ferret users
+&gt;
+&gt; When trying to calculate pdf's, I found a very strange behaviour of ferret? What I tried
+&gt; to do is regrid a 2D-dataset on a 1D-vector in order to be able to sort the data.
+&gt;
+&gt; I tried the following and got an error message (I don't understand):
+&gt;
+&gt; yes? DEFINE AXIS/X=1:1681:1 tot_x  ! subset of the 2D-region with 1681 grid-pts
+&gt; yes? LET tot_grd = X[GX=tot_x]
+&gt; yes? LET on1ax = RESHAPE(TEMP[D=1,I=10:50,J=10:50,L=15], tot_grd)
+&gt; yes?
+&gt; yes? list on1ax
+&gt;  **ERROR: regridding: Axis orientation not matching request:GX=TOT_X
+&gt; yes?
+&gt;
+&gt; However, when I changed the name of the newly defined x-axis from tot_x to xax and the
+&gt; name of the newly defined grid from tot_grd to grd1d, it worked:
+&gt;
+&gt; yes? DEFINE AXIS/X=1:1681:1 xax ! subset of the 2D-region with 1681 grid-pts
+&gt; yes? LET grd1d = X[GX=xax]
+&gt; yes? LET on1ax = RESHAPE(TEMP[D=1,I=10:50,J=10:50,L=15], grd1d)
+&gt; yes?
+&gt; yes? list on1ax
+&gt;              RESHAPE(TEMP[D=out.small-pres.surf1,I=10:50,J=10:50,L=15], GRD1D)
+&gt;  1      /    1:  294.3
+&gt;  2      /    2:  294.3
+&gt;  3      /    3:  294.3
+&gt;  4      /    4:  294.3
+&gt;  5      /    5:  294.2
+&gt;
+&gt;
+&gt; The more, the first syntax worked when I used a z-axis (==&gt; name: tot_z) and a
+&gt; corresponding grid (==&gt; name tot_grd). So it can't only be the underscore.
+&gt;
+&gt; Although I finally sorted out the problem, is there anything I didn't understand
+&gt; correctly or is it just a bug? Are there any letters one can't use in naming variables
+&gt; and grids?
+&gt;
+&gt; Thanks,
+&gt; Nick
+&gt;
+&gt; _____________________________________________________________
+&gt;
+&gt; Nicolas Schneider
+&gt; PhD Student
+&gt; University of Bern
+&gt; Institute of Geography
+&gt; Climatology &amp; Meteorology
+&gt; Hallerstrasse 12
+&gt; CH-3012 Bern
+&gt;
+&gt; phone +41-31-631-8542
+&gt; fax   +41-31-631-8511
+&gt; email schneid@giub.unibe.ch
+&gt; _____________________________________________________________
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00056" href="msg00056.html">bug?</a></strong>
+<ul><li><em>From:</em> Nicolas Schneider</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00056.html">bug?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00060.html">extracting nearest points</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00056.html">Thread Prev</a>][<a href="msg00060.html">Thread Next</a>][<A HREF="threads.html#00058">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

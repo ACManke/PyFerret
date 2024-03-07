@@ -1,0 +1,179 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: annual average from monthly mean for precise 365&#45;day years. -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Fri, 16 Mar 2001 17:00:20 &#45;0800 (PST) -->
+<!--X-Message-Id: 3AB2B6E5.F44E186D@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: Pine.LNX.4.30.0103161519550.4555&#45;100000@tsunami.ocean.washington.edu -->
+<!--X-Derived: gif00003.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: annual average from monthly mean for precise 365-day years.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00153.html">Thread Prev</a>][<a href="msg00158.html">Thread Next</a>][<A HREF="threads.html#00157">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: annual average from monthly mean for precise 365-day years.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Wei Cheng &lt;<A HREF="mailto:wcheng@DOMAIN.HIDDEN">wcheng@xxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: annual average from monthly mean for precise 365-day years.</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Fri, 16 Mar 2001 16:59:17 -0800</li>
+<li>Cc: Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;,       Ansley Manke &lt;<A HREF="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</A>&gt;</li>
+<li>References: &lt;Pine.LNX.4.30.0103161519550.4555-100000@tsunami.ocean.washington.edu&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Wei,
+
+Your methods 3 and 4 give differing answers presumably (I havn't rerun your
+script lines) because for the even integer argument 12 in &quot;l=@sbx:12&quot; Ferret
+actually extends the smoothing window width to 13 and gives a weight of 0.5
+to each of the end points.  This is explained in the Users Guide description
+of @SBX -- it is to avoid &quot;shifting&quot; the data through a non-symmetrical
+smoothing window.
+
+When you examine carefully what the :12 stride is doing it is a bit more
+complex than you might at first think. If &quot;*&quot; are points on axis tax and &quot;|&quot;
+represent the boundaries between grid cells
+
+        11  12  13  14  15  16  17  18  19  20  21  22  23  24  25
+  tax: | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * |
+tax 1:big:12     X                       |                       X
+
+you see that the cell boundaries on the 1:big:12 axis actually split cell 19
+from tax in half.
+
+The best/right way to perform annual averaging is to define the desired
+result axis so its cell boundaries exactly align with the cells of the source
+axis. Your Method 2 looks like this approach. I have modified your Method 2
+just slightly and plotted it using the V5.3 PLOT/STEP style to illustrate
+
+     define axis/edges/t=1:25:1/unit=months tax
+     let newtaux = T[GT=tax]
+     plot/step newtaux
+     define axis/edges/t=1:25:12/UNITS=months tann
+     let tauxx=newtaux[gt=tann]
+     plot/step/over tauxx
+
+btw: Ferret V5.3 includes support for non-Gregorian axes, such as constant
+365 day years.
+
+    - steve
+
+========================
+
+Wei Cheng wrote:
+
+&gt; Hi Steve,
+&gt;
+&gt; I found a message between you and Gary Strand in the mail archive in 1999
+&gt; which suggests that this question might be brought to you directly.
+&gt; I am analyzing the NCAR CCM3 output which treats every year as precisely
+&gt; 365 day. The task seems to be simple enough: get annual averages from
+&gt; monthly means. I tried the following ways:
+&gt;
+&gt; ! method 1
+&gt; define axis/T=&quot;16-jan-1900&quot;:&quot;16-dec-2000&quot;:30.44/units=days tax
+&gt; LET newtaux = stresx[GT=tax@asn]
+&gt; DEFINE AXIS/T=&quot;1-jul-1900&quot;:&quot;1-jul-2000&quot;:365.25/UNITS=days tann
+&gt; let tauxx=newtaux[gt=tann@ave]
+&gt;
+&gt; ! method 2
+&gt; define axis/edges/t=1:1212:1/unit=months tax
+&gt; let newtaux = stresx[GT=tax@asn]
+&gt; define axis/edges/t=1:1212:12/UNITS=months tann
+&gt; let tauxx=newtaux[gt=tann@ave]
+&gt;
+&gt; ! method 3
+&gt; define axis/edges/t=1:1212:1/unit=months tax
+&gt; LET newtaux = stresx[GT=tax@asn]
+&gt; let tauxx=newtaux[l=1:1212:12@ave]
+&gt;
+&gt; ! method 4
+&gt; define axis/edges/t=1:1212:1/unit=months tax
+&gt; LET newtaux = stresx[GT=tax@asn]
+&gt; let a=newtaux[l=@sbx:12]
+&gt; let tauxx=a[l=7:1207:12]
+&gt;
+&gt; Each method seems to give me a different answer. I am especially
+&gt; puzzled by why there are differences between method 3 and 4. And,
+&gt; why, say, var[l=1:36:12@ave] only gives two (instead of three)
+&gt; non-bad values.
+&gt;
+&gt; I will appreciate any suggestions from you.
+&gt;
+&gt; Wei
+&gt;
+&gt; __________________________________________________
+&gt;  Wei Cheng
+&gt;  School of Oceanography, University of Washington
+&gt;  Campus Box 357940, Seattle, WA 98195
+&gt;  Tel: (206) 543-0686  Fax: (206) 685-3354
+&gt; __________________________________________________
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+</pre>
+<p><a href="gif00003.gif" ><img src="gif00003.gif" alt="GIF image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00158" href="msg00158.html">Re: annual average from monthly mean for precise 365-day years.</a></strong>
+<ul><li><em>From:</em> Wei Cheng</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00153.html">Quicker loading into fortran?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00158.html">Re: annual average from monthly mean for precise 365-day years.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00153.html">Thread Prev</a>][<a href="msg00158.html">Thread Next</a>][<A HREF="threads.html#00157">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

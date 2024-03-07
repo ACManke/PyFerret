@@ -1,0 +1,151 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: Regridding/interpolation -->
+<!--X-From-R13: [nex Hrefpuryy <irefpuryyNarcghar.tfsp.anfn.tbi> -->
+<!--X-Date: Tue, 20 Jun 2000 10:04:16 &#45;0700 (PDT) -->
+<!--X-Message-Id: Pine.SGI.4.00.10006201255490.11862&#45;100000@neptune.gsfc.nasa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: l03130303b5753d426520@[131.111.112.149] -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: Regridding/interpolation</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00299.html">Thread Prev</a>][<a href="msg00301.html">Thread Next</a>][<A HREF="threads.html#00300">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Regridding/interpolation</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Glenn Carver &lt;<A HREF="mailto:Glenn.Carver@DOMAIN.HIDDEN">Glenn.Carver@xxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Regridding/interpolation</strong></li>
+<li><strong>From</strong>: <strong>Mark Verschell &lt;<A HREF="mailto:verschell@DOMAIN.HIDDEN">verschell@xxxxxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 20 Jun 2000 13:04:01 -0400</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>In-reply-to: &lt;<a href="msg00299.html">l03130303b5753d426520@[131.111.112.149]</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Glenn,
+
+	I haven't worked this out in any way, but it occurs to me that you
+could do something very similar to how ferret handles sigma-coordinate
+date.
+
+	In sigma coordinate data, you have data in levels, and you have
+the thickness of each level. You define a depth function that is the sum
+of these thicknesses and then I define a new axis that has the resolution
+I want and regrid using zaxreplace. So maybe something like:
+
+let depth=h[k=@rsum]-0.5*h
+define axis/z=0:200:10/depth/unit=meters zdepth
+let varD=ZAXREPLACE(var,depth,z[gz=zdepth]
+
+Could be adapted, where depth would be replaced by pressure. You already
+have a pressure variable, so if you define a &quot;regular&quot; pressure z-axis:
+
+define axis/z=0:1000:10/depth/unit=decibars zpres
+let trd=ZAXREPLACE(tr,pressure,z[gz=zpres])
+
+Give it a try, this method is likely to require modification for your
+case.
+
+	Mark
+
+
+On Tue, 20 Jun 2000, Glenn Carver wrote:
+
+&gt; I have a variables, say tr,  on a regular lat/long/theta grid (theta is
+&gt; potential temperature). I also have pressure, p, on this same grid. I need
+&gt; to regrid the variables onto a new grid which has the vertical coordinate
+&gt; replaced by pressure. To be able to do this requires a linear vertical
+&gt; interpolation using the values of pressure in p. However, since p for each
+&gt; lat/lon is different I cannot figure out a way of getting ferret to do this.
+&gt; 
+&gt; e.g.
+&gt; define/axis/z=500:0:-10 paxis   ! defines the regular pressure axis I want
+&gt; define grid/like=tr/z=paxis newgrid  ! sets up the grid I eventually want tr on
+&gt; 
+&gt; I can't use the normal regridding as this uses the variable's underlying
+&gt; grid whereas I need a lookup to the pressure variable to find the z
+&gt; coordinate value. I can't use an objective analysis ext. fn. because that's
+&gt; going to do a 2D interpolation and I only need a 1d (vertical in this case)
+&gt; interpolation.
+&gt; 
+&gt;   Thanks,
+&gt; 
+&gt;           Glenn
+&gt; 
+&gt; 
+&gt; --
+&gt; Dr. Glenn Carver, Senior Research Associate,
+&gt; Centre for Atmospheric Science, Chemistry Dept., Cambridge University, UK
+&gt; <A  HREF="mailto:Glenn.Carver@atm.ch.cam.ac.uk">mailto:Glenn.Carver@atm.ch.cam.ac.uk</A>   <A  HREF="http://www.atm.ch.cam.ac.uk/~glenn/">http://www.atm.ch.cam.ac.uk/~glenn/</A>
+&gt; 
+&gt;               &quot;I never think of the future, it comes soon enough&quot;
+&gt;                    - Albert Einstein
+&gt; 
+&gt; 
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00301" href="msg00301.html">Re: Regridding/interpolation</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00299" href="msg00299.html">Regridding/interpolation</a></strong>
+<ul><li><em>From:</em> Glenn Carver</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00299.html">Regridding/interpolation</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00301.html">Re: Regridding/interpolation</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00299.html">Thread Prev</a>][<a href="msg00301.html">Thread Next</a>][<A HREF="threads.html#00300">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

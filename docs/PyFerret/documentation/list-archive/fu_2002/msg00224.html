@@ -1,0 +1,162 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: generating monthly climatologies/anomalies using noleap calendar -->
+<!--X-From-R13: Dbo Epbgg <efpbggNBevaprgba.SRG> -->
+<!--X-Date: Thu, 18 Apr 2002 06:52:41 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3CBECFC8.F849F16C@princeton.edu -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: BE3FDFA0E846D311B264009027887568A739C8@pcexch.dar.csiro.au -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: generating monthly climatologies/anomalies using noleap calendar</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00223.html">Thread Prev</a>][<a href="msg00225.html">Thread Next</a>][<A HREF="threads.html#00224">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: generating monthly climatologies/anomalies using noleap calendar</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Mark.Collier@DOMAIN.HIDDEN">Mark.Collier@xxxxxxxx</a>, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: generating monthly climatologies/anomalies using noleap calendar</strong></li>
+<li><strong>From</strong>: <strong>Rob Scott &lt;<a href="mailto:rscott@DOMAIN.HIDDEN">rscott@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 18 Apr 2002 09:53:12 -0400</li>
+<li>References: &lt;<a href="msg00223.html">BE3FDFA0E846D311B264009027887568A739C8@pcexch.dar.csiro.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Mark.Collier@csiro.au wrote:
+<blockquote TYPE=CITE>Hello ferreters,
+<p>I am trying to use a netCDF file with the calendar type set to "noleap",
+<br>and perform a climatology calculation in the FAQ titled "How do I
+<br>calculate climatologies and climatological anomalies?"
+<p>The case using the navy winds works fine (where the calendar type
+<br>defaults to "Gregorian") - but if I use a "noleap" calendar
+<br>and try to plot (for e.g.) the climatology over the desired period
+<br>(using say the "month_reg" definition as in the FAQ example),
+<br>it fails with
+<p>&nbsp;**ERROR: regridding:&nbsp; only @ASN, @LIN, or @NRST regridding
+between calendar
+<br>types: NOLEAP, GREGORIAN
+<p>rather than plotting out the repeaing annual (climatological) cycle.
+<p>I thought that this would work nicely with the "noleap" calendar, or
+<br>am I doing something wrong here?</blockquote>
+Dear Mark:
+<p>I believe the problem is that the month_reg axis uses Gregorian months
+i.e. 1/12 of 365.2425 days.
+<br>One solution is simply to define your own climatological axes, which
+is easy for the regular months at
+<br>least.....
+<p>Explanation in ferret:
+<p>SET DATA monthly_navy_winds
+<br>SHOW grid/T uwnd
+<br>% note the 730.5 hour tboxes....
+<p>SET LIST/precision=8
+<br>% which is a Gregorian month:
+<br>LIST 365.2425*2
+<br>% I guess you want a shorter month:
+<br>LIST 365*2
+<p>% Here's how I would define it (perhaps there's a cleaner solution that
+isn't missing a second at the end!)
+<br>DEFINE axis/T=01-JAN:"31-DEC:23:59:59"/edges/npoints=12/modulo/calendar=noleap
+month_reg_noleap
+<p>% data on a leap calendar, plotted at date line to show it's well defined:
+<br>LET uwnd_clim = uwnd[GT=month_reg_noleap@MOD]
+<br>PLOT uwnd_clim[x=180,y=35n]
+<p>% get it on a no_leap calendar (as a proxy for your data)
+<br>DEFINE axis/T=01-JAN-1982:31-DEC-1992:1/unit=month/calendar=noleap/edges
+tax_noleap
+<br>LET uwnd_noleap = uwnd[GT=tax_noleap]
+<p>% now going from no leap to no leap so it's okay:
+<br>LET uwnd_clim = uwnd_noleap[GT=month_reg_noleap@MOD]
+<p>% ... Bob's your uncle:
+<br>PLOT uwnd_clim[x=180,y=35n]
+<br>&nbsp;
+<p>hope this helps,
+<br>Rob
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<blockquote TYPE=CITE>&nbsp;
+<p>Ideally I would like to use my own "climatological_axes" file which
+<br>has the month_irreg definitions (including edges) for a 365 day
+<br>calendar, but I suppose that is the next step.
+<p>I can provide datasets, printouts of t and tbox, but I don't think
+<br>that is important just at the moment. I am using the latest version
+of
+<br>ferret under rehat, but I get the same response on the latest version
+for
+<br>irix.
+<p>Thanks for any help. Regards,
+<br>Mark.</blockquote>
+
+<pre>--&nbsp;
+Postal Address:
+
+Program in Atmospheric and Oceanic Sciences
+P.O. Box CN710, Sayre Hall
+Princeton, NJ 08544-0710
+USA
+
+Tel: 609-452-6519&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; o__&nbsp;&nbsp;&nbsp; ____&nbsp;
+Fax: 609-987-5063&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; _,>/'_&nbsp; -----
+E-mail: rscott@princeton.edu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (_) \(_) ------</pre>
+&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00223" href="msg00223.html">generating monthly climatologies/anomalies using noleap calendar</a></strong>
+<ul><li><em>From:</em> Mark.Collier</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00223.html">generating monthly climatologies/anomalies using noleap calendar</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00225.html">problem with samplexy and missing xpts, ypts</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00223.html">Thread Prev</a>][<a href="msg00225.html">Thread Next</a>][<A HREF="threads.html#00224">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

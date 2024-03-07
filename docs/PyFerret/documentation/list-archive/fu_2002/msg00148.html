@@ -1,0 +1,164 @@
+<!-- MHonArc v2.5.13 -->
+<!--X-Subject: Re: How can I generate calander axis? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Fri, 22 Mar 2002 15:01:15 &#45;0800 (PST) -->
+<!--X-Message-Id: 3C9BB82E.DA26EB90@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.SGI.4.05.10203221456180.27188&#45;100000@soli.ims.metu.edu.tr -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How can I generate calander axis?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00147.html">Thread Prev</a>][<a href="msg00149.html">Thread Next</a>][<A HREF="threads.html#00148">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How can I generate calander axis?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Murat Gunduz &lt;<a href="mailto:gunduz@DOMAIN.HIDDEN">gunduz@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How can I generate calander axis?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 22 Mar 2002 15:03:10 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00147.html">Pine.SGI.4.05.10203221456180.27188-100000@soli.ims.metu.edu.tr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Murat,
+I have a couple of ideas for you.
+
+1. If you just want to plot the data from December through February,
+you can use the fact that your time axis is a modulo axis.  To draw the
+plot you do not need to regrid the data.
+
+   yes?  use coads_climatology
+   yes?  plot/x=180/y=0/l=12:15 sst
+
+2.  If you need to make a new time axis, you can do that by giving Ferret more
+information about the time steps.  The axis you have defined is what is called
+an abstract axis, where time has no units.  You will want to decide just how to
+define the time steps for your particular application.  SHOW AXIS/T will help you
+with that.  In the example below, I just define an axis with three monthly points.
+The new axis is NOT a modulo axis, since the first point does not come after the
+last point.
+
+For example, using the coads_climatology data set;
+
+   yes? use coads_climatology
+   yes? show grid sst
+   yes? show axis/t time
+   yes? set view upper
+   yes? plot/x=180/y=0 sst
+
+   yes? def axis/t=&quot;1-dec-0000&quot;:&quot;1-feb-0001&quot;:1/edges/units=months/t0=&quot;1-JAN-0000 00:00:00&quot; myt
+   yes? let sub_sst = sst[gt=myt]
+   yes? set view lower
+   yes? plot/x=180/y=0 sub_sst
+
+   yes? sh axis/t myt
+
+Murat Gunduz wrote:
+
+&gt; Dear Ferreters,
+&gt;         I am using FERRET v5.40,
+&gt;         after a lot of preprosesing finaly I generate the grid
+&gt;
+&gt; yes? show grid var
+&gt;     GRID (G005)
+&gt;
+&gt;  name       axis        # pts   start           end
+&gt;  (AX008)    LONGITUDE   46 r    15W             70.5E(430.5)
+&gt;  (AX009)    LATITUDE    12 r    30N             50.9N
+&gt;  normal     Z
+&gt;  MONTH_REG  TIME        12mr    16-JAN 06:00    16-DEC 01:20
+&gt;
+&gt;         I want to put the three months (dec-jan-feb) of the &quot;month_reg&quot;
+&gt; axis into the new grid with old x and y axis.
+&gt;
+&gt; yes? define axis/t myt={1,2,12}
+&gt; yes? let new_var=var[gt=myt]
+&gt; yes? show grid new_clim
+&gt;     GRID (G006)
+&gt;  name           axis       # pts   start        end
+&gt;  (AX008)        LONGITUDE  46 r    15W          70.5E(430.5)
+&gt;  (AX009)        LATITUDE   12 r    30N          50.9N
+&gt;  normal         Z
+&gt;  MYT            T           3 i     1           12
+&gt;
+&gt;         This worked,but the problem is there is no calendar label
+&gt; of t axis. How can i say ferret to put the names of the months,
+&gt; that is DEC,JAN,FEB,  to the &quot;myt&quot; axis.
+&gt;
+&gt; Thank you in advance
+&gt;
+&gt; Murat GUNDUZ
+&gt; Institute of Marine Science
+&gt; METU, TURKEY
+
+--
+Ansley Manke  Pacific Marine Environmental Laboratory  Seattle WA  (206)526-6246
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00149" href="msg00149.html">Re: How can I generate calander axis?</a></strong>
+<ul><li><em>From:</em> Murat Gunduz</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00147" href="msg00147.html">How can I generate calander axis?</a></strong>
+<ul><li><em>From:</em> Murat Gunduz</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00147.html">How can I generate calander axis?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00149.html">Re: How can I generate calander axis?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00147.html">Thread Prev</a>][<a href="msg00149.html">Thread Next</a>][<A HREF="threads.html#00148">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: how can i read all my data from files? -->
+<!--X-From-R13: Egrir Vnaxva <unaxvaNczry.abnn.tbi> -->
+<!--X-Date: Mon, 30 Jul 2001 07:21:19 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3B656C55.75B43E36@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 004601c11712$4d98e340$d890e29f@scsio.ac.cn -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: how can i read all my data from files?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00440.html">Thread Prev</a>][<a href="msg00435.html">Thread Next</a>][<A HREF="threads.html#00446">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: how can i read all my data from files?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>weiq &lt;<A HREF="mailto:weiqwang@DOMAIN.HIDDEN">weiqwang@xxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: how can i read all my data from files?</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<A HREF="mailto:hankin@DOMAIN.HIDDEN">hankin@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 30 Jul 2001 07:16:53 -0700</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>References: &lt;<a href="msg00440.html">004601c11712$4d98e340$d890e29f@scsio.ac.cn</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi Weiq,
+
+In another message you mentioned that the read appears to work fine for
+two, three, four, but it failed for five and more. That is a very strong
+clue that the problem is the file not matching the description that you
+are giving Ferret. Do some plots of the data itself to see if it looks
+correct -- particularly the first and last values read from each time
+step.
+
+There is not strict standardization of FORTRAN binary record structure
+between systems.  It is possible that the binary files created by Visual
+Fortran  6.0 are not consistent with the system on which you are running
+Ferret. I have seen MAC FORTRAN implementations, for example, that
+insert a preceding byte count but lack a closing count. Also systems
+where the count is in words instead of bytes.  Any of these would cause
+the type of behavior you are seeing.
+
+An alternative to FORTRAN unformatted is /FORMAT=stream where you read
+*all* the bytes. The FORTRAN binary header then shows up as data and you
+have to make sure to ignore it. Here is a schematic example -- the
+&quot;I=2:...&quot; in the final step is in order to step over the FORTRAN record
+length information.
+
+     define axis/x=1:`180:360`:1 my_1dX
+     define grid/x=my_1dX/T=my_T my_grid_XT
+     file/format=stream/g=my_grid_XT/var=my_var my_file.dat
+
+     define grid/x=my_X/y=my_Y/T=my_T my_grid_XYT
+     let dummy = X[g=my_grid_XYT] + Y[g=my_grid_XYT] +
+     T[g=my_grid_XYT]
+     let v = RESHAPE(my_var[I=2:`3+360*180`],dummy)
+
+If this helps to lead you to a solution
+
+    - steve
+
+weiq wrote:
+
+&gt; I read it by file/format=stream/grid=gridxy/columns=64800/var=xx
+&gt; c:\tmp\sh2.dat
+&gt; and this data file(sh2.dat) is writted by Visual Fortran  6.0. Pls see
+&gt;
+&gt; the below:
+&gt;
+&gt;      parameter(mi=360,mj=180,msea=12)
+&gt;       real map1(mi,mj)
+&gt;
+&gt; open(1,form='unformatted',file='sh2.dat',access='direct',recl=mi*mj)
+&gt;
+&gt;        do is=1,msea
+&gt;         write(1,rel=is)  map1
+&gt;       enddo
+&gt;
+&gt; thanks ur reply.
+&gt;
+&gt;        weiq
+
+--
+Steve Hankin
+NOAA/PMEL, 7600 Sand Point Way NE, Seattle, WA 98115-0070
+ph. (206) 526-6080 -- FAX (206) 526-6744
+
+
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00440" href="msg00440.html">Re: how can i read all my data from files?</a></strong>
+<ul><li><em>From:</em> weiq</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00440.html">Re: how can i read all my data from files?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00435.html">Potential Vorticity and spiciness</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00440.html">Thread Prev</a>][<a href="msg00435.html">Thread Next</a>][<A HREF="threads.html#00446">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

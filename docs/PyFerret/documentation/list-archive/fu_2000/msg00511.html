@@ -1,0 +1,347 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Graticule with dotted lines -->
+<!--X-From-R13: Bngevpx Pebpxznaa <oebpxNyfpr.fnpynl.prn.se> -->
+<!--X-Date: Tue, 28 Nov 2000 03:02:15 &#45;0800 (PST) -->
+<!--X-Message-Id: 3A23E464.430EE005@lsce.saclay.cea.fr -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: Pine.SCO.3.96.1001128130015.22175A&#45;100000@mail.cmmacs.ernet.in -->
+<!--X-Derived: gif00008.gif -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Graticule with dotted lines</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00510.html">Thread Prev</a>][<a href="msg00512.html">Thread Next</a>][<A HREF="threads.html#00511">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Graticule with dotted lines</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>C Kalyani Devasena &lt;<A HREF="mailto:kalyani@DOMAIN.HIDDEN">kalyani@xxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Graticule with dotted lines</strong></li>
+<li><strong>From</strong>: <strong>Patrick Brockmann &lt;<A HREF="mailto:brock@DOMAIN.HIDDEN">brock@xxxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Tue, 28 Nov 2000 11:59:16 -0500</li>
+<li>Cc: <A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+<li>Organization: CNRS-CEA/LSCE</li>
+<li>References: &lt;<a href="msg00510.html">Pine.SCO.3.96.1001128130015.22175A-100000@mail.cmmacs.ernet.in</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hello,
+
+I have computed scripts for graticule dotted lines since Ferret
+has not dotted line style. It can be used as follows
+
+use levitus_climatology
+shade/lev=25 temp[k=1]
+go land
+go gridlines 30        ! for graticules every 30 degrees
+
+There are also xgridlines, ygridlines and tgridlines.
+
+Show image and scripts attached.
+
+Regards
+Patrick
+
+--
+Patrick BROCKMANN (LSCE/CNRS-CEA Saclay)
+Laboratoire des Sciences du Climat et de l'Environnement
+Unite mixte de recherche CNRS-CEA
+L'Orme des Merisiers - Bat.701 - CEA/Saclay
+91191 GIF sur YVETTE cedex - FRANCE
+Tel : 01 69 08 86 79 - Fax : 01 69 08 77 16
+<A  HREF="mailto:brock@lsce.saclay.cea.fr">mailto:brock@lsce.saclay.cea.fr</A>
+
+</pre>
+<pre>
+\cancel mode verify  
+
+!**************************************************************
+! Description: plot over the vertical grid of a plot 
+!
+! Example: go xgridlines 20 1
+!          will plot every 20 on the physical xaxis a vertical bar
+!          made of line of 1% of the physical yaxis
+!
+! Notes: default vdelta is 1%	
+!
+! Calls:
+!
+! Author: Patrick Brockmann
+! Contact: brock@lsce.saclay.cea.fr
+!
+! Creation: Sept 2000
+! Version: 1.0
+! History:
+! Modification:
+!
+!**************************************************************
+
+query/ignore $1%&lt;Usage: go xgridlines hdelta [vdelta]%
+
+! x1 = first vertical line (superior value)
+if `($XAXIS_MIN) lt 0` then
+	def sym gridlines_x1 = int(($XAXIS_MIN)/$1)*$1
+else
+	def sym gridlines_x1 = (int(($XAXIS_MIN)/$1)+1) *$1
+endif
+! x2 = last vertical line  (inferior value)
+if `($XAXIS_MAX) lt 0` then
+	def sym gridlines_x2 = (int(($XAXIS_MAX)/$1)-1) *$1
+else
+	def sym gridlines_x2 = (int(($XAXIS_MAX)/$1)) *$1
+endif
+def sym gridlines_xrange = (($gridlines_x2) - ($gridlines_x1))
+
+def sym gridlines_x = ($gridlines_x1) + (i-1)*$1
+def sym gridlines_nbx = int(($gridlines_xrange)/$1) + 1
+
+def sym gridlines_yrange = `($YAXIS_MAX)-($YAXIS_MIN)`
+def sym gridlines_y1 = ($YAXIS_MIN) + ($gridlines_yrange)*(j-1)/100
+def sym gridlines_y2 = ($YAXIS_MIN) + ($gridlines_yrange)*(j-1+$2%1%)/100
+
+if `($gridlines_nbx) ge 1` then
+	repeat/i=1:`($gridlines_nbx)`:1 ( repeat/j=1:100:`2*$2%1%` ppl aline 1,`($gridlines_x)`,`($gridlines_y1)`,`($gridlines_x)`,`($gridlines_y2)` )
+endif
+
+!**************************************************************
+cancel sym gridlines_x1
+cancel sym gridlines_x2
+cancel sym gridlines_xrange
+cancel sym gridlines_x
+cancel sym gridlines_nbx
+cancel sym gridlines_yrange
+cancel sym gridlines_y1
+cancel sym gridlines_y2
+
+!**************************************************************
+set mode/last verify
+
+</pre>
+<pre>
+\cancel mode verify  
+
+!**************************************************************
+! Description: plot over the horizontal grid of a plot 
+!
+! Example: go ygridlines 20 1
+!          will plot every 20 on the physical yaxis a horizontal bar
+!          made of line of 1% of the physical xaxis
+!
+! Notes: default hdelta is 1%	
+!
+! Calls:
+!
+! Author: Patrick Brockmann
+! Contact: brock@lsce.saclay.cea.fr
+!
+! Creation: Sept 2000
+! Version: 1.0
+! History:
+! Modification:
+!
+!**************************************************************
+query/ignore $1%&lt;Usage: go ygridlines vdelta [hdelta]%
+
+! y1 = first horizontal line (superior value)
+if `($YAXIS_MIN) lt 0` then
+	def sym gridlines_y1 = int(($YAXIS_MIN)/$1)*$1
+else
+	def sym gridlines_y1 = (int(($YAXIS_MIN)/$1)+1) *$1
+endif
+! y2 = last horizontal line  (inferior value)
+if `($YAXIS_MAX) lt 0` then
+	def sym gridlines_y2 = (int(($YAXIS_MAX)/$1)-1) *$1
+else
+	def sym gridlines_y2 = (int(($YAXIS_MAX)/$1)) *$1
+endif
+def sym gridlines_yrange = (($gridlines_y2) - ($gridlines_y1))
+
+def sym gridlines_y = ($gridlines_y1) + (i-1)*$1
+def sym gridlines_nby = int(($gridlines_yrange)/$1) + 1
+
+def sym gridlines_xrange = `($XAXIS_MAX)-($XAXIS_MIN)`
+def sym gridlines_x1 = ($XAXIS_MIN) + ($gridlines_xrange)*(j-1)/100
+def sym gridlines_x2 = ($XAXIS_MIN) + ($gridlines_xrange)*(j-1+$2%1%)/100
+
+if `($gridlines_nby) ge 1` then
+	repeat/i=1:`($gridlines_nby)`:1 ( repeat/j=1:100:`2*$2%1%` ppl aline 1,`($gridlines_x1)`,`($gridlines_y)`,`($gridlines_x2)`,`($gridlines_y)` )
+endif
+
+!**************************************************************
+cancel sym gridlines_x1
+cancel sym gridlines_x2
+cancel sym gridlines_xrange
+cancel sym gridlines_y
+cancel sym gridlines_nby
+cancel sym gridlines_yrange
+cancel sym gridlines_y1
+cancel sym gridlines_y2
+
+!**************************************************************
+set mode/last verify
+
+</pre>
+<pre>
+\cancel mode verify  
+
+!**************************************************************
+! Description: plot over the grid of a plot 
+!
+! Example: go gridlines 20 1
+!          will plot every 20 on the physical xaxis a vertical bar
+!          made of line of 1% of the physical yaxis
+!      and will plot every 20 on the physical yaxis a horizontal bar
+!          made of line of 1% of the physical xaxis
+!
+!
+! Notes: default hdelta and vdelta are 1%	
+!
+! Calls: go xgridlines
+!        go ygridlines
+!
+! Author: Patrick Brockmann
+! Contact: brock@lsce.saclay.cea.fr
+!
+! Creation: Sept 2000
+! Version: 1.0
+! History:
+! Modification:
+!
+!**************************************************************
+
+query/ignore $1%&lt;Usage: go gridlines hdelta [vdelta]%
+
+go xgridlines $1 $2%1%
+go ygridlines $1 $2%1%
+
+!**************************************************************
+set mode/last verify
+
+</pre>
+<p><a href="gif00008.gif" ><img src="gif00008.gif" alt="GIF image"></a></p>
+<pre>
+\cancel mode verify  
+
+!**************************************************************
+! Description: plot over the vertical grid of a plot 
+!
+! Example: go tgridlines 20 1
+!          will plot every 20 on the physical xaxis a vertical bar
+!          made of line of 1% of the physical yaxis
+!
+! Notes: default vdelta is 1%	
+!
+! Calls:
+!
+! Author: Patrick Brockmann
+! Contact: brock@lsce.saclay.cea.fr
+!
+! Creation: Sept 2000
+! Version: 1.0
+! History:
+! Modification: 
+! 	With time axis, $XAXIS_MIN and $PPL$XMAX1
+!       are defined but not used  
+!       Replace by PPL$XMIN1 and PPL$XMAX1 
+!
+!**************************************************************
+
+query/ignore $1%&lt;Usage: go tgridlines hdelta [vdelta]%
+
+! x1 = first vertical line (superior value)
+if `($PPL$XMIN1) lt 0` then
+	def sym gridlines_x1 = int(($PPL$XMIN1)/$1)*$1
+else
+	def sym gridlines_x1 = (int(($PPL$XMIN1)/$1)+1) *$1
+endif
+! x2 = last vertical line  (inferior value)
+if `($PPL$XMAX1) lt 0` then
+	def sym gridlines_x2 = (int(($PPL$XMAX1)/$1)-1) *$1
+else
+	def sym gridlines_x2 = (int(($PPL$XMAX1)/$1)) *$1
+endif
+def sym gridlines_xrange = (($gridlines_x2) - ($gridlines_x1))
+
+def sym gridlines_x = ($gridlines_x1) + (i-1)*$1
+def sym gridlines_nbx = int(($gridlines_xrange)/$1) + 1
+
+def sym gridlines_yrange = `($YAXIS_MAX)-($YAXIS_MIN)`
+def sym gridlines_y1 = ($YAXIS_MIN) + ($gridlines_yrange)*(j-1)/100
+def sym gridlines_y2 = ($YAXIS_MIN) + ($gridlines_yrange)*(j-1+$2%1%)/100
+
+if `($gridlines_nbx) ge 1` then
+	repeat/i=1:`($gridlines_nbx)`:1 ( repeat/j=1:100:`2*$2%1%` ppl aline 1,`($gridlines_x)`,`($gridlines_y1)`,`($gridlines_x)`,`($gridlines_y2)` )
+endif
+
+!**************************************************************
+cancel sym gridlines_x1
+cancel sym gridlines_x2
+cancel sym gridlines_xrange
+cancel sym gridlines_x
+cancel sym gridlines_nbx
+cancel sym gridlines_yrange
+cancel sym gridlines_y1
+cancel sym gridlines_y2
+
+!**************************************************************
+set mode/last verify
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00510" href="msg00510.html">[no subject]</a></strong>
+<ul><li><em>From:</em> C Kalyani Devasena</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00510.html">[no subject]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00512.html">Problem when printing output</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00510.html">Thread Prev</a>][<a href="msg00512.html">Thread Next</a>][<A HREF="threads.html#00511">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

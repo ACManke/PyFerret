@@ -1,0 +1,166 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: How I can read the ascii file in the reverse orderusing"file command". -->
+<!--X-From-R13: Oafyrl [naxr <nafyrlNczry.abnn.tbi> -->
+<!--X-Date: Mon, 16 Apr 2001 10:17:49 &#45;0700 (PDT) -->
+<!--X-Message-Id: 3ADB297A.99B9C565@pmel.noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: F136Ps6AvbEPDjQh42k00002064@hotmail.com -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: How I can read the ascii file in the reverse orderusing&quot;file command&quot;.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00221.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00224">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: How I can read the ascii file in the reverse orderusing&quot;file command&quot;.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Namba Takaya &lt;<A HREF="mailto:takayanamba@DOMAIN.HIDDEN">takayanamba@xxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: How I can read the ascii file in the reverse orderusing&quot;file command&quot;.</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<A HREF="mailto:ansley@DOMAIN.HIDDEN">ansley@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Mon, 16 Apr 2001 10:18:50 -0700</li>
+<li>Cc: &quot;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&quot; &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>References: &lt;<a href="msg00221.html">F136Ps6AvbEPDjQh42k00002064@hotmail.com</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+Hi-
+<br>There may be a simpler way to do this but since you have had no
+<br>replies, maybe not.&nbsp;&nbsp; You can use the sorting and sampling
+functions
+<br>to reorder the depths and the temperature and salinity data.
+<p>!&nbsp; first read the data onto an abstract Z axis (make this long
+enough
+<br>!&nbsp; for your data, I use 4 points for this example)
+<p>define axis/z=1:4 z4
+<br>define grid/z=z4 gz4
+<p>file/var="dep, temp, sal"/skip=1/grid=gz4 my_file.dat
+<br>list dep, temp, sal
+<blockquote>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<tt>&nbsp;&nbsp;&nbsp;
+DATA SET: ./my_file.dat</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Z: 0.5 to 4.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: DEP</tt>
+<br><tt>&nbsp;Column&nbsp; 2: SAL</tt>
+<br><tt>&nbsp;Column&nbsp; 3: TEMP</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEP&nbsp;&nbsp;&nbsp;
+SAL&nbsp;&nbsp; TEMP</tt>
+<br><tt>1&nbsp;&nbsp; / 1:&nbsp; 32.10&nbsp; 31.80&nbsp; 29.69</tt>
+<br><tt>2&nbsp;&nbsp; / 2:&nbsp; 30.20&nbsp; 31.80&nbsp; 29.69</tt>
+<br><tt>3&nbsp;&nbsp; / 3:&nbsp; 20.60&nbsp; 31.50&nbsp; 29.75</tt>
+<br><tt>4&nbsp;&nbsp; / 4:&nbsp;&nbsp; 9.80&nbsp; 31.20&nbsp; 29.78</tt></blockquote>
+! Now sort the depths and sample all the variables using the sorted indices.
+<br>! Sample temperature and salinity in the same way
+<p>let sorted_dep = samplek(dep, sortk(dep))
+<br>let sorted_temp = samplek(temp, sortk(dep))
+<br>let sorted_sal = samplek (temp, sortk(dep))
+<br>list sorted_dep, sorted_temp, sorted_sal
+<blockquote><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DATA SET: ./my_file.dat</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Z: 0.5 to 4.5</tt>
+<br><tt>&nbsp;Column&nbsp; 1: SORTDEP is SAMPLEK(DEP, SORTK(DEP))</tt>
+<br><tt>&nbsp;Column&nbsp; 2: SORTSAL is SAMPLEK (SAL, SORTK(DEP))</tt>
+<br><tt>&nbsp;Column&nbsp; 3: SORTTEMP is SAMPLEK(TEMP,SORTK(DEP))</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SORTDEP SORTSAL SORTTEMP</tt>
+<br><tt>1&nbsp;&nbsp; / 1:&nbsp;&nbsp;&nbsp; 9.80&nbsp;&nbsp; 31.20&nbsp;&nbsp;
+29.78</tt>
+<br><tt>2&nbsp;&nbsp; / 2:&nbsp;&nbsp; 20.60&nbsp;&nbsp; 31.50&nbsp;&nbsp;
+29.75</tt>
+<br><tt>3&nbsp;&nbsp; / 3:&nbsp;&nbsp; 30.20&nbsp;&nbsp; 31.80&nbsp;&nbsp;
+29.69</tt>
+<br><tt>4&nbsp;&nbsp; / 4:&nbsp;&nbsp; 32.10&nbsp;&nbsp; 31.80&nbsp;&nbsp;
+29.69</tt></blockquote>
+! Use the sorted depths to define an axis
+<br>define axis/Z/depth depax = sorted_dep&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+! see DEFINE AXIS/FROM_DATA
+<p>! Define variables for the reordered salinity and depth, which you can
+now use for
+<br>! plotting or calculations.
+<br>let depsal = sorted_sal[gz=sorted_dep@asn]
+<br>let deptemp = sorted_temp[gz=sorted_dep@asn]
+<p>plot deptemp
+<br>&nbsp;
+<p>Namba Takaya wrote:
+<blockquote TYPE=CITE>Dear sir
+<p>I have the CTD data (ascii file) below.
+<p>How can I read the data in the reverse order using "file" command?
+<br>I want to read the data from the bottom (shallower) to the top(deeper).
+<p>depth(m)&nbsp;&nbsp; temperature&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+salinity
+<br>32.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 29.69&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+31.8
+<br>30.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 29.69&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+31.8
+<br>20.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 29.75&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+31.5
+<br>9.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 29.78&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+31.2
+<br>0.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 29.90&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+30.7
+<p>Thank you in advance.
+<p>Takaya Namba
+<br>_________________________________________________________________________
+<br>Get Your Private, Free E-mail from MSN Hotmail at <a href="http://www.hotmail.com">http://www.hotmail.com</a>.</blockquote>
+--
+<br>Ansley Manke&nbsp; Pacific Marine Environmental Laboratory&nbsp; Seattle
+WA&nbsp; (206)526-6246
+<br>&nbsp;
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00221" href="msg00221.html">How I can read the ascii file in the reverse order using&quot;file command&quot;.</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00221.html">How I can read the ascii file in the reverse order using&quot;file command&quot;.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00217.html">environment space</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00221.html">Thread Prev</a>][<a href="msg00217.html">Thread Next</a>][<A HREF="threads.html#00224">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

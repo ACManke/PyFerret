@@ -1,0 +1,221 @@
+<!-- MHonArc v2.5.4 -->
+<!--X-Subject: Re: plotting cruise data -->
+<!--X-From-R13: Xbanguna Qnyynuna <pnyynunaNczry.abnn.tbi> -->
+<!--X-Date: Thu, 30 Nov 2000 14:14:28 &#45;0800 (PST) -->
+<!--X-Message-Id: 3A26D15A.551DD56D@pmel.noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.GSO.3.96.1001127152401.18658L&#45;200000@titanic -->
+<!--X-Head-End-->
+<!doctype html public "-//W3C//DTD HTML//EN">
+<html>
+<head>
+<title>Re: plotting cruise data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00508.html">Thread Prev</a>][<a href="msg00509.html">Thread Next</a>][<A HREF="threads.html#00519">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: plotting cruise data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;'Jeff Polton'&quot; &lt;<A HREF="mailto:swp98jap@DOMAIN.HIDDEN">swp98jap@xxxxxxxxxxxxxxxxx</A>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: plotting cruise data</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Callahan &lt;<A HREF="mailto:callahan@DOMAIN.HIDDEN">callahan@xxxxxxxxxxxxx</A>&gt;</strong></li>
+<li>Date: Thu, 30 Nov 2000 14:14:50 -0800</li>
+<li>Cc: Ferret Users &lt;<A HREF="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxxxxxxxxxxxxx</A>&gt;</li>
+<li>References: &lt;<a href="msg00508.html">Pine.GSO.3.96.1001127152401.18658L-200000@titanic</a>&gt;</li>
+<li>Sender: <A HREF="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxxxxxxxxxxxxx</A></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Jeff,
+
+Your data is not on a 'grid' as Ferret understands them.   Instead, you
+have a scatter of points in YZ.  Ferret has no way of imposing a YZ grid
+on this data as there are varying numbers of points along the Z axis. 
+You have two options:
+
+1) you can create a new dataset (with perl?) which has a regular grid
+along Z and has missing values where no data is available.  You can find
+out what the complete list of Z depths is with:  cut -f2 ocean.dat |
+sort -nu
+
+2) you can plot your data without putting it on a grid
+
+Here's a ferret script which will do that with your data:
+
+=======================================================================
+! This script uses the polymark.jnl script
+! to plot cruise data that is stored along
+! a single axis.
+
+! Get latitude, depth, temperature and salinity
+! from the file.
+
+define axis/x=1:1332:1 ocean_x
+define grid/x=ocean_x ocean_g
+file/var=&quot;lat,depth,temp,sal&quot;/g=ocean_g ocean.dat
+set var/title=&quot;Temperature&quot;/units=&quot;Deg C&quot; temp
+
+
+! Now create the arrays of locations.  These
+! must be one dimensional and oriented along
+! the X axis.
+
+let horizontal_pts = xsequence(lat)
+let vertical_pts = xsequence(depth)
+let vertical_pts_inv = vertical_pts * -1
+
+
+! You need to have already plotted something 
+! in order to use the polymark.jnl script. 
+
+define axis/x=0:50:1 lat_x
+define axis/y=0:6500:100 depth_y
+define grid/x=lat_x/y=depth_y lat_depth_g
+let a = i[g=lat_depth_g] * j[g=lat_depth_g]
+shade a
+
+
+! Now use the polymark script with appropriate 
+! arguments to get a reasonable plot.
+
+go polymark poly/fill/nolabel/hlimits=5:45/vlimits=6500:0 horizontal_pts
+vertical_pts_inv temp circle .000005
+=======================================================================
+
+Good luck!
+
+
+-- Jonathan Callahan
+
+
+'Jeff Polton' wrote:
+&gt; 
+&gt; Dear Ferret Fans,
+&gt;         I have some oceanographic cruise data in ASCII format and would
+&gt; like to plot it. The problem I'm having is that it is on an unevenly
+&gt; spaced, unsorted grid grid.
+&gt;         Here is a sample:
+&gt; 
+&gt; lat     depth   temp    salinity
+&gt; 
+&gt; 7.833   1       27.81   35.462
+&gt; 7.833   40      27.63   35.957
+&gt; 7.833   194     12.73   35.421
+&gt; 7.483   1       27.67   35.474
+&gt; 7.483   19      27.45   35.988
+&gt; 7.483   598     5.84    34.589
+&gt; 7.25    1       27.75   35.692
+&gt; 7.25    21      27.18   36.039
+&gt; 7.25    62      26.08   36.172
+&gt; 
+&gt; I would like to produce a contour plot of temp on a latitude/depth cross
+&gt; section and I've tried:
+&gt; 
+&gt; define axis/x=1:1332:1 xrows
+&gt; define axis/y=1:1332:1 yrows
+&gt; define grid/x=xrows/y=yrows gdata
+&gt; file/var=&quot;lat,depth,temp,salt&quot;/g=gdata ocean.dat
+&gt; 
+&gt; But, though it appears to reads in OK, it hasn't:
+&gt; ? show data
+&gt; 
+&gt;  LAT      LAT                              1:1332    1:1332    ...
+&gt; ...
+&gt;  DEPTH    DEPTH                            1:1332    1:1332    ...
+&gt; ...
+&gt;  TEMP     TEMP                             1:1332    1:1332    ...
+&gt; ...
+&gt;  SALT     SALT                             1:1332    1:1332    ...
+&gt; ...
+&gt; 
+&gt; Then if I type:
+&gt; ?LIST lat
+&gt; It works!
+&gt; 
+&gt; Then...
+&gt; ?show data
+&gt; 
+&gt;  name     title                             I         J         K
+&gt; L
+&gt;  LAT      LAT                              1:1332    1:1       ...
+&gt; ...
+&gt;  DEPTH    DEPTH                            1:1332    1:1       ...
+&gt; ...
+&gt;  TEMP     TEMP                             1:1332    1:1       ...
+&gt; ...
+&gt;  SALT     SALT                             1:1332    1:1       ...
+&gt; ...
+&gt; 
+&gt; Seems to have lost a dimension.
+&gt; 
+&gt; Has anyone got any ideas as to how to plot this cruise data?
+&gt; 
+&gt; Thanks in advance,
+&gt; 
+&gt;         Jeff
+&gt; ________________________________________________________________________
+&gt;   Dept of Meteorology,Reading University,Earley Gate,Reading. RG6 6BB
+&gt;   Office tel: (0118) 9875123 4338  <A  HREF="http://www.met.rdg.ac.uk/~swp98jap">http://www.met.rdg.ac.uk/~swp98jap</A>
+&gt; ------------------------------------------------------------------------
+&gt; 
+&gt;   ------------------------------------------------------------------------
+&gt;                 Name: ocean.dat
+&gt;    ocean.dat    Type: Plain Text (TEXT/PLAIN)
+&gt;             Encoding: 7BIT
+
+</pre>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00508" href="msg00508.html">plotting cruise data</a></strong>
+<ul><li><em>From:</em> 'Jeff Polton'</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00508.html">plotting cruise data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00509.html">Re: Landscape and portrait</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00508.html">Thread Prev</a>][<a href="msg00509.html">Thread Next</a>][<A HREF="threads.html#00519">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address> <br> <a href="http://ferret.pmel.noaa.gov/Ferret/ferret_contact_us.html">Contact Us</a> | <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>
