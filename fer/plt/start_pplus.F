@@ -75,9 +75,9 @@
 *                  initialization required.  
 *                  Remove functions calls already made by DISP_RESET.
 C V7.65 *acm*  7/23 PyFerret issue 138
-                  @ is now an ordinary character in labels when using PyFerret fonts. 
-                  Warn of this once per session if Hershey font or pen settings encountered 
-                  when using PyFerret font. Initialize flag pyfnt_hershey_warn here
+c                  @ is now an ordinary character in labels when using PyFerret fonts. 
+c                  Warn of this once per session if Hershey font or pen settings encountered 
+c                  when using PyFerret font. Initialize flag pyfnt_hershey_warn here
 
         IMPLICIT NONE
 
