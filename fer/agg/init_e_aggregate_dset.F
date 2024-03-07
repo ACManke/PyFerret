@@ -77,6 +77,7 @@
 * V741 *acm* 5/18 Promoting global attributes to a variable in ensembles
 *                 Clarify the error message at label 5500.
 * v74  10/18 *kms* Split E and F aggregation routines
+* 03/2024 *acm* Make length of strings for file paths consistent at 2048 characters
 
 * arguments:
 *	memb_dsetname_var - if have_expr, the variable of names (input)
@@ -124,7 +125,8 @@
      .          nv, grid, nvars, nuvars, iline, slen, ref_fvar, 
      .          ref_fvars(pmaxvarsperset), num_indices, ignored
 	CHARACTER TM_STRING*13
-	CHARACTER*512 GET_STRING_ELEMENT_1D_X, memb_dsetname(nsets)
+	CHARACTER*512  memb_dsetname(nsets)
+	CHARACTER*2048 GET_STRING_ELEMENT_1D_X
 	CHARACTER*128 vname
 
 * initialize

@@ -100,6 +100,8 @@
 * V74+ *acm* 10/18 routine minmax returns count of valid data
 * V751 6/19 *acm* TM_FMT rewrite: formatting of lon/lat coordinate strings
 * 11/2022 *acm* Code cleanup: Modernize DO-loop syntax. 
+* 03/2024 *acm* Make length of strings for reading/writing from delimited or ascii 
+*		files consistent at 2048 characters
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -154,7 +156,7 @@
 	CHARACTER*255	VAR_TITLE, VAR_TITLE_MOD, PAREN_SURROUND, vname_buff
 * V500: *kob* 3/99 - up VAR_UNITS from 32 to 64 
 	CHARACTER	AX_TITLE*32, VAR_UNITS*64, LEFINT*8, TM_FMT*48,
-     .			GET_STRING_ELEMENT*512, fmtline*16,
+     .			GET_STRING_ELEMENT*2048, fmtline*16,
      .			line_buff*10000, buff*128, b1*1, out_type*3,
      .			good_data_form*10, row_ss_fmt*14, tab_or_comma*1,
      .			bad_data_form*10, col_head_format*32, cal_name*32

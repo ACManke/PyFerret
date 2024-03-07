@@ -39,6 +39,8 @@
 * case of a 1D array of strings on the X axis
 
 * V698:12/15 *sh*
+* 03/2024 *acm* Make length of strings for reading/writing from delimited or ascii 
+*		files consistent at 2048 characters
 
         IMPLICIT NONE
 	include	'tmap_dims.parm'
@@ -50,9 +52,9 @@
 	REAL*8	 ptr_array(*)
 
 * internal declarations
-	CHARACTER GET_STRING_ELEMENT*512
+	CHARACTER GET_STRING_ELEMENT*2048
 
-* note: the "512" is an arbitrary assignment ... presumably tells the compiler
+* note: the "2048" is an arbitrary assignment ... presumably tells the compiler
 * the length of intermediate buffer to provide (??)
 
 	GET_STRING_ELEMENT_1D_X = GET_STRING_ELEMENT(

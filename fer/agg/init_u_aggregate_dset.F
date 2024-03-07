@@ -61,6 +61,7 @@
 * V7.2 5/17 *acm* Ticket 2526 For SHOW DATA/MEMBERS of Union datasets need to 
 *                 have called NCF_ADD_AGG_MEMBERto list the dataset members in 
 *                 the linked-list structure for the union dataset
+* 03/2024 *acm* Make length of strings for file paths consistent at 2048 characters
 
 * arguments:
 *	memb_dsetname_var - if have_expr, the variable of names (input)
@@ -110,7 +111,9 @@
      .		num_indices, j, member, ignored_status
 	REAL	sset
 	CHARACTER TM_STRING*13
-	CHARACTER*512 GET_STRING_ELEMENT_1D_X, memb_dsetname(nsets)
+	CHARACTER*512  memb_dsetname(nsets)
+	CHARACTER*2048 GET_STRING_ELEMENT_1D_X
+
 	CHARACTER*48 TM_FMT, strset
 	CHARACTER*128 vname
 

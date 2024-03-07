@@ -55,6 +55,7 @@
 * V695+ *sh* 11/15 new routine
 * V698 *sh* 1/16  pass explicit path name (for "USE file.agg" compatibility)
 * V71 12/16 *acm* For ticket 2158: working with true monthly time axes.
+* 03/2024 *acm* Make length of strings for file paths consistent at 2048 characters
 
 * arguments:
 *	mem_filename_list - if have_expr, the variable of names (input)
@@ -87,8 +88,8 @@
 
 * Internal declarations
 	INTEGER	iset, slen, max_str_len
-	CHARACTER*512 GET_STRING_ELEMENT_1D_X
-        CHARACTER*512 memb_filename(nagfiles)
+	CHARACTER*2048 GET_STRING_ELEMENT_1D_X
+	CHARACTER*512 memb_filename(nagfiles)
 
 * initialize
 	status = ferr_ok

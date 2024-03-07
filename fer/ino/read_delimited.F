@@ -53,7 +53,9 @@
 * V702: *sh* 1/17 - bug fix: mr_protected must *end* at mr_not_in_use (=0)
 *		  - for trac enhancement #2369 -- dynamic memory management 
 * v767 6/22 *acm* See issue 112: Detect whether axis is too large for 4-byte integer indexing
-* 11/2022 *acm* Code cleanup: Modernize DO-loop syntax. 
+* 11/2022 *acm* Code cleanup: Modernize DO-loop syntax.
+* 03/2024 *acm* Make length of strings for reading/writing from delimited or ascii 
+*		files consistent at 2048 characters
 
         IMPLICIT NONE
 	include	'tmap_errors.parm'
@@ -172,14 +174,14 @@
 	IF (mode_diagnostic) CALL DIAGNOSTIC_OUT('reading',mr,point_to_mr)
 
 * allocate a buffer big enough for one input ASCII record
-	i8_size = 1024				
+	i8_size = 2048				
         CALL GET_DYN_WORK_SPACE( i8_size, status )    
         IF ( status .NE. merr_ok ) GOTO 5500
 
 * create a null terminated string from the data set name (use record buffer)
 	CALL TM_FTOC_STRNG( ds_des_name(dset)
      .		     (:TM_LENSTR1(ds_des_name(dset))),
-     .		     workmem(plegacy_work_buffer)%ptr, 4*1024 )
+     .		     workmem(plegacy_work_buffer)%ptr, 4*i8_size )
 
 * setup a c pointer array from the mrlist
 	CALL DYNMEM_MRLIST_C ( nvar, mrlist, c_ptr_array, status )
@@ -191,7 +193,7 @@
 	CALL DECODE_FILE_JACKET (
      .		  workmem(plegacy_work_buffer)%ptr,
      .		  workmem(plegacy_work_buffer)%ptr,
-     .		  delims, sf_skip(istep), rec_to_read, 4*1024, nvar,
+     .		  delims, sf_skip(istep), rec_to_read, 4*i8_size, nvar,
      .		  field_type, nread, mrlist, c_ptr_array,
      .		  mr_bad_data, mr_c_pointer, status)
 	CALL DYNMEM_FREE_PTR_ARRAY( c_ptr_array )
