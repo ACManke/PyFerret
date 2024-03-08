@@ -1,0 +1,243 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] Month series average for any start/end month &#45; potentially useful script...? -->
+<!--X-From-R13: "Kbhat, Bnhy" <cnhy.w.lbhatNynapnfgre.np.hx> -->
+<!--X-Date: Sat, 28 Feb 2015 10:44:02 &#45;0800 -->
+<!--X-Message-Id: 89C146B9&#45;7D58&#45;495E&#45;A5AE&#45;F788DFA5C605@lancaster.ac.uk -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Month series average for any start/end month - potentially useful script...?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00065.html">Thread Prev</a>][<a href="msg00069.html">Thread Next</a>][<A HREF="threads.html#00068">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Month series average for any start/end month - potentially useful script...?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Month series average for any start/end month - potentially useful script...?</strong></li>
+<li><strong>From</strong>: <strong>&quot;Young, Paul&quot; &lt;<a href="mailto:paul.j.young@DOMAIN.HIDDEN">paul.j.young@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 28 Feb 2015 18:43:56 +0000</li>
+<li>Accept-language: en-GB, en-US</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>Thread-index: AQHQU4aCVNUdDXFGu0qSUDoR01vFZA==</li>
+<li>Thread-topic: Month series average for any start/end month - potentially useful script...?</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi all,
+
+Just been trying to make a general script to calculate a time series of &#x201C;seasonal&#x201D; averages for any given start month and end month (e.g. DJF, ONDJ, MAMJJA etc). Thought I&#x2019;d share it here in case it is useful to people&#x2026;.as well as to have any bugs etc pointed out!
+
+My method masks out months that are not needed for the averaging and then defines a time axis of appropriate dates (spaced yearly) for ferret to work its averaging magic on. This makes it similar to the method used for calculating standard seasonal means (DJF, MAM, JJA, SON: <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2008/msg00603.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2008/msg00603.html</a>), but it also uses the masking techniques discussed elsewhere (e.g. <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2010/msg00619.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2010/msg00619.html</a>).
+
+(For that latter link, I think the method has a bug, since the averages will be JFD, rather than DJF, right???).
+
+Some caveats: I&#x2019;ve written this for climate model code that I work with a lot (e.g. CMIP5 output), where the time axis of the input data is defined with a start and end year etc. It also expects the data to start on a Jan and end on a Dec - this probably could be fixed, but it would introduce issues with month series that wrap Dec-Jan.
+
+Anyway, very happy to hear feedback, improvements and bugs.
+
+Cheers,
+
+Paul
+
+
+\cancel mode verify
+! calc_month_series.jnl
+!
+! Description: Return time series of data averaged between month1 and month2
+!
+! DETAILS:
+! Will produce time series of &quot;seasonal&quot; averages for any given start
+! and end month. Input data has to be monthly means and *MUST* start
+! on January and end on December. 
+!
+! Script first creates a mask to get rid of the months not between
+! imon1 and imon2. Next it works out what is the middle date between
+! imon1 and imon2 (either 15th of a month if there are an odd number
+! of months, or 1st month if there are an even number of months). It
+! then creates an time axis that steps up in years (360 day)
+! increments from the first middle date until the last year. We then
+! average to this axis using the masked input data.
+!
+! The script should deal with &quot;wrapped&quot; months correctly (DJF, ONDJ
+! etc). If the number of months from January is greater than the
+! number of months up to December (e.g. DJF), then the final year is
+! not counted (would be just December). If the converse is true
+! (e.g. NDJ) then the first year is not counted (would be just January).
+!
+! Averaging done using 360 day time axis, so all months weighted evenly.
+!
+! CALLING SEQUENCE:
+!     go cmip5_mean_month_series $varIn $imon1 $imon2 
+!
+! where varIn is a variable with (at least) a monthly mean time axis
+! and imon1 and imon2 are month indices (1...12).
+!    
+! HISTORY:
+! 28-FEB-2015  Written, PY
+!
+
+set mem/size=99
+
+!! INPUTS
+!
+let varIn = $1
+let imon1 = $2
+let imon2 = $3
+
+
+!! 1. INFORMATION ABOUT INPUT T-AXIS
+!
+let imonths=l[gt=varIn]						! months as indexes (1,2,...13,14,...nt)
+let nimonths = imonths[t=@ngd]				! nt
+let nyrs = nimonths / 12.					! nt/12
+
+let startYear = tax_year(t[gt=varIn,l=1],varIn[l=1])	!Use this when we make our axes for averaging
+let endYear = startYear + nyrs - 1
+
+!! 2. MONTH MASKING
+!
+let mod_imonths = mod(imonths-1,12)+1		! 1...12, 1...12, 1...12 for nyrs
+
+let removeStart = 0				  	  	  	! ignore first year if more months are at end of year (e.g. NDJ, ONDJF etc)
+let removeEnd = 0 							! ignore last year if more months are at start of year (e.g. DJF, NDJFM etc)
+
+! if statement puts 1 on months we want and missing data otherwise
+!
+! ...also deals with discarding first/last year for wrapped months. If
+! nmonths either side of year are equal (e.g. NDJF, DJ etc) then don't
+! remove either start or end year
+!
+if `imon1 gt imon2` then
+   let imonths_masked = if ( mod_imonths ge imon1 ) or ( mod_imonths le imon2 ) then 1
+   if `13-imon1 lt imon2` then let removeEnd = 1 endif
+   if `13-imon1 gt imon2` then let removeStart = 1 endif
+   let central_imonth_a = (imon1 + imon2 + 12) / 2.
+   if `central_imonth_a gt 12` then let central_imonth = central_imonth_a - 12 else let central_imonth = central_imonth_a endif
+else
+   let imonths_masked = if ( mod_imonths ge imon1 ) and ( mod_imonths le imon2 ) then 1
+   let central_imonth = (imon1 + imon2) / 2.
+endif
+
+! Remove start.end years?
+if `removeStart` then
+   let imonths_masked2 = if ( imonths gt imon2 ) then imonths_masked
+elif `removeEnd` then
+   let imonths_masked2 = if ( imonths lt `nimonths - 12 + imon1` ) then imonths_masked
+else
+   let imonths_masked2 = imonths_masked
+endif
+
+!! 3. DEFINE T AXIS TO DO AVERAGING ON
+!
+
+! what date is the mid point of the months to be averaged?
+if `mod(central_imonth,1) eq 0.5` then
+   let central_startDay = 1
+   let central_imonth1 = central_imonth + 0.5
+else
+   let central_startDay = 15
+   let central_imonth1 = central_imonth
+endif
+
+! convert central_imonth1 etc to month name (for avg axis and output info)
+!
+let monthNames = tsequence({&quot;JAN&quot;,&quot;FEB&quot;,&quot;MAR&quot;,&quot;APR&quot;,&quot;MAY&quot;,&quot;JUN&quot;,&quot;JUL&quot;,&quot;AUG&quot;,&quot;SEP&quot;,&quot;OCT&quot;,&quot;NOV&quot;,&quot;DEC&quot;})
+
+let central_month = monthNames[l=`central_imonth1`]
+let startMonth = monthNames[l=`imon1`]
+let endMonth = monthNames[l=`imon2`]
+
+!time axis for input data (common t0 with tax_for_avg)
+define axis/\
+   t=15-JAN-`startYear`:15-DEC-`endYear`:30/\
+   units=days/cal=360_day tax_for_input
+
+! time axis for averaging
+define axis/\
+   t=`central_startDay`-`central_month`-`startYear`:`central_startDay`-`central_month`-`endYear`:360/\
+   units=days/cal=360_day tax_for_avg
+
+!! 4. REGRIDDING AND AVERAGING
+!
+let varIn_tax = varIn[gt=tax_for_input@asn]				!(might be unnecessary)
+let varIn_masked = varIn_tax*imonths_masked2	        	!input data just for imon1-imon2 range
+let monthSeries = varIn_masked[gt=tax_for_avg@ave]		!do the averaging
+
+say &quot;`startMonth`-`endMonth` avg time series in variable: monthSeries&quot;
+
+set mode/last verify
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00065.html">[ferret_users] daily cumul to daily value</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00069.html">[ferret_users] Changing SST regionally and combining the regions</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00065.html">Thread Prev</a>][<a href="msg00069.html">Thread Next</a>][<A HREF="threads.html#00068">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

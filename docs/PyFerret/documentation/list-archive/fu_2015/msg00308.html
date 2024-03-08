@@ -1,0 +1,154 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] string substitution in array -->
+<!--X-From-R13: [nepb ina Vhygra <ziuhygraNyfpr.vcfy.se> -->
+<!--X-Date: Tue, 22 Sep 2015 13:10:42 &#45;0700 -->
+<!--X-Message-Id: 20150922221035.7e8fddcf@jasniac.instanton -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] string substitution in array</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00297.html">Thread Prev</a>][<a href="msg00309.html">Thread Next</a>][<A HREF="threads.html#00308">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] string substitution in array</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] string substitution in array</strong></li>
+<li><strong>From</strong>: <strong>Marco van Hulten &lt;<a href="mailto:mvhulten@DOMAIN.HIDDEN">mvhulten@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 22 Sep 2015 22:10:35 +0200</li>
+<li>Importance: low</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Organization: Laboratoire des Sciences du Climat et de l'Environnement (LSCE)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Ferrets,
+
+I would like to substitute substrings in an array of strings.  For a
+single string this is easy to do.  Say I want to replace &quot;old&quot; for &quot;new&quot;
+in the following example:
+
+let test = &quot;abc_old_xyz&quot;
+let myInd = StrIndex( test, &quot;old&quot; )
+list SubString( test, 1, `myInd-1` ) + &quot;new&quot; + SubString( test, `myInd+3`, StrLen(test) )
+
+I want to do the same for an arbitrary array (for readability I leave
+out the option of arbitrary strings or substrings):
+
+let strArray = XSequence( {&quot;a_old&quot;, &quot;bb_old&quot;, &quot;ccccc_old&quot;} )
+let newArray = SubString(strArray, 1, 2) + &quot;new&quot;
+
+This works, but suppose I have an array with the locations of the
+character just before 'old' that I want to replace, then this comes
+closer:
+
+let myInd = XSequence( {2, 3, 6} )
+let newArray = SubString(strArray, 1, myInd) + &quot;new&quot;
+
+Of course, I'd like to search for the string that I want to replace, so
+I try:
+
+let myInd = StrIndex( strArray, &quot;old&quot; )
+let newArray = SubString(strArray, 1, myInd) + &quot;new&quot;
+
+We need to shift the substring to the left, so:
+
+let newArray = SubString(strArray, 1, myInd-1) + &quot;new&quot;
+
+This works.  It is left as an exercise to the reader what to do when
+there are characters following the replacement.
+
+One may think that this is easier if you spawn the sed(1) command, as 
+that does not require index manipulation:
+
+let test = &quot;abc_old_xyz&quot;
+list SPAWN( &quot;echo `test` | sed '{s/old/new/}'&quot; )
+
+With an array of strings it becomes like this:
+
+let strArray = XSequence( {&quot;a_old&quot;, &quot;bb_old&quot;, &quot;ccccc_old&quot;} )
+let newArray = SPAWN( &quot;echo `strArray` | sed '{s/old/new/}'&quot; )
+
+That doesn't work, since strArray is an array while grave accents want
+to evaluate it to a scalar.  I tried it in a loop, and by use of
+symbols (which are evaluated even earlier than grave accents), but I
+cannot figure it out.  So, in this case, while string manipulation may
+be a bit circuitous in Ferret, it is a method that works.  But please
+let me know if you have a better solution.
+
+Marco
+
+-- 
+Laboratoire des Sciences du Climat et l'Environnement (LSCE)
+Tel: +33 1 6908 3876
+<a  rel="nofollow" href="http://www.lsce.ipsl.fr/Pisp/marco.van-hulten/">http://www.lsce.ipsl.fr/Pisp/marco.van-hulten/</a>
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00309" href="msg00309.html">Re: [ferret_users] string substitution in array</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg - NOAA Federal</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00297.html">[ferret_users] Re: BOUNCE ferret_users@xxxxxxxx: Non-member submission from [afwande juliet &lt;afwandej965@xxxxxxxxx&gt;]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00309.html">Re: [ferret_users] string substitution in array</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00297.html">Thread Prev</a>][<a href="msg00309.html">Thread Next</a>][<A HREF="threads.html#00308">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

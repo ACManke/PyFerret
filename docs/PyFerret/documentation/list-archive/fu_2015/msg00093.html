@@ -1,0 +1,219 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Problems with the contour plot range -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 19 Mar 2015 16:56:44 &#45;0700 -->
+<!--X-Message-Id: 550B6235.10604@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 550AB5C4.80905@dlr.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Problems with the contour plot range</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00091.html">Thread Prev</a>][<a href="msg00092.html">Thread Next</a>][<A HREF="threads.html#00093">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Problems with the contour plot range</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Bier, Andreas&quot; &lt;<a href="mailto:Andreas.Bier@DOMAIN.HIDDEN">Andreas.Bier@xxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Problems with the contour plot range</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 19 Mar 2015 16:56:37 -0700</li>
+<li>In-reply-to: &lt;<a href="msg00091.html">550AB5C4.80905@dlr.de</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00091.html">550AB5C4.80905@dlr.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Thunderbird/31.5.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    <font face="Times New Roman, Times, serif">Hi Andreas,<br>
+      Yes, you're right.&#xA0; Ferret uses double-precision for computation,
+      but the graphics side, Plot-Plus, is single precision, which has a
+      range of about 7 decimal places.&#xA0; When Ferret reads
+      double-precision data, it reads the full precision, so LIST/prec=8
+      will show you the numbers. When it's passed to Plot-Plus, it's put
+      into single-precision variables.<br>
+      <br>
+      I wonder if we could think of a way to do the contouring in two
+      steps:<br>
+    </font>
+    <blockquote>
+      <tt>fill/levels=(0)(1e-09),(1e-08),(1e-07),(1e-06),(1e-05),(0.0001),(0.001)
+        if icn2 LT 1e-03 then icnc2
+        <br>
+        <br>
+        fill/levels=(0.001),(0.01),(0.1),(0.4),(0.8),(1.2),(1.6),(2.0),(2.4),(2.8)(inf)&#xA0;
+        if icn2 gt 1e-03 then icnc2
+        <br>
+      </tt></blockquote>
+    <tt>
+    </tt><font face="Times New Roman, Times, serif"><br>
+      Each of the two expressions has&#xA0; a dynamic range that can be
+      expressed accurately by a single precision variable.&#xA0; The trick
+      then would be to plot these together using sets of color levels
+      that harmonize and two color keys plotted to fit together.&#xA0; Here's
+      a sketch of that:<br>
+    </font>
+    <blockquote><tt><br>
+        ! define two identical viewports<br>
+        <br>
+        define view/x=0:1/y=0:1 full1<br>
+        define view/x=0:1/y=0:1 full2<br>
+        cancel&#xA0; view<br>
+        <br>
+        define symbol low_lev =
+        (0)(1e-09),(1e-08),(1e-07),(1e-06),(1e-05),(0.0001),(0.001)<br>
+        define symbol high_lev =
+        (0.001),(0.01),(0.1),(0.4),(0.8),(1.2),(1.6),(2.0),(2.4),(2.8)(inf)<br>
+      </tt><tt>
+      </tt><tt><br>
+      </tt><tt>! plot the smaller values in one viewport with the lower
+        set of levels. Make a half-height color key.</tt><tt><br>
+      </tt><tt><br>
+      </tt><tt>set view full1</tt><tt><br>
+      </tt><tt>fill/levels=($low_lev)/pal=blue_green_yellow/SET if </tt><tt><tt>icnc2
+        </tt>lt 1e-03 then </tt><tt>icnc2
+      </tt><tt><br>
+      </tt><tt>&#xA0; ppl
+        shakey,1,1,,2,,,,,($ppl$yorg),`($ppl$yorg)+($ppl$ylen)/2`</tt><tt><br>
+      </tt><tt>&#xA0; ppl fill</tt><tt><br>
+      </tt><tt><br>
+      </tt><tt>! Now plot the larger values in another viewport, with a
+        color key starting at half height </tt><tt><br>
+        ! The second viewport is drawn in on top of the first.<br>
+      </tt><tt><br>
+      </tt><tt>set view full2</tt><tt><br>
+      </tt><tt>fill/levels=($high_lev)/pal=yellow_orange_brown/SET if </tt><tt><tt>icnc2
+        </tt>ge 1e-03 then </tt><tt>icnc2
+      </tt><tt><br>
+      </tt><tt>&#xA0; ppl
+        shakey,1,1,,2,,,,,`($ppl$yorg)+($ppl$ylen)/2`,`($ppl$yorg)+($ppl$ylen)`</tt><tt><br>
+      </tt><tt>&#xA0; ppl fill</tt><font face="Times New Roman, Times, serif"><br>
+        <br>
+      </font></blockquote>
+    <font face="Times New Roman, Times, serif">You might want to adjust
+      things so the length of the two color keys are proportional to the
+      number of colors, so each box on the color key is the same size -
+      and maybe make yourself a couple of custom color palettes to use
+      for this variable.&#xA0; Also note that sometimes doing a "SHADE" first
+      and overlaying a "FILL" will get you better results than just a
+      "FILL", as a shade plot draws color out to the edge of the grid
+      boxes, and FILL only to the center of the grid boxes.<br>
+    </font><br>
+    <br>
+    <br>
+    <div class="moz-cite-prefix">On 3/19/2015 4:40 AM, Bier, Andreas
+      wrote:<br>
+    </div>
+    <blockquote cite="" type="cite">Hello,
+      <br>
+      <br>
+      I would like to create a two-dimensional contour plot (depending
+      on time and height) for an ice crystal number concentration
+      (icnc).
+      <br>
+      My commands are:
+      <br>
+      <br>
+      let icnc1 = if icnc gt 0 then icnc
+      <br>
+      let icnc2 = icnc1[i=@ave,j=@ave]
+      <br>
+      --&gt; averaging over longitude and latitude
+      <br>
+      <br>
+      contour/fill/levels=(0)(1e-09),(1e-08),(1e-07),(1e-06),(1e-05),(0.0001),(0.001),(0.01),(0.1),(0.4),(0.8),(1.2),(1.6),(2.0),(2.4),(2.8)(inf)
+      icnc2
+      <br>
+      <br>
+      Doing so, the plotted data range of the contours goes only from
+      2.8 till 1e-05 and not till 1e-09. If I decrease my maximum value
+      to 0.1 instead of 2.8, my smallest contour value decreases to
+      1e-06 and so on. Consequently, it seems to be a precision problem.
+      <br>
+      There is a possible adjustment for higher precision within the
+      list command, e.g. list/p=8 icnc2.
+      <br>
+      But this adjustment doesn't work for the plot or contour commands
+      and I didn't really found another solution for this problem in the
+      User's Guide. I hope you can help me.
+      <br>
+      <br>
+      Best regards,
+      <br>
+      Andreas
+      <br>
+    </blockquote>
+    <br>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00091" href="msg00091.html">[ferret_users] Problems with the contour plot range</a></strong>
+<ul><li><em>From:</em> Bier, Andreas</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00091.html">[ferret_users] Problems with the contour plot range</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00092.html">[ferret_users] pyferret for python 3</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00091.html">Thread Prev</a>][<a href="msg00092.html">Thread Next</a>][<A HREF="threads.html#00093">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

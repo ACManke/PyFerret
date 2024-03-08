@@ -1,0 +1,200 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] spatial daily mean -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 12 May 2015 16:38:03 &#45;0700 -->
+<!--X-Message-Id: 55528ED5.4040908@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: CAEenqfJE2cJ+GwAtY&#45;qXebxMnNEGx=2u2riGMvu9GGios4ozuA@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] spatial daily mean</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00173.html">Thread Prev</a>][<a href="msg00174.html">Thread Next</a>][<A HREF="threads.html#00176">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] spatial daily mean</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] spatial daily mean</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 12 May 2015 16:37:57 -0700</li>
+<li>In-reply-to: &lt;CAEenqfJE2cJ+GwAtY-qXebxMnNEGx=2u2riGMvu9GGios4ozuA@mail.gmail.com&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;CAEenqfJE2cJ+GwAtY-qXebxMnNEGx=2u2riGMvu9GGios4ozuA@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Thunderbird/31.6.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    Hi,<br>
+    So, you want the average of the data inside the polygonal region for
+    each day.&#xA0; The function PT_IN_POLY can be used to make a mask. What
+    you need is wht's done in FAQ:<br>
+    <a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/faq/averaging-integrating-over-irregular-regions/">http://ferret.pmel.noaa.gov/Ferret/faq/averaging-integrating-over-irregular-regions/</a>
+    <br>
+    <br>
+    Here's&#xA0; an example like the one in the pt_in_poly documentation but
+    for a variable with a time axis<br>
+    <blockquote><tt>yes? use coads_climatology<br>
+        <br>
+      </tt><tt>yes? ! Define the polygon<br>
+        yes? let xp = {300,320,335,315,300}<br>
+        yes? let yp = {20,35,40,20,20}<br>
+        <br>
+        yes? ! Define the mask<br>
+        yes? let mask = if pt_in_poly(sst[L=1],xp, yp) ge 0 then 1</tt><tt><br>
+      </tt><tt>yes? let sst_in_poly = mask* sst</tt><br>
+    </blockquote>
+    The variable "sst_in_poly" has the same data as sst, but is marked
+    as missing everywhere outside the polygon, and it's on the same XYT
+    grid as sst. This means we can take the XY average over the globe or
+    any region that contains the polygon, and the result is the data
+    within the polygon averaged on the grid in XY.&#xA0; <br>
+    <blockquote><tt>yes? list sst_in_poly[x=@ave,y=@ave]</tt><tt><br>
+      </tt><tt>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; VARIABLE : SST*MASK</tt><tt><br>
+      </tt><tt>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; FILENAME : coads_climatology.cdf</tt><tt><br>
+      </tt><tt>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; FILEPATH :
+        /home/users/tmap/ferret/linux/fer_dsets/data/</tt><tt><br>
+      </tt><tt>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; SUBSET&#xA0;&#xA0; : 12 points (TIME)</tt><tt><br>
+      </tt><tt>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; LONGITUDE: 20E to 20E(380) (XY ave)</tt><tt><br>
+      </tt><tt>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; LATITUDE : 90S to 90N (XY ave)</tt><tt><br>
+      </tt><tt>&#xA0;16-JAN&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; /&#xA0; 1:&#xA0; 21.80</tt><tt><br>
+      </tt><tt>&#xA0;15-FEB&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; /&#xA0; 2:&#xA0; 21.18</tt><tt><br>
+      </tt><tt>&#xA0;17-MAR&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; /&#xA0; 3:&#xA0; 21.12</tt><tt><br>
+      </tt><tt>&#xA0;16-APR&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; /&#xA0; 4:&#xA0; 21.53</tt><tt><br>
+      </tt><tt>&#xA0;16-MAY&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; /&#xA0; 5:&#xA0; 22.55</tt><br>
+      <tt>...</tt><br>
+      <br>
+    </blockquote>
+    One detail about using this function - you'll notice I defined the
+    mask with a region in L,<b> <br>
+      <br>
+    </b><b><tt>&#xA0;&#xA0; pt_in_poly(sst[L=1],xp, yp)</tt></b><br>
+    <br>
+    The polygon definition is in XY and so of course it doesn't depend
+    on the time direction. Why bother to give a time? (By the way any
+    value of L would give exactly the result.)&#xA0; If I hadn't done that,
+    then the variable "mask" would be 3D - defined on the XY grid and
+    repeated for each value of T. This is no big deal with a short time
+    axis like this, but if there were a long time axis, or a grid with
+    even more dimensions, it's inefficient and would require more memory
+    to load the same mask at each and every time point.<br>
+    <br>
+    -Ansley<br>
+    <br>
+    <br>
+    <div class="moz-cite-prefix">On 5/11/2015 11:20 PM, Nitin Patil
+      wrote:<br>
+    </div>
+    <blockquote
+cite=""
+      type="cite">
+      <div dir="ltr">
+        <div>Dear Ferret users,<br>
+          <br>
+        </div>
+        In my below script, I have 122 days of rainfall data
+        (l=18050:18171), I have to do the <b><u>spatial daily mean</u></b>
+        of rainfall so that I will get <b>122 mean values in the
+          defined points</b> OR <b>mean of xci,yci grids</b>.<br>
+        <div><br>
+          <div>=======================================================================<br>
+            use <a rel="nofollow" moz-do-not-send="true" href="http://rainfall.nc">rainfall.nc</a><br>
+          </div>
+          <div><i>!! cxi and yci is my region lat lon</i><br>
+          </div>
+          <div>let xci =
+{77,79,79,83,83,84,84,83,83,82,82,80,80,79,79,76,76,73,73,72,72,74,74,75,75,77,77}<br>
+            let yci =
+{27,27,25,25,24,24,21,20,20,19,18,18,17,17,16,16,15,15,15,18,21,21,23,23,24,24,24}<br>
+            let ci = pt_in_poly(rf[d=1],xci, yci)<br>
+            let ci_data = if ci eq 1 then ci*rf[d=1,l=18050:18171]<br>
+          </div>
+          <div>list ci_data !! <b>need 122 values listed</b><br>
+          </div>
+          <div>=======================================================================<br>
+            <br>
+          </div>
+          <div>Any suggestion to get it, Kindly let me know.<br>
+            <br>
+          </div>
+          <div>Thanks,<br>
+          </div>
+          <div>Nitin<br>
+          </div>
+        </div>
+      </div>
+    </blockquote>
+    <br>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00173" href="msg00173.html">[ferret_users] spatial daily mean</a></strong>
+<ul><li><em>From:</em> Nitin Patil</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00173.html">[ferret_users] spatial daily mean</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00174.html">[ferret_users] converting normal time axis to Julian time axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00173.html">Thread Prev</a>][<a href="msg00174.html">Thread Next</a>][<A HREF="threads.html#00176">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

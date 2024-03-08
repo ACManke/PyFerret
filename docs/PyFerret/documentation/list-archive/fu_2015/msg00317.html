@@ -1,0 +1,161 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] unknown data set -->
+<!--X-From-R13: [nepb ina Vhygra <ziuhygraNyfpr.vcfy.se> -->
+<!--X-Date: Tue, 29 Sep 2015 09:23:08 &#45;0700 -->
+<!--X-Message-Id: 20150929182304.3529dcd1@lsce3102.extra.cea.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] unknown data set</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00314.html">Thread Prev</a>][<a href="msg00321.html">Thread Next</a>][<A HREF="threads.html#00317">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] unknown data set</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] unknown data set</strong></li>
+<li><strong>From</strong>: <strong>Marco van Hulten &lt;<a href="mailto:mvhulten@DOMAIN.HIDDEN">mvhulten@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 29 Sep 2015 18:23:04 +0200</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Organization: Laboratoire des Sciences du Climat et de l'Environnement (LSCE)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi fellow Ferretters,
+
+Sometimes loaded datasets are not recognised by filename, and I get the
+error message &quot;unknown data set&quot;.  I am not able to make a minimal
+working example that consistently reproduces this result.  It might be
+related to files being in subdirectories and/or their names being
+longer than a certain length, but I cannot be certain.
+
+I first make a test file:
+
+let aa = {1,2,3,4,5}
+save/file=testfile aa
+
+After that I exit Ferret, make a directory &quot;sub&quot;, adjust my FER_DATA to
+contain only . and sub, and put the file in there.  Furthermore, I make
+some symlinks of different filename lengths.  I restart Ferret and
+load several of the files (which are the same in the end):
+
+yes? sh data testfile9ABCDEF0123456789ABC.nc
+ **ERROR: unknown data set: 
+yes? use testfile9ABCDEF0123456789A.nc
+yes? sh data testfile9ABCDEF0123456789A.nc
+     currently SET data sets:
+    4&gt; sub/testfile9ABCDEF0123456789A.nc  (default)
+ name     title                             I         J         K         L         M         N
+ AA       {1,2,3,4,5}                      1:5       ...       ...       ...       ...       ...
+ 
+yes? use testfile9ABCDEF0123456789ABC.nc
+yes? sh data testfile9ABCDEF0123456789ABC.nc
+     currently SET data sets:
+    6&gt; sub/testfile9ABCDEF0123456789ABC.nc  (default)
+ name     title                             I         J         K         L         M         N
+ AA       {1,2,3,4,5}                      1:5       ...       ...       ...       ...       ...
+ 
+yes? 
+
+First I cannot approach testfile9ABCDEF0123456789ABC.nc, while after
+opening/showing another one I *can*.  How could this be happening?
+
+Just another quick observation, probably a side effect of allowing
+short-hand writing in Ferret:
+
+yes? sh data testfile9ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0.nc
+     currently SET data sets:
+    2&gt; sub/testfile9ABCDEF0123456789ABCDEF0.nc
+ name     title                             I         J         K         L         M         N
+ AA       {1,2,3,4,5}                      1:5       ...       ...       ...       ...       ...
+
+yes? sh data/brief
+     currently SET data sets:
+    1&gt; sub/testfile9ABCDEF0123456789ABCDEF0123456789ABCDEF0.nc
+    2&gt; sub/testfile9ABCDEF0123456789ABCDEF0.nc
+    3&gt; sub/testfile9ABCDEF012345678.nc
+    4&gt; sub/testfile9ABCDEF0123456789A.nc
+    5&gt; sub/testfile9ABCDEF0123456789AB.nc
+    6&gt; sub/testfile9ABCDEF0123456789ABC.nc
+    7&gt; sub/testfile9ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0.nc  (default)
+
+Marco
+
+-- 
+Laboratoire des Sciences du Climat et l'Environnement (LSCE)
+Tel: +33 1 6908 3876
+Www: <a  rel="nofollow" href="http://www.lsce.ipsl.fr/Pisp/marco.van-hulten/">http://www.lsce.ipsl.fr/Pisp/marco.van-hulten/</a>
+
+Consider liberating your papers and data -- <a  rel="nofollow" href="https://creativecommons.org/">https://creativecommons.org/</a>
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00325" href="msg00325.html">Re: [ferret_users] unknown data set</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00321" href="msg00321.html">Re: [ferret_users] unknown data set</a></strong>
+<ul><li><em>From:</em> Marco van Hulten</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00314.html">[ferret_users] vland and vfland - global meridional sections</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00321.html">Re: [ferret_users] unknown data set</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00314.html">Thread Prev</a>][<a href="msg00321.html">Thread Next</a>][<A HREF="threads.html#00317">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] restrict polymark to transect -->
+<!--X-From-R13: [nepb ina Vhygra <znepb.ina&#45;uhygraNyfpr.vcfy.se> -->
+<!--X-Date: Thu, 8 Oct 2015 08:12:16 &#45;0700 -->
+<!--X-Message-Id: 20151008171213.60da3258@lsce3102.extra.cea.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20151008114717.30e322bc@lsce3102.extra.cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] restrict polymark to transect</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00344.html">Thread Prev</a>][<a href="msg00356.html">Thread Next</a>][<A HREF="threads.html#00345">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] restrict polymark to transect</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] restrict polymark to transect</strong></li>
+<li><strong>From</strong>: <strong>Marco van Hulten &lt;<a href="mailto:marco.van-hulten@DOMAIN.HIDDEN">marco.van-hulten@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 8 Oct 2015 17:12:13 +0200</li>
+<li>In-reply-to: &lt;<a href="msg00343.html">20151008114717.30e322bc@lsce3102.extra.cea.fr</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Organization: Laboratoire des Sciences du Climat et de l'Environnement (LSCE)</li>
+<li>References: &lt;<a href="msg00343.html">20151008114717.30e322bc@lsce3102.extra.cea.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Le 2015-10-08 Marco a &#xE9;crit:
+&gt; Hello,
+&gt; 
+&gt; I regularly plot transects of model output with observations plotted
+&gt; on top of these as dots.  So the last command is
+&gt; 
+&gt;   go polymark polygon/over Latitude, Depth, myvar circle 1.0
+&gt; 
+&gt; for a transect that is monotonic in latitude.  Observational data from
+&gt; all longitudes are plotted.  This works fine when using only the
+&gt; transect observational data.  If I use a dataset that includes
+&gt; observations at longitudes far away from the transect (but within the
+&gt; latitude range of the transect), these are also included on the plot.
+&gt; 
+&gt; While this is expected behaviour, I would like to limit the longitudes
+&gt; to close to the transect.  So I am thinking of including a criterium
+&gt; that limits plotting of points near the transect.  How would such a
+&gt; criterium look like?
+&gt; [...]
+
+Paulo and Ryo suggested that I could define a mask for this.  I am
+trying to extend this to an arbitrary number of stations with
+coordinates (TransLon, TransLat).  The coordinates of my data are
+(Longitude, Latitude).  Of the latter I have many more points, so the
+two datasets do not share a common shape, so Ryo's method will not work
+in my case.
+
+The allowed domain is the union of subsets of the neighbourhoods of the
+transect station coordinates.  So for a transect that is monotonic in
+latitude, this could be done as follows:
+
+let TransLon = Longitude[d=transect.csv]
+let TransLat = Latitude[d=transect.csv]
+let dx = 1
+let dy = 3
+set data many_observations_throughout_the_ocean.csv
+let nStations = `TransLon,return=size`
+def symb TransMask = (Longitude ge TransLon[i=1]-dx and Longitude le TransLon[i=1]+dx\
+                  and Latitude  ge TransLat[i=1]-dy and Latitude  le TransLat[i=1]+dy)
+repeat/range=2:`nStations`/name=ind ( \
+    def symb TransMask = ($TransMask) or \
+             (Longitude ge TransLon[i=`ind`]-dx and Longitude le TransLon[i=`ind`]+dx\
+          and Latitude  ge TransLat[i=`ind`]-dy and Latitude  le TransLat[i=`ind`]+dy))
+def symb myvar = if ($TransMask) then ($myvar) else 1/0 
+go polymark polygon/over Latitude, Depth, &quot;($myvar)&quot; circle 1.0
+
+Typically one would choose the variance of the monotonic coordinate
+(dy in &#xB0;) somewhat higher than the other one (dx in &#xB0;), as you want to
+be sure any intermediate points that are more or less on the transect
+are plotted, but points far from the transect should not be plotted.
+
+I initialise the definition with the condition for the first set of
+station coordinates.  Then I add subsequent coordinates with a loop
+starting from 2 upto the number of stations, by appending &quot;OR ...&quot; to
+the condition.  I redefine the myvar symbol and plot that.  The
+citation marks around ($myvar) are necessary because the symbol
+contains spaces and otherwise the POLYGON subcommand only sees the
+first IF instead of the whole ($TransMask) criterium as the third and
+final argument (interpreting circle 1.0 as POLYMARK arguments).
+
+There is still a problem.  With more than 12 stations it appears that I
+go beyond the maximum allowed symbol length:
+
+ **ERROR: invalid command: symbol substitution makes line too long
+
+I can increase this by several stations by removing whitespace in my
+script, but typically I have more than fifty stations that I would like
+to plot.  What does it mean that the line is too long?  I can SAY a
+very large string e.g. without any problems.
+
+Marco
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00358" href="msg00358.html">Re: [ferret_users] restrict polymark to transect</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00356" href="msg00356.html">Re: [ferret_users] restrict polymark to transect</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00343" href="msg00343.html">[ferret_users] restrict polymark to transect</a></strong>
+<ul><li><em>From:</em> Marco van Hulten</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00344.html">Re: [ferret_users] restrict polymark to transect</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00356.html">Re: [ferret_users] restrict polymark to transect</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00344.html">Thread Prev</a>][<a href="msg00356.html">Thread Next</a>][<A HREF="threads.html#00345">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] regridding transformation should reduce dimension . . . -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Tue, 1 Dec 2015 03:06:55 &#45;0800 -->
+<!--X-Message-Id: CAEwQpaJswMz=Cbg6qvZK5JakLG_jPajS9L6y+&#45;GWP8zidtY_2w@mail.gmail.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] regridding transformation should reduce dimension . . .</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00455.html">Thread Prev</a>][<a href="msg00463.html">Thread Next</a>][<A HREF="threads.html#00461">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] regridding transformation should reduce dimension . . .</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] regridding transformation should reduce dimension . . .</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 1 Dec 2015 20:06:53 +0900</li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=relaxed/relaxed;        d=noaa-gov.20150623.gappssmtp.com; s=20150623;        h=mime-version:date:message-id:subject:from:to:content-type         :x-original-sender:x-original-authentication-results:precedence         :mailing-list:list-id:list-post:list-help:list-archive         :list-unsubscribe;        bh=ci3uHWQKmRierUoN+9mX/Hcv0RIKa3Cxudzc9566J9Q=;        b=SuaT0f2RTDPmIcTn5FBvm5uUCkpKPFLdLWXeZts1sseawlMTlXZEfa5tLjBKxipzNc         R/xKoYNdj8QsdpTPzH+3KwIreCIjad4a1x3nOZLHb84KgXV8q0O4uyoGTgMMnXhdfU25         DlZS/4EZMVwVS7++4jOeZkBKWVhB9WQdCp4/HHABmog9w3eILLhnuUrLb9BDa8HPydUO         PDSLHWZ9Zu/9yHbGO7hD6kwNe6RDr8Vjxyo2scx96uz5VrvqeyQ9Y4hIV92iLitYW7Mv         C9byKZotTmxvsGGRdWqJOSa86BY+pgqqXsShpTB7JAl73I8mcEAepv43f4C2qs+jrrix         MpFg==</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ferret users,
+
+I'm sure there has been discussions about this issue and I searched
+our email archive and found some threads that touch upon it, but
+didn't find whether it's &quot;solved&quot; or not.
+
+The problem is that @LOC (and perhaps other similar transformations)
+doesn't properly &quot;eliminate&quot; the axis.  For a (x,y,z) temperature
+field, say, you can find the depth of an isopycnal:
+
+   yes? z10 = temp[z=@LOC:10]
+
+but, &quot;SHOW GRID z10&quot;, it still has more than one gridpoints.  Nevertheless,
+
+    yes? fill z10[k=1]   !--&gt; undefined field
+    yes? fill z10           !--&gt; works!
+
+See a complete example below.  This behavior looks like a bug to me.
+
+This matters.  I wanted to define a mask on the basis of this
+variable, something like:
+
+   yes? let below_z10 = if z[g=temp] lt z10 then 1
+
+but this doesn't work because z10[k=1, 2, 3, . . .] are undefined!
+
+My temporary solution is
+
+   yes? let grid = x[gx=temp] + y[gy=temp]
+   yes? let z10_squashed = reshape(z10,grid)
+   yes? let below_z10 = if z[g=temp] lt z10_squashed then 1
+
+But, I guess Ferret should do this reshaping for me with @LOC.
+
+Regards,
+
+Ryo
+----------------------------------------
+$ ferret
+  NOAA/PMEL TMAP
+  FERRET v6.94
+  Darwin 14.1.0 - 02/26/15
+  1-Dec-15 19:36
+
+yes? set data levitus_climatology
+yes? let z10 = temp[z=@LOC:10]
+yes? show grid z10
+    GRID GMS1
+ name       axis              # pts   start                end
+ XAXLEVITR LONGITUDE          360mr   20.5E                19.5E(379.5)
+ YAXLEVITR LATITUDE           180 r   89.5S                89.5N
+ ZAXLEVITR DEPTH (m)           20 i-  0                    5000
+ normal    T
+ normal    E
+ normal    F
+yes? list/x=180/y=0 z10[k=1]
+             VARIABLE : TEMP[Z=@LOC:10]
+             FILENAME : levitus_climatology.cdf
+             FILEPATH : /usr/local/ferret/data/
+             LONGITUDE: 179.5E
+             LATITUDE : 0.5S
+             DEPTH (m): 0 to 5
+        ....
+yes? list/x=180/y=0 z10
+             VARIABLE : TEMP[Z=@LOC:10]
+             FILENAME : levitus_climatology.cdf
+             FILEPATH : /usr/local/ferret/data/
+             LONGITUDE: 179.5E
+             LATITUDE : 0.5S
+             DEPTH (m): 0 to 5000
+          371.7
+!---- temporary solution ----
+yes? let grid = x[gx=temp] + y[gy=temp]
+yes? let z10_reshaped = reshape(z10, grid)
+yes? show grid z10_reshaped
+    GRID (G002)
+ name       axis              # pts   start                end
+ XAXLEVITR LONGITUDE          360mr   20.5E                19.5E(379.5)
+ YAXLEVITR LATITUDE           180 r   89.5S                89.5N
+ normal    Z
+ normal    T
+ normal    E
+ normal    F
+yes? list/x=180/y=0 z10_reshaped[k=1]
+             VARIABLE : RESHAPE(Z10, GRID)
+             FILENAME : levitus_climatology.cdf
+             FILEPATH : /usr/local/ferret/data/
+             LONGITUDE: 179.5E
+             LATITUDE : 0.5S
+          371.7
+yes? list/x=180/y=0 z10_reshaped
+             VARIABLE : RESHAPE(Z10, GRID)
+             FILENAME : levitus_climatology.cdf
+             FILEPATH : /usr/local/ferret/data/
+             LONGITUDE: 179.5E
+             LATITUDE : 0.5S
+          371.7
+yes?
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00464" href="msg00464.html">Re: [ferret_users] regridding transformation should reduce dimension . . .</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+<li><strong><a name="00463" href="msg00463.html">Re: [ferret_users] regridding transformation should reduce dimension . . .</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg - NOAA Federal</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00455.html">[ferret_users] seasonal anomaly timeseries for 30yrs</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00463.html">Re: [ferret_users] regridding transformation should reduce dimension . . .</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00455.html">Thread Prev</a>][<a href="msg00463.html">Thread Next</a>][<A HREF="threads.html#00461">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] concatenating strings with integers -->
+<!--X-From-R13: Oaqerj Ivggraoret &#45; @AOO Trqreny <naqerj.jvggraoretNabnn.tbi> -->
+<!--X-Date: Fri, 18 Sep 2015 09:38:03 &#45;0700 -->
+<!--X-Message-Id: CAKoe08S77b9bWt=wudLmG7uQq4r_SJ0CzzjGx+25qmeh54TLFQ@mail.gmail.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20150918174615.3162b6a4@lsce3102.extra.cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] concatenating strings with integers</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00280.html">Thread Prev</a>][<a href="msg00294.html">Thread Next</a>][<A HREF="threads.html#00282">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] concatenating strings with integers</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Marco van Hulten &lt;<a href="mailto:marco.van-hulten@DOMAIN.HIDDEN">marco.van-hulten@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] concatenating strings with integers</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg - NOAA Federal &lt;<a href="mailto:andrew.wittenberg@DOMAIN.HIDDEN">andrew.wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Sep 2015 12:38:02 -0400</li>
+<li>Cc: Ferret Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00280.html">20150918174615.3162b6a4@lsce3102.extra.cea.fr</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00280.html">20150918174615.3162b6a4@lsce3102.extra.cea.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Marco,
+
+A workaround would be to simply truncate the final &quot;.&quot; from the result
+of FLOATSTR():
+
+  NOAA/PMEL TMAP
+  FERRET v6.95 (rc3)
+  Linux 2.6.32-573.3.1.el6.x86_64 64-bit - 09/15/15
+  18-Sep-15 12:26
+
+yes? let First = { &quot;one&quot;, &quot;two&quot;, &quot;three&quot; }
+yes? let Second= { 1, 2, 3 }
+yes? let f = floatstr(Second,&quot;(f0.0)&quot;)
+yes? let n = strlen(f)
+yes? let Third = First + substring(f, 1, n-1)
+yes? list Third
+             VARIABLE : FIRST + SUBSTRING(F, 1, N-1)
+             SUBSET   : 3 points (X)
+ 1   / 1:&quot;one1&quot;
+ 2   / 2:&quot;two2&quot;
+ 3   / 3:&quot;three3&quot;
+
+Now it'd be nice if we could just do:
+
+yes? let Third = First + substring(f, 1, strlen(f)-1)
+
+However, this inline version crashes Ferret (the Ferret developers are
+aware of this bug; Ansley: Trac #2209).  So instead we have to define
+intermediate variables, as above.
+
+Cheers,
+
+Andrew
+
+
+On Fri, Sep 18, 2015 at 11:46 AM, Marco van Hulten
+&lt;marco.van-hulten@xxxxxxxxxxxx&gt; wrote:
+&gt; Dear Ferret users,
+&gt;
+&gt; I'd like to concatenate an array of strings and an array of integers
+&gt; (that should be converted to strings).  Now I have:
+&gt;
+&gt; let First = { &quot;one&quot;, &quot;two&quot;, &quot;three&quot; }
+&gt; let Second= { 1, 2, 3 }
+&gt; let Third = First + Second
+&gt;
+&gt; That doesn't work, since the elements of Second must be converted to
+&gt; strings, e.g.:
+&gt;
+&gt; let Third = First + FloatStr(Second, &quot;(f0.0)&quot;)
+&gt; yes? list Third
+&gt;              VARIABLE : FIRST + FLOATSTR(SECOND, &quot;(f0.0)&quot;)
+&gt;              SUBSET   : 3 points (X)
+&gt;  1   / 1:&quot;one1.&quot;
+&gt;  2   / 2:&quot;two2.&quot;
+&gt;  3   / 3:&quot;three3.&quot;
+&gt;
+&gt; Not quite.  I do not want the colon.  Of course, I shouldn't have used
+&gt; FloatStr().  I rather need a string to *integer* function, but I think
+&gt; that Ferret does not have that.
+&gt;
+&gt; Of course I could do anything by spawning awk(1), but a native Ferret
+&gt; solution would be more neat.
+&gt;
+&gt; I guess this is a feature request: and IntStr() function.
+&gt;
+&gt; Marco
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00294" href="msg00294.html">Re: [ferret_users] concatenating strings with integers</a></strong>
+<ul><li><em>From:</em> Marco van Hulten</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00280" href="msg00280.html">[ferret_users] concatenating strings with integers</a></strong>
+<ul><li><em>From:</em> Marco van Hulten</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00280.html">[ferret_users] concatenating strings with integers</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00294.html">Re: [ferret_users] concatenating strings with integers</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00280.html">Thread Prev</a>][<a href="msg00294.html">Thread Next</a>][<A HREF="threads.html#00282">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>
