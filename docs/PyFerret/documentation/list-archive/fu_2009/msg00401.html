@@ -1,0 +1,235 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] insert data into variable at certain time step -->
+<!--X-From-R13: Tnovna Zvrareg <pppzn&#45;fghqrag&#45;003Nrp.tp.pn> -->
+<!--X-Date: Thu, 25 Jun 2009 11:02:58 &#45;0700 -->
+<!--X-Message-Id: 4A43BBC2.3020108@ec.gc.ca -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4A3155A3.9050505@ec.gc.ca -->
+<!--X-Reference: 4A316784.7090308@noaa.gov -->
+<!--X-Reference: 15279_1244763332_4A3194C2_15279_38403_1_4A3190AC.60204@ec.gc.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] insert data into variable at certain time step</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00356.html">Thread Prev</a>][<a href="msg00402.html">Thread Next</a>][<A HREF="threads.html#00401">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] insert data into variable at certain time step</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] insert data into variable at certain time step</strong></li>
+<li><strong>From</strong>: <strong>Fabian Lienert &lt;<a href="mailto:cccma-student-003@DOMAIN.HIDDEN">cccma-student-003@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 25 Jun 2009 11:02:42 -0700</li>
+<li>In-reply-to: &lt;<a href="mailto:15279_1244763332_4A3194C2_15279_38403_1_4A3190AC.60204@DOMAIN.HIDDEN">15279_1244763332_4A3194C2_15279_38403_1_4A3190AC.60204@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4A3155A3.9050505@DOMAIN.HIDDEN">4A3155A3.9050505@xxxxxxxx</a>&gt; &lt;<a href="mailto:4A316784.7090308@DOMAIN.HIDDEN">4A316784.7090308@xxxxxxxx</a>&gt; &lt;<a href="mailto:15279_1244763332_4A3194C2_15279_38403_1_4A3190AC.60204@DOMAIN.HIDDEN">15279_1244763332_4A3194C2_15279_38403_1_4A3190AC.60204@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (X11/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ferret crowd,
+
+The script below works fine if there are no missing values. Since I started
+computing lagged correlations for SST, a netcdf dataset with missing values,
+the troubles started. Ferret crashes when reading an ASCII file with missing
+</pre><tt>values. Adding different format options when writing and reading text file like 
+</tt><tt>list/form=comma didn't help, Fferret either crashes or complains about the missing
+</tt><pre style="margin: 0em;">
+values ***** in the text file.
+
+So I tried writing the 2d field 'correl' in the repeat loop into a netcdf file
+using save/append/file=&quot;temp.nc&quot;/clobber correl[g=sst[d=2]] without success.
+Correl does not have a time axis, so correl is not appended but overwritten.
+Using just save/append/file=&quot;temp.nc&quot; or adding and increasing /l=1 does not help either.
+I also tried to define different time axis for correl like the following, without success.
+def axis/t=1:3:1 lagx; def grid/like=sst[d=2,l=1]/t=lagx glag; correl[g=glag]
+
+The only fix I could come up with was the following:
+let max_lag = 1
+repeat/range=`-1*max_lag`:`max_lag`:1/name=lag (let q = some_ts[l=@shf:`lag`]; let p = sst[d=2]; go variance;\
+            let lagcorr = correl + 0*sst[d=2,l=`lag+max_lag+1`];\
+	     save/append/file=&quot;temp.nc&quot;/clobber lagcorr;\
+	     cancel var correl; cancel var q; cancel var p; cancel memory )
+
+Cheers,
+Fabian
+
+
+Fabian Lienert wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Thanks very much Mick,
+
+I tested the commands. There should be an append option while writing
+the ASCII file in order not to overwrite the previous one.
+So for people finding this useful, below is the corrected version.
+
+Cheers,
+Fabian
+
+
+use my_data  !(the original xyt dataset containing &quot;myvar&quot;)
+spawn touch temp.file
+</pre><tt>repeat/range=1:5/name=lag ( ... define and compute the lagged 
+</tt><tt>correlation variable &quot;correl&quot; from &quot;myvar&quot;  ;\
+</tt><pre style="margin: 0em;">
+   list/nohead/file=temp.file/form=(f12.5)/append correl )
+def axis/t=1:5:1 lagx
+def grid/like=myvar[d=1]/t=lagx glag
+file/form=free/g=glag/ord=xyt/var=mylagvar temp.file
+set var/title=&quot;Lagged Correlations&quot; mylagvar
+</pre><tt>! now you can plot or use them ... or use ferret to write them to a 
+</tt><tt>netCDF file then discard temp.file
+</tt><pre style="margin: 0em;">
+save/file=MyLaggedResults.nc mylagvar
+
+
+mick spillane wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Fabian,
+</pre><tt>   Unlike some other languages, what you are doing in Ferret is 
+</tt><tt>setting up the algebraic quantities to compute something, until you 
+</tt><tt>use or write the variable you define, it doesn't exist as a number. 
+</tt><tt>Your situation is a case like this -- for each lag the definition is 
+</tt><tt>changing so it is best to write out the results for each lag to a 
+</tt><tt>file, then read them back later.
+</tt><tt>   The most elegant way would be to write to a netCDF file, one time 
+</tt><tt>slice (lag) at a time.  But, unless the x-y grid is huge, I typically 
+</tt><tt>write to an ASCII file (one value per record) then define the 
+</tt><tt>appropriate grid and read it back. It would go something like this:
+</tt><pre style="margin: 0em;">
+
+use my_data  !(the original xyt dataset containing &quot;myvar&quot;)
+spawn touch temp.file
+</pre><tt>repeat/range=1:5/name=lag ( ... define and compute the lagged 
+</tt><tt>correlation variable &quot;correl&quot; from &quot;myvar&quot;  ;\
+</tt><pre style="margin: 0em;">
+    list/nohead/file=temp.file/form=(f12.5) correl )
+def axis/t=1:5:1 lagx
+def grid/like=myvar[d=1]/t=lagx glag
+file/form=free/g=glag/ord=xyt/var=mylagvar temp.file
+set var/title=&quot;Lagged Correlations&quot; mylagvar
+</pre><tt>! now you can plot or use them ... or use ferret to write them to a 
+</tt><tt>netCDF file then discard temp.file
+</tt><pre style="margin: 0em;">
+save/file=MyLaggedResults.nc mylagvar
+
+Things to note:
+1) &quot;;\&quot; continues the repeat statement to the next line
+2)  the build up lag-by-lag of the results file
+</pre><tt>3) I just typed this in without doing a demo -- there may be typos but 
+</tt><tt>I hope the gist is clear
+</tt><pre style="margin: 0em;">
+
+Hope it helps,
+Mick
+</pre><tt>PS Look in the user guide for the slice-by-slice construction of a 
+</tt><tt>netCDF file if you like to be more elegant
+</tt><pre style="margin: 0em;">
+-------
+Fabian Lienert wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ferreters,
+
+Simple question, couldn't find an answer so far.
+In a repeat loop, I am calculating lagged cross correlations:
+
+</pre><tt>yes? repeat/range = 1:5:1/Name=lag (let q = 
+</tt><tt>timeseries[d=1,i=1,l=@shf:`lag`]; \
+</tt><pre style="margin: 0em;">
+         let p = 3dvariable[d=2]; go variance;\
+</pre><tt>All I want to do is to insert a 2-d field (correl) into a 3-d 
+</tt><tt>variable (x,y,t) at each time step inside the repeat loop, something 
+</tt><tt>like the following.
+</tt><pre style="margin: 0em;">
+         let lag_corr/l=`lag` = correl)
+
+In other programming languages this is easily done by filling an array:
+for (t in 1:5) {
+    lag_corr[,,t] = correl(t)
+}
+
+I am using FERRET v6.1 on Ubuntu Linux.
+
+Any help appreciated,
+Fabian
+
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+--
+Fabian Lienert                  |  Canadian Centre for Climate Modelling and Analysis
+PhD Student                     |  Meteorological Service of Canada
+phone: +1(250)721-7211          |  University of Victoria
+cccma-student-003@xxxxxxxx      |  P.O. Box 1700
+<a  rel="nofollow" href="http://www.cccma.bc.ec.gc.ca">http://www.cccma.bc.ec.gc.ca</a>    |  Victoria, BC,  V8W 2Y2, Canada
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00402" href="msg00402.html">Re: [ferret_users] insert data into variable at certain time step</a></strong>
+<ul><li><em>From:</em> Sudheer Joseph</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00355" href="msg00355.html">[ferret_users] insert data into variable at certain time step</a></strong>
+<ul><li><em>From:</em> Fabian Lienert</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00356.html">Re: [ferret_users] insert data into variable at certain time step</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00402.html">Re: [ferret_users] insert data into variable at certain time step</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00356.html">Thread Prev</a>][<a href="msg00402.html">Thread Next</a>][<A HREF="threads.html#00401">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

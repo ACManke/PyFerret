@@ -1,0 +1,217 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Looping over multile HDF files. -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 8 Oct 2009 09:54:27 &#45;0700 -->
+<!--X-Message-Id: 4ACE1936.5000609@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 2952.203.110.243.22.1254941114.squirrel@coral.iitkgp.ernet.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Looping over multile HDF files.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00667.html">Thread Prev</a>][<a href="msg00668.html">Thread Next</a>][<A HREF="threads.html#00670">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Looping over multile HDF files.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Dr.C.Shaji&quot; &lt;<a href="mailto:cshaji@DOMAIN.HIDDEN">cshaji@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Looping over multile HDF files.</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 08 Oct 2009 09:54:14 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:2952.203.110.243.22.1254941114.squirrel@DOMAIN.HIDDEN">2952.203.110.243.22.1254941114.squirrel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:2952.203.110.243.22.1254941114.squirrel@DOMAIN.HIDDEN">2952.203.110.243.22.1254941114.squirrel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hello C. Shaji,
+</pre><tt>What I would do is to write a script that does all the operations you 
+</tt><tt>want to do on each file.  Then call this from another script, sending 
+</tt><tt>the month number, or perhaps the file path as an argument.  You could 
+</tt><tt>also send in arguments with variable names, directory paths, and so on, 
+</tt><tt>if those things are not going to be the same
+</tt><pre style="margin: 0em;">
+
+ ! script write_file.jnl
+ ! open a monthly HDF file and re-write it as a binary file
+ ! Argument: month number
+
+ ! symbol nmon with month, e.g. 01, or 11
+ define symbol nmon = $1
+ if `($nmon) LT 10` THEN define symbol nmon = 0$1
+
+ use
+&quot;<a  rel="nofollow" href="http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0_Climatologies/Monthly/Combined/month">http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0_Climatologies/Monthly/Combined/month</a>($nmon)_combined.hdf&quot;
+
+ !Shows the dataset variables.
+
+ show data
+ show grid
+
+ SHOW GRID CLIM_SST
+
+ ! To get the axis information
+ SHOW AXIS LONGITUDE
+ SHOW AXIS LATITUDE
+
+ SET MEMORY/SIZ=416
+
+</pre><tt> 
+</tt><tt>list/format=stream/file=&quot;/work/data/sst/pf/data/monthly/bin/month($nmon)_combined.bin&quot; 
+</tt><tt>clim_sst
+</tt><pre style="margin: 0em;">
+
+ let lat = Y[GY=clim_sst]
+ let lon = X[GX=clim_sst]
+
+</pre><tt> 
+</tt><tt>list/format=stream/file=&quot;/work/data/sst/pf/data/monthly/bin/month($nmon)_combined_lat.grd&quot; 
+</tt><tt>lat
+</tt><pre style="margin: 0em;">
+
+</pre><tt> 
+</tt><tt>list/format=stream/file=&quot;/work/data/sst/pf/data/monthly/bin/month($nmon)_combined_lon.grd&quot; 
+</tt><tt>lon
+</tt><pre style="margin: 0em;">
+
+  ! End of script write_file.jnl
+
+Then call this script for each month:
+
+ ! script all_months.jnl
+ repeat/range=1:12:1/name=m (go write_file `m`)
+
+</pre><tt>Or, if for instance you found that some files didn't exist, this could 
+</tt><tt>also be called without a loop.  It's easy to use an editor to make a 
+</tt><tt>list of commands:
+</tt><pre style="margin: 0em;">
+
+  go write_file 1
+  go write_file 3
+  go write_file 4
+  go write_file 5
+  go write_file 6
+  go write_file 9
+...
+
+Ansley
+
+Dr.C.Shaji wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear ferret users,
+I am remotely accessing 12 HDF files one by one. Finally I would like to
+write the data as binary in another 12 files. How can I do this using a
+file loop.
+
+1) For example, for a single file, I use the following commands to achieve
+this.
+
+use
+&quot;<a  rel="nofollow" href="http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0_Climatologies/Monthly/Combined/month01_combined.hdf&quot">http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0_Climatologies/Monthly/Combined/month01_combined.hdf&quot</a>;
+!January.
+!Shows the dataset variables.
+
+show data
+show grid
+
+SHOW GRID CLIM_SST
+
+! To get the axis information
+SHOW AXIS LONGITUDE
+SHOW AXIS LATITUDE
+
+SET MEMORY/SIZ=416
+
+list/format=stream/file=&quot;/work/data/sst/pf/data/monthly/bin/month01_combined.bin&quot;
+ clim_sst !January
+
+let lat = Y[GY=clim_sst]
+let lon = X[GX=clim_sst]
+
+list/format=stream/file=&quot;/work/data/sst/pf/data/monthly/bin/month01_combined_lat.grd&quot;
+ lat
+
+list/format=stream/file=&quot;/work/data/sst/pf/data/monthly/bin/month01_combined_lon.grd&quot;
+ lon
+
+2)
+I want to access files such as month01_combined.hdf,
+month02_combined.hdf,....month12_combined.hdf
+
+Finally the binary files month??_combined.bin, month??_combined_lon.grd,
+month??_combined_lon.grd have to be written in another directory.
+
+Can someone suggest me some useful tips to do this in ferret?
+
+Thanks in advance,
+C. Shaji.
+
+
+
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00667" href="msg00667.html">[ferret_users] Looping over multile HDF files.</a></strong>
+<ul><li><em>From:</em> Dr.C.Shaji</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00667.html">[ferret_users] Looping over multile HDF files.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00668.html">[ferret_users] OPeNDAP error with Ferret 6.3</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00667.html">Thread Prev</a>][<a href="msg00668.html">Thread Next</a>][<A HREF="threads.html#00670">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] correlation coefficient using variance.jnl -->
+<!--X-From-R13: [f Evaqh Dnw Bnenzcvy <cnenzcvyNpnbf.vvfp.rearg.va> -->
+<!--X-Date: Fri, 18 Sep 2009 00:39:52 &#45;0700 -->
+<!--X-Message-Id: Pine.LNX.4.58.0909181233060.18845@caos.iisc.ernet.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: Pine.LNX.4.58.0909171203410.4248@caos.iisc.ernet.in -->
+<!--X-Reference: 4AB2608D.3050000@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] correlation coefficient using variance.jnl</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00591.html">Thread Prev</a>][<a href="msg00606.html">Thread Next</a>][<A HREF="threads.html#00602">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] correlation coefficient using variance.jnl</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] correlation coefficient using variance.jnl</strong></li>
+<li><strong>From</strong>: <strong>Ms Sindu Raj Parampil &lt;<a href="mailto:parampil@DOMAIN.HIDDEN">parampil@xxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Sep 2009 13:13:14 +0530 (IST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4AB2608D.3050000@DOMAIN.HIDDEN">4AB2608D.3050000@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:Pine.LNX.4.58.0909171203410.4248@DOMAIN.HIDDEN">Pine.LNX.4.58.0909171203410.4248@xxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4AB2608D.3050000@DOMAIN.HIDDEN">4AB2608D.3050000@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hello Ansley,
+Thank you for the suggestion. I listed the different variables used in 
+calculation of correlation from both cases. 
+Variance.jnl calculates CORREL= COVAR / (P_VAR_MASK*Q_VAR_MASK)^.5
+
+For case 1 (i.e., p = isoairs, q = isorama and correl = 0.2269),
+COVAR = 0.4739, P_VAR_MASK = 1.506, Q_VAR_MASK = 2.897
+
+For case 2 (i.e., p = isorama, q = isoairs and correl = undefined),
+COVAR = 0.4551, P_VAR_MASK = 2.931, Q_VAR_MASK = 1.504
+
+So case 2 does have values upto the penultimate step. Yet, 
+its not calculating the correlation. When these values are 
+manually plugged in the expression, 
+CORREL= COVAR / (P_VAR_MASK*Q_VAR_MASK)^.5 
+the CORREL = 0.2168. This is still different from CORREL case 1 (0.2269). 
+
+Meanwhile a friend mentioned that the different grids of variables 
+(isoairs, isorama) could be reasponsible for the different CORRELs. So I 
+wrote the variables out into a text file and read them onto the same grid. 
+This solved the problem and now both CORRELs match! 
+
+thanks and regards
+Sindu
+
+
+On Thu, 17 Sep 2009, Ansley Manke wrote:
+
+&gt; Hi Sindu,
+&gt; Yes, the correlation should be the same when p and q are reversed, and a 
+&gt; simple test I just tried does result in the same correl regardless of 
+&gt; which variable is P and which is Q.  Something odd seems to be happening 
+&gt; with your data.
+&gt; 
+&gt; One thing to try is after the first command
+&gt; 
+&gt;    let p = isorama[k=1]; let q = isoairs[k=1]; go variance ; li correl
+&gt; 
+&gt; then do &quot;cancel variable/all; cancel memory&quot;,  before
+&gt; 
+&gt;    let p = isoairs[k=1]; let q = isorama[k=1]; go variance ; li correl
+&gt; 
+&gt; which will make sure that the data is read again and everything is 
+&gt; reinitialized.  I don't really know that this will make any difference. 
+&gt; 
+&gt; If the result of the second definitions is still missing, to try to find 
+&gt; out what might be going on, you could look at the variables that are 
+&gt; defined by the variance.jnl script:
+&gt; 
+&gt; yes? go variance
+&gt; yes? go/help variance  ! lists the commands in the script
+&gt; 
+&gt; Then just list or plot the values of the different variables that are 
+&gt; defined as the script builds up the definition of correl. For instance
+&gt; 
+&gt; list p_ave, q_ave
+&gt; list p_dev, q_dev      ! or plot p_dev, q_dev
+&gt; 
+&gt; and so forth.  This may show that one variable has lots of missing data, 
+&gt; perhaps, or some other peculiar behavior that's causing this.
+&gt; 
+&gt; Please write back and let us know what you find out.
+&gt; 
+&gt; 
+&gt; Ansley
+&gt; 
+&gt; 
+&gt; Ms Sindu Raj Parampil wrote:
+&gt; &gt; Hello,
+&gt; &gt; I've encountered a problem while calculating correlation using the 
+&gt; &gt; 'variance.jnl' between 2 variables: isorama and ISOAIRS.
+&gt; &gt;
+&gt; &gt; When I choose p = isorama &amp; q = isoairs to run variance.jnl, the  
+&gt; &gt; correlation coefficient is 0.2269. But when p and q are reversed
+&gt; &gt; (i.e., p = isoairs &amp; q = isorama ), the correlation is undefined. 
+&gt; &gt;
+&gt; &gt; Shouldn't the corr. coeffs be same irrespective of the order of the 
+&gt; &gt; variables for simultanoeus correlation?
+&gt; &gt;
+&gt; &gt; Pls see below for the commands I used in both cases and the ferret 
+&gt; &gt; calculations.
+&gt; &gt; 1) let p = isorama[k=1]; let q = isoairs[k=1]; go variance ; li correl
+&gt; &gt;
+&gt; &gt;              VARIABLE : CORRELATION OF P AND Q
+&gt; &gt;              FILENAME : RH_1s90e_03_04.nc
+&gt; &gt;              LONGITUDE: 90E
+&gt; &gt;              LATITUDE : 1.5S
+&gt; &gt;              DEPTH (m): -3
+&gt; &gt;              TIME     : 31-DEC-2002 12:00 to 08-JUN-2004 12:00
+&gt; &gt;           0.2269
+&gt; &gt;
+&gt; &gt; 2) let p = isoairs[k=1]; let q = isorama[k=1]; go variance ; li correl
+&gt; &gt;  
+&gt; &gt;              VARIABLE : CORRELATION OF P AND Q
+&gt; &gt;              FILENAME : RH_1s90e_03_04.nc
+&gt; &gt;              LONGITUDE: 89.5E
+&gt; &gt;              LATITUDE : 1.5S
+&gt; &gt;              HEIGHT (millibar): 1000
+&gt; &gt;              TIME     : 31-DEC-2002 12:00 to 08-JUN-2004 12:00
+&gt; &gt;         ....
+&gt; &gt;
+&gt; &gt; I use FERRET v6.2 on OpenSuse 11.0. Any help is appreciated. 
+&gt; &gt; Thank you
+&gt; &gt; Sindu
+&gt; &gt;
+&gt; &gt;   
+&gt; 
+&gt; 
+
+-- 
+Sindu Raj Parampil
+Ph.D Student
+Centre for Atmospheric and Oceanic Sciences
+Indian Institute of Science
+Bangalore
+
+=======================================================================
+&quot;Knowledge of the oceans is no longer a matter of curiosity; 
+         our very survival may hinge upon it&quot;          John F. Kennedy
+=======================================================================
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00606" href="msg00606.html">Re: [ferret_users] correlation coefficient using variance.jnl</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00589" href="msg00589.html">[ferret_users] correlation coefficient using variance.jnl</a></strong>
+<ul><li><em>From:</em> Ms Sindu Raj Parampil</li></ul></li>
+<li><strong><a name="00591" href="msg00591.html">Re: [ferret_users] correlation coefficient using variance.jnl</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00591.html">Re: [ferret_users] correlation coefficient using variance.jnl</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00606.html">Re: [ferret_users] correlation coefficient using variance.jnl</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00591.html">Thread Prev</a>][<a href="msg00606.html">Thread Next</a>][<A HREF="threads.html#00602">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

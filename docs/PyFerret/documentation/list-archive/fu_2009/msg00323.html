@@ -1,0 +1,204 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] vector on a single location -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 1 Jun 2009 11:36:04 &#45;0700 -->
+<!--X-Message-Id: 4A241F95.5030605@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8adc9130905271010k7713362je82c07fadb576631@mail.gmail.com -->
+<!--X-Reference: 4A1F264A.3090402@noaa.gov -->
+<!--X-Reference: 8adc9130905290657v385fc8cfkfd5aca47857a4ede@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] vector on a single location</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00322.html">Thread Prev</a>][<a href="msg00324.html">Thread Next</a>][<A HREF="threads.html#00323">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] vector on a single location</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Renato Parkinson Martins &lt;<a href="mailto:renatoparkinson@DOMAIN.HIDDEN">renatoparkinson@xxxxxxxxx</a>&gt;,        ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] vector on a single location</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 01 Jun 2009 11:36:05 -0700</li>
+<li>In-reply-to: &lt;<a href="mailto:8adc9130905290657v385fc8cfkfd5aca47857a4ede@DOMAIN.HIDDEN">8adc9130905290657v385fc8cfkfd5aca47857a4ede@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8adc9130905271010k7713362je82c07fadb576631@DOMAIN.HIDDEN">8adc9130905271010k7713362je82c07fadb576631@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4A1F264A.3090402@DOMAIN.HIDDEN">4A1F264A.3090402@xxxxxxxx</a>&gt; &lt;<a href="mailto:8adc9130905290657v385fc8cfkfd5aca47857a4ede@DOMAIN.HIDDEN">8adc9130905290657v385fc8cfkfd5aca47857a4ede@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Windows/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi -<br>
+If you're overlaying a vector on a gridded variable then it's better to
+define the U and V components of the variable on the grid, just at that
+one location.&nbsp; Then Ferret can draw the arrow.<br>
+<br>
+Say you want to put the vector at x=320,y=14, and that the vector
+components are u=6,v=8.&nbsp; Here is an example using coads_climatology
+sst. <br>
+<tt><br>
+</tt>
+<blockquote><tt>! Open the file and make the underlay plot.</tt><br>
+  <tt>use coads_climatology</tt><br>
+  <tt>shade sst[l=1]</tt><br>
+  <br>
+  <tt>! define variables for the location and size of the vector
+components.</tt><br>
+  <tt>let xloc = 320</tt><br>
+  <tt>let yloc = 14</tt><br>
+  <tt>let uval = 6</tt><br>
+  <tt>let vval = 8</tt><br>
+  <br>
+  <tt>! Define short axes, with the middle point at the location of the
+vector</tt><br>
+  <tt>define axis/x=`xloc-5`:`xloc+5`:5/units=degrees xax</tt><br>
+  <tt>define axis/y=`yloc-5`:`yloc+5`:5/units=degrees yax</tt><br>
+  <br>
+  <tt>! Define variables, with the middle point having the value of the
+vector <br>
+! components, and the other points missing.</tt><br>
+  <tt>let uvar =&nbsp; {,`uval`,}</tt><br>
+  <tt>let vvar =&nbsp; {,`vval`,}</tt><br>
+  <br>
+  <tt>! Make 2-Dimensional variables with the center point taking the
+vector component values.</tt><br>
+  <tt>let u = reshape(uvar,x[gx=xax]) + 0*y[gy=yax]</tt><br>
+  <tt>let v = reshape(vvar,y[gy=yax]) + 0*x[gx=xax]</tt><br>
+  <br>
+  <tt>vector/over u,v</tt><br>
+</blockquote>
+<br>
+Then the&nbsp; VECTOR command can have any of the qualifiers to control the
+line thickness, whether it is labeled and so forth.<br>
+<br>
+<br>
+<br>
+Renato Parkinson Martins wrote:
+<blockquote
+ cite=""
+ type="cite">Hi Ansley,<br>
+thank you very much for your help.<br>
+Actually, I need to overlay this vector plot on a SSH field plot. I
+will try the way you recommended.<br>
+Regards,<br>
+Renato<br>
+  <br>
+  <div class="gmail_quote">2009/5/28 Ansley Manke <span dir="ltr">&lt;<a rel="nofollow"
+ moz-do-not-send="true" href="mailto:Ansley.B.Manke@xxxxxxxx">Ansley.B.Manke@xxxxxxxx</a>&gt;</span><br>
+  <blockquote class="gmail_quote"
+ style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+    <div bgcolor="#ffffff" text="#000000">
+Hi Renato,<br>
+In order&nbsp; to use the VECTOR command you need to have a grid, but that
+grid could be quite simple. It depends a bit on what you're plotting
+this on.&nbsp; Are you overlaying it on some plot?<br>
+    <br>
+One idea is to just draw an arrow, with PLOT/VS/OVER commands - would
+that do what you want?&nbsp; Here's a simple little example to show you the
+idea.&nbsp; If this isn't what you're thinking about write back with more
+information about what you want to do.<br>
+    <blockquote><tt>yes? use etopo60</tt><br>
+      <tt>yes? fill rose&nbsp; ! just as an underlay plot</tt><br>
+      <br>
+      <tt>! define locations for the shaft of the arrow.</tt><br>
+      <tt>yes? let xline = {340,354}</tt><br>
+      <tt>yes? let yline = {29,29}</tt><br>
+      <tt>yes? plot/nolabel/over/vs/line/thick/color=black xline,yline</tt><br>
+      <br>
+      <tt>! define locations for the headof the arrow.</tt><br>
+      <tt>yes? let xhead = {350,354,350}</tt><br>
+      <tt>yes? let yhead = {31,29,27}</tt><br>
+      <tt>yes? plot/nolabel/over/vs/line/thick/color=black xhead, yhead</tt><br>
+    </blockquote>
+You could define the points to draw this in whatever location and
+direction you want. This is a very non-general way to do this. Ferret
+can take care of the length and rotation of the vector automatically,
+but you would need to have vector components on a grid.<br>
+    <font color="#888888"><br>
+Ansley</font>
+    <div>
+    <div class="h5"><br>
+    <br>
+Renato Parkinson Martins wrote:
+    <blockquote type="cite">Dear all,<br>
+I'll would like a help on plotting a vector u,v on a single coordinate
+lon,lat, which is not gridded. Does anybody know a way for doing this?<br>
+Thank you very much.<br>
+Regards,<br>
+Renato<br>
+    </blockquote>
+    </div>
+    </div>
+    </div>
+  </blockquote>
+  </div>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00318" href="msg00318.html">[ferret_users] vector on a single location</a></strong>
+<ul><li><em>From:</em> Renato Parkinson Martins</li></ul></li>
+<li><strong><a name="00322" href="msg00322.html">Re: [ferret_users] vector on a single location</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00322.html">Re: [ferret_users] vector on a single location</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00324.html">[ferret_users] How to drawing rainbow color lines?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00322.html">Thread Prev</a>][<a href="msg00324.html">Thread Next</a>][<A HREF="threads.html#00323">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

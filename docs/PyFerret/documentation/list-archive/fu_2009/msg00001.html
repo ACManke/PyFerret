@@ -1,0 +1,385 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Finding frequency distribution -->
+<!--X-From-R13: Egrcura Uhvzbaq <fthvzbaqNsfh.rqh> -->
+<!--X-Date: Mon, 5 Jan 2009 07:53:47 &#45;0800 -->
+<!--X-Message-Id: f66fa05c12bb.4961e6b3@fsu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3b998bc00901050451r2af4dd58wb32264ebb15acf58@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Finding frequency distribution</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00000.html">Thread Prev</a>][<a href="msg00002.html">Thread Next</a>][<A HREF="threads.html#00001">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Finding frequency distribution</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Bijoy Thompson &lt;<a href="mailto:bijoymet@DOMAIN.HIDDEN">bijoymet@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Finding frequency distribution</strong></li>
+<li><strong>From</strong>: <strong>Stephen Guimond &lt;<a href="mailto:sguimond@DOMAIN.HIDDEN">sguimond@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 05 Jan 2009 10:53:39 -0500</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:3b998bc00901050451r2af4dd58wb32264ebb15acf58@DOMAIN.HIDDEN">3b998bc00901050451r2af4dd58wb32264ebb15acf58@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:3b998bc00901050451r2af4dd58wb32264ebb15acf58@DOMAIN.HIDDEN">3b998bc00901050451r2af4dd58wb32264ebb15acf58@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+Please note that the frequency histogram scripts have a bug in them.  The counts for the lower boundary are not correct.  Here is a discussion I had with Ansley on the topic....
+
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+
+Ansley,
+
+I think there is a bug with the lower boundary (i.e. not just zeroes).  Copy this code:
+
+yes?SET DATA levitus_climatology
+yes?let new = xsequence(temp)
+!trying a different range outside the influence of zero fillers...
+yes?go frequency_histogram new 5 10 0.5
+
+This gives...
+1    /  1:   4.50      0.
+2    /  2:   5.00  34775.
+
+verifying with my ad hoc method...
+
+yes? let test = if new[d=1] ge 4.75 and new[d=1] lt 5.25 then new[d=1]
+yes? let good = test[i=@ngd]
+yes? list good
+             VARIABLE : TEST[I=@NGD]
+             X        : 0.5 to 10000000
+          14624.
+
+These two are way off.  The upper boundary appear to be fine (I checked) as do all the other values.  This is a big problem for anyone that has or plans to use this script.  Wonder if I can just use my ad hoc method within a repeat loop...
+
+let bin = x
+repeat/range=lo:hi:del/name=m(let test = if data ge (m-(bin/2)) and data lt (m+(bin/2)) then data;let good = test[i=@ngd];write to file)
+
+...or something like this.
+
+Steve
+
+----- Original Message -----
+From: Ansley Manke &lt;Ansley.B.Manke@xxxxxxxx&gt;
+Date: Thursday, October 16, 2008 4:31 pm
+Subject: Re: [ferret_users] Follow-up on:  bins in frequency_histogram.jnl
+
+
+&gt; Hi -
+&gt; Let me point you to what the script does. Actually zero is handled
+&gt; sort
+&gt; of inconsistently and I think wrongly - the script fills in the
+&gt; data
+&gt; with 0 and then does the operations on that, confusing values of
+&gt; zero
+&gt; and the zero level of the histogram and missing data.
+&gt;
+&gt; ...
+&gt; ! compute an index that numbers the histogram boxes on the desired
+&gt; output plot
+&gt; ! also cope with missing values (&quot;MISSING()&quot;) and data below the
+&gt; minimums! (&quot;MAX()&quot;).  Data above the max is simply not read in the
+&gt; final commands
+&gt; ! because it lies beyond the number of points in the grid gindex
+&gt; LET/QUIET vmin = $2
+&gt; LET/QUIET vmax = $3
+&gt; LET/QUIET vdelta = $4
+&gt; LET/QUIET vn = INT((vmax-vmin)/vdelta + 0.5) + 1
+&gt; LET/QUIET vindex = MISSING(INT(($1-vmin)/vdelta + 0.5) + 1, 0) ! 1
+&gt; to vn
+&gt; LET/QUIET index = MAX(0, vindex)
+&gt;
+&gt; So vindex is the data weighted to the size of the bins by division
+&gt; by
+&gt; vdelta, and rounded to the nearest integer. Then there's a bit more
+&gt; logic to cut the histogram off at the min and max values
+&gt;
+&gt; If you want exact counts you might look at refining this.
+&gt;
+&gt; Ansley
+&gt;
+&gt; Stephen Guimond wrote:
+&gt; &gt; Ansley,
+&gt; &gt;
+&gt; &gt; Thanks.  I will probably use this one since it should take less
+&gt; time for large data sets.  What happens to the calculation on the
+&gt; boundaries?  For instance, if I look at temp 0.00 in the levitus
+&gt; data...&gt;
+&gt; &gt; 2    /  2:   0.00  52983.
+&gt; &gt;
+&gt; &gt; However...
+&gt; &gt;
+&gt; &gt; yes? let new = xsequence(temp)
+&gt; &gt; yes? let test = if new[d=1] ge (-0.25) and new[d=1] lt 0.25 then
+&gt; new[d=1]&gt; yes? let good = test[i=@ngd]
+&gt; &gt; yes? list good
+&gt; &gt;              VARIABLE : TEST[I=@NGD]
+&gt; &gt;              X        : 0.5 to 10000000
+&gt; &gt;           26978.
+&gt; &gt;
+&gt; &gt; They don't match here, but they do match for all the others I've
+&gt; tried.&gt;
+&gt; &gt; Steve
+&gt; &gt;
+&gt; &gt; ----- Original Message -----
+&gt; &gt; From: Ansley Manke &lt;Ansley.B.Manke@xxxxxxxx&gt;
+&gt; &gt; Date: Thursday, October 16, 2008 3:09 pm
+&gt; &gt; Subject: Re: [ferret_users] Follow-up on:  bins in
+&gt; frequency_histogram.jnl&gt; 
+&gt; &gt; Cc: Ansley Manke &lt;Ansley.B.Manke@xxxxxxxx&gt;
+&gt; &gt;
+&gt; &gt;  
+&gt; &gt;&gt; Oh, and by the way, looking at the script
+&gt; frequency_histogram2.jnl, it
+&gt; &gt;&gt; does the same calculation, but uses Ferret functions to do the
+&gt; &gt;&gt; sorting;so it doesn't have to write out that big intermediate
+&gt; file.
+&gt; &gt;&gt; The two
+&gt; &gt;&gt; scripts wind up with the exact same result.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Ansley
+&gt; &gt;&gt;
+&gt; &gt;&gt; Ansley Manke wrote:
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt; Hi Stephen,
+&gt; &gt;&gt;&gt; Interestingly, it looks like a number of points are on the
+&gt; edges of
+&gt; &gt;&gt;&gt; the histogram box, to within the precision of the data oand of
+&gt; &gt;&gt;&gt;      
+&gt; &gt;&gt; Ferret&gt; when it makes the comparisons. Your test counts values
+&gt; that
+&gt; &gt;&gt; are 27.25
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt; exactly, plus all the ones between, plus the ones that are
+&gt; 27.75
+&gt; &gt;&gt;&gt;      
+&gt; &gt;&gt; Those&gt; points on the boundary are counted by the algorithm in
+&gt; the
+&gt; &gt;&gt; script only
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt; once. So, instead of GE and LE, use GE and LT and they match:
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt;     yes? let test = if new[d=1] ge 27.25 and new[d=1] lt 27.75
+&gt; then&gt;&gt;&gt;     new[d=1]
+&gt; &gt;&gt;&gt;     yes? list good
+&gt; &gt;&gt;&gt;     VARIABLE : TEST[I=@NGD]
+&gt; &gt;&gt;&gt;     X : 0.5 to 1296000.5
+&gt; &gt;&gt;&gt;     7828.
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Ansley
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Stephen Guimond wrote:
+&gt; &gt;&gt;&gt;      
+&gt; &gt;&gt;&gt;&gt; Hi Ansley,
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; I am actually still struggling with the frequency_histogram
+&gt; &gt;&gt;&gt;&gt;        
+&gt; &gt;&gt; script.  The data I am using is 4-D with missing values and when
+&gt; I
+&gt; &gt;&gt; run it through the script I'm not getting consistent values with
+&gt; my
+&gt; &gt;&gt; &quot;ad hoc&quot; method.  Here is an example using the
+&gt; levitus_climatology
+&gt; &gt;&gt; data.&gt;&gt;
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt; yes? SET DATA levitus_climatology
+&gt; &gt;&gt;&gt;&gt; !unravel temp so its just on x-axis to leave y-axis free for
+&gt; &gt;&gt;&gt;&gt;        
+&gt; &gt;&gt; routine&gt;&gt; yes?let new = xsequence(temp)
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt; yes?go frequency_histogram new 0 32 0.5
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; The number of counts for temp 27.50 is 7828.  Now when I test
+&gt; &gt;&gt;&gt;&gt;        
+&gt; &gt;&gt; this (using the bounds I found before), the two numbers don't
+&gt; agree...&gt;&gt;    
+&gt; &gt;&gt;&gt;&gt; yes?let test = if new[d=1] ge 27.25 and new[d=1] le 27.75 then
+&gt; &gt;&gt;&gt;&gt;        
+&gt; &gt;&gt; new[d=1]&gt;&gt; yes?let good = test[i=@ngd]
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt; This gives 7843 for the count.  Thus, I'm still confused by
+&gt; this...&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; Steve
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; ----- Original Message -----
+&gt; &gt;&gt;&gt;&gt; From: Ansley Manke &lt;Ansley.B.Manke@xxxxxxxx&gt;
+&gt; &gt;&gt;&gt;&gt; Date: Thursday, October 16, 2008 12:47 pm
+&gt; &gt;&gt;&gt;&gt; Subject: Re: [ferret_users] Follow-up on:  bins in
+&gt; &gt;&gt;&gt;&gt;        
+&gt; &gt;&gt; frequency_histogram.jnl&gt;&gt; 
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt; Cc: oar.pmel.ferret_users@xxxxxxxx
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;  
+&gt; &gt;&gt;&gt;&gt;        
+&gt; &gt;&gt;&gt;&gt;&gt; Hi all,
+&gt; &gt;&gt;&gt;&gt;&gt; Just a couple of general comments here. Using Ferret itself
+&gt; to
+&gt; &gt;&gt;&gt;&gt;&gt; check
+&gt; &gt;&gt;&gt;&gt;&gt; what's in the data and experimenting with a script is a great
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt; idea.
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt; Sometimes creating some synthetic data and applying a script
+&gt; or
+&gt; &gt;&gt;&gt;&gt;&gt; function
+&gt; &gt;&gt;&gt;&gt;&gt; to that is helpful -- here one could try applying the script
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt; with
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt; different bins to a variable xx = x[x=1:100]  or some such
+&gt; thing.&gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; One can also always look at any script, and read the comments
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt; the
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt; authors included, with
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt;   yes? go/help frequency_histogram
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; Stephen, your previous message mentioned that
+&gt; &gt;&gt;&gt;&gt;&gt; frequency_histogram2.jnl
+&gt; &gt;&gt;&gt;&gt;&gt; calls the function bin_index_wt which is missing from the
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt; Ferret
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt; releases.  That's an external function and I have put it into
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt; the
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt; downloads files for linux 32-bit and 64-bit from our
+&gt; downloads
+&gt; &gt;&gt;&gt;&gt;&gt; page; it
+&gt; &gt;&gt;&gt;&gt;&gt; will also be included in the next Ferret release in the
+&gt; ferret
+&gt; &gt;&gt;&gt;&gt;&gt; executable as a statically-linked function. If you want it
+&gt; now,
+&gt; &gt;&gt;&gt;&gt;&gt; download
+&gt; &gt;&gt;&gt;&gt;&gt; and install the appropriate Ferret Executables tar file from
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; <a  rel="nofollow" href="http://ferret.pmel.noaa.gov/static/Downloads/ferret_downloads.html">http://ferret.pmel.noaa.gov/static/Downloads/ferret_downloads.html</a>&gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; Ansley
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; Stephen Guimond wrote:
+&gt; &gt;&gt;&gt;&gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; All,
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; I did some tooling around and found an answer to my
+&gt; question. 
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;            
+&gt; &gt;&gt; It
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;      
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;            
+&gt; &gt;&gt;&gt;&gt;&gt; looks like the routine &quot;frequency_histogram.jnl&quot; look for
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt; values
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt; within the desired bin CENTERED on the value and INCLUDING
+&gt; the
+&gt; &gt;&gt;&gt;&gt;&gt; edges....&gt;
+&gt; &gt;&gt;&gt;&gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; yes? SET DATA levitus_climatology
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; yes? GO  frequency_histogram temp[X=0:360,Y=0:45N,Z=0] 0 32 0.5
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; I looked at temp 27.50 and found 1107 occurrences.  To check
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;            
+&gt; &gt;&gt; the
+&gt; &gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;      
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;            
+&gt; &gt;&gt;&gt;&gt;&gt; number is correct the search must look like this...
+&gt; &gt;&gt;&gt;&gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; yes? let test = if temp[X=0:360,Y=0:45N,Z=0] ge 27.25 and
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;      
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;            
+&gt; &gt;&gt;&gt;&gt;&gt; temp[X=0:360,Y=0:45N,Z=0] le 27.75 then
+&gt; temp[X=0:360,Y=0:45N,Z=0]&gt;&gt;&gt;&gt;&gt;    
+&gt; &gt;&gt;&gt;&gt;&gt;          
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; yes?let good = test[i=@ngd,j=@ngd,k=@ngd]
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt;&gt; This verifies the value of 1107.  It was useful for me to
+&gt; know
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;      
+&gt; &gt;&gt;&gt;&gt;&gt;&gt;            
+&gt; &gt;&gt;&gt;&gt;&gt; that information, hope it will be for others, too.
+
+
+
+=======================================================
+Stephen R. Guimond
+Graduate Research Assistant
+Florida State University
+Center for Ocean-Atmospheric Prediction Studies (COAPS)
+=======================================================
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00000" href="msg00000.html">[ferret_users] Finding frequency distribution</a></strong>
+<ul><li><em>From:</em> Bijoy Thompson</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00000.html">[ferret_users] Finding frequency distribution</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00002.html">[ferret_users] column reversal</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00000.html">Thread Prev</a>][<a href="msg00002.html">Thread Next</a>][<A HREF="threads.html#00001">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

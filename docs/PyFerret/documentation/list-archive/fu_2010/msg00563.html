@@ -1,0 +1,232 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Axis names for Ferret, which attributes in NetCDF files ? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 1 Oct 2010 10:08:49 &#45;0700 -->
+<!--X-Message-Id: 4CA615A0.6070804@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: A513B1CE&#45;8044&#45;4F75&#45;B049&#45;AE73B178D970@lsce.ipsl.fr -->
+<!--X-Reference: 4CA611A6.4070901@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Axis names for Ferret, which attributes in NetCDF files ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00562.html">Thread Prev</a>][<a href="msg00564.html">Thread Next</a>][<A HREF="threads.html#00563">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Axis names for Ferret, which attributes in NetCDF files ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Axis names for Ferret, which attributes in NetCDF files ?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 01 Oct 2010 10:08:48 -0700</li>
+<li>Cc: Olivier Marti &lt;<a href="mailto:olivier.marti@DOMAIN.HIDDEN">olivier.marti@xxxxxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4CA611A6.4070901@DOMAIN.HIDDEN">4CA611A6.4070901@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:A513B1CE-8044-4F75-B049-AE73B178D970@DOMAIN.HIDDEN">A513B1CE-8044-4F75-B049-AE73B178D970@xxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4CA611A6.4070901@DOMAIN.HIDDEN">4CA611A6.4070901@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.9) Gecko/20100915 Thunderbird/3.1.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    One further note,<br>
+    You can work around this with ppl xlab and ppl ylab<br>
+    <blockquote>shade/set volume<br>
+      &nbsp; ppl xlab `volume,RETURN=xaxis` (`volume,RETURN=xunits`)<br>
+      &nbsp; ppl ylab `volume,RETURN=yaxis` (`volume,RETURN=yunits`)<br>
+      ppl shade<br>
+    </blockquote>
+    Or, getting attribute information from Ferret, so that you have more
+    control over upper- and lower-case text:<br>
+    <br>
+    <blockquote> !Define a symbol with the axis name in parentheses, so
+      that we can get the axis attributes.<br>
+      yes? define symbol xaxname = (`rose,return=xaxis`) <br>
+      &nbsp;!-&gt; define symbol xaxname = (SALINITY)<br>
+      yes? define symbol xaxunits = `($xaxname).units`<br>
+      &nbsp;!-&gt; define symbol xaxunits = PSU<br>
+      yes? define symbol xaxlabel = `($xaxname).long_name` (($xaxunits))<br>
+      &nbsp;!-&gt; define symbol xaxlabel = Salinity (PSU)<br>
+      <br>
+      ! likewise for y<br>
+    </blockquote>
+    <blockquote>yes? shade/set volume<br>
+      yes? ppl xlab ($xaxlabel )<br>
+      yes? ppl ylab ($xaxlabel )<br>
+      &nbsp;!-&gt; ppl ylab Temperature (C)<br>
+      yes? ppl shade<br>
+      <br>
+    </blockquote>
+    <br>
+    <br>
+    On 10/1/2010 9:51 AM, Ansley Manke wrote:
+    <blockquote cite="" type="cite">&nbsp;Hi
+      Olivier,
+      <br>
+      The axis labels don't use any of the attributes; they are just set
+      up to find a few known types of axes such as longitude, latitude,
+      and time; and label those. All other axes are labeled only with X,
+      Y, Z, T.&nbsp; The exception to this are PLOT/VS plots, where the axes
+      are labeled with the names of the two variables that are being
+      plotted.
+      <br>
+      <br>
+      It seems reasonable that if the axes are not spatial or time axes,
+      that Ferret should use the axis name, or an attribute such as
+      long_name. We'll look at the implications of doing that.
+      <br>
+      <br>
+      Ansley
+      <br>
+      <br>
+      On 9/30/2010 7:46 AM, Olivier Marti wrote:
+      <br>
+      <blockquote type="cite">Hi,
+        <br>
+        <br>
+        I have the following NetCDF file :
+        <br>
+        <br>
+        netcdf PHC3_1y_orca2_histo {
+        <br>
+        dimensions:
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Salinity = 100 ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Temperature = 100 ;
+        <br>
+        variables:
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float Salinity(Salinity) ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Salinity:units = "PSU" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Salinity:axis = "X" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Salinity:name = "Salinity" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Salinity:long_name = "Salinity" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Salinity:standard_name = "Salinity" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float Temperature(Temperature) ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Temperature:units = "C" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Temperature:axis = "Y" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Temperature:name = "Temperature" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Temperature:long_name = "Temperature" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Temperature:standard_name = "Temperature" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; float Volume(Temperature, Salinity) ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Volume:units = "km^3" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Volume:long_name = "Volume,
+        S=[34.4:35.1:0.007],T=[-1.0:4.0:0.05]" ;
+        <br>
+        <br>
+        // global attributes:
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :title = "S/T histogram from file
+        /dmnfs/cont003/p86mart/GRAF/DATA/PHC3_1y_orca2.nc" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :institution = "IPSL" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :comment = "Made by histogram_2D_compute.py" ;
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :history = "Created Thu Sep 30 16:24:59 2010" ;
+        <br>
+        <br>
+        <br>
+        When I "SHADE" the variable "Volume", the axis are labelled as
+        "X (PSU)" and "Y (C)".
+        <br>
+        <br>
+        Which attributes should I set in the NetCDF file to have the
+        correct labeling : "Salinity (PSU)" and 'Temperature (C)". I've
+        tried "name", "standard_name" and "long_name" with no success.
+        <br>
+        <br>
+        Thanks
+        <br>
+        <br>
+        Olivier
+        <br>
+        <br>
+        PS: Ferret version is 6.61 on Linux(gfortran)
+        2.6.9-89.0.20.ELsmp - 04/28/10
+        <br>
+        <br>
+      </blockquote>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00559" href="msg00559.html">[ferret_users] Axis names for Ferret, which attributes in NetCDF files ?</a></strong>
+<ul><li><em>From:</em> Olivier Marti</li></ul></li>
+<li><strong><a name="00562" href="msg00562.html">Re: [ferret_users] Axis names for Ferret, which attributes in NetCDF files ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00562.html">Re: [ferret_users] Axis names for Ferret, which attributes in NetCDF files ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00564.html">[ferret_users] inconsistency? in command line parser</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00562.html">Thread Prev</a>][<a href="msg00564.html">Thread Next</a>][<A HREF="threads.html#00563">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

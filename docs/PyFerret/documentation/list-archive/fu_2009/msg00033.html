@@ -1,0 +1,162 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Problems to find nearest neighbours in coordinate fields -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Mon, 19 Jan 2009 04:19:43 &#45;0800 -->
+<!--X-Message-Id: 49746FCB.70400@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 894448.13294.qm@web53702.mail.re2.yahoo.com -->
+<!--X-Reference: 6DAF2E4D&#45;CEF3&#45;45CB&#45;AF3A&#45;595AE03CC64F@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Problems to find nearest neighbours in coordinate fields</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00012.html">Thread Prev</a>][<a href="msg00013.html">Thread Next</a>][<A HREF="threads.html#00033">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Problems to find nearest neighbours in coordinate fields</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>Subject</strong>: <strong>[ferret_users] Problems to find nearest neighbours in coordinate fields</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 Jan 2009 13:19:23 +0100</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:6DAF2E4D-CEF3-45CB-AF3A-595AE03CC64F@DOMAIN.HIDDEN">6DAF2E4D-CEF3-45CB-AF3A-595AE03CC64F@xxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:894448.13294.qm@DOMAIN.HIDDEN">894448.13294.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:6DAF2E4D-CEF3-45CB-AF3A-595AE03CC64F@DOMAIN.HIDDEN">6DAF2E4D-CEF3-45CB-AF3A-595AE03CC64F@xxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.7.13.1) Gecko/20070301</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi ferreters,
+
+</pre><tt>I am trying to extract station data from model output fields. The output 
+</tt><tt>of the same model run has been written to two separate files, one
+</tt><tt>covering the total model region with time averages over long periods, 
+</tt><tt>one for a subregion, but with higher output frequency. As a test, the 
+</tt><tt>time average of quantities in the high frequency regional output file 
+</tt><tt>should be exactly the same as in the output file of the full model domain.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Testing this for &quot;stations&quot; with given coordinates, this is really the 
+</tt><tt>case, if coordinates are specified &quot;exactly&quot; at the model grid. To be 
+</tt><tt>more specific:
+</tt><pre style="margin: 0em;">
+
+Load the two output files, for example
+
+use  ocean_day3d.nc
+use rregionocean_stolpe.nc
+
+show data
+
+gives for example
+
+TEMP     Conservative temperature         1:666     1:723     1:77      1:2
+</pre><tt>TEMP     Conservative temperature           1:61       1:49     
+</tt><tt>1:77      1:240
+</tt><pre style="margin: 0em;">
+
+Indeed,
+
+list/x=17.5/y=55.175/k=1/prec=6 temp[d=1,l=1],temp[d=2,l=1:120@ave]
+
+gives the same results, y=55.175 specifies a grid point. But
+
+list/x=17.5/y=55.2/k=1/prec=6 temp[d=1,l=1],temp[d=2,l=1:120@ave]
+
+</pre><tt>does not give the same result. Inspecting both files with ncdump, 
+</tt><tt>55.19167 and 55.20833 are found as the nearest neigbours for the 
+</tt><tt>y-coordinate. Surprisingly ferret gives also different results for 
+</tt><tt>coordinates in both the files:
+</tt><pre style="margin: 0em;">
+
+list/x=17.5/y=55.2/k=1/prec=6 y[gy=temp[d=1]],y[gy=temp[d=2]]
+Column  1: Y[Y=55.2N] is Y (axis YT_OCEAN)
+Column  2: Y[Y=55.2N] is Y (axis YT_OCEAN_SUB1)
+               Y      Y
+I / *:     55.1917  55.2083
+
+</pre><tt>Hence,  for both files a different neighbour is found as the nearest 
+</tt><tt>one. Subtracting 55.2 reveals, that the distance to both the neighbours is
+</tt><pre style="margin: 0em;">
+almost the same.
+I / *:    -0.00833511  0.00833130
+
+So there come up the question:
+</pre><tt>- why does ferret not read the coordinates from both files in the same 
+</tt><tt>manner? There is no attribute that defines eventually an equidistant 
+</tt><tt>grid spacing.     
+</tt><tt>float yt_ocean_sub1(yt_ocean_sub1) ;
+</tt><pre style="margin: 0em;">
+               yt_ocean_sub1:long_name = &quot;tcell latitude&quot; ;
+               yt_ocean_sub1:units = &quot;degrees_N&quot; ;
+               yt_ocean_sub1:cartesian_axis = &quot;Y&quot; ;
+
+Greetings,
+Martin Schmidt
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00011" href="msg00011.html">[ferret_users] metafile --&gt;ps file --&gt;pdf files?</a></strong>
+<ul><li><em>From:</em> yangxing zheng</li></ul></li>
+<li><strong><a name="00012" href="msg00012.html">Re: [ferret_users] metafile --&gt;ps file --&gt;pdf files?</a></strong>
+<ul><li><em>From:</em> Paul Young</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00012.html">Re: [ferret_users] metafile --&gt;ps file --&gt;pdf files?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00013.html">Re: [ferret_users] metafile --&gt;ps file --&gt;pdf files?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00012.html">Thread Prev</a>][<a href="msg00013.html">Thread Next</a>][<A HREF="threads.html#00033">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

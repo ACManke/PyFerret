@@ -1,0 +1,168 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Finding the area a certain distance/number of grid cells from a boundary -->
+<!--X-From-R13: Dhffryy Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Sun, 20 Feb 2011 18:19:05 &#45;0800 -->
+<!--X-Message-Id: 201102211319.00684.russell.fiedler@csiro.au -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1298135552.31751.1709.camel@localhost.localdomain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Finding the area a certain distance/number of grid cells from a boundary</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00121.html">Thread Prev</a>][<a href="msg00126.html">Thread Next</a>][<A HREF="threads.html#00124">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Finding the area a certain distance/number of grid cells from a boundary</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Finding the area a certain distance/number of grid cells from a boundary</strong></li>
+<li><strong>From</strong>: <strong>Russell Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 21 Feb 2011 13:19:00 +1100</li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=simple/simple;  d=csiro.au; <a href="mailto:i%3Drussell.fiedler@DOMAIN.HIDDEN">i=russell.fiedler@xxxxxxxx</a>; q=dns/txt;  s=email; t=1298254744; x=1329790744; h=from:to:subject:date:references:in-reply-to:mime-version: content-transfer-encoding:message-id; z=From:=20Russell=20Fiedler=20&lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt; |To:=20Ferret=20users=20&lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt; |Subject:=20Re:=20[ferret_users]=20Finding=20the=20area =20a=20certain=20distance/number=20of=20grid=20cells=20fr om=20a=20boundary|Date:=20Mon,=2021=20Feb=202011=2013:19: 00=20+1100|References:=20&lt;<a href="mailto:1298135552.31751.1709.camel@DOMAIN.HIDDEN">1298135552.31751.1709.camel@loc</a> alhost.localdomain&gt;|In-Reply-To:=20&lt;1298135552.31751.1709 <a href="mailto:.camel@DOMAIN.HIDDEN">.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;|MIME-Version:=201.0 |Content-Transfer-Encoding:=207bit|Message-ID:=20&lt;2011022 <a href="mailto:11319.00684.russell.fiedler@DOMAIN.HIDDEN">11319.00684.russell.fiedler@xxxxxxxx</a>&gt;; bh=osv96ucplUnvSBrkoHAT3pD7JgJVcixSJdDKBomTX+o=; b=LFCLvXaWVRzFRp93RrlTOeg9MqgDvubkNImgdYhMGt5gGRz7QzJITi9a IMbUVbAbvRUPe0cYSf+g11yTPMgonbkA5YpGToA4szhqvhCNL09QJhT8p   Sie9sKOcanV187S;</li>
+<li>In-reply-to: &lt;<a href="mailto:1298135552.31751.1709.camel@DOMAIN.HIDDEN">1298135552.31751.1709.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Organization: CSIRO</li>
+<li>References: &lt;<a href="mailto:1298135552.31751.1709.camel@DOMAIN.HIDDEN">1298135552.31751.1709.camel@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: KMail/1.9.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Rob,
+
+I think constructing a mask using the FILL_XY() function is what you want.
+
+You have the array thick
+
+let ocean_mask = if ( thick eq 0 ) then 1
+let shelf_mask = if ( thick gt 0 ) then 1
+let extended_ocean_mask = fill_xy(ocean_mask,shelf_mask,2)       ! All shelf points within 2 of the ocean are now also filled with 1
+
+let shelf_near_ocean =  if ( thick gt 0 ) then extended_ocean_mask  !  Only want shelf points not ocean
+
+shade thick
+shade/ov/pat=tiny_grid/pal=black shelf_near_ocean   ! Check
+
+Multiplying by the area of the cells (1600 in your case) and summing should do the trick
+
+let area = 1600 * shelf_near_ocean[i=@sum,j=@sum]
+
+This could also be done using the @SHF operator but it's rather messy.
+
+Russ
+
+
+
+On Sunday 20 February 2011 04:12, Rob Briggs wrote:
+&gt; Hello, 
+&gt; 
+&gt; I have a data set that is ice shelf thickness of Antarctica. I want to
+&gt; find the total area of shelf that is bounded between the shelf edge and
+&gt; say 100km inland. 
+&gt; 
+&gt; The elements of the dataset are either: 
+&gt; a) some value for iceshelf thickness 
+&gt; b) 0 for ocean 
+&gt; c) NaN for not ice shelf and not ocean. 
+&gt; 
+&gt; See attached pdf. Thus there is a way to identify the ice-shelf edge,
+&gt; i.e. boundary between ocean and ice shelf. 
+&gt; 
+&gt; An equivalent example, using a tweaked etopo (except my dataset is on a
+&gt; polar stereo grid) would be, find the area of land that &lt;500m elevation
+&gt; and is within 100km of the ocean/land interface. 
+&gt; 
+&gt; yes? use etopo60
+&gt; yes? let r1 = if rose gt 0 then rose else 0
+&gt; yes? let r2 = if r1 lt 500 then r1
+&gt; yes? shade r2
+&gt; 
+&gt; As my data is on a polar stereo grid, it doesn't even need to be a 100km
+&gt; segment; each grid cell is know dimension e.g. 40km x 40km so if I could
+&gt; identify the first 2 or 3 grid cells from the shelf edge grid cell that
+&gt; would suffice.
+&gt; 
+&gt; Regards,
+&gt; 
+&gt; Rob 
+&gt; 
+&gt; -----------------------------------------------
+&gt; Ph.D candidate Glacial Systems Dynamics
+&gt; 
+&gt; C4043C
+&gt; Department of Physics and Physical Oceanography
+&gt; Memorial University of Newfoundland, St. John's
+&gt; NL, A1B 3X7, Canada
+&gt; 
+&gt; Phone   : 001 (709) 864-2407
+&gt; Email   : rdbriggs@xxxxxx
+&gt; Website : <a  rel="nofollow" href="http://www.physics.mun.ca/~rdbriggs/">http://www.physics.mun.ca/~rdbriggs/</a>
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00126" href="msg00126.html">Re: [ferret_users] Finding the area a certain distance/number of grid cells from a boundary</a></strong>
+<ul><li><em>From:</em> Rob Briggs</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00121" href="msg00121.html">[ferret_users] Finding the area a certain distance/number of grid cells from a boundary</a></strong>
+<ul><li><em>From:</em> Rob Briggs</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00121.html">[ferret_users] Finding the area a certain distance/number of grid cells from a boundary</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00126.html">Re: [ferret_users] Finding the area a certain distance/number of grid cells from a boundary</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00121.html">Thread Prev</a>][<a href="msg00126.html">Thread Next</a>][<A HREF="threads.html#00124">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

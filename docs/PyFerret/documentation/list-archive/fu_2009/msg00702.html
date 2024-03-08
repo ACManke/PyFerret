@@ -1,0 +1,175 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Integrating over irregular regions -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Mon, 19 Oct 2009 15:20:58 &#45;0700 -->
+<!--X-Message-Id: 4ADCE649.6050303@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 742829137.3002151255972949697.JavaMail.root@neo&#45;mail&#45;3 -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Integrating over irregular regions</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00700.html">Thread Prev</a>][<a href="msg00703.html">Thread Next</a>][<A HREF="threads.html#00702">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Integrating over irregular regions</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Balaguru, Karthik&quot; &lt;<a href="mailto:karthiknaidu@DOMAIN.HIDDEN">karthiknaidu@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Integrating over irregular regions</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 Oct 2009 15:20:57 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:742829137.3002151255972949697.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00699.html">742829137.3002151255972949697.JavaMail.root@neo-mail-3</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:742829137.3002151255972949697.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00699.html">742829137.3002151255972949697.JavaMail.root@neo-mail-3</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Macintosh/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Karthik,
+
+</pre><tt>   The material provided earlier this year for defining the &quot;inside&quot; of 
+</tt><tt>a polygon may be of use for this purpose.  In the discussion a truly 
+</tt><tt>irregular polygon could be defined by a series of mouse-clicks but, in 
+</tt><tt>your application it looks like you already know the coordinates of the 
+</tt><tt>vertices.
+</tt><pre style="margin: 0em;">
+
+   So here is a demo that may be appropriate -- but note the following:
+</pre><tt>      1) the polygon border is a series of straight lines in LAT LON -- 
+</tt><tt>so the region is not bounded by great circles that might be more 
+</tt><tt>appropriate in some situations
+</tt><tt>      2) &quot;inside&quot; grid cells are those whose centers are within the 
+</tt><tt>polygon so in an integration one would be relying on the portions of the 
+</tt><tt>cells outside the boundary &quot;canceling&quot; the lost corners of cells whose 
+</tt><tt>centers fall outside.
+</tt><tt>      3) however on the plus side, in doing the integration where the 
+</tt><tt>grid is defined properly with latitude and longitude axes, Ferret should 
+</tt><tt>handle the cosine(latitude) weighting.
+</tt><pre style="margin: 0em;">
+
+! demo of InsidePolygon use to get mean depth of an area in the pacific
+use etopo20
+sho data
+shade/x=120:240/y=0:60 rose
+! define CLOSED quadrilateral with ZSEQUENCE
+let vx=zsequence({160,200,220,210,160})
+let vy=zsequence({20,30,40,50,20})
+poly/o/nolab/line=2 vx,vy
+</pre><tt>go InsidePolygon  ! this script is attached.  It needs you to identify 
+</tt><tt>the grid of points (x0,y0)
+</tt><pre style="margin: 0em;">
+                             ! to check for &quot;insideness&quot; so, in this case:
+let x0=x[g=rose] ; let y0=y[g=rose]
+shade/o/nolab/pal=red/pat=dark_vertical inside
+let maskdepth=inside*rose
+list maskdepth[x=@din,y=@din]
+</pre><tt>! the answer I got was -2.708E+16 which would be in square meters in 
+</tt><tt>this demo. In your case
+</tt><tt>! x0,y0 would be based on your temperature grid and if you wanted the 
+</tt><tt>mean temperature you
+</tt><tt>! could use &quot;list inside[x=@din,y=@din]&quot; to provide the &quot;area&quot; with 
+</tt><tt>which to divide the integral.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Be sure to check the answer for some simple case -- say one bounded by a 
+</tt><tt>pair of parallels and a pair of meridians where you know the answer 
+</tt><tt>analytically.
+</tt><pre style="margin: 0em;">
+
+Hope this helps, if not in your situation then in another.
+Good luck,
+   Mick
+
+
+Balaguru, Karthik wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+   Hi all,
+
+      Is there a way in which we can integrate over an irregular region? Let's say I have a region in the shape of a parallelogram whose 4 corner co-ordinates are (longitude,latitude) respectively. How can I integrate a variable, say temperature over this region? Thanks a lot!
+
+   Karthik.
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre><pre>! InsidePolygon : Tests if a point (X0,Y0) is inside a closed polygon defined
+!                 by a set of vertices (VX,VY),K=1,NV whose last point duplicates
+!                 its first. It is based on the number of intersections
+!                 between the NV-1 edges of the polygon and a line from (X0,Y0)
+!                 to (X0,YTOP) where YTOP is the upper limit of the domain (90
+!                 when X,Y are lon/lat coords).
+!                 The point is INSIDE if the #intersections is ODD.
+
+! Written 26-May-2009 by Mick.Spillane@xxxxxxxx
+
+let YTOP=90 ; let NEDGE=VX[k=@ngd]-1
+
+! An edge is a candidate if X0 lies between VX and VX[k=@shf] ...
+let XWORKS=if((X0-VX)*(X0-VX[k=@shf]) lt 0)then 1
+
+! ... but the Y-value of the edge, at X=X0, must also be between Y0 and YTOP
+let YPRIME=VY+XWORKS*(VY[k=@shf]-VY)*(X0-VX)/(VX[k=@shf]-VX)
+let ITCUTS=if((YPRIME-Y0)*(YPRIME-YTOP) lt 0)then 1
+let INSIDE=if(mod(ITCUTS[K=1:`NEDGE`@ngd],2) eq 1)then 1
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00699" href="msg00699.html">[ferret_users] Integrating over irregular regions</a></strong>
+<ul><li><em>From:</em> Balaguru, Karthik</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00700.html">Re: [ferret_users] Integrating over irregular regions</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00703.html">Re: [ferret_users] Integrating over irregular regions</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00700.html">Thread Prev</a>][<a href="msg00703.html">Thread Next</a>][<A HREF="threads.html#00702">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

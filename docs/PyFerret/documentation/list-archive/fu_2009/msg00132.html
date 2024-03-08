@@ -1,0 +1,208 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] about loops and listing... -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 9 Mar 2009 09:36:10 &#45;0700 -->
+<!--X-Message-Id: 49B54579.3030303@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: d4473ec00903051016s4cac038bp4d40eb017c757b68@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] about loops and listing...</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00126.html">Thread Prev</a>][<a href="msg00127.html">Thread Next</a>][<A HREF="threads.html#00132">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] about loops and listing...</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Otacilio Leandro &lt;<a href="mailto:otaciliomneto@DOMAIN.HIDDEN">otaciliomneto@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] about loops and listing...</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 09 Mar 2009 09:36:09 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:d4473ec00903051016s4cac038bp4d40eb017c757b68@DOMAIN.HIDDEN">d4473ec00903051016s4cac038bp4d40eb017c757b68@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:d4473ec00903051016s4cac038bp4d40eb017c757b68@DOMAIN.HIDDEN">d4473ec00903051016s4cac038bp4d40eb017c757b68@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.19 (Windows/20081209)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Otacilio,
+A quick start on an answer. Others may have more to add:
+
+</pre><tt>I think you should be able to do this without the repeat loop. If I 
+</tt><tt>understand your question correctly, you want the variable med6, and it's 
+</tt><tt>computed from the variable media which is a variable that's defined on a 
+</tt><tt>time axis with units of hours. Is that correct?
+</tt><pre style="margin: 0em;">
+
+Then define the variable
+
+  yes? let med6 = media-media[l=@shf:6]
+
+  ! Now, this would list one value per line,
+
+  yes? let site = &quot;Acarau&quot;
+  yes? list/noheader/norowheader/file=`mod`-`label`-6hs.txt site
+
+</pre><tt>  yes? 
+</tt><tt>list/noheader/norowheader/append/file=`mod`-`label`-6hs.txt/L=7:85:6 med6
+</tt><pre style="margin: 0em;">
+
+</pre><tt>and you could just use an editor to put the values on a line. Or you 
+</tt><tt>could get a listing with all the values on one line as follows. It's a 
+</tt><tt>bit awkward, but will work
+</tt><pre style="margin: 0em;">
+
+yes? list
+yes? list/append/nohead/file=`mod`-`label`-6hs.txt n
+</pre><tt>list/form=('Acarau', 14f8.4) med6[7], med6[13], med6[19], med6[25], 
+</tt><tt>med6[31], ...
+</tt><pre style="margin: 0em;">
+
+
+
+And the indices to use in your script can be computed by this:
+
+yes? let tt = t[t=1:85]
+yes? list tt[l=7:85:6]
+            VARIABLE : T[T=1:85]
+                       regrid: 6 delta on T
+            SUBSET   : 14 points (T)
+7    /  1:   7.00
+13   /  2:  13.00
+19   /  3:  19.00
+25   /  4:  25.00
+31   /  5:  31.00
+37   /  6:  37.00
+43   /  7:  43.00
+49   /  8:  49.00
+55   /  9:  55.00
+61   / 10:  61.00
+67   / 11:  67.00
+73   / 12:  73.00
+79   / 13:  79.00
+85   / 14:  85.00
+
+
+
+
+Otacilio Leandro wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hello to everyone,
+
+</pre><tt>I'm trying to wirte a script that gives me precipitaion over certain 
+</tt><tt>sites (39 sites) and i need the means over 6 and 24 hours of 
+</tt><tt>precipitation over those site as well.
+</tt><pre style="margin: 0em;">
+
+I've made a script that gives me:
+
+I / *:    &quot;Acarau&quot; &quot;dia=0&quot; &quot;hora=03&quot;  0.2029
+I / *:    &quot;Acarau&quot; &quot;dia=0&quot; &quot;hora=09&quot;  0.3002
+I / *:    &quot;Acarau&quot; &quot;dia=0&quot; &quot;hora=15&quot;  0.2963
+I / *:    &quot;Acarau&quot; &quot;dia=0&quot; &quot;hora=21&quot;  0.1371
+I / *:    &quot;Acarau&quot; &quot;dia=1&quot; &quot;hora=03&quot;  0.01867
+I / *:    &quot;Acarau&quot; &quot;dia=1&quot; &quot;hora=09&quot;  0.01743
+I / *:    &quot;Acarau&quot; &quot;dia=1&quot; &quot;hora=15&quot;  0.003194
+I / *:    &quot;Acarau&quot; &quot;dia=1&quot; &quot;hora=21&quot;  0.09149
+I / *:    &quot;Acarau&quot; &quot;dia=2&quot; &quot;hora=03&quot;  0.08146
+I / *:    &quot;Acarau&quot; &quot;dia=2&quot; &quot;hora=09&quot;  0.2907
+I / *:    &quot;Acarau&quot; &quot;dia=2&quot; &quot;hora=15&quot;  0.2202
+I / *:    &quot;Acarau&quot; &quot;dia=2&quot; &quot;hora=21&quot;  0.2775
+I / *:    &quot;Acarau&quot; &quot;dia=3&quot; &quot;hora=03&quot;  0.1548
+I / *:    &quot;Acarau&quot; &quot;dia=3&quot; &quot;hora=09&quot;  0.4112
+
+and I'de like to write these results at one line only like:
+
+        &quot;Acarau&quot;  0.2029 0.3002  0.2963 0.1371 and so on...
+
+</pre><tt>The script that i'm using now is (its just a part of it, responsible 
+</tt><tt>for this list):
+</tt><pre style="margin: 0em;">
+
+repeat/range=7:85:6/name=c ( \
+let ndia = int((c-4)/24) ; \
+let hora = (c-4)-ndia*24; if `hora lt 10` then let hora = &quot;0`hora`&quot; ; \
+</pre><tt>let med6 = media[l=`c`]-media[l=`c-6`] ; \   ! med6 = media de 6 horas 
+</tt><tt>do total acumulado
+</tt><pre style="margin: 0em;">
+let time = &quot;hora=`hora`&quot; ; \
+let time2 = &quot;dia=`ndia`&quot; ; \
+list/append/nohead/file=`mod`-`label`-6hs.txt nome, time2, time, med6)
+
+Where Acarau is the name of the 1st site, dia = day and hora = hour
+
+I appreciate the help
+
+--
+Ms. Otacilio Leandro de Menezes Neto
+Grupo de Modelagem Atmosf&#xE9;rica
+Departamento de Meteorologia e Oceanografia
+Funda&#xE7;&#xE3;o Cearense de Meteorologia e Recursos H&#xED;dricos
+Av. Rui Barbosa 1246 - CEP 60115-221
+Fortaleza, Cear&#xE1;
+Fone: (85) 3101-1106 / 3101-1126
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00126" href="msg00126.html">[ferret_users] about loops and listing...</a></strong>
+<ul><li><em>From:</em> Otacilio Leandro</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00126.html">[ferret_users] about loops and listing...</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00127.html">[ferret_users] confidence interval for a linear regression</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00126.html">Thread Prev</a>][<a href="msg00127.html">Thread Next</a>][<A HREF="threads.html#00132">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

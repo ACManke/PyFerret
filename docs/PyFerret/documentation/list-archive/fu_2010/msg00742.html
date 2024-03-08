@@ -1,0 +1,167 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] vertical transect of slightly skewed grid -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 6 Dec 2010 11:15:49 &#45;0800 -->
+<!--X-Message-Id: 4CFD3665.9070805@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 201012042020.ABB19436@usna.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] vertical transect of slightly skewed grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00741.html">Thread Prev</a>][<a href="msg00744.html">Thread Next</a>][<A HREF="threads.html#00742">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] vertical transect of slightly skewed grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>CAPT Carman &lt;<a href="mailto:carman@DOMAIN.HIDDEN">carman@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] vertical transect of slightly skewed grid</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 06 Dec 2010 11:15:49 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:201012042020.ABB19436@DOMAIN.HIDDEN">201012042020.ABB19436@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:201012042020.ABB19436@DOMAIN.HIDDEN">201012042020.ABB19436@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.12) Gecko/20101027 Thunderbird/3.1.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi Jessie,<br>
+    The 3-argument plot commands are using the longitude/latitude
+    coordinate variables entirely within the graphics portion of Ferret
+    to draw on the page using the curvilinear coordinate values. The 1-D
+    X and Y axes that form the grid of curvilinear coordinate variables
+    is in abstract index space.&nbsp; The longitudes and latitudes that are
+    labeled on an XY plot are coming from the units of the 2D longitude
+    and latitude curvilinear variables. <br>
+    <br>
+    If I understand what you're doing correctly, if you know the
+    latitude values that correspond to the indices on your plot, you can
+    RESHAPE your result onto a grid that has Y axis defined in terms of
+    latitude that correspond to the index values (or put it onto a
+    latitude-y axis using @ASN). Say for instance,&nbsp; if your variable is
+    VAR, your curvilinear coordinate variables are lon2d and lat2d, then<br>
+    <blockquote><tt>yes? define axis/y/units=degrees_north ylat =
+        lon2d[i=7]</tt><br>
+      <tt>yes? shade/t=1-jan-1990 var[i=7,gy=ylat@ASN]</tt><br>
+    </blockquote>
+    More generally to use the coordinates for other computations or for
+    graphics in other than the XY direction you would need to use
+    function calls, such as SAMPLEXY_CURV. Call SAMPLEXY_CURV with a set
+    of X points and Y points that lie along the line of constant
+    longitude you want to use.&nbsp; The function SAMPLEXY_CURV returns the
+    result on an abstract axis in X and so you need to put the result
+    onto an axis that has units of latitude.&nbsp; The outline of the
+    commands, just making up some numbers to use,<br>
+    <blockquote><tt>yes? define axis/y=1:31:0.2/units=degrees_north
+        yaxpts</tt><br>
+      <tt>yes? let ypts_sample = y[gy=yaxpts]&nbsp; ! a set of points along
+        the Y latitude line</tt><br>
+      <tt>yes? let xpts_sample = 32.5 + ypts_sample&nbsp; ! a set of points
+        at a single X longitude</tt><br>
+      <br>
+      <tt>yes? let sampled_var = SAMPLEXY_CURV (var, lon, lat,
+        xpts_sample, ypts_sample)</tt><br>
+    </blockquote>
+    And then you'd need to assign or reshape that onto a grid with a Y
+    (or X) axis, as I did above<tt>.<br>
+    </tt><br>
+    <br>
+    <br>
+    On 12/4/2010 12:20 PM, CAPT Carman wrote:
+    <blockquote cite="" type="cite">
+      
+      
+      <div><span class="934391220-04122010"><font face="Arial" size="2">Ferreters,</font></span></div>
+      <div><span class="934391220-04122010"><font face="Arial" size="2">I'm
+            trying to make vertical transects of model output that is on
+            a very slightly skewed grid; the skew is slight enough that
+            to pick the longitude I want it's sufficient to just
+            identify the right i value.&nbsp; But the skew is enough that
+            ferret won't plot the transect by calling the longitude.</font></span></div>
+      <div><span class="934391220-04122010"></span>&nbsp;</div>
+      <div><span class="934391220-04122010"><font face="Arial" size="2">The
+            problem is, ferret then doesn't seem to properly label the x
+            axis with latitudes (or I haven't found the right syntax).&nbsp;
+            It keeps putting the j values along the x axis.</font></span></div>
+      <div><span class="934391220-04122010"></span>&nbsp;</div>
+      <div><span class="934391220-04122010"><font face="Arial" size="2">The
+            model output data&nbsp;is a 3-d array of my variable, and 2-d
+            arrays of lat and lon, with a 1-d&nbsp;array of depth.&nbsp; So&nbsp;if I
+            use </font></span></div>
+      <div><span class="934391220-04122010"><font face="Arial" size="2">&gt;shade/k=1
+            uvel,lon,lat</font></span></div>
+      <div><span class="934391220-04122010"><font face="Arial" size="2">it
+            will properly plot the data; is there some way to get ferret
+            to do that in the vertical as well?</font></span></div>
+      <div><span class="934391220-04122010"></span>&nbsp;</div>
+      <div><span class="934391220-04122010"><font face="Arial" size="2">Thanks,</font></span></div>
+      <div><span class="934391220-04122010"><font face="Arial" size="2">Jessie</font></span></div>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00741" href="msg00741.html">[ferret_users] vertical transect of slightly skewed grid</a></strong>
+<ul><li><em>From:</em> CAPT Carman</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00741.html">[ferret_users] vertical transect of slightly skewed grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00744.html">[ferret_users] One NetCDF file from two NetCDF file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00741.html">Thread Prev</a>][<a href="msg00744.html">Thread Next</a>][<A HREF="threads.html#00742">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] insert data into variable at certain time step -->
+<!--X-From-R13: Tnovna Zvrareg <pppzn&#45;fghqrag&#45;003Nrp.tp.pn> -->
+<!--X-Date: Thu, 11 Jun 2009 16:18:13 &#45;0700 -->
+<!--X-Message-Id: 4A3190AC.60204@ec.gc.ca -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4A3155A3.9050505@ec.gc.ca -->
+<!--X-Reference: 4A316784.7090308@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] insert data into variable at certain time step</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00355.html">Thread Prev</a>][<a href="msg00401.html">Thread Next</a>][<A HREF="threads.html#00356">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] insert data into variable at certain time step</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>mick spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] insert data into variable at certain time step</strong></li>
+<li><strong>From</strong>: <strong>Fabian Lienert &lt;<a href="mailto:cccma-student-003@DOMAIN.HIDDEN">cccma-student-003@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 11 Jun 2009 16:18:04 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4A316784.7090308@DOMAIN.HIDDEN">4A316784.7090308@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4A3155A3.9050505@DOMAIN.HIDDEN">4A3155A3.9050505@xxxxxxxx</a>&gt; &lt;<a href="mailto:4A316784.7090308@DOMAIN.HIDDEN">4A316784.7090308@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (X11/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Thanks very much Mick,
+
+I tested the commands. There should be an append option while writing
+the ASCII file in order not to overwrite the previous one.
+So for people finding this useful, below is the corrected version.
+
+Cheers,
+Fabian
+
+
+use my_data  !(the original xyt dataset containing &quot;myvar&quot;)
+spawn touch temp.file
+repeat/range=1:5/name=lag ( ... define and compute the lagged correlation variable &quot;correl&quot; from &quot;myvar&quot;  ;\
+   list/nohead/file=temp.file/form=(f12.5)/append correl )
+def axis/t=1:5:1 lagx
+def grid/like=myvar[d=1]/t=lagx glag
+file/form=free/g=glag/ord=xyt/var=mylagvar temp.file
+set var/title=&quot;Lagged Correlations&quot; mylagvar
+! now you can plot or use them ... or use ferret to write them to a netCDF file then discard temp.file
+</pre><tt>save/file=MyLaggedResults.nc mylagvar 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+
+
+mick spillane wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Fabian,
+</pre><tt>   Unlike some other languages, what you are doing in Ferret is setting 
+</tt><tt>up the algebraic quantities to compute something, until you use or write 
+</tt><tt>the variable you define, it doesn't exist as a number. Your situation is 
+</tt><tt>a case like this -- for each lag the definition is changing so it is 
+</tt><tt>best to write out the results for each lag to a file, then read them 
+</tt><tt>back later.
+</tt><tt>   The most elegant way would be to write to a netCDF file, one time 
+</tt><tt>slice (lag) at a time.  But, unless the x-y grid is huge, I typically 
+</tt><tt>write to an ASCII file (one value per record) then define the 
+</tt><tt>appropriate grid and read it back. It would go something like this:
+</tt><pre style="margin: 0em;">
+
+use my_data  !(the original xyt dataset containing &quot;myvar&quot;)
+spawn touch temp.file
+</pre><tt>repeat/range=1:5/name=lag ( ... define and compute the lagged 
+</tt><tt>correlation variable &quot;correl&quot; from &quot;myvar&quot;  ;\
+</tt><pre style="margin: 0em;">
+    list/nohead/file=temp.file/form=(f12.5) correl )
+def axis/t=1:5:1 lagx
+def grid/like=myvar[d=1]/t=lagx glag
+file/form=free/g=glag/ord=xyt/var=mylagvar temp.file
+set var/title=&quot;Lagged Correlations&quot; mylagvar
+</pre><tt>! now you can plot or use them ... or use ferret to write them to a 
+</tt><tt>netCDF file then discard temp.file
+</tt><pre style="margin: 0em;">
+save/file=MyLaggedResults.nc mylagvar
+
+Things to note:
+1) &quot;;\&quot; continues the repeat statement to the next line
+2)  the build up lag-by-lag of the results file
+</pre><tt>3) I just typed this in without doing a demo -- there may be typos but I 
+</tt><tt>hope the gist is clear
+</tt><pre style="margin: 0em;">
+
+Hope it helps,
+Mick
+</pre><tt>PS Look in the user guide for the slice-by-slice construction of a 
+</tt><tt>netCDF file if you like to be more elegant
+</tt><pre style="margin: 0em;">
+-------
+Fabian Lienert wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ferreters,
+
+Simple question, couldn't find an answer so far.
+In a repeat loop, I am calculating lagged cross correlations:
+
+</pre><tt>yes? repeat/range = 1:5:1/Name=lag (let q = 
+</tt><tt>timeseries[d=1,i=1,l=@shf:`lag`]; \
+</tt><pre style="margin: 0em;">
+         let p = 3dvariable[d=2]; go variance;\
+</pre><tt>All I want to do is to insert a 2-d field (correl) into a 3-d variable 
+</tt><tt>(x,y,t) at each time step inside the repeat loop, something like the 
+</tt><tt>following.
+</tt><pre style="margin: 0em;">
+         let lag_corr/l=`lag` = correl)
+
+In other programming languages this is easily done by filling an array:
+for (t in 1:5) {
+    lag_corr[,,t] = correl(t)
+}
+
+I am using FERRET v6.1 on Ubuntu Linux.
+
+Any help appreciated,
+Fabian
+
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+
+--
+Fabian Lienert                  |  Canadian Centre for Climate Modelling and Analysis
+PhD Student                     |  Meteorological Service of Canada
+phone: +1(250)721-7211          |  University of Victoria
+cccma-student-003@xxxxxxxx      |  P.O. Box 1700
+<a  rel="nofollow" href="http://www.cccma.bc.ec.gc.ca">http://www.cccma.bc.ec.gc.ca</a>    |  Victoria, BC,  V8W 2Y2, Canada
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00355" href="msg00355.html">[ferret_users] insert data into variable at certain time step</a></strong>
+<ul><li><em>From:</em> Fabian Lienert</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00355.html">[ferret_users] insert data into variable at certain time step</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00401.html">Re: [ferret_users] insert data into variable at certain time step</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00355.html">Thread Prev</a>][<a href="msg00401.html">Thread Next</a>][<A HREF="threads.html#00356">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

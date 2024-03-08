@@ -1,0 +1,166 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Preserving var attributes from opendap server -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 6 Apr 2010 11:56:51 &#45;0700 -->
+<!--X-Message-Id: 4BBB83F1.4050107@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1270553952.5807.60.camel@eo -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Preserving var attributes from opendap server</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00233.html">Thread Prev</a>][<a href="msg00235.html">Thread Next</a>][<A HREF="threads.html#00234">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Preserving var attributes from opendap server</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Preserving var attributes from opendap server</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 06 Apr 2010 11:56:49 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1270553952.5807.60.camel@DOMAIN.HIDDEN"><a href="msg00233.html">1270553952.5807.60.camel@eo</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:1270553952.5807.60.camel@DOMAIN.HIDDEN"><a href="msg00233.html">1270553952.5807.60.camel@eo</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.24 (Windows/20100228)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Paulo,
+</pre><tt>Thank you for the report. It turns out that Ferret wasn't writing the 
+</tt><tt>add_offset attribute to the dataset, because of some issues with the 
+</tt><tt>particular combination of data types for the variable and the types of 
+</tt><tt>its attributes.  I have fixed this for the next release of Ferret.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>A second problem comes up, though. The most-recent OPeNDAP library (used 
+</tt><tt>in Ferret v6.4), and also the Netcdf-4 libraries (to be used in future 
+</tt><tt>versions of Ferret beginning with v6.6) are not able to write the 
+</tt><tt>variable confidence_flag as a variable of type byte.  They are telling 
+</tt><tt>me that the variable &quot;confidence_flag&quot;, which in the dataset is listed 
+</tt><tt>as having type &quot;byte&quot;, cannot be written out in the &quot;byte&quot; data type. 
+</tt><tt>I'm getting an error on attempting to write it, &quot;NetCDF: Numeric 
+</tt><tt>conversion not representable&quot;.  Apparently the byte data type is being 
+</tt><tt>treated as signed 1-byte value, which has a range of only -128 to 127. 
+</tt><tt>An un-signed byte type does exist in NetCDF-4 but currently it's not 
+</tt><tt>clear if the Fortran API for NetCDF allows for that.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I can ask about that for the Netcdf-4 libraries, but with the next 
+</tt><tt>Ferret release we will need to use the command
+</tt><pre style="margin: 0em;">
+
+  SET VAR/OUTTYPE=short  confidence_flag
+
+Ansley
+
+Paulo B. Oliveira wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I'm willing to locally save a subset of sea surface temperature data
+from an opendap server, preserving the original 2 byte representation,
+</pre><tt>but apparently the scaling of the local dataset is not correct. 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+Any hints would be appreciated.
+
+Regards,
+
+</pre><tt>Paulo  
+</tt><tt>  
+</tt><tt> ! NOAA/PMEL TMAP
+</tt><tt> ! FERRET v6.07  
+</tt><tt> ! Linux(g77) 2.4.21-32 - 08/29/07
+</tt><tt> ! 19-Jun-08 12:09     
+</tt><tt>
+</tt><pre style="margin: 0em;">
+def sym bdir $1&quot;<a  rel="nofollow" href="http://www.ifremer.fr/cgi-bin/nph-dods/data/satellite/medspiration/l2p/eurdac/seviri_sst/2010/095&quot">http://www.ifremer.fr/cgi-bin/nph-dods/data/satellite/medspiration/l2p/eurdac/seviri_sst/2010/095&quot</a>;
+def sym dset $2&quot;20100405-SEVIRI_SST-EUR-L2P-sst3mlml_20100405_1000-v01&quot;
+
+use &quot;($bdir)/($dset).nc.bz2&quot;
+
+set reg/x=-14.0:-5.0/y=34:44
+
+set win/asp=1.5
+set viewp upper
+ shade sea_surface_temperature; go land_detail
+
+SET ATT/OUTPUT=all sea_surface_temperature
+SET VAR/OUTTYPE=input  sea_surface_temperature
+save/clob/file=($dset).cdf sea_surface_temperature
+
+SET ATT/OUTPUT=all confidence_flag
+SET VAR/OUTTYPE=input  confidence_flag
+save/app/file=($dset).cdf confidence_flag
+
+canc reg/all; canc data/all; canc mem/all
+
+use ($dset)
+
+set viewp lower
+ shade sea_surface_temperature; go land_detail
+
+quit
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00233" href="msg00233.html">[ferret_users] Preserving var attributes from opendap server</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00233.html">[ferret_users] Preserving var attributes from opendap server</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00235.html">[ferret_users] GrADS binary to NC</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00233.html">Thread Prev</a>][<a href="msg00235.html">Thread Next</a>][<A HREF="threads.html#00234">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

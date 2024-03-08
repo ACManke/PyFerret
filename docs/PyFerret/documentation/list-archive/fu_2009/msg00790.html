@@ -1,0 +1,180 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Where are the contour labels in my postscript file? -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Sat, 28 Nov 2009 08:07:55 &#45;0800 -->
+<!--X-Message-Id: CF7DC342&#45;32D6&#45;4E2F&#45;A751&#45;570221C5967D@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: f8346a6c0911270958y2fcf4c2eg222c1e2d28676811@mail.gmail.com -->
+<!--X-Reference: 20091128.005611.226618517.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Where are the contour labels in my postscript file?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00789.html">Thread Prev</a>][<a href="msg00791.html">Thread Next</a>][<A HREF="threads.html#00790">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Where are the contour labels in my postscript file?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Where are the contour labels in my postscript file?</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sat, 28 Nov 2009 08:07:53 -0800</li>
+<li>Cc: &quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;,        <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:20091128.005611.226618517.furue@DOMAIN.HIDDEN">20091128.005611.226618517.furue@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:f8346a6c0911270958y2fcf4c2eg222c1e2d28676811@DOMAIN.HIDDEN">f8346a6c0911270958y2fcf4c2eg222c1e2d28676811@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:20091128.005611.226618517.furue@DOMAIN.HIDDEN">20091128.005611.226618517.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Ryo's suggestions are correct.
+
+</pre><tt>A bit of thought shows that choosing the location of contour labels  
+</tt><tt>is a non-trivial problem, one of those things that is easy for a  
+</tt><tt>human to visualize when looking at a plot as a whole, but much harder  
+</tt><tt>to code when drawing an individual contour line without necessarily  
+</tt><tt>knowing where the other lines will go. It requires balancing two  
+</tt><tt>concerns: to avoid overwriting labels on neighboring contours, and to  
+</tt><tt>choose an appropriate label spacing along an individual contour line.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The problem is exacerbated in Ferret because the underlying contour  
+</tt><tt>routine dates from the 1960s, and and was written to break a large  
+</tt><tt>grid into smaller sections because of lack of memory (you can see  
+</tt><tt>this in action if you watch a plot being made over a slow  
+</tt><tt>connection). The algorithm tries to put a contour every 5 inches  
+</tt><tt>(12.7cm) by default, which would mean 1-2 labels on each line across  
+</tt><tt>a default-size 8-inch plot box. But when the grid is dense and the  
+</tt><tt>plot is broken into many small sections, there may be no 5-inch  
+</tt><tt>intervals to be found.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You can adjust this with the DSLAB argument to the PPL CONSET command  
+</tt><tt>(<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/</a> 
+</tt><tt>appendix-b-pplus-guide/COMMAND-DESCRIPTION#_VPID_675):
+</tt><pre style="margin: 0em;">
+
+contour/set/.... variable
+</pre><tt>ppl conset,hgt,nsig,narc,dashln,spacln,cay,nrng,dslab   ! change  
+</tt><tt>DSLAB to a value smaller than 5
+</tt><pre style="margin: 0em;">
+ppl contour
+
+</pre><tt>As usual for PPL commands, use empty commas to leave the defaults,  
+</tt><tt>for example:
+</tt><pre style="margin: 0em;">
+
+contour/set/... variable
+ppl conset,,,,,,,,2.5
+ppl contour
+
+Some experimentation is required!
+
+</pre><tt>But this may not always work, and Ryo's first suggestion is a good  
+</tt><tt>one: project the field onto a less-dense grid. In fact the problem  
+</tt><tt>usually appears only when the grid is far denser than can be seen in  
+</tt><tt>an actual plot, so the plot appearance may be unchanged on a less- 
+</tt><tt>dense grid, and the labels will usually be improved.
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+(a non-trivial problem
+On 28 Nov 09, at 2:56 AM, Ryo Furue wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Paulo,
+
+| I'm producing some postscript contour plots and I realized that the
+| labels are not appearing.
+|
+| What can I do to get back the labels of my contour plot?
+
+There are Ferret users who know the issue much better
+than I, but since it's a holiday week (at least here
+in the US), they may not be responding quickly.
+
+So, if you are in a hurry, you might want to search
+the archive of past email messages.  (Go to the homepage
+of Ferret and then to &quot;email users group&quot;.)  I've seen
+a few threads dealing exactly your problem.
+
+Having said that, I can think of three potential solutions.
+
+1) Project your field onto a coarser grid.  When there are
+  too many datapoints, you tend to lose contour labels.
+
+2) Reduce the size of contour labels.
+
+3) Adjust the &quot;density&quot; of contour labels.
+
+Please refer to the user's manual on how to do these.
+
+Regards,
+Ryo
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00788" href="msg00788.html">[ferret_users] Where are the contour labels in my postscript file?</a></strong>
+<ul><li><em>From:</em> Paulo Santiago</li></ul></li>
+<li><strong><a name="00789" href="msg00789.html">Re: [ferret_users] Where are the contour labels in my postscript file?</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00789.html">Re: [ferret_users] Where are the contour labels in my postscript file?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00791.html">[ferret_users] array dims; plotting the last row of a netcdf array</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00789.html">Thread Prev</a>][<a href="msg00791.html">Thread Next</a>][<A HREF="threads.html#00790">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] partionned files, **ERROR Ferret crash; signal = 11 -->
+<!--X-From-R13: Pebpxznaa Bngevpx <Bngevpx.PebpxznaaNprn.se> -->
+<!--X-Date: Wed, 19 Jan 2011 14:52:49 &#45;0800 -->
+<!--X-Message-Id: 4D376970.4070504@cea.fr -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] partionned files, **ERROR Ferret crash; signal = 11</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00023.html">Thread Prev</a>][<a href="msg00026.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] partionned files, **ERROR Ferret crash; signal = 11</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] partionned files, **ERROR Ferret crash; signal = 11</strong></li>
+<li><strong>From</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 19 Jan 2011 23:45:04 +0100</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.17 (X11/20080926)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi ferreters and ferret team,
+
+</pre><tt>I am dealing with spatially partionned files coming from a parallelized 
+</tt><tt>model.
+</tt><pre style="margin: 0em;">
+
+Rather than rebuild the global field from the different partionned files,
+I have tried a script that overlays the different parts on a global basemap.
+It works and finally represents the desired field on the global world map.
+
+</pre><tt>Unfornuatelly, I get an error when I open partionned files that have a 
+</tt><tt>lot of variables (&gt; 250).
+</tt><pre style="margin: 0em;">
+After the overlay of the 184th files, I get :
+**ERROR Ferret crash; signal = 11
+
+Each partionned file size is 140Mo.
+Strangely, It works when I open partionned files that have less variables.
+
+</pre><tt>So I suspect that the memory clearance made by the &quot;cancel data&quot; command 
+</tt><tt>is not well done
+</tt><pre style="margin: 0em;">
+and ferret may conserve in memory things that causes the crash.
+
+</pre><tt>The all partionned files size is 34Go so it is not easy to distribute 
+</tt><tt>them for testing.
+</tt><pre style="margin: 0em;">
+
+I am looking for any idea that might help me to solve the problem.
+
+Attached is the script and bellow the call and the error.
+
+</pre><tt>yes? ferret -batch tyty.gif -script overlay_parts.jnl 'tmp2_histmth_ 255 
+</tt><tt>shade/nolab/lev=(-INF)(-20,30,2)(INF) t2m[l=1]-273.15 &quot;Temperature at 2 
+</tt><tt>meters [C]&quot;'
+</tt><pre style="margin: 0em;">
+...
+####################################
+!-&gt; MESSAGE/CONTINUE 0183
+0183
+!-&gt; SET DAT/FORM=CDF &quot;tmp2_histmth_0183.nc&quot;
+*** NOTE: Units on axis &quot;Ahyb&quot; are not recognized: Pa
+*** NOTE: They will not be convertible:
+*** NOTE: Coordinates out of order or missing on axis Ahyb at subscript 16
+*** NOTE: A dummy axis of subscripts will be used
+*** NOTE: Coordinates out of order or missing on axis Bhyb at subscript 2
+*** NOTE: A dummy axis of subscripts will be used
+</pre><tt>*** NOTE: If no missing_value or _FillValue attribute on variables, 
+</tt><tt>will use NaN
+</tt><pre style="margin: 0em;">
+!-&gt; shade/nolab/lev=(-INF)(-20,30,2)(INF)/over t2m[l=1]-273.15
+!-&gt; REPEAT: PROC:184
+####################################
+!-&gt; MESSAGE/CONTINUE 0184
+0184
+!-&gt; SET DAT/FORM=CDF &quot;tmp2_histmth_0184.nc&quot;
+**ERROR Ferret crash; signal = 11
+
+
+
+
+Tested with ferret v6.64 on a linux x86_64
+
+Patrick
+</pre><pre>!=================================
+go basemap &quot;x=-180:180&quot;   &quot; &quot;    &quot; &quot;   &quot; &quot;   hollow
+
+!=================================
+use &quot;($01)0001.nc&quot;
+($03)/over/key ($04)
+PPL SHASET RESET
+cancel data/all
+
+!=================================
+repeat/name=proc/range=2:$02 ( \
+        say &quot;####################################&quot; ;\
+        say `proc,zw=4` ;\
+        use &quot;($01)`proc,zw=4`.nc&quot; ;\
+        ($03)/over ($04) ;\
+        PPL SHASET RESET ;\
+        cancel data/all ;\
+)
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00023.html">[ferret_users] verbosity with set data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00026.html">[ferret_users] partionned files, **ERROR Ferret crash; signal = 11</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00023.html">Thread Prev</a>][<a href="msg00026.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Bitwise operations in Ferret -->
+<!--X-From-R13: "Bnhyb P. Ayvirven" <cobNvcvzne.cg> -->
+<!--X-Date: Mon, 20 Apr 2009 04:21:34 &#45;0700 -->
+<!--X-Message-Id: 1240226401.8503.58.camel@eo -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: C60E4B7E.6A8B%william.gustafson@pnl.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Bitwise operations in Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00226.html">Thread Prev</a>][<a href="msg00231.html">Thread Next</a>][<A HREF="threads.html#00229">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Bitwise operations in Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Gustafson, William I&quot; &lt;<a href="mailto:william.gustafson@DOMAIN.HIDDEN">william.gustafson@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Bitwise operations in Ferret</strong></li>
+<li><strong>From</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 20 Apr 2009 12:20:01 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:C60E4B7E.6A8B%25william.gustafson@DOMAIN.HIDDEN">C60E4B7E.6A8B%william.gustafson@xxxxxxx</a>&gt;</li>
+<li>Organization: IPIMAR</li>
+<li>References: &lt;<a href="mailto:C60E4B7E.6A8B%25william.gustafson@DOMAIN.HIDDEN">C60E4B7E.6A8B%william.gustafson@xxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Bill,
+
+I had the same problem when dealing with MERIS data.
+I've used a repeat cycle to iteratively define a series of variables
+(f1_&quot;bit&quot;) that extract the value of each bit using decreasing powers of
+2, the INT() and MOD() function. 
+
+Here is the code I wrote to extract the land,cloud,water and pcd's flags
+from a 2D var - &quot;mds&quot; containing the real representation of 8bit flag
+word.
+
+let f1_7 = int(mds/2^7); let r1_7 = mod(mds,2^7)
+
+repeat/range=6:0:-1/name=pw ( \
+ let f1_`pw` = int(r1_`pw+1`/ 2^`pw`);\
+ let r1_`pw` = mod(r1_`pw+1`,2^`pw`);\
+)
+
+let/tit=land  land  = if f1_7 then f1_7
+let/tit=cloud cloud = if f1_6 then f1_6
+let/tit=water water = if f1_5 then f1_5
+
+let not_cloud = if cloud then 1/0 else 1
+
+let/tit=pcd_1_13 pcd_1_13 = if f1_4 then f1_4
+let/tit=pcd_14   pcd_14   = if f1_3 then f1_3
+let/tit=pcd_15   pcd_15   = if f1_2 then f1_2
+let/tit=pcd_16   pcd_16   = if f1_1 then f1_1
+let/tit=pcd_17   pcd_17   = if f1_0 then f1_0
+
+I hope that helps,
+
+Regards,
+
+Paulo.
+------------------------------------------------
+Paulo B. Oliveira
+INRB / IPIMAR - Sea and Fisheries Research Lab. 
+Av. Brasilia
+1449-006 Lisboa
+Portugal
+Tel.: +351 213027068
+
+-------------------------------------------------------------
+On Fri, 2009-04-17 at 15:06 -0700, Gustafson, William I wrote:
+&gt; Dear Ferreters,
+&gt; 
+&gt; Are there some tricks to do bitwise operations in Ferret? I have some
+&gt; MODIS satellite data that has quality assurance (QA) information saved
+&gt; at the bit level. For example, for a particular byte of the QA data,
+&gt; bits 1 &amp; 2 are used for the optical thickness confidence QA, and bits
+&gt; 6 &amp; 7 are used for the effective radius confidence QA. I would like to
+&gt; do masking on particular settings of these bits. How can I do that?
+&gt; 
+&gt; My search so far has not found anything. The AND and OR operators just
+&gt; treat 0 as false and non-zero as true&#x2014;they do not operate at the bit
+&gt; level. I have pondered doing this with an external function, but that
+&gt; defeats the simplicity I am looking for. I need to hand of the final
+&gt; script to other users that would not necessarily have the know-how to
+&gt; install external functions on their machines.
+&gt; 
+&gt; Thanks for any suggestions!
+&gt; 
+&gt; -Bill
+&gt; ___________________________________________
+&gt; William I. Gustafson Jr., Ph.D.
+&gt; Scientist
+&gt; ATMOSPHERIC SCIENCES AND GLOBAL CHANGE DIVISION
+&gt;  
+&gt; Pacific Northwest National Laboratory
+&gt; P.O. 999, MSIN K9-30
+&gt; Richland, WA  99352
+&gt; Tel: 509-372-6110
+&gt; William.Gustafson@xxxxxxx
+&gt; <a  rel="nofollow" href="http://www.pnl.gov/atmospheric/staff/staff_info.asp?staff_num=5716">http://www.pnl.gov/atmospheric/staff/staff_info.asp?staff_num=5716</a>
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00231" href="msg00231.html">Re: [ferret_users] Bitwise operations in Ferret</a></strong>
+<ul><li><em>From:</em> Gustafson, William I</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00226" href="msg00226.html">[ferret_users] Bitwise operations in Ferret</a></strong>
+<ul><li><em>From:</em> Gustafson, William I</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00226.html">[ferret_users] Bitwise operations in Ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00231.html">Re: [ferret_users] Bitwise operations in Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00226.html">Thread Prev</a>][<a href="msg00231.html">Thread Next</a>][<A HREF="threads.html#00229">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

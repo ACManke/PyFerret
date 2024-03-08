@@ -1,0 +1,160 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] @FLN along a time axis with unit=seconds returns *nan* -->
+<!--X-From-R13: "Bnhyb P. Ayvirven" <cobNvcvzne.cg> -->
+<!--X-Date: Thu, 16 Sep 2010 06:23:09 &#45;0700 -->
+<!--X-Message-Id: 1284643329.4262.240.camel@eo -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] @FLN along a time axis with unit=seconds returns *nan*</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00517.html">Thread Prev</a>][<a href="msg00523.html">Thread Next</a>][<A HREF="threads.html#00521">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] @FLN along a time axis with unit=seconds returns *nan*</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] @FLN along a time axis with unit=seconds returns *nan*</strong></li>
+<li><strong>From</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 16 Sep 2010 14:22:09 +0100</li>
+<li>Organization: IPIMAR</li>
+<li>Reply-to: <a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I realized that @FLN returns a *nan* when interpolating along a time
+axis with units of seconds. It seems an issue related with the huge
+numbers involved when T0 is very far from the actual axis dates. I
+suggest that ferret issue a warning and set the output to the usual BAD
+value instead of *nan*. A jnl to show this is attached:
+
+yes? go fln_tsec
+ ! NOAA/PMEL TMAP
+ ! FERRET v6.5
+ ! Linux(g77) 2.4.21-57.ELsmp - 04/01/10
+ ! 16-Sep-10 13:41
+ 
+def ax/t=&quot;16-sep-2010 13:00&quot;:&quot;16-sep-2010 13:02&quot;:15/unit=sec t15s
+ let v1 = if l[gt=t15s] lt 5 then 1
+ let v2 = if l[gt=t15s] gt 5 then 2
+ let v1_2 = if v1 then v1 else v2
+list v1_2,v1_2[t=@fln]
+             TIME: 16-SEP-2010 12:59 to 16-SEP-2010 13:02
+ Column  1: V1_2 is IF V1 THEN V1 ELSE V2
+ Column  2: V1_2[T=@FLN:1] is IF V1 THEN V1 ELSE V2 (linear-filled by 1
+pts on T)
+                           V1_2   V1_2
+16-SEP-2010 13:00:00 / 1:  1.000  1.000
+16-SEP-2010 13:00:15 / 2:  1.000  1.000
+16-SEP-2010 13:00:30 / 3:  1.000  1.000
+16-SEP-2010 13:00:45 / 4:  1.000  1.000
+16-SEP-2010 13:01:00 / 5:   ....    nan
+16-SEP-2010 13:01:15 / 6:  2.000  2.000
+16-SEP-2010 13:01:30 / 7:  2.000  2.000
+16-SEP-2010 13:01:45 / 8:  2.000  2.000
+16-SEP-2010 13:02:00 / 9:  2.000  2.000
+ 
+def ax/t=&quot;16-sep-2010 13:00&quot;:&quot;16-sep-2010
+13:02&quot;:15/unit=sec/t0=&quot;16-sep-2010 12:59&quot; t15s
+Replacing definition of axis T15S
+ let v1 = if l[gt=t15s] lt 5 then 1
+ let v2 = if l[gt=t15s] gt 5 then 2
+ let v1_2 = if v1 then v1 else v2
+list v1_2,v1_2[t=@fln]
+             TIME: 16-SEP-2010 12:59 to 16-SEP-2010 13:02
+ Column  1: V1_2 is IF V1 THEN V1 ELSE V2
+ Column  2: V1_2[T=@FLN:1] is IF V1 THEN V1 ELSE V2 (linear-filled by 1
+pts on T)
+                           V1_2   V1_2
+16-SEP-2010 13:00:00 / 1:  1.000  1.000
+16-SEP-2010 13:00:15 / 2:  1.000  1.000
+16-SEP-2010 13:00:30 / 3:  1.000  1.000
+16-SEP-2010 13:00:45 / 4:  1.000  1.000
+16-SEP-2010 13:01:00 / 5:   ....  1.500
+16-SEP-2010 13:01:15 / 6:  2.000  2.000
+16-SEP-2010 13:01:30 / 7:  2.000  2.000
+16-SEP-2010 13:01:45 / 8:  2.000  2.000
+16-SEP-2010 13:02:00 / 9:  2.000  2.000
+
+
+</pre><pre> ! NOAA/PMEL TMAP
+ ! FERRET v6.5  
+ ! Linux(g77) 2.4.21-57.ELsmp - 04/01/10
+ ! 16-Sep-10 13:41     
+
+def ax/t=&quot;16-sep-2010 13:00&quot;:&quot;16-sep-2010 13:02&quot;:15/unit=sec t15s
+ let v1 = if l[gt=t15s] lt 5 then 1
+ let v2 = if l[gt=t15s] gt 5 then 2
+ let v1_2 = if v1 then v1 else v2
+list v1_2,v1_2[t=@fln]
+
+def ax/t=&quot;16-sep-2010 13:00&quot;:&quot;16-sep-2010 13:02&quot;:15/unit=sec/t0=&quot;16-sep-2010 12:59&quot; t15s
+ let v1 = if l[gt=t15s] lt 5 then 1
+ let v2 = if l[gt=t15s] gt 5 then 2
+ let v1_2 = if v1 then v1 else v2
+list v1_2,v1_2[t=@fln]
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00523" href="msg00523.html">Re: [ferret_users] @FLN along a time axis with unit=seconds returns *nan*</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00517.html">[ferret_users] installation problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00523.html">Re: [ferret_users] @FLN along a time axis with unit=seconds returns *nan*</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00517.html">Thread Prev</a>][<a href="msg00523.html">Thread Next</a>][<A HREF="threads.html#00521">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] accuracy of axis in ferret -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 24 Mar 2009 11:21:37 &#45;0700 -->
+<!--X-Message-Id: 49C924B7.2090906@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 49A6B849.1020804@cea.fr -->
+<!--X-Reference: 49A6E4E5.3000509@noaa.gov -->
+<!--X-Reference: 49A726FF.1030702@noaa.gov -->
+<!--X-Reference: 49C90CA6.9090101@io&#45;warnemuende.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] accuracy of axis in ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00180.html">Thread Prev</a>][<a href="msg00111.html">Thread Next</a>][<A HREF="threads.html#00171">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] accuracy of axis in ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] accuracy of axis in ferret</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 24 Mar 2009 11:21:43 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:49C90CA6.9090101@DOMAIN.HIDDEN">49C90CA6.9090101@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:49A6B849.1020804@DOMAIN.HIDDEN">49A6B849.1020804@xxxxxx</a>&gt; &lt;<a href="mailto:49A6E4E5.3000509@DOMAIN.HIDDEN">49A6E4E5.3000509@xxxxxxxx</a>&gt; &lt;<a href="mailto:49A726FF.1030702@DOMAIN.HIDDEN">49A726FF.1030702@xxxxxxxx</a>&gt; &lt;<a href="mailto:49C90CA6.9090101@DOMAIN.HIDDEN">49C90CA6.9090101@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.19 (Windows/20081209)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi -
+</pre><tt>Is the GEBCO topography data available on an OPeNDAP server, or is it 
+</tt><tt>otherwise available on the web? Is there documentation that indicates 
+</tt><tt>whether the x_range and  y_range are intended as the edges of the grid 
+</tt><tt>cells or the first and last coordinate values?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Depending on the answers to these questions, it looks as if one 
+</tt><tt>alternative might be to define the axes using the dimension variable 
+</tt><tt>that you show:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>  define 
+</tt><tt>axis/x=`X_RANGE[i=2]`:`X_RANGE[i=1]`/npoints=`dimension[i=1]`/edges 
+</tt><tt>/units=&quot;degrees_east&quot; xax
+</tt><tt>  define 
+</tt><tt>axis/y=`Y_RANGE[i=2]`:`Y_RANGE[i=1]`/npoints=`dimension[i=2]`/edges 
+</tt><tt>/units=&quot;degrees_north&quot; yax
+</tt><pre style="margin: 0em;">
+  define grid/x=xax/y=yax xygrid
+
+Ansley
+
+Martin Schmidt wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+</pre><tt>I am trying to read some large part of the GEBCO topography with 
+</tt><tt>ferret. The file does not have axes as usual but start-end-space 
+</tt><tt>definition.
+</tt><pre style="margin: 0em;">
+
+With ncdump one sees
+x_range = -60, 50 ;
+
+y_range = -50, 20 ;
+
+z_range = -7861, 5778 ;
+
+spacing = 0.00833333333333333, 0.00833333333333333 ;
+
+dimension = 13200, 8400 ;
+
+So I try to set up a grid from this definition:
+
+</pre><tt>define axis/x=`X_RANGE[i=2]`:`X_RANGE[i=1]`:`SPACING[i=2]`/edges 
+</tt><tt>/units=&quot;degrees_east&quot; xax
+</tt><tt>define axis/y=`Y_RANGE[i=2]`:`Y_RANGE[i=1]`:`SPACING[i=1]`/edges 
+</tt><tt>/units=&quot;degrees_north&quot; yax
+</tt><pre style="margin: 0em;">
+define grid/x=xax/y=yax xygrid
+
+Now to see the result:
+say `x[gx=xygrid],return=iend`
+!-&gt; MESSAGE/CONTINUE 13201
+13201
+
+</pre><tt>Hence the resulting axis has wrong size. The same happens for the 
+</tt><tt>y-axis. Mapping topography to this grid gives a strange looking piece 
+</tt><tt>of the earth.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>However, the varables x_range and so on are defined as doubles. Why is 
+</tt><tt>this ignored by ferret?
+</tt><pre style="margin: 0em;">
+
+Playing around with the axis definition gives better results:
+</pre><tt>define axis/x=`X_RANGE[i=1]`:`X_RANGE[i=2]`:`0.0083334`/edges 
+</tt><tt>/units=&quot;degrees_east&quot; xax
+</tt><pre style="margin: 0em;">
+say `x[gx=xygrid],return=iend`
+!-&gt; MESSAGE/CONTINUE 13200
+13200
+
+</pre><tt>However, I want to process several pieces of the topography and I 
+</tt><tt>would prefer a clean solution: reading data from file and writing the 
+</tt><tt>results without any adjustment of scripts.
+</tt><pre style="margin: 0em;">
+Is this possible? What I am doing wrong here?
+
+Greetings,
+Martin
+
+
+
+
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00103" href="msg00103.html">[ferret_users] accuracy with axis in seconds</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00105" href="msg00105.html">Re: [ferret_users] accuracy with axis in seconds</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00106" href="msg00106.html">Re: [ferret_users] accuracy with axis in seconds</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00168" href="msg00168.html">[ferret_users] accuracy of axis in ferret</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00180.html">Re: [ferret_users] accuracy of axis in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00111.html">Re: [ferret_users] accuracy with axis in seconds</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00180.html">Thread Prev</a>][<a href="msg00111.html">Thread Next</a>][<A HREF="threads.html#00171">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

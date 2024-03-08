@@ -1,0 +1,274 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] ASCII read issues -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 27 Oct 2011 16:00:24 &#45;0700 -->
+<!--X-Message-Id: 4EA9E286.1070400@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 5F03E87D&#45;49F7&#45;47E3&#45;9C47&#45;A97FCFEAACDE@Princeton.EDU -->
+<!--X-Reference: 599B71AD&#45;8EEC&#45;4AA2&#45;B51B&#45;41E4ACD07CCD@noaa.gov -->
+<!--X-Reference: 4EA1E8FD.60803@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] ASCII read issues</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00793.html">Thread Prev</a>][<a href="msg00794.html">Thread Next</a>][<A HREF="threads.html#00812">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ASCII read issues</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ASCII read issues</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 27 Oct 2011 16:00:22 -0700</li>
+<li>Cc: Sam Rabin &lt;<a href="mailto:srabin@DOMAIN.HIDDEN">srabin@xxxxxxxxxxxxx</a>&gt;,        &quot;E. D. (Ned) Cokelet&quot; &lt;<a href="mailto:Edward.D.Cokelet@DOMAIN.HIDDEN">Edward.D.Cokelet@xxxxxxxx</a>&gt;,        <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4EA1E8FD.60803@DOMAIN.HIDDEN">4EA1E8FD.60803@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:5F03E87D-49F7-47E3-9C47-A97FCFEAACDE@DOMAIN.HIDDEN">5F03E87D-49F7-47E3-9C47-A97FCFEAACDE@xxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:599B71AD-8EEC-4AA2-B51B-41E4ACD07CCD@DOMAIN.HIDDEN">599B71AD-8EEC-4AA2-B51B-41E4ACD07CCD@xxxxxxxx</a>&gt; &lt;<a href="mailto:4EA1E8FD.60803@DOMAIN.HIDDEN">4EA1E8FD.60803@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:7.0.1) Gecko/20110929 Thunderbird/7.0.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    Hi -<br>
+    I want to add to my comment in the earlier message from a week ago.
+    I was wrong to say that Ferret reads the numbers for the coordinate
+    range on a DEFINE AXIS in single precision.&nbsp; In fact, it reads from
+    the command line into a double-precision variable and defines the
+    axis using that.&nbsp; So there is no loss of precision from the DEFINE
+    AXIS command.<br>
+    <br>
+    Try it,<tt><br>
+    </tt>
+    <blockquote><tt>yes? define
+        axis/x=0.1234567890001:1.1234567890001:0.01 xaxis</tt><br>
+      <tt>yes? let xx = 0+x[gx=xaxis]</tt><br>
+      <tt>yes? save/clobber/file=xxtest.nc xx</tt><br>
+      <tt>yes? sp ncdump -c xxtest.nc </tt><br>
+      <tt>...</tt><br>
+      <tt>&nbsp;XAXIS = 0.1234567890001, 0.1334567890001, 0.1434567890001,
+        0.1534567890001, </tt><br>
+      <tt>&nbsp;&nbsp;&nbsp; 0.1634567890001, 0.1734567890001, 0.1834567890001,
+        0.1934567890001, </tt><br>
+      <tt>&nbsp;&nbsp;&nbsp; 0.2034567890001, 0.2134567890001, 0.2234567890001,
+        0.2334567890001, </tt><br>
+      <tt>...</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp; 1.0834567890001, 1.0934567890001, 1.1034567890001,
+        1.1134567890001, </tt><br>
+      <tt>&nbsp;&nbsp;&nbsp; 1.1234567890001 ;</tt><br>
+    </blockquote>
+    If you were to define a variable, "let xx = x[gx=xaxis]"&nbsp; then that
+    variable is in single precision and wouldn't keep the full precision
+    of the axis coordinates.<br>
+    <br>
+    -Ansley<br>
+    <br>
+    On 10/21/2011 2:49 PM, Ansley Manke wrote:
+    <blockquote cite="" type="cite">
+      
+      Hi,<br>
+      Just a picky comment here. Ned's absolutely right about using
+      NPOINTS to define your axes, but I'd just like to clarify how it
+      operates here. Ferret uses single precision to read in the numbers
+      you specify in the DEFINE AXIS command.&nbsp; Once it has the values,
+      it uses double precision to store the axis coordinates, to compute
+      with axis coordinates, and to write them out to netCDF files. <br>
+      <br>
+      -Ansley<br>
+      <br>
+      On 10/21/2011 1:42 PM, E. D. (Ned) Cokelet wrote:
+      <blockquote
+        cite=""
+        type="cite">Sam, just a couple of quick commnets: &nbsp;The first
+        thing I'd try is to NOT specify the lat and lon increments, but
+        instead use the NPOINTS paramater in the define axis command.
+        &nbsp;That's because ferret only uses single precision to do the math
+        in setting up the axes, and that's only good to 7 sig. figs. &nbsp;So
+        a define axis command might look like this:
+        <div><br>
+        </div>
+        <div><span class="Apple-style-span" style="font-family: Arial; ">define
+
+            axis/X=26.375W:56.584E/npoints=9955/unit=degree xlong</span></div>
+        <div><font class="Apple-style-span" face="Arial">define
+            axis/Y=41.5S:38.175N/npoints=9561/unit=degree ylat</font></div>
+        <div><font class="Apple-style-span" face="Arial"><br>
+          </font></div>
+        <div><font class="Apple-style-span" face="Arial">See if that
+            helps. &nbsp;Then there might be, need to be, or not to be a
+            branch cut at the prime meridian. &nbsp;If so, you'd use the /mod
+            parameter when defining the x axis. &nbsp;<br>
+          </font>
+          <div> <span class="Apple-style-span" style="border-collapse:
+              separate; color: rgb(0, 0, 0); font-family: Helvetica;
+              font-style: normal; font-variant: normal; font-weight:
+              normal; letter-spacing: normal; line-height: normal;
+              orphans: 2; text-align: auto; text-indent: 0px;
+              text-transform: none; white-space: normal; widows: 2;
+              word-spacing: 0px; -webkit-border-horizontal-spacing: 0px;
+              -webkit-border-vertical-spacing: 0px;
+              -webkit-text-decorations-in-effect: none;
+              -webkit-text-size-adjust: auto; -webkit-text-stroke-width:
+              0px; font-size: medium; "><span class="Apple-style-span"
+                style="border-collapse: separate; color: rgb(0, 0, 0);
+                font-family: Helvetica; font-style: normal;
+                font-variant: normal; font-weight: normal;
+                letter-spacing: normal; line-height: normal; orphans: 2;
+                text-indent: 0px; text-transform: none; white-space:
+                normal; widows: 2; word-spacing: 0px;
+                -webkit-border-horizontal-spacing: 0px;
+                -webkit-border-vertical-spacing: 0px;
+                -webkit-text-decorations-in-effect: none;
+                -webkit-text-size-adjust: auto;
+                -webkit-text-stroke-width: 0px; font-size: medium; "><span
+                  class="Apple-style-span" style="border-collapse:
+                  separate; -webkit-border-horizontal-spacing: 0px;
+                  -webkit-border-vertical-spacing: 0px; color: rgb(0, 0,
+                  0); font-family: Helvetica; font-size: 14px;
+                  font-style: normal; font-variant: normal; font-weight:
+                  normal; letter-spacing: normal; line-height: normal;
+                  -webkit-text-decorations-in-effect: none; text-indent:
+                  0px; -webkit-text-size-adjust: auto; text-transform:
+                  none; orphans: 2; white-space: normal; widows: 2;
+                  word-spacing: 0px; ">
+                  <div style="word-wrap: break-word; -webkit-nbsp-mode:
+                    space; -webkit-line-break: after-white-space; "><span
+                      class="Apple-style-span" style="border-collapse:
+                      separate; -webkit-border-horizontal-spacing: 0px;
+                      -webkit-border-vertical-spacing: 0px; color:
+                      rgb(0, 0, 0); font-family: Helvetica; font-size:
+                      14px; font-style: normal; font-variant: normal;
+                      font-weight: normal; letter-spacing: normal;
+                      line-height: normal;
+                      -webkit-text-decorations-in-effect: none;
+                      text-indent: 0px; -webkit-text-size-adjust: auto;
+                      text-transform: none; orphans: 2; white-space:
+                      normal; widows: 2; word-spacing: 0px; "><span
+                        class="Apple-style-span" style="border-collapse:
+                        separate; -webkit-border-horizontal-spacing:
+                        0px; -webkit-border-vertical-spacing: 0px;
+                        color: rgb(0, 0, 0); font-family: Helvetica;
+                        font-size: 14px; font-style: normal;
+                        font-variant: normal; font-weight: normal;
+                        letter-spacing: normal; line-height: normal;
+                        -webkit-text-decorations-in-effect: none;
+                        text-indent: 0px; -webkit-text-size-adjust:
+                        auto; text-transform: none; orphans: 2;
+                        white-space: normal; widows: 2; word-spacing:
+                        0px; "><span class="Apple-style-span"
+                          style="border-collapse: separate;
+                          -webkit-border-horizontal-spacing: 0px;
+                          -webkit-border-vertical-spacing: 0px; color:
+                          rgb(0, 0, 0); font-family: Helvetica;
+                          font-size: 14px; font-style: normal;
+                          font-variant: normal; font-weight: normal;
+                          letter-spacing: normal; line-height: normal;
+                          -webkit-text-decorations-in-effect: none;
+                          text-indent: 0px; -webkit-text-size-adjust:
+                          auto; text-transform: none; orphans: 2;
+                          white-space: normal; widows: 2; word-spacing:
+                          0px; ">
+                          <div>------------------------------------------------------------------------------------------</div>
+                          <div>Edward D. (Ned) Cokelet, Ph.D.
+                            Oceanographer</div>
+                          <div>NOAA/PMEL &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+                            &nbsp;off:&nbsp;&nbsp;(206) 526-6820</div>
+                          <div>7600 Sand Point Way NE&nbsp; &nbsp; &nbsp;fax: (206)
+                            526-6485</div>
+                          <div>Seattle, WA 98115-6349</div>
+                          <div><br>
+                          </div>
+                          <div><a rel="nofollow" moz-do-not-send="true"
+                              href="mailto:Edward.D.Cokelet@xxxxxxxx">Edward.D.Cokelet@xxxxxxxx</a></div>
+                          <div><br>
+                          </div>
+                          <div>The contents&nbsp;of this message are mine
+                            personally and do not necessarily reflect
+                            any position of the Government or the
+                            National Oceanic and Atmospheric
+                            Administration.</div>
+                          <div><br>
+                          </div>
+                        </span></span></span></div>
+                </span></span></span><br
+              class="Apple-interchange-newline">
+            <span></span></div>
+        </div>
+        <br>
+        <fieldset class="mimeAttachmentHeader"></fieldset>
+        <br>
+        <div>
+          <div><span></span> </div>
+          <br>
+        </div>
+      </blockquote>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00791" href="msg00791.html">[ferret_users] ASCII read issues</a></strong>
+<ul><li><em>From:</em> Sam Rabin</li></ul></li>
+<li><strong><a name="00792" href="msg00792.html">Re: [ferret_users] ASCII read issues</a></strong>
+<ul><li><em>From:</em> E. D. (Ned) Cokelet</li></ul></li>
+<li><strong><a name="00793" href="msg00793.html">Re: [ferret_users] ASCII read issues</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00793.html">Re: [ferret_users] ASCII read issues</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00794.html">Re: [ferret_users] ASCII read issues</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00793.html">Thread Prev</a>][<a href="msg00794.html">Thread Next</a>][<A HREF="threads.html#00812">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

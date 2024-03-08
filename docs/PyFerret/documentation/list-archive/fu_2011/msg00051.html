@@ -1,0 +1,161 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Script crashed &#45;&#45; scat2gridgauss_xy -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 28 Jan 2011 09:45:35 &#45;0800 -->
+<!--X-Message-Id: 4D4300BE.1070208@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: AANLkTikzr=saN7vT=nbKZWR7CLhknMwOj=P3tcdAfxYT@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Script crashed -- scat2gridgauss_xy</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00050.html">Thread Prev</a>][<a href="msg00052.html">Thread Next</a>][<A HREF="threads.html#00051">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Script crashed -- scat2gridgauss_xy</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Szymon Roziewski &lt;<a href="mailto:szymon.roziewski@DOMAIN.HIDDEN">szymon.roziewski@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Script crashed -- scat2gridgauss_xy</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 28 Jan 2011 09:45:34 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:AANLkTikzr%3DsaN7vT%3DnbKZWR7CLhknMwOj%3DP3tcdAfxYT@DOMAIN.HIDDEN">AANLkTikzr=saN7vT=nbKZWR7CLhknMwOj=P3tcdAfxYT@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:AANLkTikzr%3DsaN7vT%3DnbKZWR7CLhknMwOj%3DP3tcdAfxYT@DOMAIN.HIDDEN">AANLkTikzr=saN7vT=nbKZWR7CLhknMwOj=P3tcdAfxYT@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.13) Gecko/20101207 Thunderbird/3.1.7</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi -
+</pre><tt>Is Ferret crashing, or the script exiting?  Or does it just take a very 
+</tt><tt>long time? Why are you using the scat2grid function?  It seems that 
+</tt><tt>you're starting with gridded data and regridding it to this very fine 
+</tt><tt>grid. The Ferret regridding transformations would do this directly.
+</tt><pre style="margin: 0em;">
+
+Once you have read in your data, and defined the fine grid,
+
+   yes? let swh_smooth = swh_grid[gx=xfine,gy=yfine]
+   yes? fill swh_smooth
+
+</pre><tt>This regrids almost at once. There are several regridding 
+</tt><tt>transformations to choose from; run the Ferret command SHOW TRANSFORMS 
+</tt><tt>command for a list of them.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 1/28/2011 4:44 AM, Szymon Roziewski wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Ferreters,
+I have such a script:
+set win/size=6.0/aspect=`1.1`
+SET VIEWPORT FULL
+CANCEL MODE LOGO
+DEFINE AXIS/X=-5.666666667:5.25:0.083333333/unit=degree xlon
+DEFINE AXIS/Y=-2.0:10.0:0.083333333/unit=degree ylat
+DEFINE GRID/x=xlon/y=ylat grid_xlon_xlat
+</pre><tt>FILE/VARIABLES=swh_grid/COLUMNS=132/GRID=grid_xlon_xlat 
+</tt><tt>swh20101018090000.txt
+</tt><pre style="margin: 0em;">
+set var/bad=-1 swh_grid
+set var/units=meters swh_grid
+set var/title=&quot;Significant Wave Height&quot; swh_grid
+DEFINE AXIS/X=-5.666666667:5.25:0.010416667/unit=degree xfine
+DEFINE AXIS/Y=-2.0:10.0:0.010416667/unit=degree yfine
+DEFINE GRID/x=xfine/y=yfine fine_grid
+let xpts = xsequence(0*swh_grid+x[g=swh_grid])
+let ypts = xsequence(0*swh_grid+y[g=swh_grid])
+let datapts = xsequence(swh_grid)
+let xscale=0.1
+let yscale=0.1
+let cutoff=2
+</pre><tt>let swh_smooth = 
+</tt><tt>scat2gridgauss_xy(xpts,ypts,datapts,x[g=fine_grid],y[g=fine_grid],xscale,yscale,cutoff,0)
+</tt><pre style="margin: 0em;">
+list swh_smooth
+
+</pre><tt>wchich should do interpolation data, but it doesn't. The script 
+</tt><tt>follows up to the line with list swh_smooth and as reached as is iddle.
+</tt><tt>I think the line with scat2gridgauss_xy function failed. But I don't 
+</tt><tt>know the reason.
+</tt><tt>Why is that I don't know. I have very similar script which copes with 
+</tt><tt>cdf data and do it well.
+</tt><tt>But in this case previous approach failed. (When I try using txt data 
+</tt><tt>with flag bad=-1.)
+</tt><pre style="margin: 0em;">
+I attach the data file.
+
+
+Kind regards,
+Szymon Roziewski
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00052" href="msg00052.html">Re: [ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00050" href="msg00050.html">[ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00050.html">[ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00052.html">Re: [ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00050.html">Thread Prev</a>][<a href="msg00052.html">Thread Next</a>][<A HREF="threads.html#00051">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Searching for local maxima with a running time window. Recursion workarounds -->
+<!--X-From-R13: "Bnhyb P. Ayvirven" <cobNvcvzne.cg> -->
+<!--X-Date: Thu, 11 Nov 2010 07:49:04 &#45;0800 -->
+<!--X-Message-Id: 1289490424.674.276.camel@eo -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 1288977537.13700.156.camel@eo -->
+<!--X-Reference: 4CD4544B.6040205@noaa.gov -->
+<!--X-Reference: 1288992965.13700.231.camel@eo -->
+<!--X-Reference: 4CD491D9.9080800@noaa.gov -->
+<!--X-Reference: 1289237341.674.206.camel@eo -->
+<!--X-Reference: 4CD84A61.8030403@noaa.gov -->
+<!--X-Reference: 4CD88D37.5040605@noaa.gov -->
+<!--X-Reference: 1289422189.674.268.camel@eo -->
+<!--X-Reference: 4CDB1780.2060500@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Searching for local maxima with a running time window. Recursion workarounds</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00681.html">Thread Prev</a>][<a href="msg00682.html">Thread Next</a>][<A HREF="threads.html#00685">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Searching for local maxima with a running time window. Recursion workarounds</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Searching for local maxima with a running time window. Recursion workarounds</strong></li>
+<li><strong>From</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 11 Nov 2010 15:47:04 +0000</li>
+<li>In-reply-to: &lt;<a href="mailto:4CDB1780.2060500@DOMAIN.HIDDEN">4CDB1780.2060500@xxxxxxxx</a>&gt;</li>
+<li>Organization: IPIMAR</li>
+<li>References: &lt;<a href="mailto:1288977537.13700.156.camel@DOMAIN.HIDDEN"><a href="msg00681.html">1288977537.13700.156.camel@eo</a></a>&gt; &lt;<a href="mailto:4CD4544B.6040205@DOMAIN.HIDDEN">4CD4544B.6040205@xxxxxxxx</a>&gt; &lt;<a href="mailto:1288992965.13700.231.camel@DOMAIN.HIDDEN">1288992965.13700.231.camel@eo</a>&gt; &lt;<a href="mailto:4CD491D9.9080800@DOMAIN.HIDDEN">4CD491D9.9080800@xxxxxxxx</a>&gt; &lt;<a href="mailto:1289237341.674.206.camel@DOMAIN.HIDDEN">1289237341.674.206.camel@eo</a>&gt; &lt;<a href="mailto:4CD84A61.8030403@DOMAIN.HIDDEN">4CD84A61.8030403@xxxxxxxx</a>&gt; &lt;<a href="mailto:4CD88D37.5040605@DOMAIN.HIDDEN">4CD88D37.5040605@xxxxxxxx</a>&gt; &lt;<a href="mailto:1289422189.674.268.camel@DOMAIN.HIDDEN">1289422189.674.268.camel@eo</a>&gt; &lt;<a href="mailto:4CDB1780.2060500@DOMAIN.HIDDEN">4CDB1780.2060500@xxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi All,<BR>
+<BR>
+<BR>
+After insightful discussions with Ansley and Steve (Thank you!) I realized that my problem is a special case of computing a running maximum and the solution is reasonably simple using one loop and writing the results to an ascii file. A jnl file is attached to illustrate the type of computation I was searching and the solution.<BR>
+<BR>
+Cheers,<BR>
+<BR>
+Paulo
+
+
+</font></td></tr></table><pre>! this script illustrates how to compute
+! a running maximum over a time window of length *dl*
+!
+! *msk* and *wmsk* variables are defined for illustration purposes only
+
+let fun = 10*sin(2*4*atan(1)*l/50)
+
+let lmax = 100
+set reg/l=1:`lmax`
+
+let ll = l[g=fun]
+let dl = 25
+
+plot/vlim=-12:22 fun
+
+sp \rm running_max.dat
+repeat/range=1:`lmax-dl`/name=li (\
+ let msk  = if ll eq `li` then 1;\
+ let wmsk = if ll ge `li` and ll le `li+dl` then 1;\
+ let dif2li = fun-fun[l=`li`];\
+ let dif2li_max_in_dl = dif2li[l=`li`:`li+dl`@max];\
+ plot/ov/nolab/lin/col=black fun;\
+ plot/ov/nolab/lin/col=green fun*wmsk;\
+ plot/ov/nolab/sym=1/col=red dif2li_max_in_dl+0*dif2li*msk;\
+ save/file=running_max.dat/app/nohead/format=(E15.7) dif2li_max_in_dl;\
+ message;\
+)
+
+canc viewp 
+
+plot/vlim=-12:22 fun
+
+file/var=max_in_next_dl/grid=fun running_max.dat
+
+plot/ov/col=red max_in_next_dl
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00681" href="msg00681.html">[ferret_users] Searching for local maxima with a running time window. Recursion workarounds</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00681.html">[ferret_users] Searching for local maxima with a running time window. Recursion workarounds</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00682.html">[ferret_users] white space in the plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00681.html">Thread Prev</a>][<a href="msg00682.html">Thread Next</a>][<A HREF="threads.html#00685">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

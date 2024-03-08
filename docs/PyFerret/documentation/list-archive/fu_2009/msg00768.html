@@ -1,0 +1,151 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] using REPEAT with dods URLs -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 18 Nov 2009 09:52:33 &#45;0800 -->
+<!--X-Message-Id: 6186921C&#45;6C72&#45;4D92&#45;BF54&#45;A89287CC4162@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 800B5F6CC331F7408A20538E4F1723E2978D9C7E87@UOS&#45;CL&#45;EX7&#45;L3.soton.ac.uk -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] using REPEAT with dods URLs</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00769.html">Thread Prev</a>][<a href="msg00771.html">Thread Next</a>][<A HREF="threads.html#00768">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] using REPEAT with dods URLs</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Henson S.A.&quot; &lt;<a href="mailto:S.Henson@DOMAIN.HIDDEN">S.Henson@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] using REPEAT with dods URLs</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 18 Nov 2009 09:52:31 -0800</li>
+<li>Cc: &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to:  &lt;<a href="mailto:800B5F6CC331F7408A20538E4F1723E2978D9C7E87@DOMAIN.HIDDEN">800B5F6CC331F7408A20538E4F1723E2978D9C7E87@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References:  &lt;<a href="mailto:800B5F6CC331F7408A20538E4F1723E2978D9C7E87@DOMAIN.HIDDEN">800B5F6CC331F7408A20538E4F1723E2978D9C7E87@xxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>There are two ways to do this, but I'm not sure either of these will  
+</tt><tt>work in a DODS situation! (Because of the possible interaction of the  
+</tt><tt>double-quotes around the URL with other quotes needed).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>1) In general the best way to handle multiple cdf files is via a  
+</tt><tt>descriptor file (see manual). That would allow you to see the whole  
+</tt><tt>collection at once as a 4-d slab, and do any kind of calculation or  
+</tt><tt>slicing on it.
+</tt><tt>Now, I've never tried this on DODS files, and I'm not sure how the  
+</tt><tt>double-quoting used in DODS URL filenames will interact with the  
+</tt><tt>single-quotes used in descriptor file filenames. Anybody done this?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>2) I suspect the problem with your repeat loop is that you need an  
+</tt><tt>intermediate symbol definition:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>repeat/range=1:2/name=m (def sym mm `m`; set dat &quot;<a  rel="nofollow" href="http://dodserver/">http://dodserver/</a> 
+</tt><tt>sst_($mm).nc&quot;; sho dat)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Here, I have a similar doubt as above. Does the symbol ($mm) need  
+</tt><tt>immediate evaluation quotes: `($mm)` , and if so, will those work  
+</tt><tt>inside the URL's double-quotes?
+</tt><pre style="margin: 0em;">
+
+(In your message you imply two mistakes:
+a) a symbol definition must include parens: ($mm), not simply $mm
+</pre><tt>b) immediate evaluation mode uses back-quotes on both sides of the  
+</tt><tt>definition: `m`)
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+On 18 Nov 09, at 8:15 AM, Henson S.A. wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+
+Hello everyone,
+
+</pre><tt>I'm trying to access multiple files held on a DODS server.  The  
+</tt><tt>file names are all the same, except for a number at the end, e.g.
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://dodsserver/sst_1.nc">http://dodsserver/sst_1.nc</a>
+<a  rel="nofollow" href="http://dodsserver/sst_2.nc">http://dodsserver/sst_2.nc</a>
+etc.
+
+</pre><tt>I am trying to use the REPEAT function to read them in one at a  
+</tt><tt>time and perform an operation on them.  So far I have,
+</tt><pre style="margin: 0em;">
+repeat/RANGE=1:2/NAME=m (use &quot;<a  rel="nofollow" href="http://dodsserver/sst_X.nc&quot">http://dodsserver/sst_X.nc&quot</a>; show d)
+</pre><tt>What do I put where the X is to make ferret open the files in  
+</tt><tt>sequence? I&#x2019;ve tried replacing X with $m, &#x2018;m&#x2019; etc. to no avail.
+</tt><pre style="margin: 0em;">
+
+Thank you!
+Stephanie
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00765" href="msg00765.html">[ferret_users] using REPEAT with dods URLs</a></strong>
+<ul><li><em>From:</em> Henson S.A.</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00769.html">Re: [ferret_users] using REPEAT with dods URLs</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00771.html">Re: [ferret_users] using REPEAT with dods URLs</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00769.html">Thread Prev</a>][<a href="msg00771.html">Thread Next</a>][<A HREF="threads.html#00768">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

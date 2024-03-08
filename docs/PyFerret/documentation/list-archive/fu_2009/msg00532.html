@@ -1,0 +1,235 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 31 Aug 2009 12:16:00 &#45;0700 -->
+<!--X-Message-Id: 4A9C2171.4070707@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 20090825.160242.256862145.furue@hawaii.edu -->
+<!--X-Reference: alpine.LFD.2.00.0908271121450.6899@ccrc466&#45;2.ccrc.unsw.edu.au -->
+<!--X-Reference: 20090826.182245.56369666.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00523.html">Thread Prev</a>][<a href="msg00534.html">Thread Next</a>][<A HREF="threads.html#00532">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 31 Aug 2009 12:16:01 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:20090826.182245.56369666.furue@DOMAIN.HIDDEN">20090826.182245.56369666.furue@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20090825.160242.256862145.furue@DOMAIN.HIDDEN">20090825.160242.256862145.furue@xxxxxxxxxx</a>&gt; &lt;<a href="mailto:alpine.LFD.2.00.0908271121450.6899@DOMAIN.HIDDEN">alpine.LFD.2.00.0908271121450.6899@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:20090826.182245.56369666.furue@DOMAIN.HIDDEN">20090826.182245.56369666.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ryo,<br>
+I was able to download your file after all. I think that the only
+problem here is the <b>value </b>of the modulo attribute on your x
+axis. The modulo length is the length of the modulo repeat. For a
+longitude axis the modulo length is always 360 degrees, the length of
+the wraparound of degrees around the earrth.&nbsp; So this attribute should
+always be either <br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lont:modulo = " " ;<br>
+or<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lont:modulo = 360 ;<br>
+<br>
+<br>
+The value in your file is lont:modulo = 0.5.&nbsp; If modulo is given with a
+blank value then the modulo length is taken to be the default value of
+360. <br>
+<br>
+The NOTEs that you see when you open the file are because with no
+bounds or edges given for your one-point axis, Ferret arbitrarily
+assigns a cell size of one unit, which is larger than the specified
+value for the modulo length of 0.5.<br>
+<br>
+Ferret will not draw a shade plot of data on a 1-point by n-point
+region (if it does, then it's confused by the modulo length of 0.5)&nbsp; If
+you're doing things in a batch mode, you could either issue a SET MODE
+IGNORE_ERROR command and just skip cases where the dimension is too
+small, or put in a test<br>
+<blockquote><tt>LET nx = `var,RETURN=isize`<br>
+IF `nx GT 1` THEN SHADE...</tt><br>
+</blockquote>
+<br>
+Ansley<br>
+<br>
+Ryo Furue wrote:
+<blockquote cite=""
+ type="cite">
+  <pre wrap="">Hi Steven,
+
+Thank you for your diagnosis!  I now understand in what way my
+netCDF file is "interesting".
+
+| The netCDF file has a few "interesting" features that are confusing
+| ferret, as you can see from the warning messages that it generates
+| during your session:
+| 
+|  *** NOTE: Ignored modulo length exceeding axis length: lont
+|  *** NOTE: Ignored modulo length exceeding axis length: lonv
+|  *** NOTE: Evenly spaced axis has edges definition: dept - ignored
+| 
+| In particular, you are specifying modulo lengths for the axes lont and
+| lonv, even though these are only of length one.
+
+Actually I'd like to have the modulo behavior even for the x-axis of
+length one.  My current model is a two-dimensional (y-z) ocean,
+assuming uniformity (symmetry) in the x-direction, and
+I'd like to plot the flow field for an arbitrary longitudinal
+width.   The modulo index i' is defined as
+
+   i' = mod(i-1,IMAX) + 1
+
+and the IMAX = 1 case is naturally included in the
+definition (i' = 1 always).
+
+Another practical reason is that I don't want to special-case the
+IMAX=1 situation in my code to generate netCDF files.  The netCDF format
+doesn't allow for easy change in dimensionality, so the special-casing
+would complicate the code.
+
+| You are then trying to shade a 1D region. The variable tdmb has
+| dimensions 1x100x40x1, so tdmb[k=1,l=1] has dimensions 1x100. When you
+| enter the command
+| 
+| shade/k=1/l=1 tdmb
+| 
+| the modulo attribute on the axis lont appears to be confusing ferret
+| into thinking that this is really a 2D region, so the shade command
+| succeeds.
+
+That's what I expected.  Because it's 2D even though IMAX = 1
+(See below).
+
+| However, when you enter the command
+| 
+| shade/k=1/l=1 tdmb*10
+| 
+| ferret realises that it's a 1D region, and so the shade command fails.
+| 
+| I tried generating a netCDF file that's identical to yours, but
+| without the modulo attribute on the axis lont. Now both shade commands
+| fail, as they should:
+| 
+| yes? shade/k=1/l=1 tdmb
+|  **ERROR: dimensions improperly specified: must be a 2D region
+|           shade/k=1/l=1 tdmb
+| yes? shade/k=1/l=1 10*tdmb
+|  **ERROR: dimensions improperly specified: must be a 2D region
+|           shade/k=1/l=1 10*tdmb
+
+Hmm.  I think it's more systematic to distinguish
+size one from no-dimension.  In Fortran notation,
+
+  real:: a      !! scalar (zero-dimensional)
+  real:: b(1)   !! one-dimensional array of size 1
+  real:: c(3)   !! one-dimensional array of size 3
+  real:: d(1,3) !! two-dimensional array
+
+Here array d is two-dimensional even though its first
+dimension is of size one.
+
+I thought Ferret allows for a command like
+
+  shade temp
+
+when temp is 50x100x1 (dimension(50,100,1) in Fortran notation),
+not because "temp" is two-dimensional but because it supplies
+"k=1" when the dimension the user fails to specify is of size
+one.
+
+In my interpretation above, "modulo-ness" wouldn't change
+the dimensionality of the variable even when IMAX = 1
+because the size doesn't affect the dimensionality.
+
+Maybe such an interpretation would be hard to implement or it
+would break some backward compatibility?
+
+Regards,
+Ryo
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00534" href="msg00534.html">Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00521" href="msg00521.html">[ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00522" href="msg00522.html">Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+<ul><li><em>From:</em> Steven J Phipps</li></ul></li>
+<li><strong><a name="00523" href="msg00523.html">Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00523.html">Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00534.html">Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00523.html">Thread Prev</a>][<a href="msg00534.html">Thread Next</a>][<A HREF="threads.html#00532">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

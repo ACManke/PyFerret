@@ -1,0 +1,214 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?) -->
+<!--X-From-R13: Egrira X Buvccf <f.cuvccfNhafj.rqh.nh> -->
+<!--X-Date: Wed, 26 Aug 2009 18:32:37 &#45;0700 -->
+<!--X-Message-Id: alpine.LFD.2.00.0908271121450.6899@ccrc466&#45;2.ccrc.unsw.edu.au -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20090825.160242.256862145.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00521.html">Thread Prev</a>][<a href="msg00523.html">Thread Next</a>][<A HREF="threads.html#00522">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</strong></li>
+<li><strong>From</strong>: <strong>Steven J Phipps &lt;<a href="mailto:s.phipps@DOMAIN.HIDDEN">s.phipps@xxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 27 Aug 2009 11:32:12 +1000 (EST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:20090825.160242.256862145.furue@DOMAIN.HIDDEN">20090825.160242.256862145.furue@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20090825.160242.256862145.furue@DOMAIN.HIDDEN">20090825.160242.256862145.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Alpine 2.00 (LFD 1167 2008-08-23)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ryo,
+
+</pre><tt>The netCDF file has a few &quot;interesting&quot; features that are confusing 
+</tt><tt>ferret, as you can see from the warning messages that it generates during 
+</tt><tt>your session:
+</tt><pre style="margin: 0em;">
+
+ *** NOTE: Ignored modulo length exceeding axis length: lont
+ *** NOTE: Ignored modulo length exceeding axis length: lonv
+ *** NOTE: Evenly spaced axis has edges definition: dept - ignored
+
+</pre><tt>In particular, you are specifying modulo lengths for the axes lont and 
+</tt><tt>lonv, even though these are only of length one.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You are then trying to shade a 1D region. The variable tdmb has dimensions 
+</tt><tt>1x100x40x1, so tdmb[k=1,l=1] has dimensions 1x100. When you enter the 
+</tt><tt>command
+</tt><pre style="margin: 0em;">
+
+shade/k=1/l=1 tdmb
+
+</pre><tt>the modulo attribute on the axis lont appears to be confusing ferret into 
+</tt><tt>thinking that this is really a 2D region, so the shade command succeeds. 
+</tt><tt>However, when you enter the command
+</tt><pre style="margin: 0em;">
+
+shade/k=1/l=1 tdmb*10
+
+ferret realises that it's a 1D region, and so the shade command fails.
+
+</pre><tt>I tried generating a netCDF file that's identical to yours, but without 
+</tt><tt>the modulo attribute on the axis lont. Now both shade commands fail, as 
+</tt><tt>they should:
+</tt><pre style="margin: 0em;">
+
+yes? shade/k=1/l=1 tdmb
+ **ERROR: dimensions improperly specified: must be a 2D region
+          shade/k=1/l=1 tdmb
+yes? shade/k=1/l=1 10*tdmb
+ **ERROR: dimensions improperly specified: must be a 2D region
+          shade/k=1/l=1 10*tdmb
+
+Hope this helps!
+
+Cheers,
+Steven
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ferret users,
+
+I seem to have created a strange netCDF file:
+
+ <a  rel="nofollow" href="http://iprc.soest.hawaii.edu/~furue/tmp/tmp.nc">http://iprc.soest.hawaii.edu/~furue/tmp/tmp.nc</a>
+
+with which you can plot the variable
+
+ shade/k=1/l=1 tdmb
+
+but not if you do some arithmetics with it
+
+ shade/k=1/l=1 tdmb*10
+**ERROR: dimensions improperly specified: must be a 2D region
+         shade/k=1/l=1 tdmb*10
+
+If you define a new variable
+
+ let a = tdmb*10
+
+that can be plotted.  I'm attaching a complete listing below.
+
+There must be something &quot;interesting&quot; about the file,
+but I don't know what it is.
+
+Regards,
+Ryo
+====================================
+$ ferret
+       NOAA/PMEL TMAP
+       FERRET v6.2
+       Linux(g77) 2.4.21-32 - 05/19/09
+       25-Aug-09 15:49
+
+set mode grat:dash
+set memory/size=400
+Cached data cleared from memory
+keymark 1
+yes? set data tmp.nc
+*** NOTE: Ignored modulo length exceeding axis length: lont
+*** NOTE: Ignored modulo length exceeding axis length: lonv
+*** NOTE: Evenly spaced axis has edges definition: dept - ignored
+yes? show data
+    currently SET data sets:
+   1&gt; ./tmp.nc  (default)
+name     title                             I         J         K         L
+TDMB                                      1:1       1:100     1:40      1:1
+
+yes? shade/k=1/l=1 tdmb
+yes? shade/k=1/l=1 tdmb*10
+**ERROR: dimensions improperly specified: must be a 2D region
+         shade/k=1/l=1 tdmb*10
+yes? let a = tdmb*10
+yes? shade/k=1/l=1 a
+yes?
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+Dr Steven J Phipps
+
+Climate Change Research Centre
+Faculty of Science
+University of New South Wales
+Sydney
+NSW 2052
+Australia
+
+Tel  +61 2 9385 8957
+Fax  +61 2 9385 8969
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00523" href="msg00523.html">Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00521" href="msg00521.html">[ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00521.html">[ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00523.html">Re: [ferret_users] arithmetics not working on a variable (broken netCDF file?)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00521.html">Thread Prev</a>][<a href="msg00523.html">Thread Next</a>][<A HREF="threads.html#00522">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

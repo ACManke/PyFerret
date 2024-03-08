@@ -1,0 +1,228 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Ambiguous time axis -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Tue, 14 Jun 2011 17:07:48 &#45;0700 -->
+<!--X-Message-Id: 4DF7F7D3.6000202@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4DF76B02.7070207@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Ambiguous time axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00457.html">Thread Prev</a>][<a href="msg00456.html">Thread Next</a>][<A HREF="threads.html#00459">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Ambiguous time axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Ambiguous time axis</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 14 Jun 2011 17:07:47 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4DF76B02.7070207@DOMAIN.HIDDEN">4DF76B02.7070207@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4DF76B02.7070207@DOMAIN.HIDDEN">4DF76B02.7070207@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.17) Gecko/20110414 Thunderbird/3.1.10</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    <br>
+    <br>
+    On 6/14/2011 7:06 AM, Brockmann Patrick wrote:
+    <blockquote cite="" type="cite">Hi all,
+      <br>
+      <br>
+      Using 2 variables with apparently correct time axis (they do not
+      ave the same range),
+      <br>
+      I get a warning and time axis switched to indices when I use the
+      command
+      <br>
+      "list" with the 2 variables.
+      <br>
+      In the same time, when I use the "save" command, it works nicely.
+      Proof that the
+      <br>
+      time axis can be shared between the 2 variables.
+      <br>
+      <br>
+    </blockquote>
+    Hi Patrick,<br>
+    <br>
+    This is an interesting subtlety.&nbsp; Your speculations are correct.&nbsp;
+    This email just provides some background. <br>
+    <br>
+    When the commands&nbsp; &nbsp; &nbsp;&nbsp; <tt>use ambiguous_time_f1.nc
+      ;&nbsp; use ambiguous_time_f2.nc</tt>&nbsp;&nbsp;&nbsp;&nbsp;
+    are issued, Ferret concludes that the two variables, T2M[d=1],
+    T2M[d=2], have distinct time axes.&nbsp; The axes are distinct since they
+    are of different lengths, even though they happen to agree perfectly
+    for a subset of time points.
+    <br>
+    <br>
+    When the command <tt>list/l=1:20 T2M[d=1], T2M[d=2]</tt>
+    Ferret warns you that it has been asked to document lines that may
+    not share time coordinates.&nbsp; It then suppresses the coordinate
+    display, lest it be wrong.&nbsp; In the case of the LIST command your
+    speculation is quite right:&nbsp; namely, Ferret could in principle check
+    whether the coordinates to be listed are identical for the ranges
+    requested.&nbsp;&nbsp; And if they are identical it could suppress the warning
+    message and list the coordinates.&nbsp; This would be a nice
+    enhancement.&nbsp; (There are subtleties, of course.&nbsp; For example, you
+    could have the same dates encoded with different units (say, "days
+    since" versus "hours since"), in which case the question of
+    ambiguous coordinates would depend upon the state of MODE CALENDAR.
+    )<br>
+    <br>
+    The standard work-around for this situation is to ensure that a
+    single axis is used:&nbsp; &nbsp;<tt> list/l=1:20 T2M[d=1<font color="#ff0000"><b>,gt=t2m[d=2]</b></font>],
+      T2M[d=2]</tt><br>
+    <br>
+    OK.&nbsp; So you ask why does the SAVE command not also issue a warning?&nbsp;
+    Good question.&nbsp; The reason is that there's whole extra layer of
+    complexity embedded into the netCDF outputs used by SAVE.&nbsp; Not only
+    can you issue <br>
+    <blockquote><tt>save/file=tyty.nc/clobber/l=1:20 T2M[d=1], T2M[d=2]</tt><br>
+    </blockquote>
+    &nbsp;you can also issue<br>
+    <blockquote><tt>save/file=tyty.nc/clobber/l=1:20 T2M[d=1];&nbsp;
+        save/file=tyty.nc<font color="#ff0000">/append</font>/l=1:20
+        T2M[d=2]</tt><br>
+    </blockquote>
+    or even<br>
+    <blockquote><tt>save/file=tyty.nc/clobber/l=1:20 T2M[d=1];&nbsp;
+        save/file=tyty.nc<font color="#ff0000">/append/l=11:30</font>
+        T2M[d=2]</tt><br>
+    </blockquote>
+    In order to perform an /APPEND Ferret has to inspect the coordinates
+    that were previously written into the file and see how the new
+    coordinates match up.&nbsp; That's why more complex logic is found in the
+    SAVE command than in the LIST command.&nbsp; The extra logic found in
+    SAVE is related -- but still different -- from what would be needed
+    for a "smarter" LIST command.<br>
+    <br>
+    We've added your suggestion to our trac system.&nbsp; <br>
+    <br>
+    &nbsp;&nbsp;&nbsp; thanks - Steve<br>
+    <br>
+    <blockquote cite="" type="cite">I do not
+      understand why ferret complains with this "list" command.
+      <br>
+      <br>
+      Try :
+      <br>
+      yes? go err67_ambiguous_time.jnl
+      <br>
+      <br>
+      use ambiguous_time_f1.nc
+      <br>
+      use ambiguous_time_f2.nc
+      <br>
+      <br>
+      list/l=1:20 T2M[d=1], T2M[d=2]
+      <br>
+      WARNING: Listed variables have ambiguous coordinates on axes: T
+      <br>
+      Column&nbsp; 1: T2M[D=ambiguous_time_f1] is Temperature 2m
+      (K)(X=178.1E(-181.9):178.1E@AV4, Y=90.9S:90.9N@AV4)
+      <br>
+      Column&nbsp; 2: T2M[D=ambiguous_time_f2] is Temperature 2m
+      (K)(X=178.1E(-181.9):178.1E@AV4, Y=90.9S:90.9N@AV4)
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T2M&nbsp;&nbsp;&nbsp; T2M
+      <br>
+      L /&nbsp; 1:&nbsp; 286.5&nbsp; 286.6
+      <br>
+      L /&nbsp; 2:&nbsp; 286.5&nbsp; 286.5
+      <br>
+      L /&nbsp; 3:&nbsp; 286.7&nbsp; 286.6
+      <br>
+      ...
+      <br>
+      <br>
+      Available from:
+      <br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err67_ambiguous_time.jnl">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err67_ambiguous_time.jnl</a>
+      <br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/ambiguous_time_f1.nc">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/ambiguous_time_f1.nc</a>
+      <br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/ambiguous_time_f2.nc">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/ambiguous_time_f2.nc</a>
+      <br>
+      <br>
+      Tested with 6.67, 6.7 on Linux 32, x86_64.
+      <br>
+      Any help welcome.
+      <br>
+      <br>
+      Patrick
+      <br>
+      <br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00455" href="msg00455.html">[ferret_users] Ambiguous time axis</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00457.html">Re: [ferret_users] Ambiguous time axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00456.html">[ferret_users] list and save commands</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00457.html">Thread Prev</a>][<a href="msg00456.html">Thread Next</a>][<A HREF="threads.html#00459">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

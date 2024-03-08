@@ -1,0 +1,234 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Memory question -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 19 Mar 2010 11:22:19 &#45;0700 -->
+<!--X-Message-Id: 4BA3C0DB.4000608@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 931521BA&#45;6CB3&#45;4C20&#45;AAD8&#45;F7B53FCB1287@mit.edu -->
+<!--X-Reference: B39F66DA&#45;2690&#45;41CD&#45;B7A3&#45;CB7EF156D365@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Memory question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00200.html">Thread Prev</a>][<a href="msg00201.html">Thread Next</a>][<A HREF="threads.html#00203">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Memory question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Memory question</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 19 Mar 2010 11:22:19 -0700</li>
+<li>Cc: Jonathan Winter &lt;<a href="mailto:jwinter@DOMAIN.HIDDEN">jwinter@xxxxxxx</a>&gt;,        Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:B39F66DA-2690-41CD-B7A3-CB7EF156D365@DOMAIN.HIDDEN">B39F66DA-2690-41CD-B7A3-CB7EF156D365@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:931521BA-6CB3-4C20-AAD8-F7B53FCB1287@DOMAIN.HIDDEN">931521BA-6CB3-4C20-AAD8-F7B53FCB1287@xxxxxxx</a>&gt; &lt;<a href="mailto:B39F66DA-2690-41CD-B7A3-CB7EF156D365@DOMAIN.HIDDEN">B39F66DA-2690-41CD-B7A3-CB7EF156D365@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+A couple of comments on Billy's point about specifying the region,
+either leave off the XY region if you want the entire grid, or another
+good way to retain the resolution of the original grid is to use index
+values.&nbsp; <br>
+<br>
+If the grid is 0 to 360 and you want to instead write a range of -180
+to 180, then determine the index values corresponding to the starting
+and ending locations you want.&nbsp; The indices on an X modulo axis are
+treated in a modulo way, so they can be negative or larger than the
+number of coordinates in x. So you might list <br>
+<blockquote>list/x=179.5:181.5 x[gx=var]<br>
+let nx = `var,return=isize`<br>
+</blockquote>
+And if the x coordinate crosses from 179.xxx W to 179.xxxE at index
+2161, then<br>
+<blockquote>set region/i=`2161-nx`:2161/...<br>
+</blockquote>
+<br>
+Ansley<br>
+<br>
+<br>
+<br>
+William S. Kessler wrote:
+<blockquote cite=""
+ type="cite">That grid is huge (about 8.6x10^9 gridpoints). You can do
+it with the method below but this is going to make about a 35Gb file.
+It's hard to imagine why you would want that, and it will be cumbersome
+to use. Much better to make a series of single-timestep files, and a
+descriptor file (see documentation/mail archives for descriptor files).
+  <br>
+  <br>
+Netcdf files can be appended easily along the time axis (for other
+axes, see the documentation on netcdf).
+  <br>
+  <br>
+First write a single time-point to describe the (x,y,z) grid, then
+append the others, in chunks as large as can go in memory:
+  <br>
+  <br>
+save/l=1/file=filename.nc yourvariable
+  <br>
+save/l=2:100/file=filename.nc/append yourvariable
+  <br>
+save/l=101:200/file=filename.nc/append yourvariable
+  <br>
+  <br>
+.... etc ....
+  <br>
+  <br>
+I'd also be a little careful about specifying your REGION with only 2
+decimal places. Are you sure that your specification will get all the
+5-min gridboxes exactly? Don't want to leave out the ones near the
+Dateline. And since this appears to be the whole world, why do you need
+to make that REGION specification at all? (In a case like this, it
+would be better to do it with indices I,J if it really needs to be
+done).
+  <br>
+  <br>
+BK
+  <br>
+  <br>
+On 19 Mar 10, at 9:11 AM, Jonathan Winter wrote:
+  <br>
+  <br>
+  <blockquote type="cite">Hi all,
+    <br>
+    <br>
+I am trying to regrid a 0.5 deg dataset to 5-min and then write it out
+as a NetCDF file.&nbsp; I use the following commands:
+    <br>
+    <br>
+use 030410_init_wsoi.nc
+    <br>
+use vegtype_5min.nc
+    <br>
+show grid vegtype[d=2]
+    <br>
+show grid wsoi_lay[d=1]
+    <br>
+define grid/X=GJR1/Y=GJR1/Z=GOL1/L=GOL1 veg_grid
+    <br>
+let wsoi =&nbsp; wsoi_lay[d=1,G=veg_grid]
+    <br>
+set variable/title="Soil Moisture" wsoi
+    <br>
+set region/X=-179.96:179.96/Y=-89.958:89.958N/Z=0.1:4/T=6941:7275
+    <br>
+save/file=wsoi.nc wsoi
+    <br>
+    <br>
+At that point I get:
+    <br>
+&nbsp;**ERROR: insufficient memory: 18662400 words were requested.
+    <br>
+&nbsp;*** NOTE: You can use SET MEMORY/SIZE=xxx to increase memory.
+    <br>
+&nbsp;*** NOTE: The "Memory use" section of the FERRET Users Guide has
+further tips.
+    <br>
+    <br>
+So I:
+    <br>
+set memory/size=20000000
+    <br>
+    <br>
+And I get:
+    <br>
+&nbsp;*** NOTE: internal overflow expressing =20000000 Mwords as words.
+Restoring previous memory size.
+    <br>
+&nbsp;Cached data cleared from memory
+    <br>
+    <br>
+If I try to set memory/size=1000000000 FERRET says it has done it, but
+then I run out of memory again if I try to write out:
+    <br>
+&nbsp;**ERROR: insufficient memory: 671846400 words were requested.
+    <br>
+&nbsp;*** NOTE: You can use SET MEMORY/SIZE=xxx to increase memory.
+    <br>
+&nbsp;*** NOTE: The "Memory use" section of the FERRET Users Guide has
+further tips
+    <br>
+    <br>
+Any thoughts on what is going on or how I may be able to do this?&nbsp;
+Thank you in advance for the assistance.
+    <br>
+    <br>
+Best,
+    <br>
+    <br>
+Jonathan
+    <br>
+  </blockquote>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00197" href="msg00197.html">[ferret_users] Memory question</a></strong>
+<ul><li><em>From:</em> Jonathan Winter</li></ul></li>
+<li><strong><a name="00200" href="msg00200.html">Re: [ferret_users] Memory question</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00200.html">Re: [ferret_users] Memory question</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00201.html">Re: [ferret_users] Memory question</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00200.html">Thread Prev</a>][<a href="msg00201.html">Thread Next</a>][<A HREF="threads.html#00203">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

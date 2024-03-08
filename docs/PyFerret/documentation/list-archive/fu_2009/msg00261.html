@@ -1,0 +1,228 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Vector plot: force maximum? -->
+<!--X-From-R13: Egrir Qbhfvaf <pbhfvafNhzvg.znvar.rqh> -->
+<!--X-Date: Tue, 5 May 2009 15:00:42 &#45;0700 -->
+<!--X-Message-Id: alpine.LFD.0.999.0905051730070.22468@razzo.umeoce.maine.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: alpine.LFD.0.999.0905051331320.17728@razzo.umeoce.maine.edu -->
+<!--X-Reference: fc.004c4d193d06f4883b9aca00e58863b0.3d06f489@umit.maine.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Vector plot: force maximum?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00260.html">Thread Prev</a>][<a href="msg00262.html">Thread Next</a>][<A HREF="threads.html#00261">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Vector plot: force maximum?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>mick spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Vector plot: force maximum?</strong></li>
+<li><strong>From</strong>: <strong>Steve Cousins &lt;<a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 05 May 2009 18:00:39 -0400 (EDT)</li>
+<li>Cc: Ferret Mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;,        Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:fc.004c4d193d06f4883b9aca00e58863b0.3d06f489@DOMAIN.HIDDEN">fc.004c4d193d06f4883b9aca00e58863b0.3d06f489@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:alpine.LFD.0.999.0905051331320.17728@DOMAIN.HIDDEN">alpine.LFD.0.999.0905051331320.17728@xxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:fc.004c4d193d06f4883b9aca00e58863b0.3d06f489@DOMAIN.HIDDEN">fc.004c4d193d06f4883b9aca00e58863b0.3d06f489@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:cousins@DOMAIN.HIDDEN">cousins@xxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+
+Hi Mick,
+
+</pre><tt>Great! I think this will do most of what I want. I'm just a little unclear 
+</tt><tt>about the use of the /length option. I had been using it to scale the 
+</tt><tt>vectors but I'm not sure it is scaling the red ones down to the threshold 
+</tt><tt>the way I am using it. I'd use it the way you are (just /length as opposed 
+</tt><tt>to /length=.15) except when I do that it makes all of the vectors too 
+</tt><tt>small.
+</tt><pre style="margin: 0em;">
+
+If I do:
+
+	vector/nolab/length=.2 ulo,vlo
+	vector/over/nolab/length uhi,vhi
+
+</pre><tt>should that scale the hi's back correctly? Is that the same as having 
+</tt><tt>them both be length=.2 :
+</tt><pre style="margin: 0em;">
+
+	vector/nolab/length=.2 ulo,vlo
+	vector/over/nolab/length=.2 uhi,vhi
+
+
+Thanks very much.
+
+Steve
+______________________________________________________________________
+ Steve Cousins, Ocean Modeling Group    Email: cousins@xxxxxxxxxxxxxx
+ Marine Sciences, 452 Aubert Hall       <a  rel="nofollow" href="http://rocky.umeoce.maine.edu">http://rocky.umeoce.maine.edu</a>
+ Univ. of Maine, Orono, ME 04469        Phone: (207) 581-4302
+
+On Tue, 5 May 2009, mick spillane wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Steve,
+   Perhaps a better, or more easily explainable in a caption, version
+of the figure would be to do an overlay plot with two colors (or
+thicknesses) of arrow.  The first set of arrows (say black ones)  would
+be those associated with speeds below the threshold (8cm/s), the second
+set (say in red) would be those with speeds above the threshold and
+forced to have the length associated with the threshold value but the
+true direction.
+
+let spd=(u^2+v^2)^0.5
+let threshold=0.08
+! define components of &quot;low&quot; speed cases to exclude speeds above threshold
+let ulo=if(spd le threshold)then u
+let vlo=if(spd le threshold)then v
+! rescale components of &quot;high&quot; speed cases to have fixed length (and
+exclude low speed ones)
+let uhi=if(spd gt threshold)then u*threshold/spd
+let vhi=if(spd gt threshold)then v*threshold/spd
+
+! then ...
+vector/nolab ulo,vlo
+vector/over/nolab/length uhi,vhi
+
+NOTE: There is one wrinkle I forgot in the first test -- you need to
+force the second (overlay) vector plot to share the same scale as the
+first. That is achieved by the &quot;/length&quot; option which draws the new
+vector field with the same scale length as the previous one.
+
+Attached is a graphic of a quick demo using random numbers for u,v.  The
+upper panel shows the vectors without a threshold; the lower illustrates
+what it would look like with red arrows where speed exceeds the threshold.
+
+Mick
+-------
+
+let u=0.08*randn(i+j) ; let v=0.08*randu(i+j)
+set view upper
+vector/nolab/i=1:10/j=1:8 u,v
+
+let spd=(u^2+v^2)^0.5
+let threshold=0.08
+! define components of &quot;low&quot; speed cases to exclude speeds above threshold
+let ulo=if(spd le threshold)then u
+let vlo=if(spd le threshold)then v
+! rescale components of &quot;high&quot; speed cases to have fixed length (and
+exclude low speed ones)
+let uhi=if(spd gt threshold)then u*threshold/spd
+let vhi=if(spd gt threshold)then v*threshold/spd
+
+set view lower
+vector/nolab/i=1:10/j=1:8/length ulo,vlo
+vector/over/nolab/i=1:10/j=1:8/length uhi,vhi
+frame/file=forsteve.gif
+
+
+Steve Cousins wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Long time!
+
+I have a dataset with U and V velocity components. There is a river
+that comes into the domain that has high values that I want to limit.
+What I have done so far is:
+
+let wind_mask = IF ABS( (u^2 + v^2)^.5) LT .08 THEN 1
+let u2 = u * wind_mask
+let v2 = v * wind_mask
+
+vector/xskip=2/yskip=2 u2,v2
+
+This works but it puts holes in the data. What we'd like is to have it
+so if a speed is greater than 8 cm/sec we scale it down to 8 cm/sec so
+the grid doesn't have holes in it and we can still see the direction.
+
+Thinking about this as I type (don't try this at home!) I think I need
+something like:
+
+let wind_mask = IF ABS( (u^2 + v^2)^.5) LT .08 THEN 1 ELSE
+                  (.08 /  ABS( (u^2 + v^2)^.5))
+
+... testing ...
+
+It works! Ferret is Great! Hold on. I think it is working. It fills in
+the gaps. It *looks* like the scaling is correct...
+
+Is there a better way to do this?
+
+Thanks,
+
+Steve
+______________________________________________________________________
+ Steve Cousins, Ocean Modeling Group    Email: cousins@xxxxxxxxxxxxxx
+ Marine Sciences, 452 Aubert Hall       <a  rel="nofollow" href="http://rocky.umeoce.maine.edu">http://rocky.umeoce.maine.edu</a>
+ Univ. of Maine, Orono, ME 04469        Phone: (207) 581-4302
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00259" href="msg00259.html">[ferret_users] Vector plot: force maximum?</a></strong>
+<ul><li><em>From:</em> Steve Cousins</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00260.html">Re: [ferret_users] Vector plot: force maximum?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00262.html">Re: [ferret_users] Vector plot: force maximum?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00260.html">Thread Prev</a>][<a href="msg00262.html">Thread Next</a>][<A HREF="threads.html#00261">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

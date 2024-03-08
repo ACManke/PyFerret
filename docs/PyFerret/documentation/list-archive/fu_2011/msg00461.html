@@ -1,0 +1,218 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] time axis and precision -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 15 Jun 2011 10:06:31 &#45;0700 -->
+<!--X-Message-Id: 4DF8E6F4.6080504@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4DF869A2.7070608@mercator&#45;ocean.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] time axis and precision</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00460.html">Thread Prev</a>][<a href="msg00462.html">Thread Next</a>][<A HREF="threads.html#00461">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] time axis and precision</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Bruno Levier &lt;<a href="mailto:bruno.levier@DOMAIN.HIDDEN">bruno.levier@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] time axis and precision</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 15 Jun 2011 10:08:04 -0700</li>
+<li>Cc: Ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4DF869A2.7070608@DOMAIN.HIDDEN">4DF869A2.7070608@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4DF869A2.7070608@DOMAIN.HIDDEN">4DF869A2.7070608@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.17) Gecko/20110414 Thunderbird/3.1.10</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi-<br>
+    Yes, you're right - the single-precision variable tstep doesn't have
+    enough precision to represent seconds when the time origin is 1900.
+    There is an easy answer, which is to move the time origin.&nbsp; The
+    DAYS1900 function is what you need. <br>
+    <br>
+    So for instance to move the time origin to 1-jan-2000, here's the
+    small change to your script, and the result of running it.<br>
+    &nbsp; <tt><br>
+      <br>
+      yes? ! Read file<br>
+      yes? File /Var="TEMP,julday,hhmmss" /Form=Delim /Delim="\b"
+      /Type="NU,EURODATE,TI" tyty.dat<br>
+      <br>
+      yes? ! Define a time axis from variables julday and hhmmss<br>
+      yes? Let day_frac&nbsp; = hhmmss/24<br>
+      yes? Let tstep&nbsp;&nbsp;&nbsp;&nbsp; = julday - days1900(2000,1,1) + day_frac<br>
+      yes? define axis/t/t0=01-jan-2000/unit=days t_axis_02 = tstep<br>
+      <br>
+      yes? ! List the times, down to seconds<br>
+      yes? set mode calendar:seconds<br>
+      <br>
+      yes? let temp_t = tsequence(temp[L=1:4])<br>
+      yes? list temp_t[GT=t_axis_02@asn]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : TSEQUENCE(TEMP[L=1:4])<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; regrid: on T@ASN<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : tyty.dat<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 5 points (TIME)<br>
+      &nbsp;10-AUG-2009 05:23:05 / 1:&nbsp; 16.43<br>
+      &nbsp;10-AUG-2009 05:24:08 / 2:&nbsp; 16.51<br>
+      &nbsp;10-AUG-2009 05:24:50 / 3:&nbsp; 16.50<br>
+      &nbsp;10-AUG-2009 05:25:53 / 4:&nbsp; 16.39<br>
+      &nbsp;10-AUG-2009 05:26:57 / 5:&nbsp; 16.37<br>
+      <br>
+    </tt><br>
+    <br>
+    <br>
+    On 6/15/2011 1:13 AM, Bruno Levier wrote:
+    <blockquote cite=""
+      type="cite">
+      
+      Hi Ferreters<br>
+      <br>
+      I'm trying to read an ascii file (tyty.dat) containing temperature
+      and
+      time, and to define a time axis from the variable read.<br>
+      <br>
+      tyty.dat :<br>
+      <br>
+      &nbsp;16.4306&nbsp;&nbsp; 10/08/2009 05:22:59<br>
+      &nbsp;16.5106&nbsp;&nbsp; 10/08/2009 05:23:59<br>
+      &nbsp;16.4976&nbsp;&nbsp; 10/08/2009 05:24:59<br>
+      &nbsp;16.3889&nbsp;&nbsp; 10/08/2009 05:25:59<br>
+      &nbsp;16.3681&nbsp;&nbsp; 10/08/2009 05:26:59<br>
+      ...<br>
+      <br>
+      ! Read file<br>
+      File /Var="TEMP,julday,hhmmss" /Form=Delim /Delim="\b"
+      /Type="NU,EURODATE,TI" tyty.dat<br>
+      <br>
+      ! Define a time axis from variables julday and hhmmss<br>
+      Let day_frac&nbsp; = hhmmss/24<br>
+      Let tstep&nbsp;&nbsp;&nbsp;&nbsp; = julday + day_frac<br>
+      Define Axis /T /T0=01-JAN-1900 /Unit=days t_axis_02 = tstep<br>
+      <br>
+      &nbsp;*** NOTE: Axis has repeated values -- micro-adjusting ...<br>
+      <br>
+      List TEMP[GT=t_axis_02@ASN]<br>
+      <br>
+      &nbsp;10-AUG-2009 05:20:39 / 1:&nbsp; 16.43<br>
+      &nbsp;10-AUG-2009 05:26:15 / 2:&nbsp; 16.51<br>
+      &nbsp;10-AUG-2009 05:26:15 / 3:&nbsp; 16.50<br>
+      &nbsp;10-AUG-2009 05:26:15 / 4:&nbsp; 16.39<br>
+      &nbsp;10-AUG-2009 05:26:16 / 5:&nbsp; 16.37<br>
+      ...<br>
+      <br>
+      The problem is that the precision is not enough to calculate the
+      julian
+      day properly.<br>
+      <br>
+      Is there a trick to do this right ?<br>
+      <br>
+      Thank you for your suggestions.<br>
+      <br>
+      Bruno Levier<br>
+      <br>
+      <br>
+      <br>
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Bruno LEVIER<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i class="moz-txt-slash"><span class="moz-txt-tag">/</span>MERCATOR
+        Ocean<span class="moz-txt-tag">/</span></i>
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Parc Technologique du Canal
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8-10 rue Hermes
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31520 Ramonville Saint Agne
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FRANCE
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Tel: +33 5 61 39 38 51
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Fax: +33 5 61 39 38 99
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a rel="nofollow" moz-do-not-send="true" class="moz-txt-link-freetext"
+        href="http://www.mercator-ocean.fr">http://www.mercator-ocean.fr</a>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+_____________________________________________________________________<br>
+      <br>
+      <font color="#182955">D&eacute;couvrez le nouveau site web de Mercator
+        Oc&eacute;an : <a rel="nofollow" moz-do-not-send="true"
+          href="http://www.mercator-ocean.fr/">www.mercator-ocean.fr</a><br>
+        Welcome on the new Mercator Ocean website: <a rel="nofollow"
+          moz-do-not-send="true" href="http://www.mercator-ocean.fr/">www.mercator-ocean.fr</a></font>
+      <br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00460" href="msg00460.html">[ferret_users] time axis and precision</a></strong>
+<ul><li><em>From:</em> Bruno Levier</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00460.html">[ferret_users] time axis and precision</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00462.html">[ferret_users] apparent bug in frequency_histogram.jnl</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00460.html">Thread Prev</a>][<a href="msg00462.html">Thread Next</a>][<A HREF="threads.html#00461">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

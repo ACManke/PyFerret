@@ -1,0 +1,171 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Limitation in length in descriptor file name -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 5 May 2011 12:53:56 &#45;0700 -->
+<!--X-Message-Id: 4DC3008B.9090300@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4DC2A238.3060303@cea.fr -->
+<!--X-Reference: 4DC2E9C7.1010806@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Limitation in length in descriptor file name</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00348.html">Thread Prev</a>][<a href="msg00349.html">Thread Next</a>][<A HREF="threads.html#00351">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Limitation in length in descriptor file name</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Limitation in length in descriptor file name</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 05 May 2011 12:54:51 -0700</li>
+<li>In-reply-to: &lt;<a href="mailto:4DC2E9C7.1010806@DOMAIN.HIDDEN">4DC2E9C7.1010806@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4DC2A238.3060303@DOMAIN.HIDDEN">4DC2A238.3060303@xxxxxx</a>&gt; &lt;<a href="mailto:4DC2E9C7.1010806@DOMAIN.HIDDEN">4DC2E9C7.1010806@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.17) Gecko/20110414 Thunderbird/3.1.10</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi all-
+</pre><tt>It turns out that Ferret was trying to create the message for a warning 
+</tt><tt>about the time axis information in the descriptor file. It does an 
+</tt><tt>internal write to a fixed-length string to include the warning message 
+</tt><tt>and the file name.  This was fine with the shorter dataset name tyty, 
+</tt><tt>but ran into a write error trying to write the longer filename.
+</tt><pre style="margin: 0em;">
+
+This will be fixed in the next Ferret release.
+
+Ansley
+
+On 5/5/2011 11:17 AM, Ansley Manke wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Patrick,
+</pre><tt>The length of any dataset name is limited to 2048 characters, 
+</tt><tt>including names for descriptor files.  I can't reproduce what you are 
+</tt><tt>seeing with Ferret v6.67.  In fact I made a descriptor file with a 
+</tt><tt>name over 200 characters long and was able to open that successfully.
+</tt><pre style="margin: 0em;">
+
+Let's talk off-line and see if we can find out what is happening.
+
+Ansley
+
+On 5/5/2011 6:12 AM, Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+I report a problem with use of descriptor file
+with a long name (no so, 52 characters).
+
+$ diff tyty.des v3.historical1_rcp85.1_18500101_21051231_1M_PHY.des
+$ ferret
+yes? go err667_descriptor_filename_length.jnl
+
+!===============================
+! OK
+use tyty
+
+!===============================
+! Now open the same descriptor with a longer name
+use v3.historical1_rcp85.1_18500101_21051231_1M_PHY
+At line 496 of file gt_get_time_axis.f
+Fortran runtime error: End of record
+
+</pre><tt>The files can be found from: 
+</tt><tt><a  rel="nofollow" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/ferret_descriptor_bug/">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/ferret_descriptor_bug/</a>
+</tt><pre style="margin: 0em;">
+
+</pre><tt>A solution to work today is to use a shorter name (I have found that 
+</tt><tt>less that 38 characters with the extension .des
+</tt><pre style="margin: 0em;">
+the descriptor file is openned correctly).
+
+</pre><tt>I don't read this limitation from 
+</tt><tt><a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/Grids-Regions/FERRET-PROGRAM-LIMITS">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/Grids-Regions/FERRET-PROGRAM-LIMITS</a>
+</tt><pre style="margin: 0em;">
+Anyway, this is definitely too short.
+
+I also find the limits s_filename too short. Read
+</pre><tt>&quot;s_filename 128 Maximum length of the filenames listed within 
+</tt><tt>descriptor files 
+</tt><tt>&lt;<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/data-set-basics/NETCDF-DATA#Chapter2-MC%20datasets">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/data-set-basics/NETCDF-DATA#Chapter2-MC%20datasets</a>&gt;.&quot;
+</tt><tt>Initially my colleague built a descriptor file with full pathname 
+</tt><tt>such as:
+</tt><tt>/dmnfs09/cont003/p86denv/IGCM_OUT/IPSLCM5A/PROD/historical/v3.historical1/MBG/Analyse/TS_MO/v3.historical1_18500101_19491231_1M_PHY.nc 
+</tt><tt>
+</tt><tt>and so with s_filename of 135 characters. This limit should be 
+</tt><tt>increased.
+</tt><pre style="margin: 0em;">
+
+Tell me if I have missed something to this topic.
+
+Tested with ferret_v6.6.7
+
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00346" href="msg00346.html">[ferret_users] Limitation in length in descriptor file name</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00348" href="msg00348.html">Re: [ferret_users] Limitation in length in descriptor file name</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00348.html">Re: [ferret_users] Limitation in length in descriptor file name</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00349.html">[ferret_users] File output using LIST</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00348.html">Thread Prev</a>][<a href="msg00349.html">Thread Next</a>][<A HREF="threads.html#00351">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] bound variable detected as variable -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 18 Aug 2009 09:50:11 &#45;0700 -->
+<!--X-Message-Id: 4A8ADBC2.7010509@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4A8974C8.6040601@cea.fr -->
+<!--X-Reference: 4A8A718D.9070500@climate.unibe.ch -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] bound variable detected as variable</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00512.html">Thread Prev</a>][<a href="msg00509.html">Thread Next</a>][<A HREF="threads.html#00514">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] bound variable detected as variable</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Marco Steinacher &lt;<a href="mailto:steinacher@DOMAIN.HIDDEN">steinacher@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] bound variable detected as variable</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 18 Aug 2009 09:50:10 -0700</li>
+<li>Cc: Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;,        <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4A8A718D.9070500@DOMAIN.HIDDEN">4A8A718D.9070500@xxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4A8974C8.6040601@DOMAIN.HIDDEN">4A8974C8.6040601@xxxxxx</a>&gt; &lt;<a href="mailto:4A8A718D.9070500@DOMAIN.HIDDEN">4A8A718D.9070500@xxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.22 (Windows/20090605)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi -<br>
+Thanks for the report. I don't see any reason that what Patrick wants
+to do couldn't be implemented, so we'll look into doing that. As Marco
+says an axis with more than one point does save with the correct bounds
+as expected.<br>
+<br>
+Ansley<br>
+<br>
+Marco Steinacher wrote:
+<blockquote cite="" type="cite">
+  <pre wrap="">Hi Patrick,
+
+It seems that ferret does not use the bounds variable because your depth
+axis has only one point. When I add another one (eg. at z=15 with bounds
+at z=10 and z=20) the bounds are used correctly.
+
+With only one grid cell Ferret apparently assumes a regular grid with
+boundaries at z=4.5 and z=5.5 (probably in order to have weight=1). When
+you save your data Ferret is using these bounds values. You can check
+which boundaries Ferret is using with
+
+ list zboxlo[g=SOSALINE_GLOBAL],zboxhi[g=SOSALINE_GLOBAL]
+
+As a workaround you could extend the z-axis with
+
+define axis/z/bounds/unit=meters `SOSALINE_GLOBAL,r=zaxis` = \
+{5,15},{-0.000244140625,10.000244140625},{10.000244140625,20}
+
+Then, the boundaries are treated as you are expecting.
+
+Marco
+
+
+
+Brockmann Patrick wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">Hi all,
+
+I have noticed that when a boundarie variable is present in a netcdf file,
+ferret detects this "associate" coordinate variable as a "classic"
+variable.
+
+Consequence in my scripts, the use of
+yes? shade `..varnames[i=1]`
+to produce a shade with the first variable found in a file becomes not
+usable
+since ferret takes the boundaries variable.
+
+I have also saved a file with /bounds qualifier
+and noticed that boundaries have been changed
+
+Initially I have:
+DEPTH1_1 = 5 ;
+DEPTH1_1_bnds =
+ -0.000244140625, 10.000244140625 ;
+
+After a
+yes? save/clobber/bounds/file=new.nc SOSALINE_GLOBAL
+
+I get a
+DEPTH1_1 = 5 ;
+DEPTH1_1_bnds =
+ 4.5, 5.5 ;
+
+I do not understand why ferret has changed those values.
+Note that when I use /bounds qualifier, I also save bounds
+even when axis is regular. Is there a way to control the write
+of boundarie variables for each axis (ie qualifiers XBOUNDS, YBOUNDS,
+ZBOUNDS, TBOUNDS).
+
+Download,
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/OCE_sosaline_global_ave.nc">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/OCE_sosaline_global_ave.nc</a>
+and try
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err620_bnds.jnl">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err620_bnds.jnl</a>
+
+Tests made with ferret v620 (Linux 32bits)
+
+Thanks gor any help on this topic.
+Patrick
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00507" href="msg00507.html">[ferret_users] bound variable detected as variable</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00512" href="msg00512.html">Re: [ferret_users] bound variable detected as variable</a></strong>
+<ul><li><em>From:</em> Marco Steinacher</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00512.html">Re: [ferret_users] bound variable detected as variable</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00509.html">[ferret_users] ppl aline or plot/nouser</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00512.html">Thread Prev</a>][<a href="msg00509.html">Thread Next</a>][<A HREF="threads.html#00514">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

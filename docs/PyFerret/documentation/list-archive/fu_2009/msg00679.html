@@ -1,0 +1,313 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] regriding area larger than grid size -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 14 Oct 2009 09:57:16 &#45;0700 -->
+<!--X-Message-Id: 4AD602EE.9070001@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4AD2EC9B.8040604@msem.univ&#45;montp2.fr -->
+<!--X-Reference: 4AD4BB9A.1090300@noaa.gov -->
+<!--X-Reference: 4AD5F8CC.50602@msem.univ&#45;montp2.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] regriding area larger than grid size</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00675.html">Thread Prev</a>][<a href="msg00676.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] regriding area larger than grid size</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>DELCLAUX Francois &lt;<a href="mailto:delclaux@DOMAIN.HIDDEN">delclaux@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] regriding area larger than grid size</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 14 Oct 2009 09:57:18 -0700</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4AD5F8CC.50602@DOMAIN.HIDDEN">4AD5F8CC.50602@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4AD2EC9B.8040604@DOMAIN.HIDDEN">4AD2EC9B.8040604@xxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4AD4BB9A.1090300@DOMAIN.HIDDEN">4AD4BB9A.1090300@xxxxxxxx</a>&gt; &lt;<a href="mailto:4AD5F8CC.50602@DOMAIN.HIDDEN">4AD5F8CC.50602@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+Francois and I looked in to this question a bit, and found the
+following -<br>
+<br>
+It's true that a SET REGION acts in a highly global way throughout a
+Ferret session, sometimes doing more than one would expect. Here the
+setting is interacting with the "subspan modulo" longitude axes that
+your datasets define to spread the region that the regridding is acting
+upon beyond the ends of your axis.&nbsp; This is something we'll look into;
+the use of subspan modulo axes has resulted in a few other odd
+interactions.<br>
+<br>
+As far as commenting out the line in your script with <i>define
+region/x=5:26/y=3:30 tcha ; set reg tcha,</i> you would also need to
+issue a CANCEL REGION command to actually turn off that setting.&nbsp; A SET
+REGION stays in place until you CANCEL REGION, or of course until you
+exit Ferret and start a new session.<br>
+<br>
+Ansley<br>
+<br>
+<br>
+<br>
+DELCLAUX Francois wrote:
+<blockquote cite="" type="cite">
+  
+Hi Ansley,<br>
+  <br>
+I finaly found the bug !<br>
+  <br>
+Your scripts are working fine, so I used them for going back to my
+script. In fact, at the begining of my script, I put an init command,
+which defines my interest area, the lake Chad basin. And what happens
+is that when the following command :<br>
+  <i>define region/x=5:26/y=3:30 tcha ; set reg tcha</i><br>
+is activated before all the others commands, then I got&nbsp; wrong results
+in regriding procedure.<br>
+But when I comment this line and start again ferret with my script, it
+works fine.<br>
+So defining a region which does not match exactly the regriding area
+leads to bad results in regriding.<br>
+The second problem is that, even if you suppress the region definition
+by a comment WHITOUT restarting ferret, the pre-defined region stay
+active, and so the problem goes on !<br>
+  <br>
+Any way, thanks for your help.<br>
+  <br>
+Sincerely<br>
+  <br>
+Fran&ccedil;ois Delclaux<br>
+  <br>
+  <br>
+Le 13/10/2009 19:40, Ansley Manke a &eacute;crit&nbsp;:
+  <blockquote cite="" type="cite">
+    
+Hello Francois,<br>
+Let's look into this, and then we can report the answer back to the
+Users List when we find out what is happening<br>
+    <br>
+I have tried to create an example similar to what you are doing, but I
+don't see the behavior of the extra points. It's as if Ferret is
+putting data at the modulo void point&nbsp; (see "subspan modulo axes" in
+the documentation) and using that in the regridding step, but this does
+not happen in the example I created, nor should it happen.<br>
+    <br>
+What does the output of ncdump look like for your input files?<br>
+    <tt><br>
+&nbsp; ncdump -c pr_pmip2_0k.nc<br>
+&nbsp; ncdump -c evap_chad.nc&nbsp;&nbsp;&nbsp;</tt>&nbsp; <br>
+    <br>
+    <br>
+Here is what I tried, using your variable names so I could be sure to
+be trying the same commands, but just creating some data.&nbsp; See what
+happens if you try these two scripts:<br>
+    <blockquote><tt>! make_regrid_files.jnl<br>
+! Create some variables on the same grids, and write them to files<br>
+      <br>
+define axis/units=degrees_east/x=-20:30/npoints=51 xproj<br>
+define axis/units=degrees_north/y=-10:30/npoints=41 yproj<br>
+define axis/t=1:12:1 tcys<br>
+      <br>
+let median = x[gx=xproj] + y[gy=yproj] + 0*t[gt=tcys]<br>
+save/clobber/file=pr_pmip2_0k.nc median<br>
+      <br>
+define grid/x=xproj/y=yproj/t=tcys glm1 <br>
+&nbsp;<br>
+define axis/units=degrees_east/x=7.25:25.25/npoints=37 longitude<br>
+define axis/units=degrees_north/y=5.25:23.25/npoints=37 latitude<br>
+define axis/z=1:1:1 level<br>
+define axis/t=1-jan-1937:09-dec-1938/npoints=708 time<br>
+      <br>
+let evap = x[gx=longitude] + y[gy=latitude] + z[gz=level] + 0*t[gt=time]<br>
+save/clobber/file=evap_chad.nc evap </tt><br>
+    </blockquote>
+    <br>
+Now, in a separate Ferret session, run do_regrid.jnl<br>
+    <blockquote><tt>! do_regrid.jnl<br>
+! Regrid median[d=1] to the grid of evap[d=2]<br>
+      <br>
+use pr_pmip2_0k.nc&nbsp; ! d=1<br>
+      <br>
+sh dat<br>
+sh grid median<br>
+      <br>
+use evap_chad.nc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! d=2<br>
+sh dat<br>
+sh grid evap<br>
+      <br>
+let p0 = median[d=1, gx=gqw1@lin, gy=gqw1@lin]<br>
+save/clobber/file=es.nc p0</tt><br>
+    </blockquote>
+    <br>
+    <br>
+    <br>
+DELCLAUX Francois wrote:
+    <blockquote cite=""
+ type="cite">Hi
+Ferret users, <br>
+      <br>
+I would like to regrid a GCM output precipitation on a lower&nbsp;
+resolution grid defined with another netcdf file. The selected
+regriding operation is the simplest one, linear interpolation (@lin). <br>
+      <br>
+Step one : I read the GCM precip data: <br>
+yes? use pr_pmip2_0k.nc&nbsp; ! d=1 <br>
+      <br>
+Precip variable name is median and the corresponding grid is GLM1,
+whose caracteristics are (resol=1&deg;): <br>
+yes? sh g glm1 <br>
+&nbsp;&nbsp;&nbsp; GRID GLM1 <br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end <br>
+&nbsp;XPROJ&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 51mr&nbsp;&nbsp; 20W(-20)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30E <br>
+&nbsp;YPROJ&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 41 r&nbsp;&nbsp; 10S&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 30N <br>
+&nbsp;normal&nbsp;&nbsp;&nbsp; Z <br>
+&nbsp;TCYS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12 <br>
+      <br>
+      <br>
+Step 2 : I read the other netcdf file <br>
+yes? use evap_chad.nc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! d=2 <br>
+      <br>
+Precip variable name is evap and the corresponding grid is GQW1,
+(resol=0.5&deg;): <br>
+yes? sh g gqw1 <br>
+&nbsp;&nbsp;&nbsp; GRID GQW1 <br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end <br>
+&nbsp;LONGITUDE LONGITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 37mr&nbsp;&nbsp; 7.25E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 25.25E <br>
+&nbsp;LATITUDE&nbsp; LATITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 37 r&nbsp;&nbsp; 5.25N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 23.25N <br>
+&nbsp;LEVEL&nbsp;&nbsp;&nbsp;&nbsp; Z (level: "uni&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1 <br>
+&nbsp;TIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 708 r&nbsp;&nbsp; 01-JAN-1937 00:00&nbsp;&nbsp;&nbsp; 09-DEC-1938
+00:00 <br>
+      <br>
+step 3: I regrid median on evap grid&nbsp; GQW1: <br>
+yes? let p0 = median[d=1, gx=gqw1@lin, gy=gqw1@lin] <br>
+      <br>
+step 4 : I store p0 in a cdf file and get a look with ncdump : <br>
+yes? save/file=es.nc&nbsp;&nbsp; p0 ; spa ncdump -c es.nc <br>
+      <br>
+Result&nbsp; of dump: <br>
+LISTing to file es.nc <br>
+netcdf es { <br>
+dimensions: <br>
+&nbsp;&nbsp;&nbsp; LONGITUDE0_38 = 39 ; <br>
+&nbsp;&nbsp;&nbsp; LATITUDE = 37 ; <br>
+&nbsp;&nbsp;&nbsp; TCYS = UNLIMITED ; // (12 currently) <br>
+variables: <br>
+&nbsp;&nbsp;&nbsp; double LONGITUDE0_38(LONGITUDE0_38) ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE0_38:units = "degrees_east" ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE0_38:modulo = 360. ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE0_38:point_spacing = "even" ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE0_38:axis = "X" ; <br>
+&nbsp;&nbsp;&nbsp; double LATITUDE(LATITUDE) ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE:units = "degrees_north" ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE:point_spacing = "even" ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE:axis = "Y" ; <br>
+&nbsp;&nbsp;&nbsp; double TCYS(TCYS) ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TCYS:axis = "T" ; <br>
+&nbsp;&nbsp;&nbsp; float P0(TCYS, LATITUDE, LONGITUDE0_38) ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; P0:missing_value = -1.e+34f ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; P0:_FillValue = -1.e+34f ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; P0:long_name = "MEDIAN[D=1, GX=GQW1@LIN, GY=GQW1@LIN]" ; <br>
+      <br>
+// global attributes: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :history = "FERRET V6.2&nbsp;&nbsp;&nbsp; 8-Oct-09" ; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :Conventions = "CF-1.0" ; <br>
+data: <br>
+      <br>
+&nbsp;LONGITUDE0_38 = -163.75, 7.25, 7.75, 8.25, 8.75, 9.25, 9.75, 10.25,
+10.75, <br>
+&nbsp;&nbsp;&nbsp; 11.25, 11.75, 12.25, 12.75, 13.25, 13.75, 14.25, 14.75, 15.25,
+15.75, <br>
+&nbsp;&nbsp;&nbsp; 16.25, 16.75, 17.25, 17.75, 18.25, 18.75, 19.25, 19.75, 20.25,
+20.75, <br>
+&nbsp;&nbsp;&nbsp; 21.25, 21.75, 22.25, 22.75, 23.25, 23.75, 24.25, 24.75, 25.25,
+196.25 ; <br>
+      <br>
+&nbsp;LATITUDE = 5.25, 5.75, 6.25, 6.75, 7.25, 7.75, 8.25, 8.75, 9.25, 9.75,
+      <br>
+&nbsp;&nbsp;&nbsp; 10.25, 10.75, 11.25, 11.75, 12.25, 12.75, 13.25, 13.75, 14.25,
+14.75, <br>
+&nbsp;&nbsp;&nbsp; 15.25, 15.75, 16.25, 16.75, 17.25, 17.75, 18.25, 18.75, 19.25,
+19.75, <br>
+&nbsp;&nbsp;&nbsp; 20.25, 20.75, 21.25, 21.75, 22.25, 22.75, 23.25 ; <br>
+      <br>
+&nbsp;TCYS = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ; <br>
+} <br>
+      <br>
+My problem is that regriding on a 37x37 cell grid (GQW1) creates a
+39x37 file , adding for the longitude 2 aditional points on the x-grid
+longitude : -163.75 and&nbsp; 196.25. <br>
+      <br>
+I don't undestand what occurs and how to prevent it.&nbsp; If someone could
+help me ... <br>
+      <br>
+    </blockquote>
+  </blockquote>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00675" href="msg00675.html">[ferret_users] regriding area larger than grid size</a></strong>
+<ul><li><em>From:</em> DELCLAUX Francois</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00675.html">[ferret_users] regriding area larger than grid size</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00676.html">[ferret_users] regridding lat-long</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00675.html">Thread Prev</a>][<a href="msg00676.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

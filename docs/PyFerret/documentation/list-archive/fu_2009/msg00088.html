@@ -1,0 +1,210 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 24 Feb 2009 10:51:57 &#45;0800 -->
+<!--X-Message-Id: 49A441CB.70109@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8cc42c030902240155m7e92dbf6x538c84226651b6c1@mail.gmail.com -->
+<!--X-Derived: gifFqPl96Yc8F.gif -->
+<!--X-Derived: gif58plkXelVO.gif -->
+<!--X-Derived: giffSsOSwEvXe.gif -->
+<!--X-Derived: gifzaHWks5M1v.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00087.html">Thread Prev</a>][<a href="msg00089.html">Thread Next</a>][<A HREF="threads.html#00088">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 24 Feb 2009 10:51:55 -0800</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:8cc42c030902240155m7e92dbf6x538c84226651b6c1@DOMAIN.HIDDEN">8cc42c030902240155m7e92dbf6x538c84226651b6c1@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8cc42c030902240155m7e92dbf6x538c84226651b6c1@DOMAIN.HIDDEN">8cc42c030902240155m7e92dbf6x538c84226651b6c1@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.19 (Windows/20081209)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Peter,<br>
+The Laplacian gridding algorithm fits a surface function to the
+scattered points and then interpolates to the grid from that surface.&nbsp;
+This can result in the function values going above or below the
+original data values. Have you tried different values for the function
+arguments? Here is the documentation for SCAT2GRIDLAPLACE_XY about the
+value of argument 6<br>
+<blockquote>
+  <p align="left">CAY&nbsp;&nbsp; Amount of spline eqation (between 0 and inf.)
+vs Laplace interpolation:</p>
+  <p align="left">If CAY=0.0, Laplacian interpolation is used. The
+resulting
+surface tends to have rather sharp peaks and dips at the data points
+(like a tent with poles pushed up into it). There is no chance of
+spurious peaks appearing. As CAY is increased, Spline interpolation
+predominates over the Laplacian, and the surface passes through the
+data points more smoothly. The possibility of spurious peaks increases
+with CAY. CAY= infinity is pure Spline interpolation. An over
+relaxation process in used to perform the interpolation. A value of
+CAY=5 often gives a good surface.<br>
+  </p>
+</blockquote>
+In particular, "The possibility of spurious peaks increases with CAY."&nbsp;
+The interpolating function may well dip below zero as it is fit between
+points; the higher value gives extra wiggles in the function. I can't
+say for sure, but this may well be what's happening.<br>
+<br>
+Compare the results if you use, say 5 and 5 for the last two arguments
+to your call to SCAT2GRIDLAPLACE_XY.&nbsp; Is it better?<br>
+<br>
+Because you have the 2-D longitude and latitude fields that define your
+grid, another option for you is the CURV_TO_RECT functions. You might
+want to check into that.<br>
+<br>
+Ansley<br>
+<br>
+Peter Szabo wrote:
+<blockquote
+ cite=""
+ type="cite">Dear Users,<br>
+  <br>
+I have a daily precipitation data set on a lambert grid stored in ASCII
+file. <br>
+I wanted to put this on a lat-lon grid with functions scat2gridlaplace
+and/or scat2gridlaplace. (After ferret cant deal with Lambertian data
+sets&nbsp; and I want to make some computations thats why i change its grid)<br>
+Somehow after the scat2gridlaplace my data contains truly negative
+values. Does anyone know what mistake could i make? Or is it the
+function thats not working properly?<br>
+  <br>
+Here is my script:<br>
+  <br>
+DEFINE AXIS/x=12.42:24.6/np=97 lons<br>
+DEFINE AXIS/y=44.9:49.92/np=61 lats<br>
+DEFINE AXIS/t="1-JAN-1961 12:00":"31-DEC-1990 12:00":1/t0="31-DEC-1960
+12:00"/units=days time<br>
+  <br>
+DEFINE GRID/t=time/x=lons/y=lats gridxyt<br>
+DEFINE GRID/x=lons/y=lats gridxy<br>
+  <br>
+SET DATA/EZ/VARIABLES="lon,lat"/GRID=gridxy "ASCII_koord.txt" !-&gt;i
+need the coordinate values from this file<br>
+let xx1D = XSEQUENCE(lon[d=1])<br>
+let yy1D = XSEQUENCE(lat[d=1])<br>
+  <br>
+SET DATA/EZ/VARIABLES="pre"/GRID=gridxyt "predaily.txt"<br>
+  <br>
+fill pre[l=@sum],lon[d=1],lat[d=1]&nbsp; !-&gt;I attach the picture of the
+original data (AA.lambert.gif) created with similarly to this command<br>
+  <br>
+let
+precipG=scat2gridgauss_xy(xx1d,yy1d,pre,x[gx=lons],y[gy=lats],0.01,0.01,10,0)<br>
+fill precipG[l=@sum] !-&gt; the data looks like this after the gaussian
+weightening (AA.gauss.gif)<br>
+  <br>
+let
+precipL=scat2gridlaplace_xy(xx1D,yy1D,pre,x[gx=lons],y[gy=lats],100,100)<br>
+fill precipG[l=@sum] !-&gt; the data looks like this after the laplace
+interpolation (AA.laplace.gif)<br>
+  <br>
+Now the data is on a lat-lon grid and both looks pretty the same, but
+if i count the minimum of the daily data the actual values are negative
+in the case of scat2gridlaplace. (i attach also the minimum value of
+the "laplace" data set. the two others dont have negative values larger
+than 0.05).<br>
+I know i should use the gaussian weightening and interpolation, but
+this bug/my fault still troubles me.<br>
+  <br>
+Thanks in&nbsp; advance,<br>
+Peter Szabo<br>
+  <br>
+  <hr size="4" width="90%"><br>
+  <center><img src="gifFqPl96Yc8F.gif"></center>
+  <p><br>
+  </p>
+  <hr size="4" width="90%"><br>
+  <center><img src="gif58plkXelVO.gif"></center>
+  <p><br>
+  </p>
+  <hr size="4" width="90%"><br>
+  <center><img src="giffSsOSwEvXe.gif"></center>
+  <p><br>
+  </p>
+  <hr size="4" width="90%"><br>
+  <center><img src="gifzaHWks5M1v.gif"></center>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00089" href="msg00089.html">Re: [ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid)</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00087" href="msg00087.html">[ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid)</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00087.html">[ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00089.html">Re: [ferret_users] after scat2gridlaplace some values are obsolote (data origins of	lambert grid)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00087.html">Thread Prev</a>][<a href="msg00089.html">Thread Next</a>][<A HREF="threads.html#00088">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

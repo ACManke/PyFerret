@@ -1,0 +1,275 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] z axis spacing -->
+<!--X-From-R13: [nepb Egrvanpure <fgrvanpureNpyvzngr.havor.pu> -->
+<!--X-Date: Tue, 10 Aug 2010 06:05:12 &#45;0700 -->
+<!--X-Message-Id: 4C614E6F.3050801@climate.unibe.ch -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: AANLkTik9JoTxV&#45;WOPr=CCtq_6wY4HH+HwnQbo7Pqi&#45;o2@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] z axis spacing</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00450.html">Thread Prev</a>][<a href="msg00452.html">Thread Next</a>][<A HREF="threads.html#00451">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] z axis spacing</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Sudheer Joseph &lt;<a href="mailto:sjo.india@DOMAIN.HIDDEN">sjo.india@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] z axis spacing</strong></li>
+<li><strong>From</strong>: <strong>Marco Steinacher &lt;<a href="mailto:steinacher@DOMAIN.HIDDEN">steinacher@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 10 Aug 2010 15:04:47 +0200</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:AANLkTik9JoTxV-WOPr%3DCCtq_6wY4HH%2BHwnQbo7Pqi-o2@DOMAIN.HIDDEN">AANLkTik9JoTxV-WOPr=CCtq_6wY4HH+HwnQbo7Pqi-o2@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Openpgp: id=62937F7F;	url=http://www.websource.ch/pgp/msteinacher.asc</li>
+<li>References: &lt;<a href="mailto:AANLkTik9JoTxV-WOPr%3DCCtq_6wY4HH%2BHwnQbo7Pqi-o2@DOMAIN.HIDDEN">AANLkTik9JoTxV-WOPr=CCtq_6wY4HH+HwnQbo7Pqi-o2@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.24 (X11/20100317)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Sudheer,
+
+I think the values you get for ZBOX make sense. Think of your
+measurements as they were taken at the center of grid cells and ZBOX(Z)
+is the height of the box with the center at depth Z. If no explicit edge
+definition is given Ferret takes the midpoints between coordinate values
+as edges. This leads to the results you have got. Here's a picture:
+
+ Z    Edges     ZBOX
+       ...
+        |
+      296.5
+298 --  |   --&gt;  3.0
+      299.5
+301 --  |   --&gt;  4.0
+      303.5
+306 --  |   --&gt;  4.5
+      308.0
+310 --  |   --&gt;  7.0
+      315.0
+320 --  |   --&gt; 10.0
+      325.0
+330 --  |   --&gt; 10.0
+      335.0
+340 --  |   --&gt; 10.0
+      345.0
+350 --  |   --&gt; 15.0
+      360.0
+370 --  |   --&gt; 20.0
+       ...
+
+Z     = center of grid cells
+Edges = Midpoints between Z (assumed by Ferret)
+ZBOX  = height of grid cell
+
+
+In many cases this makes sense. For example if you want to calculate the
+vertical integral you assume that your measurement is the average of
+some space above and below the point where it was taken. If you have no
+other information it makes sense to take the midpoints between the
+measurements.
+
+If you want other values for ZBOX for some reason you have to specify
+the edges of your grid boxes explicitly by using the /bounds qualifier
+with the define axis command (see Ferret documentation).
+
+Marco
+
+Sudheer Joseph wrote:
+&gt; Dear Users,
+&gt; 
+&gt;       I am trying to get data sampled at every 3 meters in upper 3
+&gt; hundred meters and then switching to 30 meters in few steps of 5 10 20
+&gt; for that I used the pasted below depth intervals.
+&gt; and below commands to define the grid.
+&gt; 
+&gt; file/var=tt tt
+&gt; def axis/z/from_data/depth/units=meters zax tt[d=1]
+&gt; 
+&gt; define grid/z=zax ngrd
+&gt; file/var=var_1/grid ngrd
+&gt; 
+&gt; But If I list  the zbox and corresponding z values I get some thing
+&gt; which I did not expect. Can any one comment on this?  is it a bug or am
+&gt; I using ferret in a way I am not supposed  to do?
+&gt; I get un expected values for zbox  with 15  against z values  of 10
+&gt; meter gap!!  How this can happen?
+&gt;  4.5 may be expected as depth adjustment   between 301 and 306 but how
+&gt; can it be expected to see 15 meter depth between 340 and 350?
+&gt; 
+&gt; yes? list zbox[gz=zax],z[gz=zax]
+&gt;              DEPTH (m): 278.5 to 625
+&gt;  Column  1: ZBOX is ZBOX (axis ZAX)
+&gt;  Column  2: Z is Z (axis ZAX)
+&gt;               ZBOX     Z
+&gt; 280    /  1:   3.00  280.0
+&gt; 283    /  2:   3.00  283.0
+&gt; 286    /  3:   3.00  286.0
+&gt; 289    /  4:   3.00  289.0
+&gt; 292    /  5:   3.00  292.0
+&gt; 295    /  6:   3.00  295.0
+&gt; 298    /  7:   3.00  298.0
+&gt; 301    /  8:   4.00  301.0
+&gt; 306    /  9:   4.50  306.0
+&gt; 310    / 10:   7.00  310.0
+&gt; 320    / 11:  10.00  320.0
+&gt; 330    / 12:  10.00  330.0
+&gt; 340    / 13:  10.00  340.0
+&gt; 350    / 14:  15.00  350.0
+&gt; 370    / 15:  20.00  370.0
+&gt; 390    / 16:  15.00  390.0
+&gt; 400    / 17:  20.00  400.0
+&gt; 430    / 18:  30.00  430.0
+&gt; 460    / 19:  30.00  460.0
+&gt; 490    / 20:  30.00  490.0
+&gt; 520    / 21:  30.00  520.0
+&gt; 550    / 22:  30.00  550.0
+&gt; 580    / 23:  30.00  580.0
+&gt; 610    / 24:  30.00  610.0
+&gt; 
+&gt; -- 
+&gt; depths in file tt
+&gt; $ cat tt
+&gt; 280
+&gt; 283
+&gt; 286
+&gt; 289
+&gt; 292
+&gt; 295
+&gt; 298
+&gt; 301
+&gt; 306
+&gt; 310
+&gt; 320
+&gt; 330
+&gt; 340
+&gt; 350
+&gt; 370
+&gt; 390
+&gt; 400
+&gt; 430
+&gt; 460
+&gt; 490
+&gt; 520
+&gt; 550
+&gt; 580
+&gt; 610
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; with best regards
+&gt; 
+&gt; Sudheer
+&gt; 
+&gt; **********************************************************************************
+&gt; Sudheer Joseph                                                         
+&gt;        
+&gt; Scientist                                                               
+&gt;                     
+&gt; Indian National Centre for Ocean Information Services (INCOIS)    
+&gt; Ocean Valley, Post Box No# 21,
+&gt; IDA Jeedimetla P.O.                  
+&gt; Hyderabad, Ranga Reddy District - 500 055
+&gt; Andhra Pradesh, India.
+&gt; TEl:+91-40-23044600(R),Tel:+91-9440832534(Mobile)
+&gt; Tel:+91-40-23886047(O),Fax:+91-40-23892910(O)
+&gt; E-mail:sjo@xxxxxxxxxxxxxx &lt;<a  rel="nofollow" href="mailto:E-mail%3Asjo@xxxxxxxxxxxxxx">mailto:E-mail%3Asjo@xxxxxxxxxxxxxx</a>&gt;;
+&gt; sudheer.joseph@xxxxxxxxx &lt;<a  rel="nofollow" href="mailto:sudheer.joseph@xxxxxxxxx">mailto:sudheer.joseph@xxxxxxxxx</a>&gt;; 
+&gt; sjo@xxxxxxxxxxxxx &lt;<a  rel="nofollow" href="mailto:sjo@xxxxxxxxxxxxx">mailto:sjo@xxxxxxxxxxxxx</a>&gt;.
+&gt; Web- <a  rel="nofollow" href="http://oppamthadathil.tripod.com">http://oppamthadathil.tripod.com</a>
+&gt;            --------------* ---------------
+&gt; &quot;The ultimate measure of a man is
+&gt; not where he stands in moments of
+&gt; comfort and convenience, but where
+&gt; he stands at times of challenge and
+&gt; controversy.&quot;
+&gt;                         Martin Luther King, Jr.
+&gt; &quot;What we have done for ourselves alone dies with us.
+&gt; What we have done for others and the world remains and is immortal.&quot;
+&gt; - Albert Pines
+
+
+-- 
+***************************************
+Marco Steinacher
+
+Climate and Environmental Physics
+Physics Institute, University of Bern
+Sidlerstrasse 5, CH-3012 Bern
+
+Phone ++41 (0)31 631 34 02
+Fax   ++41 (0)31 631 87 42
+steinacher@xxxxxxxxxxxxxxxx
+<a  rel="nofollow" href="http://www.climate.unibe.ch/~steinach">http://www.climate.unibe.ch/~steinach</a>
+OpenPGP Key ID: 0x62937F7F
+***************************************
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00453" href="msg00453.html">Re: [ferret_users] z axis spacing</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00452" href="msg00452.html">Re: [ferret_users] z axis spacing</a></strong>
+<ul><li><em>From:</em> Sudheer Joseph</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00450" href="msg00450.html">[ferret_users] z axis spacing</a></strong>
+<ul><li><em>From:</em> Sudheer Joseph</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00450.html">[ferret_users] z axis spacing</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00452.html">Re: [ferret_users] z axis spacing</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00450.html">Thread Prev</a>][<a href="msg00452.html">Thread Next</a>][<A HREF="threads.html#00451">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

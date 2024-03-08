@@ -1,0 +1,281 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: RE: [ferret_users] monthly average -->
+<!--X-From-R13: enuhy f <enuhy_fvinaNubgznvy.pbz> -->
+<!--X-Date: Fri, 13 Aug 2010 05:29:42 &#45;0700 -->
+<!--X-Message-Id: BLU113&#45;W274D1A2D06E9F0037B0CE591980@phx.gbl -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: BLU113&#45;W154C66471593FAB23D1A7791980@phx.gbl -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>RE: [ferret_users] monthly average</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00465.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>RE: [ferret_users] monthly average</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>RE: [ferret_users] monthly average</strong></li>
+<li><strong>From</strong>: <strong>rahul s &lt;<a href="mailto:rahul_sivan@DOMAIN.HIDDEN">rahul_sivan@xxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 13 Aug 2010 12:29:35 +0000</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="mailto:BLU113-W154C66471593FAB23D1A7791980@DOMAIN.HIDDEN">BLU113-W154C66471593FAB23D1A7791980@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:BLU113-W154C66471593FAB23D1A7791980@DOMAIN.HIDDEN">BLU113-W154C66471593FAB23D1A7791980@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td style="">
+
+
+Hi Ansley...<br><br>I got it done using @xact transformation.<br><br>Thank you once again for your sugessions.<br><br><br><br>Rahul <br><br><br><br><br><hr id="stopSpelling">Date: Fri, 13 Aug 2010 08:04:02 +0000<br>From: rahul_sivan@xxxxxxxxxxx<br>Subject: RE: [ferret_users] monthly average<br>To: ansley.b.manke@xxxxxxxx<br>CC: oar.pmel.ferret_users@xxxxxxxx<br><br>
+
+
+
+
+
+
+
+
+
+Hi Ansley<br><br>First of all, thank you for the help. I got correct values using the second method you have suggested, (Only thing I had to do was to add edges qualifier in the index months definition).&nbsp; In the first method, @asn does not work for the purpose, it&nbsp; just puts all the values in the defined axis, ie 2-jan contains 1-feb values of original axis. <br><br>Removing calendar did the trick, but curious to know (as I tried a lot) if there is any way to regrid the data to regular time axis, so that whereever data is available it will be there, else undefined. &nbsp; &nbsp; &nbsp; <br><br>.&nbsp; <br>Thanks a lot<br><br>Rahul <br><br><br><br><br><hr id="ecxstopSpelling">Date: Wed, 11 Aug 2010 11:44:11 -0700<br>From: ansley.b.manke@xxxxxxxx<br>Subject: Re: [ferret_users] monthly average<br>To: rahul_sivan@xxxxxxxxxxx<br>CC: oar.pmel.ferret_users@xxxxxxxx<br><br>
+
+
+
+
+  
+  
+
+
+Hi Raul,<br>
+What's happening is that your original dataset with its
+unequally-spaced
+time axis, has grid cell sizes of 3 hours for the first 8 time steps,
+then a large grid cell between 1-jan-1989:21:00 and 1-feb-1989:00, and
+so forth.&nbsp; The
+@SUM regridding transformation is not as you might think a simple sum
+of the data at the coordinate locations but instead is a
+length-weighted computation. It computes sum of the points from the
+source grid that fall within each destination grid cell, weighted by
+the portion of the source grid cell that overlaps the destination grid
+cell.&nbsp; This means that the @SUM works the same way that @AVE does,
+taking data from that large grid cell through the latter part of
+January and putting it into each day of January in your first
+regridding step.<br>
+<br>
+One thing you could do here is first put the data onto a 3-hour grid
+with
+missing data where there is no data, and then follow the steps you have
+tried.&nbsp; So,<br>
+<blockquote>DEFINE AXIS/t="1-jan-1989:00":"1-jan-2010
+00:00":3/edges/units=hours/calendar=gregorian t3hours<br>
+LET data_all_hours = lw[gt=t3hours@asn]<br>
+</blockquote>
+This variable would have the original data and missing data at all the
+timesteps outside day1 of the month. and then proceed as you've done.
+That's a lot of timesteps and could be a large computation, depending
+on the size of the other dimensions in your grid.<br>
+<br>
+<br>
+In fact, I have one more idea. What you want is first the average of
+the first 8 time steps, then the average of the second 8 time steps,
+and so on.&nbsp; It's the calendar-axis that is making this difficult. So
+first just make it an abstract axis in time, L=1,2, ...&nbsp; and average in
+blocks of 8.&nbsp; Something like this - the details of the index_months
+axis, and the regridding to that axis probably need a bit more thinking
+about, but work with this idea:<br>
+<tt><br>
+</tt>
+<blockquote><tt>LET nt = `lw,RETURN=Lsize`</tt><br>
+  <tt>DEFINE AXIS/L=1:`nt`:1&nbsp; tindex</tt><br>
+  <br>
+  <tt>LET lw_index = lw[gt=tindex@ASN]</tt><br>
+  <br>
+  <tt>DEFINE AXIS/L=4:`nt`:8 index_months</tt><br>
+  <tt>LET lw_imonth = lw_index[gt=index_months@AVE] </tt><br>
+  <br>
+  <tt>! Now define the output calendar monthly axis</tt><br>
+  <tt>...</tt><br>
+  <tt>&nbsp;DEFINE AXIS/UNITS=days/T0=1-jan-1900/edges truemonth =
+DAYS1900(year,month,1)</tt><br>
+  <br>
+  <tt>LET/units="`lw,return=units`"/title="`lw,return=title" lw_month =
+lw_imonth[gt=truemonth@ASN]</tt><br>
+</blockquote>
+<tt><br>
+</tt><br>
+On 8/11/2010 12:06 AM, rahul s wrote:
+<blockquote cite="">
+  
+  <br>
+&nbsp;I have monthly averages of some dataset for each time record in a day
+in a time axis as shown below,<br>
+&nbsp;<br>
+  <br>
+list/l=1:10/x=75/y=-10 lw<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : STR/(60*60*3)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : lw_new.nc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 10 points (TIME)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE: 75E<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE : 10.5S<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 75E&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 51<br>
+&nbsp;01-JAN-1989 00:00 /&nbsp; 1:&nbsp; -51.5<br>
+&nbsp;01-JAN-1989 03:00 /&nbsp; 2: -103.5<br>
+&nbsp;01-JAN-1989 06:00 /&nbsp; 3: -155.0<br>
+&nbsp;01-JAN-1989 09:00 /&nbsp; 4: -205.6<br>
+&nbsp;01-JAN-1989 12:00 /&nbsp; 5:&nbsp; -49.8<br>
+&nbsp;01-JAN-1989 15:00 /&nbsp; 6: -100.0<br>
+&nbsp;01-JAN-1989 18:00 /&nbsp; 7: -151.5<br>
+&nbsp;01-JAN-1989 21:00 /&nbsp; 8: -204.1<br>
+&nbsp;01-FEB-1989 00:00 /&nbsp; 9:&nbsp; -50.1<br>
+&nbsp;01-FEB-1989 03:00 / 10: -100.5<br>
+&nbsp;<br>
+I want to average each month's values and get it in a monthly calendar<br>
+I first tried with a daily calendar to get the sum, thinking that all
+days other than <br>
+first day of a month will be undefined as there in no data in there....<br>
+but I got something like this<br>
+  <br>
+  <br>
+define axis/t="1-jan-1989 00:00":"1-jan-2010
+00:00":1/edges/units=days/calendar=gregorian tdaily<br>
+let lw_mon=lw[gt=tdaily@sum]<br>
+&nbsp;LET lw=STR/(60*60*3)<br>
+&nbsp;LET lw_mon=lw[gt=tdaily@sum]<br>
+&nbsp;LIST/l=1:8/x=75/y=-10 lw<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : STR/(60*60*3)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : lw_new.nc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 8 points (TIME)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE: 75E<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE : 10.5S<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 75E&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 51<br>
+&nbsp;01-JAN-1989 00:00 / 1:&nbsp; -51.5<br>
+&nbsp;01-JAN-1989 03:00 / 2: -103.5<br>
+&nbsp;01-JAN-1989 06:00 / 3: -155.0<br>
+&nbsp;01-JAN-1989 09:00 / 4: -205.6<br>
+&nbsp;01-JAN-1989 12:00 / 5:&nbsp; -49.8<br>
+&nbsp;01-JAN-1989 15:00 / 6: -100.0<br>
+&nbsp;01-JAN-1989 18:00 / 7: -151.5<br>
+&nbsp;01-JAN-1989 21:00 / 8: -204.1<br>
+&nbsp;LIST/l=1:5/x=75/y=-10 lw_mon<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : LW[GT=TDAILY@SUM]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : lw_new.nc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 5 points (TIME)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE: 75E<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE : 10.5S<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 75E&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 51<br>
+&nbsp;01-JAN-1989 12 / 1: -793.7<br>
+&nbsp;02-JAN-1989 12 / 2:&nbsp; -13.5<br>
+&nbsp;03-JAN-1989 12 / 3:&nbsp; -13.5<br>
+&nbsp;04-JAN-1989 12 / 4:&nbsp; -13.5<br>
+&nbsp;05-JAN-1989 12 / 5:&nbsp; -13.5<br>
+  <br>
+I should get 1024 as sum for 1-jan 1989, and the other days showing
+some values too.<br>
+  <br>
+Why is it coming so and Where I am doing wrong???<br>
+  <br>
+I tried with a monthly axis also, where results were better but not
+exact<br>
+  <br>
+&nbsp;LET start_year = 1989<br>
+&nbsp;LET nyears = 20<br>
+&nbsp;LET indices = L[L=1:`nyears*12`]<br>
+&nbsp;LET month = MOD(indices-1,12)+1<br>
+&nbsp;LET year = start_year + INT((indices-1)/12)<br>
+&nbsp;DEFINE AXIS/UNITS=days/T0=1-jan-1900/edges truemonth =
+DAYS1900(year,month,1)<br>
+  <br>
+&nbsp;LET lw_mon=lw[gt=truemonth@sum]<br>
+&nbsp;LIST/l=1:5/x=75/y=-10 lw_mon<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : LW[GT=TRUEMONTH@SUM]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : lw_new.nc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 5 points (TIME)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE: 75E<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE : 10.5S<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 75E&nbsp; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 51<br>
+&nbsp;16-JAN-1989 12 / 1: -1045.<br>
+&nbsp;15-FEB-1989 00 / 2:&nbsp; -989.<br>
+&nbsp;16-MAR-1989 12 / 3: -1033.<br>
+&nbsp;16-APR-1989 00 / 4:&nbsp; -982.<br>
+&nbsp;16-MAY-1989 12 / 5: -1039.<br>
+  <br>
+when I removed edges in axis defenition I was getting almost correct
+values except for first time step. But&nbsp; I couldn't understand why this
+is happening.<br>
+&nbsp;<br>
+Is there any better way to get this done ?<br>
+  <br>
+Thanks in advance...<br>
+  <br>
+Rahul<br>
+Research Fellow<br>
+Indian Institute of Tropical Meteorology<br>
+Pune, India<big><br>
+  </big> </blockquote> 		 	   		  
+</td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00463" href="msg00463.html">RE: [ferret_users] monthly average</a></strong>
+<ul><li><em>From:</em> rahul s</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00463.html">RE: [ferret_users] monthly average</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00465.html">[ferret_users] average the positive and negative value seperately</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00465.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

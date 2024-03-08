@@ -1,0 +1,173 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] when a /append causes a "** netCDF error: Variable not found" -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 24 Sep 2009 10:54:05 &#45;0700 -->
+<!--X-Message-Id: 4ABBB23F.70401@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4AB54F19.5050906@cea.fr -->
+<!--X-Reference: 200909211746.35297.russell.fiedler@csiro.au -->
+<!--X-Reference: 4AB73A5B.3050002@cea.fr -->
+<!--X-Reference: 4AB7B9BD.2040603@noaa.gov -->
+<!--X-Reference: a0350d590909231527p167306d8j16e1c3f07d8ad90f@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00624.html">Thread Prev</a>][<a href="msg00622.html">Thread Next</a>][<A HREF="threads.html#00625">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ag &lt;<a href="mailto:agdc2005@DOMAIN.HIDDEN">agdc2005@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 24 Sep 2009 10:54:07 -0700</li>
+<li>Cc: <a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:a0350d590909231527p167306d8j16e1c3f07d8ad90f@DOMAIN.HIDDEN">a0350d590909231527p167306d8j16e1c3f07d8ad90f@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4AB54F19.5050906@DOMAIN.HIDDEN">4AB54F19.5050906@xxxxxx</a>&gt; &lt;<a href="mailto:200909211746.35297.russell.fiedler@DOMAIN.HIDDEN">200909211746.35297.russell.fiedler@xxxxxxxx</a>&gt; &lt;<a href="mailto:4AB73A5B.3050002@DOMAIN.HIDDEN">4AB73A5B.3050002@xxxxxx</a>&gt; &lt;<a href="mailto:4AB7B9BD.2040603@DOMAIN.HIDDEN">4AB7B9BD.2040603@xxxxxxxx</a>&gt; &lt;<a href="mailto:a0350d590909231527p167306d8j16e1c3f07d8ad90f@DOMAIN.HIDDEN">a0350d590909231527p167306d8j16e1c3f07d8ad90f@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ag,<br>
+The error message is because your command uses variable names that
+include a minus sign (or dash) - .<br>
+<tt><br>
+AMOD_mean_AOT0550dpbl-l&nbsp;</tt> isn't a valid variable name in Ferret.<br>
+<br>
+A couple more things I noticed:&nbsp; For a delimited read command, the
+default delimiter is a tab or comma. At least as it came through in the
+attachment, the delimiter in your file is a space, so you need to
+specify that. <br>
+<blockquote>SET DATA/FORM=DELIM/DELIM=" "/SKIP=4<br>
+</blockquote>
+I also see that you have a variable called begindatetime.&nbsp; As the file
+is organized, the dates and the times have a space between them so they
+will not be read as a single variable, but as two variables, a date and
+a time.&nbsp; If you change the Ferret script to add the /DELIM=" ", then
+this shell command should work:<br>
+<br>
+#!/bin/csh -f<br>
+<br>
+<tt>ferret -gif -script ferret_2stations_1variables.jnl
+"Ferret-Data.txt" time_days_2Stn1Data_new_2.gif AMOD_mean_AOT0550dpbl-l
+"filename\,begindate\,begintime\,location\,AMOD_mean_AOT0550dpbl_l\,AMOD_sdev_AOT0550dpbl_l"
+"MYD04-L2" "Deep-Blue-Aerosol-Optical-Depth-550-Land" "GISS"
+"2007-01-01T00:00:00-2007-12-31T00:00:00"</tt><br>
+<br>
+<br>
+ag wrote:
+<blockquote
+ cite=""
+ type="cite">Dear Ferret User Group:<br>
+  <br>
+I am unable to figure out what the following error message means. Your
+help is greatly appreciated.<br>
+I have a ferret script (ferret_basic_1.csh) and an ascii
+datafile(Ferret-Data.txt ). The VAR= string below contains the column
+names of the datafile and I am choosing which column I want to plot as
+an argument in the ferret csh script.<br>
+  <br>
+Note: I use the attached .csh shell script to run ferret in batch mode
+with arguments. Only the relevant portion of the .jnl file is attached.
+I am trying to plot the Column 4 of the ASCII data file by passing its
+name as argument 3 ($3) of the ferret csh script.<br>
+  <br>
+----------------------------------Screen Output with Error
+Message-------------------------------------------<br>
+Unix Prompt $ csh ferret_basic_1.csh<br>
+  <br>
+STATIONNAME1 = "GISS"<br>
+DATAPRODNAME1 = "Deep_Blue_Aerosol_Optical_Depth_550_Land/MYD04_L2"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : 447<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 447.0<br>
+&nbsp;**TMAP ERR: syntax error in string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; illegal or duplicate variable name AMOD_MEAN_AOT0550DPBL-L<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Data set: ./Ferret-Data.txt<br>
+SET
+DATA/FORM=DELIM/SKIP=4/GRID=g2/VAR="filename,begindatetime,location,AMOD_mean_AOT0550dpbl-l,AMOD_sdev_AOT0550dpbl-l
+" "Ferret-Data.txt"<br>
+Command file, command group, or REPEAT execution aborted<br>
+STOP -script mode, ERROR RUNNING SCRIPT statement executed<br>
+------------------------------------------------------------------------------------------------<br>
+  <br>
+Thanks<br>
+agdc2005<br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00620" href="msg00620.html">[ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00621" href="msg00621.html">Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00624" href="msg00624.html">Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable	not found&quot;</a></strong>
+<ul><li><em>From:</em> ag</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00624.html">Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable	not found&quot;</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00622.html">[ferret_users] velocity projected onto isotherm?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00624.html">Thread Prev</a>][<a href="msg00622.html">Thread Next</a>][<A HREF="threads.html#00625">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

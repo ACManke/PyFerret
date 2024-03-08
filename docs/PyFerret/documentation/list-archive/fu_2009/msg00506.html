@@ -1,0 +1,185 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Inaccurate area weights calculation -->
+<!--X-From-R13: [nepb Egrvanpure <fgrvanpureNpyvzngr.havor.pu> -->
+<!--X-Date: Mon, 17 Aug 2009 06:52:25 &#45;0700 -->
+<!--X-Message-Id: 4A89608D.8070408@climate.unibe.ch -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Inaccurate area weights calculation</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00497.html">Thread Prev</a>][<a href="msg00508.html">Thread Next</a>][<A HREF="threads.html#00506">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Inaccurate area weights calculation</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Inaccurate area weights calculation</strong></li>
+<li><strong>From</strong>: <strong>Marco Steinacher &lt;<a href="mailto:steinacher@DOMAIN.HIDDEN">steinacher@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 17 Aug 2009 15:52:13 +0200</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.22 (X11/20090608)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Ferret Users,
+
+I'm struggling with a problem related to the inaccurate calculation of
+weights for area-weighted operations like @ave and @din in Ferret when
+using a very coarse grid.
+
+The grid has 36x36 equal-area cells and it is regular spaced in
+longitude (10deg). In the NetCDF file the coordinates of the center
+(lat_t) and of the edges (lat_u using the 'edges' attribute) is given
+(see below).
+
+When looking only at the grid cells at one longitude (eg. i=1) the
+weight of each grid cell should be 1/36 = 0.028. However, the weights
+calculated by Ferret differ largely. Obviously Ferret calculates the
+weights as
+
+  w1 = (lat_u[j+1]-lat_u[j])*dlon*cos(lat_t[j])
+
+instead of
+
+  w2 = ( sin(lat_u[j+1]) - sin(lat_u[j]) )*dlon
+
+(Here, dlon is the spacing of the grid cells in longitude and, of
+course, everything is converted to radians for the calculation). For j=1
+we get the following (normalized) weights
+
+  w1 = 0.038
+  w2 = 0.028.
+
+w2 is correct but the weight calculated by Ferret is more than 30% higher!
+
+I'm wondering if anybody has experienced similar problems and if there
+is any workaround to force Ferret to use the correct area-weights for
+@ave etc. Any comments and suggestions on this issue are very welcome!
+
+Many thanks,
+Marco
+
+
+PS: I know that I can use var[x=@sum,y=@sum]/var[x=@ngd,y=@ngd] to get
+the arithmetic average which is equal to the weighted average in this
+specific case. Nevertheless, I would prefer to be able to use @ave, @din
+etc. as well.
+
+--------------------------------------------------------
+
+double lat_t(lat_t) ;
+                lat_t:long_name = &quot;Latitude (T grid)&quot; ;
+                lat_t:units = &quot;degrees_north&quot; ;
+                lat_t:minimum = -76.4637972626189 ;
+                lat_t:maximum = 76.4637972626188 ;
+                lat_t:edges = &quot;lat_u&quot; ;
+
+double lat_u(lat_u) ;
+                lat_u:long_name = &quot;Latitude (U grid)&quot; ;
+                lat_u:units = &quot;degrees_north&quot; ;
+                lat_u:minimum = -90. ;
+                lat_u:maximum = 89.9999991462264 ;
+
+lat_t = -76.4637972626189, -66.4435356908988, -59.4415682140651,
+        -53.6639424853861, -48.5903778907291, -43.9829631303587,
+        -39.7090165530684, -35.6853347126521, -31.8554308240259,
+        -28.1786427405299, -24.6243183521641, -21.1684488458325,
+        -17.7915905730076, -14.4775121859299, -11.2122714176497,
+         -7.98355614555541, -4.78019184719916, -1.59175417658591,
+          1.5917541765859,   4.78019184719916,  7.98355614555541,
+         11.2122714176497,  14.4775121859299,  17.7915905730076,
+         21.1684488458324,  24.6243183521641,  28.1786427405299,
+         31.8554308240259,  35.6853347126521,  39.7090165530684,
+         43.9829631303587,  48.5903778907291,  53.6639424853861,
+         59.4415682140651,  66.4435356908988,  76.4637972626188 ;
+
+lat_u = -90,               -70.8118635462791, -62.7339555492672,
+        -56.4426902380793, -51.0575587310186, -46.2382573073202,
+        -41.8103148957786, -37.6698869643296, -33.7489885958886,
+        -30,               -26.387799961243,  -22.8853804761586,
+        -19.4712206344907, -16.1276202131608, -12.8395884069042,
+         -9.5940682268606,  -6.37937020844281, -3.18473853672041,
+         -3.18055468146e-15, 3.18473853672041,  6.3793702084428,
+          9.59406822686046, 12.8395884069041,  16.1276202131608,
+         19.4712206344907,  22.8853804761586,  26.387799961243,
+         30,                33.7489885958886,  37.6698869643296,
+         41.8103148957786,  46.2382573073202,  51.0575587310186,
+         56.4426902380793,  62.7339555492672,  70.8118635462791,
+         89.9999991462264 ;
+
+-- 
+***************************************
+Marco Steinacher
+
+Climate and Environmental Physics
+Physics Institute, University of Bern
+Sidlerstrasse 5, CH-3012 Bern
+
+Phone ++41 (0)31 631 34 02
+Fax   ++41 (0)31 631 87 42
+steinacher@xxxxxxxxxxxxxxxx
+<a  rel="nofollow" href="http://www.climate.unibe.ch/">http://www.climate.unibe.ch/</a>
+***************************************
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00508" href="msg00508.html">Re: [ferret_users] Inaccurate area weights calculation</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00497.html">[ferret_users] emacs</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00508.html">Re: [ferret_users] Inaccurate area weights calculation</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00497.html">Thread Prev</a>][<a href="msg00508.html">Thread Next</a>][<A HREF="threads.html#00506">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

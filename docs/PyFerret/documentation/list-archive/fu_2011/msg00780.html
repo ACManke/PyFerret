@@ -1,0 +1,176 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] netcdf reading -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Tue, 18 Oct 2011 17:03:56 &#45;0700 -->
+<!--X-Message-Id: 20111018.140330.11298802.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY166&#45;W20843FA95554BC54B3915CA9E50@phx.gbl -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] netcdf reading</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00779.html">Thread Prev</a>][<a href="msg00782.html">Thread Next</a>][<A HREF="threads.html#00780">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] netcdf reading</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:takayanamba@DOMAIN.HIDDEN">takayanamba@xxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] netcdf reading</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 18 Oct 2011 14:03:30 -1000 (HST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:BAY166-W20843FA95554BC54B3915CA9E50@DOMAIN.HIDDEN">BAY166-W20843FA95554BC54B3915CA9E50@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:BAY166-W20843FA95554BC54B3915CA9E50@DOMAIN.HIDDEN">BAY166-W20843FA95554BC54B3915CA9E50@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Namba-san,
+
+First of all, your email message looks corrupted and is
+hard to read.  See the attached text, which is a copy
+of your message (with my quotation characters on top of
+each line).
+
+However, I did manage to read it, and I found your netCDF file
+is in a &quot;wrong&quot; format.  To learn how to create a &quot;correct&quot;
+netCDF file, you may want to look at examples.  For example,
+this is the header of &quot;coads_climatology.cdf&quot;, which you find
+in your Ferret data directory:
+
+[/usr/local/ferret/data]$ ncdump -h coads_climatology.cdf
+netcdf coads_climatology {
+dimensions:
+	COADSX = 180 ;
+	COADSY = 90 ;
+	TIME = UNLIMITED ; // (12 currently)
+variables:
+	double COADSX(COADSX) ;
+		COADSX:units = &quot;degrees_east&quot; ;
+		COADSX:modulo = &quot; &quot; ;
+		COADSX:point_spacing = &quot;even&quot; ;
+	double COADSY(COADSY) ;
+		COADSY:units = &quot;degrees_north&quot; ;
+		COADSY:point_spacing = &quot;even&quot; ;
+	double TIME(TIME) ;
+		TIME:units = &quot;hour since 0000-01-01 00:00:00&quot; ;
+		TIME:time_origin = &quot;1-JAN-0000 00:00:00&quot; ;
+		TIME:modulo = &quot; &quot; ;
+	float SST(TIME, COADSY, COADSX) ;
+		SST:missing_value = -1.e+34f ;
+		SST:_FillValue = -1.e+34f ;
+  . . . . . . .
+
+This is how the coordinates, dimensions, and variables have to be
+related to each other.
+
+Hope this helps,
+Ryo
+
+| Dear Sir
+| I have the netcdf like
+| ncdump -h 19930101.nc
+</pre><tt>| netcdf \19930101 {dimensions:	longitude = 801 ;	latitude = 
+</tt><tt>251 ;	day = 101 ;variables:	float xlongitude(longitude, latitude, 
+</tt><tt>day) ;		xlongitude:units = &quot;degrees_north&quot; ;	float 
+</tt><tt>ylatitude(longitude, latitude, day) ;		ylatitude:units = 
+</tt><tt>&quot;degrees_east&quot; ;	float temperature(longitude, latitude, day) 
+</tt><tt>;		temperature:units = &quot;celsius&quot; ;	float 
+</tt><tt>salinity(longitude, latitude, day) ;		salinity:units = 
+</tt><tt>&quot;psu&quot; ;	float mixlayer(longitude, latitude, day) 
+</tt><tt>;		mixlayer:units = &quot;meter&quot; ;}
+</tt><pre style="margin: 0em;">
+| When I do in ferret
+</pre><tt>| yes? use 19930101.ncyes? show data     currently SET data sets:    
+</tt><tt>1&gt; ./19930101.nc  (default) name     title                            
+</tt><tt>I         J         K         L XLONGITUDE                           
+</tt><tt>               1:101     1:251     1:801     ... YLATITUDE           
+</tt><tt>                               1:101     1:251     1:801     ... 
+</tt><tt>TEMPERATURE                                           1:101     1:251 
+</tt><tt>   1:801     ... SALINITY                                  1:101     
+</tt><tt>1:251     1:801     ... MIXLAYER                                  
+</tt><tt>1:101     1:251     1:801     ...
+</tt><tt>| I expected and I would like to do that I is  longitude 1:801 and J 
+</tt><tt>is latitude 1:251 and K is day 1:101 as the ncdump shows,
+</tt><pre style="margin: 0em;">
+| Could you give me how to do it?
+| Best Regards,
+| Takaya Namba
+|
+|
+|
+|
+|
+|
+|
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00798" href="msg00798.html">RE: [ferret_users] netcdf reading</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+<li><strong><a name="00782" href="msg00782.html">Re: [ferret_users] netcdf reading</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00774" href="msg00774.html">[ferret_users] netcdf reading</a></strong>
+<ul><li><em>From:</em> Namba Takaya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00779.html">Re: [ferret_users] External function TAX_JDAY1900 failing under V6.71</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00782.html">Re: [ferret_users] netcdf reading</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00779.html">Thread Prev</a>][<a href="msg00782.html">Thread Next</a>][<A HREF="threads.html#00780">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

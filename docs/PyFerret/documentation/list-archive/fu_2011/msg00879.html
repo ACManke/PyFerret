@@ -1,0 +1,169 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] write missing value into output netcdf -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Tue, 29 Nov 2011 22:59:31 &#45;0800 -->
+<!--X-Message-Id: 20111129.205926.239646600.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 49F09FBE.60609@noaa.gov -->
+<!--X-Reference: 4ED55525.9050100@noaa.gov -->
+<!--X-Reference: 1322628929.5981.138.camel@russ&#45;hf -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] write missing value into output netcdf</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00878.html">Thread Prev</a>][<a href="msg00892.html">Thread Next</a>][<A HREF="threads.html#00879">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] write missing value into output netcdf</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] write missing value into output netcdf</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 29 Nov 2011 20:59:26 -1000 (HST)</li>
+<li>In-reply-to: &lt;<a href="mailto:1322628929.5981.138.camel@DOMAIN.HIDDEN"><a href="msg00878.html">1322628929.5981.138.camel@russ-hf</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:49F09FBE.60609@DOMAIN.HIDDEN">49F09FBE.60609@xxxxxxxx</a>&gt; &lt;<a href="mailto:4ED55525.9050100@DOMAIN.HIDDEN">4ED55525.9050100@xxxxxxxx</a>&gt; &lt;<a href="mailto:1322628929.5981.138.camel@DOMAIN.HIDDEN"><a href="msg00878.html">1322628929.5981.138.camel@russ-hf</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Russ,
+
+| 2^100 is a poor choice for a large floating point number
+| in either single or double precision. You can't evaluate it
+| exactly.
+
+I have two points to make.  First, 2^100 is exactly
+representable.  The exponent of the IEEE single precision
+format has 8 bits.  That means 2^n is exactly representable
+for such an integer n as -128 &lt;= n &lt; 128.
+
+In principle, there are machines which don't use the IEEE format,
+but in practice, I've never seen such a machine on which Ferret
+runs.
+
+Second, you can argue that 2^100 is actually evaluated as
+2.0 ^ 100.0 = power(2.0, 100.0), which is a floating-point
+operation subject to truncation error. But, I don't see any
+reason that this computation can't be done to the maximal
+accuracy, unless the implementation uses a very sloppy asymptotic
+formula or something.  So, even when the result is not exactly
+resprentable, the same calculation would give the same result
+down to the last bit across all platforms.  This second point
+is my guess.
+
+I'm attaching a simple Fortran program to demonstrate that
+this is likely the case.  You can compile it with ifort.
+
+| xint=2**100
+| xr4=2.0**100
+
+But, why does Ferret have to choose one method (Integer**Integer)
+at some times and choose another (Real**Integer) at other times?
+Your concern is based on the assumption that the evaluation
+of &quot;2^100&quot; is done in one way at one time and in another at
+another time.
+
+| You are relying on the underlying software to make a conversion and
+| will get different bit patterns depending on how the expression is
+| evaluated. For instance, if the expression 2^100 is evaluated using
+| integer arithmetic
+
+I don't think Ferret does that.  It shouldn't, for the very reason
+you cite.  The simplest implementation would be to evaluate
+x^y always as a floating point exponentiation power(x,y).
+
+| If you specify an explicit constant (eg 1E30) then the correct and
+| (more importantly) consistent bit pattern according to the floating
+| point model will be used.
+
+Your concern will become reality when we mix single and double
+precisions.  For example, 0.1_single /= 0.1_double.  In this case,
+even your method (use an explicit constant) ceases to work:
+
+    real(single), parameter:: s = 0.1D0
+    real(double), parameter:: d = 0.1D0
+    ---&gt;  s /= d
+
+When this is a real problem, I recommend 0.999E9.  This is the largest
+3-digit number I know which is exactly representable both in the
+single-precision and double-precision IEEE format:
+
+    real(single), parameter:: ss = 0.999E9, sd = 0.999D9
+    real(double), parameter:: ds = 0.999E9, dd = 0.999D9
+    ---&gt; ss == sd == ds == dd
+
+Cheers,
+Ryo
+--------------
+program try
+  implicit NONE
+  real(4), parameter :: s = 2.0, e = 100.0
+  real(8), parameter :: d = 2.0
+  integer, parameter :: n = 100
+  write(*,&quot;((1X,ES50.43))&quot;) s**e, d**e, s**n, d**n
+end
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00875" href="msg00875.html">[ferret_users] write missing value into output netcdf</a></strong>
+<ul><li><em>From:</em> Haoping Yang</li></ul></li>
+<li><strong><a name="00878" href="msg00878.html">Re: [ferret_users] write missing value into output netcdf</a></strong>
+<ul><li><em>From:</em> Russ Fiedler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00878.html">Re: [ferret_users] write missing value into output netcdf</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00892.html">[ferret_users] modify argument list of a variable (e.g. SSH)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00878.html">Thread Prev</a>][<a href="msg00892.html">Thread Next</a>][<A HREF="threads.html#00879">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

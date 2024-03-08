@@ -1,0 +1,239 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Reading variables from an ascii file -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Tue, 16 Feb 2010 11:53:54 &#45;0800 -->
+<!--X-Message-Id: BF6A372A&#45;DE5F&#45;4F39&#45;A4B2&#45;12D22957B709@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 3D0845D852734B55A03168C789786323@AAVILAR -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Reading variables from an ascii file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00123.html">Thread Prev</a>][<a href="msg00114.html">Thread Next</a>][<A HREF="threads.html#00124">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Reading variables from an ascii file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Arturo Avila Rosas &lt;<a href="mailto:aavilar@DOMAIN.HIDDEN">aavilar@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Reading variables from an ascii file</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 16 Feb 2010 11:53:51 -0800</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;,        Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:3D0845D852734B55A03168C789786323@DOMAIN.HIDDEN"><a href="msg00121.html">3D0845D852734B55A03168C789786323@AAVILAR</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:3D0845D852734B55A03168C789786323@DOMAIN.HIDDEN"><a href="msg00121.html">3D0845D852734B55A03168C789786323@AAVILAR</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>First of all, you need to use the /SKIP qualifier to the FILE command  
+</tt><tt>to skip about 12 lines of header information.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Second, you need a fortran-style /FORMAT qualifier or read in free- 
+</tt><tt>form (see the manual). Ferret (or any program) will not know which of  
+</tt><tt>the input values are to be read and which to be skipped.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Third, it looks like you need to use the /ORD qualifier to tell  
+</tt><tt>ferret how the grid relates to the data records.
+</tt><pre style="margin: 0em;">
+
+All this is described in the manual under the FILE command.
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+DEFINE AXIS/x=262.15:279.15:0.20/units=degree xaxis
+DEFINE AXIS/y=18.05:18.05:1/units=degree yaxis
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>Why do you define these 1-point axes? Given the complex format you  
+</tt><tt>are trying to read, these may just confuse things. Take them out  
+</tt><tt>until you know it is reading ok.
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+On 16 Feb 10, at 11:02 AM, Arturo Avila Rosas wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ansley,
+</pre><tt>I am using the following commands but obviously variables are  
+</tt><tt>incorrect asigned
+</tt><pre style="margin: 0em;">
+DEFINE AXIS/x=262.15:279.15:0.20/units=degree xaxis
+DEFINE AXIS/y=18.05:18.05:1/units=degree yaxis
+</pre><tt>DEFINE AXIS/t=&quot;01-JAN-1960:00:00&quot;:&quot;31-DEC-1960:23:00&quot;:1/Units=hours  
+</tt><tt>taxis
+</tt><pre style="margin: 0em;">
+DEFINE GRID/x=xaxis/y=yaxis/t=taxis wgrid
+FILE/GRID=wgrid/VAR=&quot;u10,dir&quot; marino.txt
+SAVE/FILE=marino.cdf u10,dir
+plot/t=1-JAN-1960 u10
+list/T=&quot;1-JAN-1960:01:00&quot; u10
+Any idea?
+Cheers
+Arturo
+----- Original Message -----
+From: Arturo Avila Rosas
+To: Ansley Manke
+Cc: ferret_users@xxxxxxxx
+Sent: Friday, February 12, 2010 2:12 PM
+Subject: Re: [ferret_users] Reading variables from an ascii file
+
+Hiya Ansley,
+This is a sample of what I want to read:
+
+</pre><tt>TIME SERIES OF INTEGRATED PARAMETERS AT EstGME-50-01         LAT.  
+</tt><tt>=   18.05000 LONG. =  271.94998
+</tt><pre style="margin: 0em;">
+ |----- DATE ----|-------- WIND ----------
+ |--------------- WAVES -----------------
+ |--------------- WINDSEA ---------------
+ |--------------- SWELL ----------------|
+                  U10  DIR.  US   CD  TAUW
+    HS    TP    TM   TM1   TM2  DIR. SPR.
+    HS    TP    TM   TM1   TM2  DIR. SPR.
+    HS    TP    TM   TM1   TM2  DIR. SPR.
+  YYYYMMDDHHMMSS [M/S][DEG][M/S][1000] [%]
+   [M]   [S]   [S]   [S]   [S] [DEG][DEG]
+   [M]   [S]   [S]   [S]   [S] [DEG][DEG]
+   [M]   [S]   [S]   [S]   [S] [DEG][DEG]
+
+</pre><tt> 19600101000000   7.2 278. 0.26 1.34 0.72  0.88  5.73  4.50  3.99   
+</tt><tt>3.64 255.  26.  0.67  4.74  3.68  3.34  3.09 271.  21.  0.58  5.73   
+</tt><tt>5.59  5.38  5.22 236.  19.
+</tt><tt> 19600101010000   7.2 278. 0.26 1.34 0.72  0.88  5.73  4.50  3.99   
+</tt><tt>3.64 255.  26.  0.67  4.74  3.68  3.34  3.09 271.  21.  0.58  5.73   
+</tt><tt>5.59  5.38  5.22 236.  19.
+</tt><pre style="margin: 0em;">
+...
+</pre><tt> 19601231230000   7.2 278. 0.26 1.34 0.72  0.88  5.73  4.50  3.99   
+</tt><tt>3.64 255.  26.  0.67  4.74  3.68  3.34  3.09 271.  21.  0.58  5.73   
+</tt><tt>5.59  5.38  5.22 236.  19.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>TIME SERIES OF INTEGRATED PARAMETERS AT EstGME-51-01         LAT.  
+</tt><tt>=   18.05000 LONG. =  272.1500
+</tt><pre style="margin: 0em;">
+ |----- DATE ----|-------- WIND ----------
+ |--------------- WAVES -----------------
+ |--------------- WINDSEA ---------------
+ |--------------- SWELL ----------------|
+                  U10  DIR.  US   CD  TAUW
+    HS    TP    TM   TM1   TM2  DIR. SPR.
+    HS    TP    TM   TM1   TM2  DIR. SPR.
+    HS    TP    TM   TM1   TM2  DIR. SPR.
+  YYYYMMDDHHMMSS [M/S][DEG][M/S][1000] [%]
+   [M]   [S]   [S]   [S]   [S] [DEG][DEG]
+   [M]   [S]   [S]   [S]   [S] [DEG][DEG]
+   [M]   [S]   [S]   [S]   [S] [DEG][DEG]
+
+</pre><tt> 19600101000000   7.2 278. 0.26 1.34 0.72  0.88  5.73  4.50  3.99   
+</tt><tt>3.64 255.  26.  0.67  4.74  3.68  3.34  3.09 271.  21.  0.58  5.73   
+</tt><tt>5.59  5.38  5.22 236.  19.
+</tt><tt> 19600101010000   7.2 278. 0.26 1.34 0.72  0.88  5.73  4.50  3.99   
+</tt><tt>3.64 255.  26.  0.67  4.74  3.68  3.34  3.09 271.  21.  0.58  5.73   
+</tt><tt>5.59  5.38  5.22 236.  19.
+</tt><pre style="margin: 0em;">
+...
+</pre><tt> 19601231230000   7.2 278. 0.26 1.34 0.72  0.88  5.73  4.50  3.99   
+</tt><tt>3.64 255.  26.  0.67  4.74  3.68  3.34  3.09 271.  21.  0.58  5.73   
+</tt><tt>5.59  5.38  5.22 236.  19.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I made a C program to get rid off the headers and the date data so  
+</tt><tt>I've got an ascii file with only the valuable data
+</tt><pre style="margin: 0em;">
+Thanks a bunch
+Arturo
+
+
+----- Original Message -----
+From: Ansley Manke
+To: Arturo Avila Rosas
+Cc: oar.pmel.ferret_users@xxxxxxxx
+Sent: Friday, February 12, 2010 1:30 PM
+Subject: Re: [ferret_users] Reading variables from an ascii file
+
+Hi Arturo,
+</pre><tt>We can help you better if you write back and show a sample of what  
+</tt><tt>the data look like.  What is in each block of data?
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+Arturo Avila Rosas wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Dear ferreters,
+</pre><tt>How do I read an ascii file wich contains anual data from a grid  
+</tt><tt>of stations located in the gulf?
+</tt><tt>Blocks of columns of variables are listed hourly from the first to  
+</tt><tt>the last day of the year. This
+</tt><pre style="margin: 0em;">
+is done for each station so as to complete with all the stations.
+Cheers
+Arturo
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00121" href="msg00121.html">Re: [ferret_users] Reading variables from an ascii file</a></strong>
+<ul><li><em>From:</em> Arturo Avila Rosas</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00123.html">Re: [ferret_users] Reading variables from an ascii file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00114.html">[ferret_users] gridding problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00123.html">Thread Prev</a>][<a href="msg00114.html">Thread Next</a>][<A HREF="threads.html#00124">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

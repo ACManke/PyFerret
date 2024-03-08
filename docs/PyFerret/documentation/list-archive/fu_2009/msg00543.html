@@ -1,0 +1,286 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Climatological Statistics -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 3 Sep 2009 11:59:36 &#45;0700 -->
+<!--X-Message-Id: 4AA01217.2000609@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4A9E9931.1080307@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Climatological Statistics</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00542.html">Thread Prev</a>][<a href="msg00547.html">Thread Next</a>][<A HREF="threads.html#00543">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Climatological Statistics</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Climatological Statistics</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 03 Sep 2009 11:59:35 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4A9E9931.1080307@DOMAIN.HIDDEN">4A9E9931.1080307@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4A9E9931.1080307@DOMAIN.HIDDEN">4A9E9931.1080307@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Patrick,<br>
+We don't know of examples that implement a "climatology" attribute for
+a time axis. As the CF document says, Ferret has some support for
+climatological axes, implementing what's described in the COARDS
+standard. It might be worth it for you to write to the CF email list to
+see if&nbsp; anyone has used an encoding that implements what the CF
+standard is describing.&nbsp; An example is always so useful.<br>
+<br>
+In Ferret, it's possible now to create an attribute, and add it to a
+file on output. In the attribute-handling syntax, coordinate variables
+are placed in parentheses to distinguish them from regular variables.<br>
+<blockquote><tt>yes? define attribute (time).climatology =
+"climatology_bounds"<br>
+yes? set attribute/output (time).climatology</tt><br>
+</blockquote>
+And then the new attribute will be saved for the TIME axis.<br>
+<br>
+Now, to define the climatology_bounds variable, an external function
+might be the best method; but one could do something in a script, along
+these lines - the script could be generalized.<br>
+<blockquote><tt>USE
+<a rel="nofollow" class="moz-txt-link-rfc2396E" href="http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/coads_sst.cdf">"http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/coads_sst.cdf"</a></tt><br>
+  <tt>USE climatological_axes; CAN DATA climatological_axes</tt><br>
+  <br>
+  <tt>!&nbsp; Define the climatological axis for convenience, and save the
+units definition</tt><br>
+  <tt>DEFINE AXIS/T/UNITS=hours/MODULO/T0="`T[GT=month_reg],RETURN=t0`"
+TMOD=T[GT=month_reg]</tt><br>
+  <tt>DEFINE SYMBOL in_taxis = `sst,RETURN=taxis`</tt><br>
+  <tt>DEFINE SYMBOL in_taxis_units = "`(($in_taxis)).units`"</tt><br>
+  <br>
+  <tt>! Define the mean over a set of dates</tt><br>
+  <tt>LET sst6080 = sst[t=1-jan-1960:31-dec-1969,X=300:305,Y=20]</tt><br>
+  <tt>LET sst_clim_1960s = sst6080[GT=TMOD@mod]</tt><br>
+  <br>
+  <tt>! Define the climatology attribute for the output time axis</tt><br>
+  <br>
+  <tt>DEFINE ATTRIBUTE (TMOD).climatology = "climatology_bounds"</tt><br>
+  <tt>SET ATTRIBUTE/OUTPUT (TMOD).climatology</tt><br>
+  <br>
+  <tt>! Get the lower and upper bounds used by the climatological
+calculation.</tt><br>
+  <tt>! Put the two lists (12 values each) onto the output modulo time
+axis</tt><br>
+  <br>
+  <tt>LET clim_time_lo =
+TBOXLO[gt=($in_taxis),T=15-Jan-1965:15-Dec-1965]</tt><br>
+  <tt>LET clim_time_hi =
+TBOXHI[gt=($in_taxis),T=15-Jan-1970:15-Dec-1970]</tt><br>
+  <tt>LET bounds_lo = RESHAPE(clim_time_lo,T[gt=TMOD])</tt><br>
+  <tt>LET bounds_hi = RESHAPE(clim_time_hi,T[gt=TMOD])</tt><br>
+  <br>
+  <tt>! Make the climatology bounds variable. Set its units to the time
+units</tt><br>
+  <tt>! of the original variable before the modulo operation</tt><br>
+  <br>
+  <tt>DEFINE AXIS/X=1:2:1 nv</tt><br>
+  <tt>LET clim_shape = 0*(x[gx=nv] + t[gt=TMOD])</tt><br>
+  <tt>LET/TITLE="climatology bounds"/UNITS=($in_taxis_units) \</tt><br>
+  <tt>&nbsp;climatology_bounds = IF I EQ 1 THEN (clim_shape+bounds_lo) ELSE \</tt><br>
+  <tt>&nbsp;(clim_shape+bounds_hi)</tt><br>
+  <br>
+  <tt>! check by listing the date strings<br>
+  <br>
+LIST climatology_bounds<br>
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : climatology bounds (days since 1700-01-01
+00:00:00)<br>
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 2 by 12 points (X-TIME)<br>
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp; <br>
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2<br>
+! 16-JAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 1:&nbsp; 96788.&nbsp; 98644.<br>
+! 15-FEB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 2:&nbsp; 96818.&nbsp; 98674.<br>
+! 17-MAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 3:&nbsp; 96848.&nbsp; 98704.<br>
+! 16-APR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 4:&nbsp; 96878.&nbsp; 98734.<br>
+! 16-MAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 5:&nbsp; 96908.&nbsp; 98764.<br>
+! 16-JUN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 6:&nbsp; 96938.&nbsp; 98795.<br>
+  <br>
+  </tt><tt>LIST TAX_DATESTRING(climatology_bounds , t[gt=sst], "days")</tt><br>
+  <tt>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : TAX_DATESTRING(CLIMATOLOGY_BOUNDS ,
+T[GT=SST], "days")</tt><br>
+  <tt>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DATA SET : COADS Surface Marine Observations
+(1854-1993)</tt><br>
+  <tt>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : coads_sst.cdf</tt><br>
+  <tt>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILEPATH :
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/">http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/COADS/</a></tt><br>
+  <tt>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 2 by 12 points (X-TIME)</tt><br>
+  <tt>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </tt><br>
+  <tt>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2</tt><br>
+  <tt>! 16-JAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 1:"30-DEC-1964""30-JAN-1970"</tt><br>
+  <tt>! 15-FEB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 2:"30-JAN-1965""01-MAR-1970"</tt><br>
+  <tt>! 17-MAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 3:"01-MAR-1965""30-MAR-1970"</tt><br>
+  <tt>! 16-APR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 4:"30-MAR-1965""30-APR-1970"</tt><br>
+  <tt>! 16-MAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 5:"30-APR-1965""30-MAY-1970"</tt><br>
+  <tt>! 16-JUN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /&nbsp; 6:"30-MAY-1965""30-JUN-1970"</tt><br>
+  <br>
+  <tt>! Write out the data and the climatology_bounds variable</tt><br>
+  <tt>SAVE/CLOBBER/FILE=mod_clim_bounds.nc sst_clim_1960s,
+climatology_bounds</tt><br>
+  <br>
+  <tt>! OR we could save the variable as strings, as Patrick shows;
+then <br>
+! we dont need</tt><tt> the time units</tt><br>
+  <tt>pause</tt><br>
+  <tt>!...</tt><br>
+  <tt>LET t_bounds = IF I EQ 1 THEN (clim_shape+bounds_lo) ELSE
+(clim_shape+bounds_hi)</tt><br>
+  <tt>LET/TITLE="climatology bounds" climatology_bounds = \<br>
+&nbsp; TAX_DATESTRING(t_bounds , T[GT=sst], "days")</tt><br>
+  <br>
+  <tt>SAVE/CLOBBER/FILE=mod_clim_bounds.nc sst_clim_1960s,
+climatology_bounds</tt><br>
+</blockquote>
+<br>
+A minor improvement to Ferret, for the future, might be to write out a
+climatology attribute and a climatology_bounds variable when a modulo
+regridding is done.&nbsp; This wouldn't be difficult, and we can talk about
+that.<br>
+<br>
+Patrick, would you be willing to write the CF email list as a first
+step and see if there is anyone who has implemented these ideas in
+netCDF files?<br>
+<br>
+Ansley<br>
+<br>
+Brockmann Patrick wrote:
+<blockquote cite="" type="cite">Hi all,
+  <br>
+  <br>
+Is there any recommendations to save climatological statistics
+correctly&nbsp; ?
+  <br>
+I mean trying to respect as mush as possible CF convention but still
+usable by ferret.
+  <br>
+  <br>
+Reading the paragraph on climatological statistics from
+  <br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/ch07s04.html">http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/ch07s04.html</a>
+  <br>
+I am confused on what I can really use today.
+  <br>
+  <br>
+Let's say I want to save a monthly climatological year calculated over
+1961 to 1970.
+  <br>
+Average of all january months for time=01, Average of all february
+months for time=02, ...
+  <br>
+  <br>
+>From the CF convention, I would be tented to try the use of:
+  <br>
+  <br>
+double time(time);
+  <br>
+&nbsp;&nbsp; time:climatology="climatology_bounds";
+  <br>
+&nbsp;&nbsp; time:units="days since 01-JAN-1961";
+  <br>
+&nbsp;double climatology_bounds(time,nv);
+  <br>
+data:&nbsp; &nbsp;time="1965-01-15", "1965-02-15", "1965-03-15",
+"1965-04-15",&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "1965-05-15", "1965-06-15", "1965-07-15",
+"1965-08-15",
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "1965-09-15", "1965-10-15", "1965-11-15", "1965-12-15";
+  <br>
+&nbsp;climatology_bounds="1961-01-01",&nbsp; "1970-02-01",
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "1961-02-01",&nbsp; "1970-03-01",
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "1961-03-01",&nbsp; "1970-04-01", ...
+  <br>
+  <br>
+How those metadata will be translated with ferret anyway ?
+  <br>
+Perhaps I should continue with the climatologycal axis proposed by
+ferret (ie year 0000)
+  <br>
+and use an explicite title such as '*Monthy decadal averages over
+1961-1970'*
+  <br>
+  <br>
+Patrick
+  <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00547" href="msg00547.html">[ferret_users] Position of a minimum value</a></strong>
+<ul><li><em>From:</em> jean oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00542" href="msg00542.html">[ferret_users] Climatological Statistics</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00542.html">[ferret_users] Climatological Statistics</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00547.html">[ferret_users] Position of a minimum value</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00542.html">Thread Prev</a>][<a href="msg00547.html">Thread Next</a>][<A HREF="threads.html#00543">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

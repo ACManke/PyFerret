@@ -1,0 +1,202 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to count the number of irregularly&#45;spaced observations in each gridbox -->
+<!--X-From-R13: [vpunry Qbearyvhf Ecvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Thu, 1 Sep 2011 16:53:59 &#45;0700 -->
+<!--X-Message-Id: 0F17F720&#45;B86D&#45;4438&#45;9A86&#45;9A0AEBA9744D@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: B9702468&#45;A7BB&#45;4964&#45;9A8B&#45;7598DB246DB4@noaa.gov -->
+<!--X-Reference: 201109011644.45489.russell.fiedler@csiro.au -->
+<!--X-Derived: bino05Yr52yMX.bin -->
+<!--X-Derived: pngCOaxaO5S4z.png -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00668.html">Thread Prev</a>][<a href="msg00667.html">Thread Next</a>][<A HREF="threads.html#00671">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Russell Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</strong></li>
+<li><strong>From</strong>: <strong>Michael Cornelius Spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Sep 2011 16:53:58 -0700</li>
+<li>Cc: users ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:201109011644.45489.russell.fiedler@DOMAIN.HIDDEN">201109011644.45489.russell.fiedler@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:B9702468-A7BB-4964-9A8B-7598DB246DB4@DOMAIN.HIDDEN">B9702468-A7BB-4964-9A8B-7598DB246DB4@xxxxxxxx</a>&gt; &lt;<a href="mailto:201109011644.45489.russell.fiedler@DOMAIN.HIDDEN">201109011644.45489.russell.fiedler@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+It pays to watch what goes on in the User Group!
+
+</pre><tt>Billy's question and Russ's solution toggled a brain cell identifying  
+</tt><tt>this as problem that I have dealt with several times in various clunky  
+</tt><tt>and ad-hoc ways. Never again ... thanks to Russ.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Attached is a script &quot;PointsInCell.jnl&quot;, based on his suggestion, but  
+</tt><tt>using XBOXLO,... to distribute points across a grid.  Specification of  
+</tt><tt>the grid is achieved via a variable &quot;outgrid&quot; as used for example in  
+</tt><tt>&quot;reshape()&quot;. In addition to the variable PointsInCell showing the  
+</tt><tt>distribution, a variable OutOfGrid reports how many points of the  
+</tt><tt>scatter fall outside the grid. A demo is provided below and an  
+</tt><tt>attached graphic illustrates the result.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Hope it helps others, though the SCAT2GRID_NBIN_XY and  
+</tt><tt>SCAT2GRID_NBIN_XYT described by Ansley are perhaps more general.
+</tt><pre style="margin: 0em;">
+
+Mick
+!-------------------------------------
+</pre><tt>! DEMO: Using PointsInCell -- here is a set of 100 random coord  
+</tt><tt>pairs ...
+</tt><tt>def axis/z=1:100:1 zax ; let vx=100*randu(z[gz=zax]) ; let  
+</tt><tt>vy=50*randn(z[gz=zax])
+</tt><pre style="margin: 0em;">
+! ... to be distributed in the x-y grid defined by
+def axis/x=0:100:10 xax ; def axis/y=-100:100:20 yax
+
+let outgrid=x[gx=xax]+y[gy=yax]
+go PointsInCell vx vy outgrid
+shade/lev=(-inf)(1,5,1)(inf) PointsInCell ; plot/o/vs/nolab/sym=3 vx,vy
+list/nohead/form=(2f6.0) Npoints,OutOfGrid
+</pre><tt>! the response to the latter 100 2  shows that 2 of the 100 points  
+</tt><tt>fall outside the grid.
+</tt><pre style="margin: 0em;">
+
+
+On Aug 31, 2011, at 11:44 PM, Russell Fiedler wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Billy,
+You could try something along the lines of
+
+!put points into 1x1 bins on (0,2]x(0,2]
+
+! here are the points we want to bin
+
+let xvals=zsequence({ 0.1, 2.0, 0.2 })
+let yvals=zsequence({ 0.1, 2.0, 0.2 })
+
+! Define our bounds Note promotion to 2D
+
+let xl= i[i=1:2]-1+0*xvals
+let xh= i[i=1:2]+0*xvals
+let yl= j[j=1:2]-1+0*xvals
+let yh= j[j=1:2]+0*xvals
+
+let isinboxx = if ( xvals le xh and xvals gt xl ) then 1 else 0
+let isinboxy = if ( yvals le yh and yvals gt yl ) then 1 else 0
+
+let isinbothboxes = isinboxx*isinboxy
+let numinbox = isinbothboxes[z=@sum]
+
+list numinbox
+
+           VARIABLE : ISINBOTHBOXES[Z=@SUM]
+            SUBSET   : 2 by 2 points (X-Y)
+            Z        : 0.5 to 3.5
+            1      2
+            1      2
+1   / 1:  2.000  0.000
+2   / 2:  0.000  1.000
+
+Russ
+
+On Thursday 01 September 2011 15:23, William S. Kessler wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>I have a long list of data triplets (x,y,value) that I am putting  
+</tt><tt>on a
+</tt><tt>regular grid. No problem doing that, but how can I count the number  
+</tt><tt>of
+</tt><pre style="margin: 0em;">
+data points that fall in each gridbox?
+
+I want to end up with a gridded field whose values are the number of
+the original (x,y) points within each box.
+
+It seems like a simple task, but I can't think of a way to do it
+without a (double) repeat loop, or sorting and writing data out
+(twice). Ugly.
+
+Anyone have a straightforward way to do this?
+
+</pre><tt>Frustratingly, the function SCAT2GRID_BIN_XY produces the bin- 
+</tt><tt>average.
+</tt><pre style="margin: 0em;">
+To do that it must compute the number of points in each bin. That
+number should be available to the user.
+
+Thanks ... Billy K
+
+</pre></blockquote></blockquote><p><strong>Attachment:
+<a href="bino05Yr52yMX.bin" ><tt>PointsInCell.jnl</tt></a></strong><br>
+<em>Description:</em> Binary data</p>
+<p><a href="pngCOaxaO5S4z.png" ><img src="pngCOaxaO5S4z.png" alt="PNG image"></a></p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00665" href="msg00665.html">[ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+<li><strong><a name="00666" href="msg00666.html">Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+<ul><li><em>From:</em> Russell Fiedler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00668.html">Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00667.html">Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00668.html">Thread Prev</a>][<a href="msg00667.html">Thread Next</a>][<A HREF="threads.html#00671">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

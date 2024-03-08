@@ -1,0 +1,173 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] DJF composite from daily data -->
+<!--X-From-R13: Brgre Emnob <fmnocrg83Ntznvy.pbz> -->
+<!--X-Date: Wed, 8 Apr 2009 00:20:04 &#45;0700 -->
+<!--X-Message-Id: 8cc42c030904080020y3f6846eqe238a4ed16b75857@mail.gmail.com -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: b4114cae0904031152l7fb84e15gd1a8727d9ec9afc5@mail.gmail.com -->
+<!--X-Reference: 49DBC49B.6040701@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] DJF composite from daily data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00210.html">Thread Prev</a>][<a href="msg00206.html">Thread Next</a>][<A HREF="threads.html#00211">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] DJF composite from daily data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] DJF composite from daily data</strong></li>
+<li><strong>From</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Apr 2009 09:20:00 +0200</li>
+<li>Cc: jaya kumar A &lt;<a href="mailto:jayamet@DOMAIN.HIDDEN">jayamet@xxxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=relaxed/relaxed;        d=gmail.com; s=gamma; h=domainkey-signature:mime-version:received:in-reply-to:references :date:message-id:subject:from:to:cc:content-type; bh=Z2OL7tupDj0sMaA+BJRVL8XqGPZiepMluYqijbA9MpE=; b=IBgkP60J4j7YQVUAanEZgM5zoWjH7/D7+2q6XYd5MV+Lgj5V1QrszkUS1S4Nl640+g 2kssyXQEMqaIjV8dURPwo6f4oVtxph/8XFFW0i+PU6PfkdLSj5767HHUWfftxJUTYfv4 jJ29ynQRndbhUKwIKROFrqWIcXsLtd0uD2wbU=</li>
+<li>Domainkey-signature: a=rsa-sha1; c=nofws;        d=gmail.com; s=gamma; h=mime-version:in-reply-to:references:date:message-id:subject:from:to :cc:content-type; b=IIjjSdtNcV3zNyFNk54emDMMvZyapTk+eQbvcJgpVG40lxaNUQ/IQhnjZV46F2O45e vsJAO0VfZIsEvt8dQAoSLQ9u26BKLfs8P5jSKpeEBQg1vtwu2I5vhKJVUYLhAccJLH+a k4cqhaZ+A0lEc/VtGbO99GS2xnnJzRdfBuMkM=</li>
+<li>In-reply-to: &lt;<a href="mailto:49DBC49B.6040701@DOMAIN.HIDDEN">49DBC49B.6040701@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:b4114cae0904031152l7fb84e15gd1a8727d9ec9afc5@DOMAIN.HIDDEN">b4114cae0904031152l7fb84e15gd1a8727d9ec9afc5@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:49DBC49B.6040701@DOMAIN.HIDDEN">49DBC49B.6040701@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi All,<br><br>i have never heard about TAX* functions, so i succeed in finding a solution for this problem with creating a <b>monthly</b> mask then using <b>mod</b> function.<br>!First i created a monthly axis for the period of 1961-1990 (30 years*12 months). Note that your daily data should be on a proper daily time-axis.<br>
+<br>let start_year=1961<br>let nyears=30<br>let indicesm=l[l=1:`nyears*12+1`]<br>let monthm=mod(indicesm-1,12)+1<br>let yearm=start_year + int((indicesm-1)/12)<br>def ax/un=days/t0=1-jan-1900/ed truemonth=days1900(yearm,monthm,1)<br>
+<br>let precipmonth=precip[gt=truemonth@sum] <br>!precip is on a daily axis, while precipmonth is on the defined monthly axis. In the case of precipitation we have monthly-summed data<br><br>!With the mod function we create a mask for all the Decembers, Januarys and Februarys.<br>
+let month=l[gt=precipmonth]<br>let DJF = if (mod(month,12) le 2) OR (mod(month,12) le 8) then 1<br><br>!Now we need to place this mask onto our data on a monthly axis.<br>let winterprecip=precipmonth*DJF<br><br>If we want individual months, we need to create the mask for DEC, JAN and FEB also. Then average in time.<br>
+Now I see that my solution wasnt really for the problem, though i post it.<br><br>Cheers, Peter<br><br><div class="gmail_quote">On Tue, Apr 7, 2009 at 11:24 PM, Ansley Manke <span dir="ltr">&lt;<a rel="nofollow" href="mailto:ansley.b.manke@xxxxxxxx">ansley.b.manke@xxxxxxxx</a>&gt;</span> wrote:<br>
+<blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+
+
+  
+
+<div bgcolor="#ffffff" text="#000000">
+Hi all,<br>
+After an exchange outside the list, here are some ideas for this
+question -- it follows along the lines of the FAQ about making a
+seasonal mask that we referred to before:<b><a rel="nofollow" href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/analysis/seasonal_masking.html" target="_blank">
+How
+can I create a seasonal mask?</a></b><br>
+<br>
+That FAQ was written before we had the TAX* functions such as TAX_jday.
+This function makes the solution easier.&#xA0; For a seasonl average
+centered on January, we want to define a variable that contains the
+day-of-year for the time axis, and make from that a mask where the two
+parts are &quot;if jday GE Dec_1st&quot;&#xA0; OR &quot;if jday LE Feb_28th&quot;.&#xA0; So we&#39;ll
+make two masks, one for December and one for January-February, and add
+the two masks.<br>
+<br>
+As in the FAQ, I&#39;ll use reynolds_sst, which you can access as an
+OPeNDAP dataset:<br>
+<blockquote>yes? use
+<a rel="nofollow" href="http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/reynolds_sst_wk.nc" target="_blank">&quot;http://ferret.pmel.noaa.gov/thredds/dodsC/data/PMEL/reynolds_sst_wk.nc&quot;</a><br>
+yes? let year_days = tax_jday(t[gt=wsst], t[gt=wsst])<br>
+  <br>
+&#xA0;&#xA0; ! Define the two parts of the mask.&#xA0; We&#39;re going to add&#xA0; them, so
+use ELSE 0 <br>
+yes? let daily_mask_a = if year_days ge 335 then 1 else 0<br>
+yes? let daily_mask_b = if year_days le 58 then 1 else 0<br>
+  <br>
+&#xA0;&#xA0; ! Here is the mask: 1 if day-of-year corresponds to December or
+Jan-Feb. <br>
+&#xA0;&#xA0; ! ( Note that this doesn&#39;t takeleap years into account!)<br>
+yes? let daily_mask = if (daily_mask_a + daily_mask_b) GT 0 THEN
+(daily_mask_a + daily_mask_b)<br>
+</blockquote>
+<blockquote>! Check what we&#39;ve done with a line plot<br>
+yes? plot/t=1-jan-1982:1-jan-1985 wsst[x=300:350@ave,y=-20:20@ave]<br>
+yes? let/units=&quot;`wssw,return=units`&quot; wsst_djf = wsst * daily_mask<br>
+yes? plot/over&#xA0; wsst_djf[x=300:350@ave,y=-20:20@ave]<br>
+</blockquote>
+The question was also how to save the result as a yearly series.&#xA0; We
+can define a yearly time axis, centered in the&#xA0; middle of January for
+the time range of the data, and regrid the masked data to this time
+axis with the @AVE transformation. The result is the average for each
+season, one per year.<br>
+<blockquote>yes? define axis/t=16-jan-1982:16-jan-2001:1/units=year
+tyear<br>
+yes? let/units=&quot;`wssw,return=units`&quot;/title=&quot;DJF seasonal average&quot;
+wsst_djf_year = wsst_djf[gt=tyear@AVE]<br>
+  <br>
+yes? save/clobber/file=<a rel="nofollow" href="http://out_file.nc" target="_blank">out_file.nc</a> wsst_djf_year <br>
+</blockquote><div><div></div><div class="h5">
+<br>
+<br>
+<br>
+jaya kumar A wrote:
+<blockquote type="cite">Dear ferret users,<br>
+I have a daily data from 1950 to&#xA0; 2007, all data represented in one
+descriptor file, i want to make DJF( 90 time records) composite of pure
+IOD years. from this 57 years<br>
+I will be grateful to your help<br>
+thanks in advance<br>
+with regards<br>
+-- <br>
+JAYAKUMAR A<br>
+Junior Research Fellow, <br>
+Theoretical Studies Division<br>
+IITM, Pune-8<br>
+</blockquote>
+</div></div></div>
+
+</blockquote></div><br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00204" href="msg00204.html">[ferret_users] DJF composite from daily data</a></strong>
+<ul><li><em>From:</em> jaya kumar A</li></ul></li>
+<li><strong><a name="00210" href="msg00210.html">Re: [ferret_users] DJF composite from daily data</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00210.html">Re: [ferret_users] DJF composite from daily data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00206.html">[ferret_users] install</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00210.html">Thread Prev</a>][<a href="msg00206.html">Thread Next</a>][<A HREF="threads.html#00211">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

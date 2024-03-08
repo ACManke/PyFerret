@@ -1,0 +1,228 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Regridding 20 year time axis -->
+<!--X-From-R13: wnvfbaNngzbf.hpyn.rqh -->
+<!--X-Date: Fri, 9 Jan 2009 21:57:58 &#45;0800 -->
+<!--X-Message-Id: 33662.76.171.213.107.1231567057.squirrel@mail.atmos.ucla.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 7BECBBF5&#45;F271&#45;4F0A&#45;A869&#45;BEA9BD66FB49@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Regridding 20 year time axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00016.html">Thread Prev</a>][<a href="msg00018.html">Thread Next</a>][<A HREF="threads.html#00017">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Regridding 20 year time axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Paul Young &lt;<a href="mailto:Paul.J.Young@DOMAIN.HIDDEN">Paul.J.Young@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Regridding 20 year time axis</strong></li>
+<li><strong>From</strong>: <strong><a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxx</a></strong></li>
+<li>Date: Fri, 09 Jan 2009 21:57:37 -0800 (PST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>Importance: Normal</li>
+<li>In-reply-to: &lt;<a href="mailto:7BECBBF5-F271-4F0A-A869-BEA9BD66FB49@DOMAIN.HIDDEN">7BECBBF5-F271-4F0A-A869-BEA9BD66FB49@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:7BECBBF5-F271-4F0A-A869-BEA9BD66FB49@DOMAIN.HIDDEN">7BECBBF5-F271-4F0A-A869-BEA9BD66FB49@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: SquirrelMail/1.4.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Paul,
+           You were almost there...but missed an important rule.....see
+the description for case two in my original email :
+
+<a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/msg00489.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/msg00489.html</a>
+
+What is happening here? Remember that Ferret evaluates any expression/s only
+when it hits an action command (eg. plot, fill, save etc., Ch3 Sec2.
+EXPRESSIONS). You loads the data, assigns a time axis regridding step and
+then trying to write the data out in a REPEAT loop over time. The time axis
+assignment will be evaluated within the repeat loop, and this is the sole
+reason for the error message. This is why i specifically described two
+different cases in above mentioned posting. FIX: Use any other axes (Z,Y or
+X) for the REPEAT loop.
+
+  What exactly is the reason for getting precise mid-month values for your
+time axis? For most of the calculation purposes, you could just pretend the
+time axis either GREGORIAN or 360_DAY since you are dealing with a monthly
+mean dataset. In this case, you can just make a descriptor file with one
+stepfile entry and use it in Ferret....save disk space and time !!
+
+NOTE: Beware about transformations (ie finding climatology or even
+extending climatology data onto an interannual time axis to find anomalies
+and all).....they are always tricky with calendars like NOLEAP and JULIAN.
+The most user friendly calendar is 360_DAY and then GREGORIAN. Use them,
+if you can....
+
+ Just for the fun, here is an easy way of creating a time axis like what
+you trying to make :
+
+!--------------------------------------------------------------------
+  let nyrs      = 20         ! number of total years
+                             ! days in each month
+  let mdays     = TSEQUENCE({31,28,31,30,31,30,31,31,30,31,30,31})
+                             ! repeat the monthly values for all the years
+  let ids       = L[L=1:`nyrs*12`:1]       ! month indices, 1,2,3,.....240.
+  let mon_ids   = ids - INT((ids-1)/12)*12 ! respective month (1,2,..12,1,2...12,1,2..)
+  let mdays_all = SAMPLEL(mdays, mon_ids)  ! series of mdays, for all years
+  let tvals     = mdays_all[l=@RSUM] - mdays_all/2 ! mid-month time value for all months
+                              ! to be accurate, keep T0 as 31-DEC of previous year
+  define axis/T/T0=31-DEC-2000/from_data/units=days/calendar=noleap tax_jday=tvals
+
+  show axis tax_jday
+!--------------------------------------------------------------------
+
+Please let me know if you have any questions,
+
+Thanks and Regards,
+
+Jaison
+
+
+
+&gt; Dear ferret users,
+&gt;
+&gt; I am having problems regridding the time axis of a 20 year time series
+&gt; of monthly mean model output. Here's what I am doing:
+&gt;
+&gt; 	yes? use my_Z_data_20yr.nc
+&gt;
+&gt; 	!Read in data containing Julian day values for 20 years on a &quot;noleap&quot;
+&gt; calendar
+&gt; 	yes? file/variable=jday/columns=12/type=numeric &quot;20year_axis.dat&quot;
+&gt;
+&gt; 	!Define new time axis
+&gt; 	yes? define axis/t0=31-Dec-2000/from_data/units=days/calendar=noleap
+&gt; tax_jday=tjday
+&gt;
+&gt; 	!Regrid original variable to tax_jday
+&gt; 	yes? let new_var = old_var[gt=tax_jday@asn]
+&gt;
+&gt; 	!Save new variable (using Jaison Kurian's memory tricks)
+&gt; 	yes? let l_start = `new_var,r=lstart`
+&gt;          yes? let l_end = `new_var,r=lend`
+&gt; 	yes? let slices = l_end - l_start + 1
+&gt; 	yes? REPEAT/L=`l_start`:`l_end`:1 (;\
+&gt; 			save/file=&quot;my_outfile.nc&quot;/append/quiet new_var ; \
+&gt; 			say &quot; Time slice `(L-l_start+1)`/`slices`&quot; ;\
+&gt; 			)
+&gt;
+&gt; I then get the following error message:
+&gt;
+&gt; 	!-&gt; REPEAT: L=1
+&gt; 		**TMAP ERR: error in line definition
+&gt; 			disordered output coordinate value: 15.500 Axis: TAX
+&gt; 	LIST/FORMAT=CDF/file=&quot;my_outfile.nc&quot;/append/quiet new_var
+&gt; 	Command file, command group, or REPEAT execution aborted
+&gt;
+&gt; (I'm guessing TAX is a truncation of tax_jday?).
+&gt;
+&gt; Just to confirm that the old and new time axes are of the same size:
+&gt;
+&gt; 	yes? show axis time
+&gt; 	name 	  axis 	  # pts      start 		  end
+&gt; 	TIME 	  TIME 	  240 i      01-FEB-2001 00:00 	  01-JAN-2021 00:00
+&gt; 	T0 = 01-SEP-2000 00:00:00
+&gt; 	CALENDAR = NOLEAP
+&gt; 	Axis span (to cell edges) = 7300
+&gt;
+&gt; 	yes? show axis tax_jday
+&gt;   	name      axis    # pts      start  		  end
+&gt;     	TAX_JDAY  TIME    240 i      15-JAN-2001 12:00    15-DEC-2020 12:00
+&gt; 	T0 = 31-DEC-2000
+&gt; 	CALENDAR = NOLEAP
+&gt;     	Axis span (to cell edges) = 7299
+&gt;
+&gt; A related question: Is there a way to generate tax_jday in ferret,
+&gt; rather than read it in? I thought about adding multiples of 365 to an
+&gt; array of mid month, Julian day values (midmonth = {15.5, 45.0, 74.5,
+&gt; 105.0, 135.5, 166.0, 196.5, 227.5, 258.0, 288.5, 319.0, 349.5}) to get
+&gt; the 240 element array, but I couldn't think how to do it in ferret. Is
+&gt; it possible to concatenate user defined arrays into one variable (e.g.
+&gt; like let big_array={array1,array2,....,arrayN})? I don't have XCAT etc
+&gt; on my version of ferret, though I guess that might be the solution....
+&gt;
+&gt; Thanks for any help,
+&gt;
+&gt; Paul
+&gt;
+&gt;
+&gt; -----
+&gt; Paul Young
+&gt;
+&gt; Chemistry and Climate Processes
+&gt; Chemical Sciences Division
+&gt; NOAA Earth System Research Laboratory
+&gt; 325 Broadway R/CSD8
+&gt; Boulder CO 80305-3328
+&gt; USA
+&gt;
+&gt; Tel:   +1 303-497-4943
+&gt; Fax:   +1 303-497-5686
+&gt; Email: paul.j.young@xxxxxxxx
+&gt; Web:   <a  rel="nofollow" href="http://www.esrl.noaa.gov/csd/">http://www.esrl.noaa.gov/csd/</a>
+&gt;
+&gt;
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00015" href="msg00015.html">[ferret_users] Regridding 20 year time axis</a></strong>
+<ul><li><em>From:</em> Paul Young</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00016.html">Re: [ferret_users] Regridding 20 year time axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00018.html">Re: [ferret_users] Regridding 20 year time axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00016.html">Thread Prev</a>][<a href="msg00018.html">Thread Next</a>][<A HREF="threads.html#00017">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

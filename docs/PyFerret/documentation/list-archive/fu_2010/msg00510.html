@@ -1,0 +1,238 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Climatology over multiple data sets with differing time axes -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 8 Sep 2010 08:16:06 &#45;0700 -->
+<!--X-Message-Id: 4C87A8E3.5000005@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 66AE18E7&#45;91A1&#45;4E22&#45;9EC3&#45;512484F73B50@uvic.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Climatology over multiple data sets with differing time axes</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00504.html">Thread Prev</a>][<a href="msg00505.html">Thread Next</a>][<A HREF="threads.html#00510">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Climatology over multiple data sets with differing time axes</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Neil Swart &lt;<a href="mailto:ncswart@DOMAIN.HIDDEN">ncswart@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Climatology over multiple data sets with differing time axes</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Sep 2010 08:16:51 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:66AE18E7-91A1-4E22-9EC3-512484F73B50@DOMAIN.HIDDEN">66AE18E7-91A1-4E22-9EC3-512484F73B50@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:66AE18E7-91A1-4E22-9EC3-512484F73B50@DOMAIN.HIDDEN">66AE18E7-91A1-4E22-9EC3-512484F73B50@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.8) Gecko/20100802 Thunderbird/3.1.2</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi Neil,<br>
+    You need a way to compute and keep variables that define the index
+    values for last 100 years of each dataset.&nbsp; If you had just a few
+    datasets, you could define, say,<br>
+    <br>
+    <blockquote>
+      <pre wrap=""><tt>let ll_a = l[gt=tauu,d=1] 
+let lim_a = ll_a[l=@max]  
+let tauu_ltr_a = tauu[d=1,l=`lim_a-1200`:`lim_a`]
+
+
+let ll_b = l[gt=tauu,d=2] 
+let lim_b = ll_b[l=@max]  
+let tauu_ltr_b = tauu[d=2,l=`lim_b-1200`:`lim_b`]
+...</tt>
+</pre>
+    </blockquote>
+    <br>
+    and then operate on those separate variables. That gets cumbersome
+    with lots of datasets, but Ferret symbols and a REPEAT loop can do
+    this. <br>
+    <br>
+    Here's a script showing this, leaving out the issue of the
+    regridding you're doing in X,Y,Z. You'll need to define more
+    variables to do that step - or do that regridding at the end before
+    saving the data.<br>
+    <br>
+    <blockquote><tt>USE climatological_axes<br>
+        CANCEL DATA climatological_axes<br>
+        <br>
+        USE file1.nc&nbsp; ! to get the xyz grid used just below<br>
+        DEFINE SYMBOL tauu_units = `tauu,RETURN=units`&nbsp; ! used at the
+        end<br>
+        <br>
+        ! initialize the sum of climatologies<br>
+        <br>
+        LET mean_0 = 0* (T[GT=month_irreg] + X[GX=tauu] + Y[GY=tauu] +
+        z[gz=tauu])<br>
+        DEFINE symbol mean_clim = mean_0<br>
+        <br>
+        CANCEL DATA/ALL<br>
+        <br>
+        ! keep a count of terms in the average<br>
+        LET count = 0<br>
+        <br>
+        ! loop over datasets, creating a variable with each
+        climatological mean,<br>
+        ! and making a symbol ($mean_clim) that is the sum of these
+        variables<br>
+        <br>
+        REPEAT/RANGE=1:22/NAME=m \<br>
+        (DEFINE symbol mm = `m`; \<br>
+        GO add_model.jnl; \<br>
+        LET count = `count+1`)<br>
+        <br>
+        LET/UNITS="($tauu_units)"/TITLE="output title for the variable"
+        \<br>
+        &nbsp; mean_clim = ($mean_clim)/count<br>
+        <br>
+        SAVE/CLOBBER/FILE=mean_save.nc mean_clim<br>
+        EXIT<br>
+        <br>
+        ! ------------<br>
+        <br>
+        ! add_model.jnl<br>
+        <br>
+        USE file($mm).nc<br>
+        LET ll = l[gt=tauu]<br>
+        LET lim($mm) = ll[l=@max]<br>
+        LET low($mm) = MAX(1,`ll[l=@max] - 1200`)<br>
+        LET tauu_ltr($mm) = tauu[d=($mm),l=`low($mm)`:`lim($mm)`]<br>
+        <br>
+        <br>
+        ! Compute climatology over the last 100 years<br>
+        LET uvg_tauu($mm) = tauu_ltr($mm)[gt=month_irreg@mod]<br>
+        <br>
+        DEFINE SYMBOL mean_clim = ($mean_clim) + uvg_tauu($mm)<br>
+        <br>
+        pause&nbsp; ! this lets you watch the script in action.<br>
+        ! --- end of add_model.jnl<br>
+        <br>
+      </tt></blockquote>
+    <br>
+    <br>
+    On 9/1/2010 10:18 AM, Neil Swart wrote:
+    <blockquote cite=""
+      type="cite">
+      <pre wrap="">Hi Ferreters,
+
+I'm looking at surface wind stress from 20 models. Each models wind-stress is in a different file, but all have the same name (tauu). Unfortunately, the length, starting point and end point of the time axis is different for each model.
+
+What I want to do is to use the LAST 100 years of monthly output from each model to produce a single, averaged monthly climatology. I can produce the climatologies, using all times for each model, but have not been successful in limiting the calculation to only the last 100 years from each model.
+
+Does anyone have any suggestions on how to best achieve selecting the last 100 years from each model, even though the calendar dates maybe different?
+
+I have tried several things, like defining a new variable, but this fails, since each data set has a different length of time axis:
+
+let ll = l[gt=tauu] 
+let lim = ll[l=@max]  
+let tauu_ltr = tauu[l=`lim-1200`:`lim`]
+
+
+Many thanks,
+Neil Swart
+
+
+My jnl script look something like:
+
+use file1.nc
+use file2.nc
+.
+.
+.
+
+! Regrid the winds onto the uvic_escm x,y,z
+
+DEFINE GRID/X=GHO1/Y=GHO1/Z=GHO1 comg
+let uvg_grd = tauu[Gxyz=comg]*lmask[G=comg]
+
+! Compute climatologies over the last 100 years of the pinctrl runs
+
+use climatological_axes
+let uvg_tauu = uvg_grd[gt=month_noleap@asn]
+
+let mean_clim = (uvg_tauu[d=3] + uvg_tauu[d=4] + uvg_tauu[d=5] + uvg_tauu[d=6] + uvg_tauu[d=7] + uvg_tauu[d=8] + uvg_tauu[d=9] + uvg_tauu[d=10]\ 
+                + uvg_tauu[d=11] + uvg_tauu[d=12] + uvg_tauu[d=13] + uvg_tauu[d=14] + uvg_tauu[d=15] + uvg_tauu[d=16] + uvg_tauu[d=17] + uvg_tauu[d=18]\
+                + uvg_tauu[d=19]*-1 + uvg_tauu[d=20]*-1 + uvg_tauu[d=21]*-1 + uvg_tauu[d=22]*-1 )/20
+
+
+---------------------------------------------------
+Neil Swart
+
+Climate Modelling Group
+School of Earth and Ocean Sciences
+University of Victoria
+Victoria, BC
+Canada
+
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://climate.uvic.ca/">http://climate.uvic.ca/</a>
+
+
+</pre>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00504" href="msg00504.html">[ferret_users] Climatology over multiple data sets with differing time axes</a></strong>
+<ul><li><em>From:</em> Neil Swart</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00504.html">[ferret_users] Climatology over multiple data sets with differing time axes</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00505.html">[ferret_users] Composing one image from another ones</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00504.html">Thread Prev</a>][<a href="msg00505.html">Thread Next</a>][<A HREF="threads.html#00510">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

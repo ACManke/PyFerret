@@ -1,0 +1,186 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] RCM  limited area rotated lat&#45;lon grid -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 16 Apr 2010 12:12:37 &#45;0700 -->
+<!--X-Message-Id: 4BC8B6A5.1000400@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4BC88849.4080904@bristol.ac.uk -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] RCM  limited area rotated lat-lon grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00251.html">Thread Prev</a>][<a href="msg00468.html">Thread Next</a>][<A HREF="threads.html#00252">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] RCM  limited area rotated lat-lon grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ron.kahana@DOMAIN.HIDDEN">ron.kahana@xxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] RCM  limited area rotated lat-lon grid</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 16 Apr 2010 12:12:37 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4BC88849.4080904@DOMAIN.HIDDEN">4BC88849.4080904@xxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4BC88849.4080904@DOMAIN.HIDDEN">4BC88849.4080904@xxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.24 (Windows/20100228)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ron,<br>
+If you know of a mathematical translation to take your
+longitude-latitude grid to the set of coordinates that you want to use,
+you may be able to do the kinds of things that the map projection
+scripts do to translate between the coordinates in your grid to
+locations on the plot page corresponding to the grid you want to use.
+Take a look at some of the map projection scripts.&nbsp; Find them with<br>
+<br>
+% Fgo mp<br>
+<br>
+will tell you the location of all the mp*.jnl scripts, and then you can
+look at the contents of say, mp_mercator.jnl, mp_polyconic.jnl, etc. to
+see how that is done.<br>
+<br>
+Or, in a less elegant method, you could define your desired output grid
+and use one of the scatter-to-grid functions, treating your input data
+as if it's just at scattered XY locations.&nbsp; The trick here is to put
+the XY points of the input grid on a single x axis, just an index axis
+with length NX* NY, but keeping its Z and T variations intact.<br>
+<br>
+If the variable in your dataset is "var", then this would look like this<br>
+<blockquote><tt>yes? ! The x and y locations, each in a 1D list,
+defining the <br>
+yes? ! "scattered" point locations<br>
+yes? LET xpts = XSEQUENCE(x[gx=var] + 0*y[gy=var])<br>
+yes? LET ypts = XSEQUENCE(0*x[gx=var] + y[gy=var])<br>
+  <br>
+yes? ! We&nbsp; also need the variable, on this 1D index axis in the <br>
+yes? ! XY directions, with the original Z and T variation.<br>
+  <br>
+yes? ! Define an index axis <br>
+yes? LET nxy = `var,RETURN=isize`* `var,RETURN=jsize`<br>
+yes? DEFINE AXIS/X=1:`nxy`:1 xindex<br>
+  <br>
+yes? ! define the variable on the Xindex,Z,T grid,<br>
+yes? ! Reshape var to the grid of xytpts<br>
+  <br>
+yes? LET xytpts = x[gx=xindex] + z[gz=var] + t[gt=var]<br>
+yes? LET varpts = RESHAPE(var, xytpts)</tt><br>
+</blockquote>
+<br>
+Now xpts, ypts, and varpts are scattered points which can be used in a
+function like scat2gridgauss_xy, with whatever output grid you want to
+define.<br>
+<br>
+Ansley<br>
+<br>
+Ron Kahana wrote:
+<blockquote cite="" type="cite"><font
+ face="Bell MT">Dear ferret users,<br>
+  <br>
+I want to plot the output from a regional model with a limited lat-lon
+grid and rotated pole (HadRM3 rcm) <br>
+on a 'real' lat-lon grid, and then calculate average values over
+specific regions. <br>
+  <br>
+the netcdf grid is:<br>
+  <br>
+name&nbsp;&nbsp; &nbsp;axis&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; start&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; end<br>
+X&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE &nbsp;&nbsp;&nbsp; 229mr&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;50.191W(309.11)&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;49.999E(410)<br>
+Y&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; LATITUDE&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 132 r&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 32.307S&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; 25.66N<br>
+HT&nbsp;&nbsp; &nbsp;&nbsp; Z (m)&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 1 r&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; -1&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; -1<br>
+T&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; TIME&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 480 r&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 16-JAN-2991 00:00&nbsp;&nbsp;
+&nbsp;16-DEC-3030&nbsp; 00:00<br>
+  <br>
+  <br>
+I assume it is not a curvilinear grid and I'm able to plot it using map
+projections, but not on<br>
+an un-rotated 'real' grid.<br>
+  <br>
+Can you help me with that?<br>
+Many Thanks, <br>
+Ron<br>
+  <br>
+  </font>
+  <div class="moz-signature">-- <br>
+  <pre>Ron Kahana
+BRIDGE - Bristol Research Initiative for the Dynamic Global Environment
+School of Geographical Sciences
+University of Bristol BS8 1SS
+t: +44(0)117 9288808
+f: +44(0)117 9287878
+<a rel="nofollow" moz-do-not-send="true" class="moz-txt-link-freetext"
+ href="http://www.ggy.bris.ac.uk/staff/staff_kahana.html">http://www.ggy.bris.ac.uk/staff/staff_kahana.html</a>
+  </pre>
+  </div>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00251" href="msg00251.html">[ferret_users] RCM  limited area rotated lat-lon grid</a></strong>
+<ul><li><em>From:</em> Ron Kahana</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00251.html">[ferret_users] RCM  limited area rotated lat-lon grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00468.html">[ferret_users] Bug in ferret 6.6.2</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00251.html">Thread Prev</a>][<a href="msg00468.html">Thread Next</a>][<A HREF="threads.html#00252">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

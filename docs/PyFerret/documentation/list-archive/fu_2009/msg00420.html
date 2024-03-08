@@ -1,0 +1,177 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users]: time interpolation from files with different time axes fails -->
+<!--X-From-R13: Tnovna Zvrareg <pppzn&#45;fghqrag&#45;003Nrp.tp.pn> -->
+<!--X-Date: Wed, 8 Jul 2009 09:18:21 &#45;0700 -->
+<!--X-Message-Id: 4A54C6BA.4040908@ec.gc.ca -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41921F8F.3070500@ifm.zmaw.de -->
+<!--X-Reference: 41928FD9.4050808@noaa.gov -->
+<!--X-Reference: 4A549D1E.7040104@io&#45;warnemuende.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users]: time interpolation from files with different time axes fails</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00419.html">Thread Prev</a>][<a href="msg00422.html">Thread Next</a>][<A HREF="threads.html#00420">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users]: time interpolation from files with different time axes fails</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;,        ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users]: time interpolation from files with different time axes fails</strong></li>
+<li><strong>From</strong>: <strong>Fabian Lienert &lt;<a href="mailto:cccma-student-003@DOMAIN.HIDDEN">cccma-student-003@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Jul 2009 09:18:02 -0700</li>
+<li>In-reply-to: &lt;<a href="mailto:4A549D1E.7040104@DOMAIN.HIDDEN">4A549D1E.7040104@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:41921F8F.3070500@DOMAIN.HIDDEN">41921F8F.3070500@xxxxxxxxxxx</a>&gt; &lt;<a href="mailto:41928FD9.4050808@DOMAIN.HIDDEN">41928FD9.4050808@xxxxxxxx</a>&gt; &lt;<a href="mailto:4A549D1E.7040104@DOMAIN.HIDDEN">4A549D1E.7040104@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (X11/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Martin,
+
+Appending lwdn_ber to a netcdf file inside a loop should work if lwdn_ber has a time axis.
+
+If lwdn_ber does not have a time axis, the only way I could come up with is to add some
+other variable with a time axis, multiplied by zero, so that the variable is being redefined
+inside the loop. See my message in the ferret users archive, the second part might help you:
+<a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2009/msg00401.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2009/msg00401.html</a>
+
+Hope this helps.
+Fabian
+
+
+Martin Schmidt wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+</pre><tt>I am trying to use ferret to calculated downward longwave radiation from 
+</tt><tt>air-temperature, cloudiness and relative humidity.
+</tt><tt>All data are given 6 hourly, but cloudiness times are shifted by 3 hours 
+</tt><tt>agains air-temperature and relative humidity.
+</tt><pre style="margin: 0em;">
+I would like hourly radiation values and interpolate input data.
+
+My script looks like follows:
+use &quot;/DATABASE/2000/cloud.dta.nc&quot;
+use &quot;/DATABASE/2000/tair.dta.nc&quot;
+use &quot;/DATABASE/2000/rhumi.dta.nc&quot;
+
+!Define a new time axis ( the input data cover dec 1999 and  jan 2001)
+</pre><tt>define 
+</tt><tt>axis/t=1-dec-1999:31-jan-2001:1/unit=hours/t0=1-jan-1955/cal=julian time
+</tt><pre style="margin: 0em;">
+define grid/t=time tgrid
+let tdummy=0*t[gt=tgrid]
+
+! for shorter notation
+let ta =   tair[d=2]
+let rh =  rhumi[d=3]
+let cl =  cloud[d=1]
+
+!linearly interpolate to a hourly common time basis
+let ta_net = ta[gt=tdummy@lin]-273.15
+let rh_net = rh[gt=tdummy@lin]
+let cloud_net = cl[gt=$1@lin]
+
+</pre><tt>Now these quantities are used to calculate the radiation by simple 
+</tt><tt>operations.
+</tt><tt>Shading (l=something or x=something) prior writing to a file gives 
+</tt><tt>reasonable output.
+</tt><tt>The problem is now, that the amount of data is huge. With a limited area 
+</tt><tt>output can be written in one step
+</tt><pre style="margin: 0em;">
+
+sp rm lwdn_ber.mom.dta.nc
+save/append/file=&quot;lwdn_ber.dta.nc&quot; lwdn_ber
+
+This gives reasonable results.
+
+For the full data set I try to write time step after time step
+sp rm lwdn_ber.dta.nc
+let lmax=`tdummy,return=lend`
+repeat/l=1:`lmax` (save/append/file=&quot;lwdn_ber.dta.nc&quot; lwdn_ber)
+
+</pre><tt>This generates an output file of correct size. For some periods (days) 
+</tt><tt>data are correct, but there
+</tt><pre style="margin: 0em;">
+are also periods, where every fourth dataset is filled with missing values.
+
+Does anyone have an idea, what I am doing wrong?
+
+Best,
+Martin Schmidt
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+Fabian Lienert                  |  Canadian Centre for Climate Modelling and Analysis
+PhD Student                     |  Meteorological Service of Canada
+phone: +1(250)721-7211          |  University of Victoria
+cccma-student-003@xxxxxxxx      |  P.O. Box 1700
+<a  rel="nofollow" href="http://www.cccma.bc.ec.gc.ca">http://www.cccma.bc.ec.gc.ca</a>    |  Victoria, BC,  V8W 2Y2, Canada
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00422" href="msg00422.html">Re: [ferret_users]: time interpolation from files with different time	axes fails</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00419" href="msg00419.html">[ferret_users]: time interpolation from files with different time axes fails</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00419.html">[ferret_users]: time interpolation from files with different time axes fails</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00422.html">Re: [ferret_users]: time interpolation from files with different time	axes fails</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00419.html">Thread Prev</a>][<a href="msg00422.html">Thread Next</a>][<A HREF="threads.html#00420">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

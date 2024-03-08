@@ -1,0 +1,211 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] A note about Ferret's IF statement -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 15 Jun 2011 17:33:27 &#45;0700 -->
+<!--X-Message-Id: 4DF94FE4.6060805@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] A note about Ferret's IF statement</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00470.html">Thread Next</a>][<A HREF="threads.html#00465">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] A note about Ferret's IF statement</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] A note about Ferret's IF statement</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 15 Jun 2011 17:35:48 -0700</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.17) Gecko/20110414 Thunderbird/3.1.10</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi all,<br>
+    Just a note about a conversation we've been having in our hallways.&nbsp;
+    Even experienced Ferret users get caught unawares now and then.&nbsp; <br>
+    <br>
+    The IF statement in Ferret has a couple of uses. One is for setting
+    up <a rel="nofollow"
+href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/IF#_VPINDEXENTRY_1398">conditional
+
+      control in a script </a><br>
+    <br>
+    <tt>&nbsp;&nbsp; IF condition THEN ...</tt><br>
+    <br>
+    The second is to <a rel="nofollow"
+href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/variables-xpressions/XPRESSIONS#_VPID_181">define
+
+      a mask</a><br>
+    <br>
+    <tt>&nbsp;&nbsp; LET mask = IF elev GT 0 THEN 1&nbsp;&nbsp;&nbsp; ! If elevation &gt; 0 then
+      1 else missing<br>
+      &nbsp;&nbsp; LET masked_temp = temp* mask&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! Temperature where elevation
+      positive</tt><br>
+    <br>
+    For all IF statements, the "TRUE" condition includes <b>valid
+      nonzero</b> data values, and the "FALSE" condition includes <b>the
+      value zero</b> and also invalid data values.&nbsp; This all works as I
+    think we'd expect for conditional control in scripts,&nbsp; but
+    unexpected results can arise in using IF for masking. <br>
+    <br>
+    In effect there are two different flavors of "existence" of a
+    variable in Ferret.<br>
+    <br>
+    One is reported by STAT, and in the "number of good" (@NGD) and
+    "number of bad" (@NBD) syntax. This is the usual "existence" of
+    geophysical&nbsp; variables, which can be zero and still be valid. Only
+    explicitly MISSING values "do not exist" by this test.<br>
+    <br>
+    The other flavor found in IF statements for defining masks (IF A
+    THEN B). In this case, a zero value of variable A is taken as "not
+    existing", and the result of the command is that variable B will be
+    labeled missing at those points in addition to any points where A
+    matches its missing-value flag. The results can lead to calculations
+    that are not what the user intended.<br>
+    <br>
+    There is a simple workaround (see definition of D in the example&nbsp;
+    below), but some users will not know that this is essential, and
+    even users who do know it forget, because when one routinely&nbsp; works
+    with zero values as existing, it is non-intuitive. We're posting
+    this to the list to point out that these different behaviors occur.
+    This is noted in the documentation but perhaps it could be made more
+    prominent.&nbsp; <br>
+    <br>
+    If you are masking with IF/THEN, and you intend to test for
+    valid-data but not zero-values, then you must explicitly state that
+    you are testing against missing values, or else zero values will be
+    taken as missing.<br>
+    <br>
+    ----------------------------------------------------<br>
+    A simple example:<br>
+    <tt><br>
+    </tt>
+    <blockquote><tt> yes? let a = {0,1,2,,3}&nbsp;&nbsp;&nbsp; ! one zero and one
+        explicitly bad value</tt><br>
+      <tt> yes? let b = {5,6,7,8,9}</tt><br>
+      <tt> yes? let c = if a then b</tt><br>
+      <tt> </tt><br>
+      <tt> yes? list a,b,c</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X: 0.5 to 5.5</tt><br>
+      <tt>&nbsp;Column&nbsp; 1: A is {0,1,2,,3}</tt><br>
+      <tt>&nbsp;Column&nbsp; 2: B is {5,6,7,8,9}</tt><br>
+      <tt>&nbsp;Column&nbsp; 3: C is IF A THEN B</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A&nbsp;&nbsp;&nbsp;&nbsp; B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C</tt><br>
+      <tt>1&nbsp;&nbsp; / 1:&nbsp; 0.000&nbsp; 5.000&nbsp;&nbsp; ....</tt><br>
+      <tt>2&nbsp;&nbsp; / 2:&nbsp; 1.000&nbsp; 6.000&nbsp; 6.000</tt><br>
+      <tt>3&nbsp;&nbsp; / 3:&nbsp; 2.000&nbsp; 7.000&nbsp; 7.000</tt><br>
+      <tt>4&nbsp;&nbsp; / 4:&nbsp;&nbsp; ....&nbsp; 8.000&nbsp;&nbsp; ....</tt><br>
+      <tt>5&nbsp;&nbsp; / 5:&nbsp; 3.000&nbsp; 9.000&nbsp; 9.000</tt><br>
+    </blockquote>
+    <br>
+    <br>
+    ==&gt;&gt; While the user might think that zero is a perfectly good
+    value of&nbsp; A, the IF/THEN mask finds it invalid, and C is blanked
+    where A is&nbsp; missing, AND where A=0.<br>
+    <br>
+    ==&gt;&gt; On the other hand, "STAT a" finds only the explicitly
+    missing&nbsp; value to be blank, and the @NGD test finds the same:<br>
+    <blockquote><tt> yes? stat a</tt><br>
+      <tt>&nbsp; </tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {0,1,2,,3}</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X: 0.5 to 5.5</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Y:&nbsp; N/A</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Z:&nbsp; N/A</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T:&nbsp; N/A</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DATA SET: N/A</tt><br>
+      <tt>&nbsp;</tt><br>
+      <tt>&nbsp;Total # of data points: 5 (5*1*1*1)</tt><br>
+      <tt>&nbsp;# flagged as bad&nbsp; data: 1</tt><br>
+      <tt>&nbsp;Minimum value: 0</tt><br>
+      <tt>&nbsp;Maximum value: 3</tt><br>
+      <tt>&nbsp;Mean&nbsp;&nbsp;&nbsp; value: 1.5 (unweighted average)</tt><br>
+      <tt>&nbsp;Standard deviation: 1.291</tt><br>
+      <tt></tt><br>
+      <tt>yes? list a[i=@ngd]</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : {0,1,2,,3} (# of points)</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 0.5 to 5.5 (number of valid)</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.000</tt><br>
+    </blockquote>
+    ==&gt;&gt; There is a simple workaround :<br>
+    <blockquote><br>
+      <tt> yes? let d = if a ne `a,return=bad` then b</tt><br>
+      <tt> </tt><br>
+      <tt> yes? list a,b,d</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X: 0.5 to 5.5</tt><br>
+      <tt>&nbsp;Column&nbsp; 1: A is {0,1,2,,3}</tt><br>
+      <tt>&nbsp;Column&nbsp; 2: B is {5,6,7,8,9}</tt><br>
+      <tt>&nbsp;Column&nbsp; 3: D is IF A NE -1.000000E+34 THEN B</tt><br>
+      <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A&nbsp;&nbsp;&nbsp;&nbsp; B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; D</tt><br>
+      <tt>1&nbsp;&nbsp; / 1:&nbsp; 0.000&nbsp; 5.000&nbsp; 5.000</tt><br>
+      <tt>2&nbsp;&nbsp; / 2:&nbsp; 1.000&nbsp; 6.000&nbsp; 6.000</tt><br>
+      <tt>3&nbsp;&nbsp; / 3:&nbsp; 2.000&nbsp; 7.000&nbsp; 7.000</tt><br>
+      <tt>4&nbsp;&nbsp; / 4:&nbsp;&nbsp; ....&nbsp; 8.000&nbsp;&nbsp; ....</tt><br>
+      <tt>5&nbsp;&nbsp; / 5:&nbsp; 3.000&nbsp; 9.000&nbsp; 9.000</tt><br>
+    </blockquote>
+    <br>
+    <br>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00463.html">[ferret_users] Color filling contours in Plate Caree projection - problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00470.html">[ferret_users] T-S plot on density contours</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00463.html">Thread Prev</a>][<a href="msg00470.html">Thread Next</a>][<A HREF="threads.html#00465">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

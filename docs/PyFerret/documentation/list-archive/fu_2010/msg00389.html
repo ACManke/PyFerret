@@ -1,0 +1,180 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] wHDF not supported on this platform -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Thu, 1 Jul 2010 00:27:08 &#45;0700 -->
+<!--X-Message-Id: 4C2C4340.3060004@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20100630.113043.93169252.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] wHDF not supported on this platform</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00390.html">Thread Prev</a>][<a href="msg00391.html">Thread Next</a>][<A HREF="threads.html#00389">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] wHDF not supported on this platform</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] wHDF not supported on this platform</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Jul 2010 09:26:56 +0200</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:20100630.113043.93169252.furue@DOMAIN.HIDDEN">20100630.113043.93169252.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:20100630.113043.93169252.furue@DOMAIN.HIDDEN">20100630.113043.93169252.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.8.1.22) Gecko/20090609 SeaMonkey/1.1.17</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ryo,
+
+you could use animation on the fly:
+
+use coads_climatology
+repeat/l=1:12/anim/loop=10 shade sst
+
+</pre><tt>However, this requires that your X-server supports a virtual fram 
+</tt><tt>buffer, i.e. &quot;backing store&quot; must be enabled.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>This does not work for example with the latest ferret release for AIX, 
+</tt><tt>even if -bs is set for the X-server.
+</tt><pre style="margin: 0em;">
+
+For linux (suse distribution) this works fine if there is a line
+
+Option &quot;backingstore&quot; &quot;true&quot;
+
+</pre><tt>in XF86Config. However, in the latest suse release (11) this nice 
+</tt><tt>feature is broken. The developers of kde
+</tt><tt>with the &quot;plasma&quot; features do not care about backing store. If you 
+</tt><tt>switch on backing store your screen freezes
+</tt><tt>soon. Searching the forums and help areas there are answers like &quot;Who 
+</tt><tt>needs this - switch it off ... :-(
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Virtual machines often do not support backing store too. So it would be 
+</tt><tt>great, if some other solution could be found.
+</tt><pre style="margin: 0em;">
+
+Another way is to use whirlgif and gifview
+
+rm sst.gif*
+ferret -gif
+yes? use coads_climatology
+yes? repeat/l=1:12 (shade/lev=(-2,32,1) sst;fill/over/lev=(-2,32,1) sst;go fland 20;frame/file=sst.gif)
+quit
+
+mv sst.gif sst.gif.~12~
+ls sst.gif.* | sort -t~ +1 -n  &gt; gifs.cmd
+</pre><tt>whirlgif -o sst.gif -loop -i gifs.cmd 
+</tt><tt>
+</tt><tt>gifview -a  sst.gif 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+Best,
+Martin
+
+Ryo Furue wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ferret users,
+
+Ferret 6.61 exits with error &quot;wHDF not supported on this platform&quot;.
+
+  bash$ ferret
+          NOAA/PMEL TMAP
+</pre><tt>          FERRET v6.61  
+</tt><tt>          Linux rh5 (gfortran) 2.6.18-164.11.1.el5 - 04/28/10
+</tt><tt>          30-Jun-10 11:18     
+</tt><tt>  yes? set data levitus_climatology
+</tt><pre style="margin: 0em;">
+  yes? fill/l=1/k=1 temp
+  yes? frame
+  wHDF not supported on this platform
+  bash$
+
+I'm reporting this mainly as an instance of Ferret &quot;crash&quot;.
+A FRAME command without qualifiers isn't terribly important
+to me.  I was just using it as a means of reducing the
+flickering of on-the-fly animation:
+
+  yes? repeat/l=1:120 (fill/l=1/k=1 temp)        !! flickers.
+  yes? repeat/l=1:120 (fill/l=1/k=1 temp; frame) !! Easier to see.
+
+(Is there an alternative?)
+
+Regards,
+Ryo
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00391" href="msg00391.html">Re: [ferret_users] wHDF not supported on this platform</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00387" href="msg00387.html">[ferret_users] wHDF not supported on this platform</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00390.html">Re: [ferret_users] wHDF not supported on this platform</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00391.html">Re: [ferret_users] wHDF not supported on this platform</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00390.html">Thread Prev</a>][<a href="msg00391.html">Thread Next</a>][<A HREF="threads.html#00389">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

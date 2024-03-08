@@ -1,0 +1,151 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] a hint for reading integer data in fortran format -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <Ivyyvnz.E.YrffyreNabnn.tbi> -->
+<!--X-Date: Sun, 20 Dec 2009 11:47:14 &#45;0800 -->
+<!--X-Message-Id: 826C4655&#45;A6C4&#45;4864&#45;B847&#45;8399269730F8@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] a hint for reading integer data in fortran format</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00832.html">Thread Prev</a>][<a href="msg00834.html">Thread Next</a>][<A HREF="threads.html#00833">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] a hint for reading integer data in fortran format</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] a hint for reading integer data in fortran format</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Sun, 20 Dec 2009 11:47:12 -0800</li>
+<li>Cc: &quot;William S. Kessler&quot; &lt;<a href="mailto:William.S.Kessler@DOMAIN.HIDDEN">William.S.Kessler@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi all -
+
+</pre><tt>It is not obvious how to read ASCII integer data into Ferret using  
+</tt><tt>FILE/FORMAT, since the only permitted formats are floating point (as  
+</tt><tt>far as I know). However, Ferret is willing to be fooled into reading  
+</tt><tt>integer data anyway, simply by referring to an value of N places  
+</tt><tt>(e.g. fortran format i8) as a floating point value with the same  
+</tt><tt>number of places (e.g. f8.0).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Here's an example of reading the following mixed integer and floating  
+</tt><tt>point data:
+</tt><pre style="margin: 0em;">
+
+id date time lat lon t ve vn speed varlat varlon vart
+</pre><tt>    3534 2000/02/12        0   -2.012  166.466   27.967  -52.645    
+</tt><tt>-7.595   53.190  6.750e-05  9.691e-05  4.851e-03
+</tt><tt>    3534 2000/02/12        6   -2.019  166.368   28.110  -53.935   
+</tt><tt>-10.895   55.024  1.936e-05  2.383e-05  3.229e-03
+</tt><tt>    3534 2000/02/12       12   -2.054  166.256   27.835  -55.647   
+</tt><tt>-19.555   58.983  6.430e-05  9.192e-05  4.877e-03
+</tt><tt>    3534 2000/02/12       18   -2.095  166.152   27.680  -52.677   
+</tt><tt>-16.896   55.320  5.124e-06  6.815e-06  2.570e-03
+</tt><tt>    3534 2000/02/13        0   -2.120  166.052   28.110  -53.890   
+</tt><tt>-14.347   55.767  1.137e-04  1.788e-04  3.767e-03
+</tt><tt>    3534 2000/02/13        6   -2.151  165.943   28.359  -47.714   
+</tt><tt>-23.681   53.268  1.236e-05  1.719e-05  2.461e-03
+</tt><tt>    3534 2000/02/13       12   -2.213  165.867   27.960  -45.110   
+</tt><tt>-23.439   50.837  6.994e-05  1.011e-04  4.977e-03
+</tt><tt>    3534 2000/02/13       18   -2.243  165.768   27.788  -50.685   
+</tt><tt>-12.386   52.176  1.049e-05  1.340e-05  3.165e-03
+</tt><pre style="margin: 0em;">
+
+</pre><tt>file/format=(f8.0,f5.0,1x,f2.0,1x,f2.0,f9.0,6f9.3)/ 
+</tt><tt>var=&quot;id,yr,mon,day,hr,lat,lon,temp,u,v,speed&quot;/g=gind/sk=1 filename.dat
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Even though the format given is incorrect (i.e. it would fail in  
+</tt><tt>fortran code, because, for example, the month is actually in i2  
+</tt><tt>format, not f2.0 as I have done above), a ferret listing of these  
+</tt><tt>values is correct:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>              ID     YR    MON    DAY     HR    LAT    LON    
+</tt><tt>TEMP      U      V  SPEED
+</tt><tt>1    /  1:  3534.  2000.  2.000  12.00   0.00 -2.012  166.5  27.97  
+</tt><tt>-52.65  -7.59  53.19
+</tt><tt>2    /  2:  3534.  2000.  2.000  12.00   6.00 -2.019  166.4  28.11  
+</tt><tt>-53.94 -10.90  55.02
+</tt><tt>3    /  3:  3534.  2000.  2.000  12.00  12.00 -2.054  166.3  27.83  
+</tt><tt>-55.65 -19.56  58.98
+</tt><tt>4    /  4:  3534.  2000.  2.000  12.00  18.00 -2.095  166.2  27.68  
+</tt><tt>-52.68 -16.90  55.32
+</tt><tt>5    /  5:  3534.  2000.  2.000  13.00   0.00 -2.120  166.1  28.11  
+</tt><tt>-53.89 -14.35  55.77
+</tt><tt>6    /  6:  3534.  2000.  2.000  13.00   6.00 -2.151  165.9  28.36  
+</tt><tt>-47.71 -23.68  53.27
+</tt><tt>7    /  7:  3534.  2000.  2.000  13.00  12.00 -2.213  165.9  27.96  
+</tt><tt>-45.11 -23.44  50.84
+</tt><tt>8    /  8:  3534.  2000.  2.000  13.00  18.00 -2.243  165.8  27.79  
+</tt><tt>-50.69 -12.39  52.18
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00834" href="msg00834.html">Re: [ferret_users] a hint for reading integer data in fortran format</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00832.html">[ferret_users] Line integral</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00834.html">Re: [ferret_users] a hint for reading integer data in fortran format</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00832.html">Thread Prev</a>][<a href="msg00834.html">Thread Next</a>][<A HREF="threads.html#00833">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

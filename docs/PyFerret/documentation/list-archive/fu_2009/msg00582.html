@@ -1,0 +1,149 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] -->
+<!--X-From-R13: Rnivq Inat <pyvzngreNtznvy.pbz> -->
+<!--X-Date: Wed, 16 Sep 2009 07:38:23 &#45;0700 -->
+<!--X-Message-Id: 8be1369e0909160738p5e498ec2m8e9a6cb2bba0699c@mail.gmail.com -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: d3d8ae6d0909160556x61600dhc44ee4404e4e9d51@mail.gmail.com -->
+<!--X-Reference: 8cc42c030909160649g79b649c3g362650f17bb80bc4@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users]</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00579.html">Thread Prev</a>][<a href="msg00588.html">Thread Next</a>][<A HREF="threads.html#00582">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users]</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users]</strong></li>
+<li><strong>From</strong>: <strong>David Wang &lt;<a href="mailto:climater@DOMAIN.HIDDEN">climater@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 16 Sep 2009 10:38:17 -0400</li>
+<li>Cc: Yi HanSoo &lt;<a href="mailto:yi.hansoo@DOMAIN.HIDDEN">yi.hansoo@xxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=relaxed/relaxed;        d=gmail.com; s=gamma; h=domainkey-signature:mime-version:received:in-reply-to:references :date:message-id:subject:from:to:cc:content-type; bh=snl86LyActLtHOVtRyMLwFrNLXSIYMkLBadXFUXnfUY=; b=OP5OxXh3Z5k+7VNkcN2Eo6Nioad9ixEwNNw+ZM0tFAUArk5guLiBSI+itf7/D7JauH +fMd52/N6WftSpxj76dHF13zcaivk+zniBCkIqL1NfgPvQopmp2RNGi05hD12zhY83Sb xQQe3krlbr25cFIPYL5mDK3SjWBUTiAE16WFc=</li>
+<li>Domainkey-signature: a=rsa-sha1; c=nofws;        d=gmail.com; s=gamma; h=mime-version:in-reply-to:references:date:message-id:subject:from:to :cc:content-type; b=wZ5Od65Y9+EaJP0fAh88YHsgj42+WSybv2R6ootb48v2q1L9RDjGFl9KQNt45MVI6I K8Ba0sAX2GvZmty2w55QlNNDtVEhKrNQe1iHpeJMhvdsd7U65U2Bd5JfVHjOf1ar5ivF MxOXXwj89wq3L3QV+72cueW5dbDPcEB2V3LHM=</li>
+<li>In-reply-to: &lt;<a href="mailto:8cc42c030909160649g79b649c3g362650f17bb80bc4@DOMAIN.HIDDEN">8cc42c030909160649g79b649c3g362650f17bb80bc4@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:d3d8ae6d0909160556x61600dhc44ee4404e4e9d51@DOMAIN.HIDDEN">d3d8ae6d0909160556x61600dhc44ee4404e4e9d51@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:8cc42c030909160649g79b649c3g362650f17bb80bc4@DOMAIN.HIDDEN">8cc42c030909160649g79b649c3g362650f17bb80bc4@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+Hi Lee,<br><br>There are multiple ways to do it (Matlab, NCO, etc). But this is a Ferret list, let&#39;s stick to our beloved tool.<br><br>The vertical axis is a bit more involved than the simple evenly spaced horizontal axis in Peter&#39;s example. Another complexity is that a vertical axis can be either bottom up or top down. In your particular case, I&#39;d first save the absolute value of the original vertical axis into an ascii file, reverse its order, and read it back into Ferret in order to define a new axis:<br>
+<br>yes? save/clobber/prec=7/file=ztmp.asc abs(z[gz=s])<br>yes? sp tac ztmp.asc &gt; z.asc<br><br>If you don&#39;t change the vertical resolution of your model frequently, keep z.asc<br><br>Now in a new Ferret session,<br>
+yes? file/var=zz z.asc<br>yes? define axis/z/depth zax = zz[d=z.asc]<br>yes? use/order=xy-z <a rel="nofollow" href="http://state.0000000000.glob.nc/" target="_blank">state.0000000000.glob.nc</a><br>yes? let snew = s[gz=zax@asn]<br><br>Note I reverse the vertical dimension when loading the data. So that the first level would be the surface, not the bottom.<br>
+<br>A caveat: if the original vertical axis has a edge or bounds attribute, you will have to somehow put such info into the new axis as well. Otherwise your computation, for example, vertical integral of S, may not be accurate.<br>
+<br>HTH,<br>D.<br><br><div class="gmail_quote">On Wed, Sep 16, 2009 at 9:49 AM, Peter Szabo <span dir="ltr">&lt;<a rel="nofollow" href="mailto:szabpet83@xxxxxxxxx">szabpet83@xxxxxxxxx</a>&gt;</span> wrote:<br><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Hey Lee,<br><br>it is not a big deal. First define a new Z axis, then regrid your variable onto it.<br>Suppose my variable, named precip is as follows:<br>&#xA0;&#xA0;&#xA0; GRID GLS1<div class="im"><br>&#xA0;name&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; axis&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; # pts&#xA0;&#xA0; start&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; end<br>
+</div>
+&#xA0;XAX&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; X&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 97 r&#xA0;&#xA0; 11.78&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 25.22<br>&#xA0;YAX&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; Y&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 61 r&#xA0;&#xA0; 44.63&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 50.2<br>&#xA0;normal&#xA0;&#xA0;&#xA0; Z<br>&#xA0;TIME&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; TIME&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 10957 r&#xA0;&#xA0; 01-JAN-1961 12:00&#xA0;&#xA0;&#xA0; 31-DEC-1990 12:00<br>
+
+<br>I want to change the XAX so that it will be increasing in negative: from -25.22 to -11.78. I define a new x axis:&#xA0;<br>def axis/x=-25.22:-11.78/np=97 newx<br><br>And finally the regriding:<br>let newprecip2=precip[gx=newx@asn]<br>
+
+<br>Have a good sleep now :)<br><font color="#888888"><br>Peter<br><br></font><div class="gmail_quote"><div class="im">On Wed, Sep 16, 2009 at 2:56 PM, Yi HanSoo <span dir="ltr">&lt;<a rel="nofollow" href="mailto:yi.hansoo@xxxxxxxxx" target="_blank">yi.hansoo@xxxxxxxxx</a>&gt;</span> wrote:<br>
+</div><div><div></div><div class="h5"><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+Dear ferret users<div><br></div><div>I am now struggling to convert the grid of model output to another one without no progress.</div><div>Could anyone give me a clue for this simple problem?</div><div>&#xA0;</div><div>original data is as follows;</div>
+
+
+<div>--------------------------------------------------------------------------------------------------------</div><div>yes? show data</div><div>&#xA0;&#xA0; &#xA0; currently SET data sets:</div><div>&#xA0;&#xA0; &#xA0;1&gt; ./<a rel="nofollow" href="http://state.0000000000.glob.nc" target="_blank">state.0000000000.glob.nc</a> &#xA0;(default)</div>
+
+
+<div>&#xA0;name &#xA0; &#xA0; title &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; I &#xA0; &#xA0; &#xA0; &#xA0; J &#xA0; &#xA0; &#xA0; &#xA0; K &#xA0; &#xA0; &#xA0; &#xA0; L</div><div>&#xA0;ETA &#xA0; &#xA0; &#xA0;free-surface_r-anomaly &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 1:115 &#xA0; &#xA0; 1:127 &#xA0; &#xA0; ... &#xA0; &#xA0; &#xA0; 1:181</div><div>&#xA0;S &#xA0; &#xA0; &#xA0; &#xA0;salinity &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 1:115 &#xA0; &#xA0; 1:127 &#xA0; &#xA0; 1:26 &#xA0; &#xA0; &#xA0;1:181</div>
+
+
+<div>&#xA0;TEMP &#xA0; &#xA0; potential_temperature &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;1:115 &#xA0; &#xA0; 1:127 &#xA0; &#xA0; 1:26 &#xA0; &#xA0; &#xA0;1:181</div><div>&#xA0;U &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 1:115 &#xA0; &#xA0; 1:127 &#xA0; &#xA0; 1:26 &#xA0; &#xA0; &#xA0;1:181</div><div>&#xA0;V &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 1:115 &#xA0; &#xA0; 1:127 &#xA0; &#xA0; 1:26 &#xA0; &#xA0; &#xA0;1:181</div>
+
+
+<div>&#xA0;W &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;1:115 &#xA0; &#xA0; 1:127 &#xA0; &#xA0; 1:26 &#xA0; &#xA0; &#xA0;1:181</div><div>&#xA0;ITER &#xA0; &#xA0; iteration_count &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;... &#xA0; &#xA0; &#xA0; ... &#xA0; &#xA0; &#xA0; ... &#xA0; &#xA0; &#xA0; 1:181</div><div>&#xA0;</div><div>yes? show grid s</div>
+
+
+<div>&#xA0;&#xA0; &#xA0;GRID INV_Z</div><div>&#xA0;name &#xA0; &#xA0; &#xA0; axis &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; # pts &#xA0; &#xA0; start &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; end</div><div>&#xA0;X &#xA0; &#xA0; &#xA0; &#xA0; X &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;115 r &#xA0; &#xA0;125.08 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 144.08</div><div>&#xA0;Y &#xA0; &#xA0; &#xA0; &#xA0; Y &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 127 r &#xA0; &#xA0;15.083 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 36.083</div>
+
+
+<div>&#xA0;<b>Z &#xA0; &#xA0; &#xA0; &#xA0; Z &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;26 i &#xA0; &#xA0; &#xA0;-6739 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; -5</b></div><div>&#xA0;T &#xA0; &#xA0; &#xA0; &#xA0; T (s) &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 181r &#xA0; &#xA0; &#xA0;0 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;324000</div><div>--------------------------------------------------------------------------------------------------------</div>
+
+
+<div>&#xA0;&#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;|</div><div>&#xA0;&#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;| &#xA0; I&#39;d like to change the model output to the following grid form.&#xA0;</div><div>&#xA0;&#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; \|/ &#xA0;Change the Z (depth) grid which is originally increasing in negative to inversed axis (increasing in positive)&#xA0;</div>
+
+
+<div><div><div>--------------------------------------------------------------------------------------------------------</div><div>.......</div><div>&#xA0;</div><div>yes? show grid s</div><div>&#xA0;&#xA0; &#xA0;GRID INV_Z</div><div>&#xA0;name &#xA0; &#xA0; &#xA0; axis &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; # pts &#xA0; &#xA0; start &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; end</div>
+
+
+<div>&#xA0;X &#xA0; &#xA0; &#xA0; &#xA0; X &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;115 r &#xA0; &#xA0;125.08 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 144.08</div><div>&#xA0;Y &#xA0; &#xA0; &#xA0; &#xA0; Y &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 127 r &#xA0; &#xA0;15.083 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 36.083</div><div><b>&#xA0;Z &#xA0; &#xA0; &#xA0; &#xA0; Z &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;26 i &#xA0; &#xA0; &#xA0;5 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 6739</b></div>
+
+
+<div>&#xA0;T &#xA0; &#xA0; &#xA0; &#xA0; T (s) &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; 181r &#xA0; &#xA0; &#xA0;0 &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0; &#xA0;324000</div><div>--------------------------------------------------------------------------------------------------------</div></div></div><div><br></div>
+
+
+<div>Thank you in advance.</div><div><br></div><div>regards,</div><div>Lee</div><div><br></div><div>-- <br>## Han Soo Lee (&#x674E; &#x6F22;&#x6D19;)<br><br>## Environmental Simulator Laboratory,<br>## Graduate School for International Development and Cooperation, <br>
+
+
+## Hiroshima University, <br>## 1-5-1 Kagamiyama, Higasi-Hiroshima, Hiroshima, Japan.<br>## 739-8529<br>## <a rel="nofollow" href="mailto:lee.hansoo@xxxxxxxxx" target="_blank">lee.hansoo@xxxxxxxxx</a> / <a rel="nofollow" href="mailto:hslee@xxxxxxxxxxxxxxxxx" target="_blank">hslee@xxxxxxxxxxxxxxxxx</a><br>
+
+
+## TEL/FAX : +81-(0)82-424-4342<br>
+</div>
+</blockquote></div></div></div><br>
+</blockquote></div><br><br clear="all"><br>-- <br>turn and live.<br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00578" href="msg00578.html">[ferret_users]</a></strong>
+<ul><li><em>From:</em> Yi HanSoo</li></ul></li>
+<li><strong><a name="00579" href="msg00579.html">Re: [ferret_users]</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00579.html">Re: [ferret_users]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00588.html">[ferret_users] Internal: unexpected modulo jump!</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00579.html">Thread Prev</a>][<a href="msg00588.html">Thread Next</a>][<A HREF="threads.html#00582">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

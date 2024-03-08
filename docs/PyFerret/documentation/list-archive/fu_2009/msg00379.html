@@ -1,0 +1,219 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] composite of active phase -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 19 Jun 2009 15:49:04 &#45;0700 -->
+<!--X-Message-Id: 4A3C15DF.4090902@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: b4114cae0906181139u543e6bacw268264df592f2ac7@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] composite of active phase</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00373.html">Thread Prev</a>][<a href="msg00374.html">Thread Next</a>][<A HREF="threads.html#00379">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] composite of active phase</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jaya kumar A &lt;<a href="mailto:jayamet@DOMAIN.HIDDEN">jayamet@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] composite of active phase</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 19 Jun 2009 15:49:03 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:b4114cae0906181139u543e6bacw268264df592f2ac7@DOMAIN.HIDDEN">b4114cae0906181139u543e6bacw268264df592f2ac7@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:b4114cae0906181139u543e6bacw268264df592f2ac7@DOMAIN.HIDDEN">b4114cae0906181139u543e6bacw268264df592f2ac7@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Windows/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Jaya,
+</pre><tt>Yes, this method looks fine. The sampling that SAMPLEL does is based on 
+</tt><tt>index values that refer to L=1,2,3,....  so if you have listed the index 
+</tt><tt>values that correspond to the times you want to include, then averaging 
+</tt><tt>the sampled variable is the average over just those times.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>To make a list of values before and after the chosen time points, I have 
+</tt><tt>an idea.  I will show an example to make a list of the index values 5 
+</tt><tt>points before and after a particular list of index values,and you can do 
+</tt><tt>the same thing with a list of 20 points before and after.  We will 
+</tt><tt>define a t variable from the list of indices, and an x variable centered 
+</tt><tt>on zero, with 5 points on each side. Then we'll use these variables to 
+</tt><tt>define a 2D variable whose values in the x direction will be the set of 
+</tt><tt>chosen index values, plus or minus 5.  Then we will create a 1D list of 
+</tt><tt>this new variable.
+</tt><pre style="margin: 0em;">
+
+! A set of points which correspond toyour active phase dates, on a T axis
+</pre><tt>yes? LET tpts = TSEQUENCE({100,150,300}) 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+! An axis in another direction, centered on zero
+yes? DEFINE AXIS/X=-5:5:1 x5
+yes? let xpts = x[gx=x5]
+
+yes? LET xtvar = xpts + tpts
+
+yes? list xtvar
+            VARIABLE : X[GX=X5] + TPTS
+            SUBSET   : 11 by 3 points (X-T)
+</pre><tt>           -5     -4     -3     -2     -1      0      1      2      
+</tt><tt>3      4      5   
+</tt><tt>            1      2      3      4      5      6      7      8      
+</tt><tt>9     10     11
+</tt><tt>1   / 1:   95.0   96.0   97.0   98.0   99.0  100.0  101.0  102.0  
+</tt><tt>103.0  104.0  105.0
+</tt><tt>2   / 2:  145.0  146.0  147.0  148.0  149.0  150.0  151.0  152.0  
+</tt><tt>153.0  154.0  155.0
+</tt><tt>3   / 3:  295.0  296.0  297.0  298.0  299.0  300.0  301.0  302.0  
+</tt><tt>303.0  304.0  305.0
+</tt><pre style="margin: 0em;">
+                                               ^
+                                               ^
+</pre><tt>          |---- 5 on each side ------ the original points ------ 5 on 
+</tt><tt>each side ----|
+</tt><pre style="margin: 0em;">
+
+yes?  ! now make this into a 1D variable
+
+yes? LET xtseries = XSEQUENCE(xtvar)
+yes? list xtseries
+            VARIABLE : XSEQUENCE (XTVAR)
+            SUBSET   : 33 points (X)
+1    /  1:   95.0
+2    /  2:   96.0
+3    /  3:   97.0
+4    /  4:   98.0
+5    /  5:   99.0
+6    /  6:  100.0  &lt;--
+7    /  7:  101.0
+8    /  8:  102.0
+9    /  9:  103.0
+10   / 10:  104.0
+11   / 11:  105.0
+12   / 12:  145.0
+13   / 13:  146.0
+14   / 14:  147.0
+15   / 15:  148.0
+16   / 16:  149.0
+17   / 17:  150.0  &lt;--
+18   / 18:  151.0
+19   / 19:  152.0
+20   / 20:  153.0
+21   / 21:  154.0
+22   / 22:  155.0
+23   / 23:  295.0
+24   / 24:  296.0
+25   / 25:  297.0
+26   / 26:  298.0
+27   / 27:  299.0
+28   / 28:  300.0  &lt;--
+29   / 29:  301.0
+30   / 30:  302.0
+31   / 31:  303.0
+32   / 32:  304.0
+33   / 33:  305.0
+
+</pre><tt>See how the points in this list are the set of L indices originally 
+</tt><tt>chosen, plus 5 points on each side of them.  You can use this in a call 
+</tt><tt>to SAMPLEL.
+</tt><pre style="margin: 0em;">
+
+yes? let var5  =SAMPLEL(var,xtseries)
+
+</pre><tt>If you follow this example, but define the x axis with /X=-20:20:1 I 
+</tt><tt>think you will have what you need.   The output of the samplel function 
+</tt><tt>is on an abstract axis, so the result of the example I just did, var5 
+</tt><tt>would have a T axis with T=1,2,3, ... 33.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+jaya kumar A wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+dear ferret users,
+</pre><tt>I want to calculate the composite of active phase which corresponds to 
+</tt><tt>different dates in the JJAS ,
+</tt><pre style="margin: 0em;">
+if i pick the dates from the different years I tried like this
+let SD_posv=SAMPLEL(PRE_ANOM_NEW[d=1],{171, 204, 195, 2002, 12.....})
+con/lev=(0.2,2,0.2)/nolab/nokey SD_posv[l=@ave]
+
+will this method is ok?
+if it is wrong any good method to make
+</pre><tt>I also want to make a time series of 20 days before and after active 
+</tt><tt>phase so  if i define SD_posv as active phase (above)
+</tt><pre style="margin: 0em;">
+
+with regards
+jaya
+
+--
+JAYAKUMAR A
+Senior Research Fellow,
+Theoretical Studies Division
+IITM, Pune-8
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00373" href="msg00373.html">[ferret_users] composite of active phase</a></strong>
+<ul><li><em>From:</em> jaya kumar A</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00373.html">[ferret_users] composite of active phase</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00374.html">[ferret_users] time regridding - 2 different length</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00373.html">Thread Prev</a>][<a href="msg00374.html">Thread Next</a>][<A HREF="threads.html#00379">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

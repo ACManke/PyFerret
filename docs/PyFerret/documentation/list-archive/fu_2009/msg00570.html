@@ -1,0 +1,188 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] curv_to_rect_map problem? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 14 Sep 2009 09:53:06 &#45;0700 -->
+<!--X-Message-Id: 4AAE74F2.5020805@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 8cc42c030909090312w6e6ebfd0u75885e0cfcfccc16@mail.gmail.com -->
+<!--X-Reference: 8cc42c030909120238y613e7566j6134242a13d02f9d@mail.gmail.com -->
+<!--X-Derived: gifkqb3aGY0bd.gif -->
+<!--X-Derived: gifF097NmyKNp.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] curv_to_rect_map problem?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00569.html">Thread Prev</a>][<a href="msg00571.html">Thread Next</a>][<A HREF="threads.html#00570">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] curv_to_rect_map problem?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] curv_to_rect_map problem?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 14 Sep 2009 09:53:06 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:8cc42c030909120238y613e7566j6134242a13d02f9d@DOMAIN.HIDDEN">8cc42c030909120238y613e7566j6134242a13d02f9d@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8cc42c030909090312w6e6ebfd0u75885e0cfcfccc16@DOMAIN.HIDDEN">8cc42c030909090312w6e6ebfd0u75885e0cfcfccc16@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:8cc42c030909120238y613e7566j6134242a13d02f9d@DOMAIN.HIDDEN">8cc42c030909120238y613e7566j6134242a13d02f9d@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Peter,<br>
+The curv_to_rect_map function computes the mapping function, which does
+store information using all four dimensions: the original X and Y
+dimensions represent the output longitude, latitude grid, and Z and T
+directions are used to save information about four neighbors (hence
+K=1:4) and the indices of the input longitude and latitude grids are
+saved using the T dimension.&nbsp; This is described a bit more near the end
+the documentation of the curv_to_rec_map function, where it says "The
+weights are based on the distance..."<br>
+<br>
+Your odd result is I think because the lon,lat curvilinear coordinate
+variables must be on the same 2D grid of index values as the variable
+you are regridding, but you have read them in as 1-dimensional
+variables.&nbsp; <br>
+<br>
+Lon and lat should have the same grid as prec[d=2], so that you could
+make a curvilinear plot using a command like<br>
+<br>
+&nbsp;&nbsp; fill&nbsp; prec[d=2], lon, lat<br>
+<br>
+and then you could regrid prec[d=2] to a rectilinear grid using the two
+functions curv_to_rect_map and curv_to_rect.&nbsp; <br>
+<br>
+Ansley<br>
+<br>
+<br>
+<br>
+Peter Szabo wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <div class="gmail_quote">Somehow it didnt get through, i try it now.<br>
+----------<br>
+Hello Users,<br>
+  <br>
+i have an ASCII data set and a coordinate file in the same format as
+well. I want to have the data in loat-lon coord system.<br>
+During creating a map with curv_to_rect_map, a strange thing has
+happened: some added dimensions just appeared.<br>
+  <br>
+set data/ez/var="lon,lat" "/home/szabop/ARPEGE/coords" !i guess, these
+are the curvilinear coordinates. i attach a pics about the x-y coords
+(coords.gif)<br>
+def axis/x=4.5:31.78:0.44/mod/units=degrees xax<br>
+def axis/y=37:52.84:0.44/units=degrees yax<br>
+let llvar=y[gy=yax]+x[gx=xax]<br>
+let arpmap=curv_to_rect_map(lon,lat,llvar,0.88)<br>
+save/file="ARPEGE/<a rel="nofollow" moz-do-not-send="true" href="http://arpmap.nc"
+ target="_blank">arpmap.nc</a>" arpmap<br>
+quit<br>
+  <br>
+After this, if i list the grid of arpmap, i see that a Z and T
+dimension is added.<br>
+  <br>
+use "ARPEGE/<a rel="nofollow" moz-do-not-send="true" href="http://arpmap.nc"
+ target="_blank">arpmap.nc</a>"<br>
+sh grid arpmap<br>
+&nbsp;&nbsp;&nbsp; GRID GQW1<br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end<br>
+&nbsp;XAX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 63mr&nbsp;&nbsp; 4.5E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31.78E<br>
+&nbsp;YAX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 37 r&nbsp;&nbsp; 37N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 52.84N<br>
+&nbsp;ZAX1_4&nbsp;&nbsp;&nbsp; Z&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4<br>
+&nbsp;TAX1_3&nbsp;&nbsp;&nbsp; T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 r&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3<br>
+  <br>
+Why is that?<br>
+When i applied the curv_to_rect function for this creted map, i get a
+strange result as well (see the attached strangelonlat.gif): <br>
+  <br>
+def grid/x=xax/y=yax gridxy<br>
+set data/ez/var="prec"/grid=gridxy
+"/home/szabop/ARPEGE/pre/LSP.1960-1989.DJF"<br>
+let newpre=curv_to_rect(prec[d=2],arpmap[d=1])<br>
+fill newpre<br>
+  <br>
+This is quite strange for me as i already used this function without
+any error.<br>
+Thanks for any help,<br>
+  <font color="#888888"><br>
+Peter<br>
+  <br>
+  </font></div>
+  <br>
+  <br>
+  <hr size="4" width="90%"><br>
+  <center><img src="gifkqb3aGY0bd.gif"></center>
+  <p><br>
+  </p>
+  <hr size="4" width="90%"><br>
+  <center><img src="gifF097NmyKNp.gif"></center>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00569" href="msg00569.html">[ferret_users] curv_to_rect_map problem?</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00569.html">[ferret_users] curv_to_rect_map problem?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00571.html">[ferret_users] Error creating coord. vars: WRF output in Ferret 6.2</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00569.html">Thread Prev</a>][<a href="msg00571.html">Thread Next</a>][<A HREF="threads.html#00570">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

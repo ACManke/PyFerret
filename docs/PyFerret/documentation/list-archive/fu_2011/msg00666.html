@@ -1,0 +1,156 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] how to count the number of irregularly&#45;spaced observations in each gridbox -->
+<!--X-From-R13: Dhffryy Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Wed, 31 Aug 2011 23:44:54 &#45;0700 -->
+<!--X-Message-Id: 201109011644.45489.russell.fiedler@csiro.au -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: B9702468&#45;A7BB&#45;4964&#45;9A8B&#45;7598DB246DB4@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00665.html">Thread Prev</a>][<a href="msg00668.html">Thread Next</a>][<A HREF="threads.html#00666">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</strong></li>
+<li><strong>From</strong>: <strong>Russell Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 01 Sep 2011 16:44:45 +1000</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=simple/simple;  d=csiro.au; <a href="mailto:i%3Drussell.fiedler@DOMAIN.HIDDEN">i=russell.fiedler@xxxxxxxx</a>; q=dns/txt;  s=email; t=1314859493; x=1346395493; h=from:to:subject:date:cc:references:in-reply-to: mime-version:content-transfer-encoding:message-id; bh=SrVK9q79TWOHcSVvoz5KFocUKJgIso60I7pBHa6Mbc4=; b=jcr0nwf3dc0RC8ITvZnuhxQqPNLs4IeOOJU6PyDD/GOFfMaSHGdHYxNn Of/s7Fj35l2g4+ztaOdrXIKqXcVjwaAVvSJa2AeP26B5EhrYufXyP8mac   9jTNIPb3EJ6IreQ;</li>
+<li>In-reply-to: &lt;<a href="mailto:B9702468-A7BB-4964-9A8B-7598DB246DB4@DOMAIN.HIDDEN">B9702468-A7BB-4964-9A8B-7598DB246DB4@xxxxxxxx</a>&gt;</li>
+<li>Organization: CSIRO</li>
+<li>References: &lt;<a href="mailto:B9702468-A7BB-4964-9A8B-7598DB246DB4@DOMAIN.HIDDEN">B9702468-A7BB-4964-9A8B-7598DB246DB4@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: KMail/1.9.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Billy,
+You could try something along the lines of
+
+!put points into 1x1 bins on (0,2]x(0,2]
+
+! here are the points we want to bin
+
+let xvals=zsequence({ 0.1, 2.0, 0.2 })
+let yvals=zsequence({ 0.1, 2.0, 0.2 })
+
+! Define our bounds Note promotion to 2D
+
+let xl= i[i=1:2]-1+0*xvals
+let xh= i[i=1:2]+0*xvals
+let yl= j[j=1:2]-1+0*xvals
+let yh= j[j=1:2]+0*xvals
+
+let isinboxx = if ( xvals le xh and xvals gt xl ) then 1 else 0
+let isinboxy = if ( yvals le yh and yvals gt yl ) then 1 else 0
+
+let isinbothboxes = isinboxx*isinboxy
+let numinbox = isinbothboxes[z=@sum]
+
+list numinbox
+
+            VARIABLE : ISINBOTHBOXES[Z=@SUM]
+             SUBSET   : 2 by 2 points (X-Y)
+             Z        : 0.5 to 3.5
+             1      2    
+             1      2
+ 1   / 1:  2.000  0.000
+ 2   / 2:  0.000  1.000
+
+Russ
+
+On Thursday 01 September 2011 15:23, William S. Kessler wrote:
+&gt; I have a long list of data triplets (x,y,value) that I am putting on a  
+&gt; regular grid. No problem doing that, but how can I count the number of  
+&gt; data points that fall in each gridbox?
+&gt; 
+&gt; I want to end up with a gridded field whose values are the number of  
+&gt; the original (x,y) points within each box.
+&gt; 
+&gt; It seems like a simple task, but I can't think of a way to do it  
+&gt; without a (double) repeat loop, or sorting and writing data out  
+&gt; (twice). Ugly.
+&gt; 
+&gt; Anyone have a straightforward way to do this?
+&gt; 
+&gt; Frustratingly, the function SCAT2GRID_BIN_XY produces the bin-average.  
+&gt; To do that it must compute the number of points in each bin. That  
+&gt; number should be available to the user.
+&gt; 
+&gt; Thanks ... Billy K
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00671" href="msg00671.html">Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+<ul><li><em>From:</em> Michael Cornelius Spillane</li></ul></li>
+<li><strong><a name="00668" href="msg00668.html">Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00665" href="msg00665.html">[ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00665.html">[ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00668.html">Re: [ferret_users] how to count the number of irregularly-spaced observations in each gridbox</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00665.html">Thread Prev</a>][<a href="msg00668.html">Thread Next</a>][<A HREF="threads.html#00666">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

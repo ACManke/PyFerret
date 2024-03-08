@@ -1,0 +1,403 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Curv_to_rect with a big data set -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 15 Jun 2009 10:29:07 &#45;0700 -->
+<!--X-Message-Id: 4A3684E3.7050306@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: COL106&#45;W489EDB73569574881F11A4C1410@phx.gbl -->
+<!--X-Reference: 7d5e27b60906141123k5f61033eg8312f45f898089f2@mail.gmail.com -->
+<!--X-Reference: COL106&#45;W490C51F5DE755AA947BB82C13E0@phx.gbl -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Curv_to_rect with a big data set</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00360.html">Thread Prev</a>][<a href="msg00362.html">Thread Next</a>][<A HREF="threads.html#00361">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Curv_to_rect with a big data set</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jean oliveira &lt;<a href="mailto:jeanbrazil@DOMAIN.HIDDEN">jeanbrazil@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Curv_to_rect with a big data set</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 15 Jun 2009 10:29:07 -0700</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:COL106-W490C51F5DE755AA947BB82C13E0@DOMAIN.HIDDEN">COL106-W490C51F5DE755AA947BB82C13E0@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:COL106-W489EDB73569574881F11A4C1410@DOMAIN.HIDDEN">COL106-W489EDB73569574881F11A4C1410@xxxxxxx</a>&gt; &lt;<a href="mailto:7d5e27b60906141123k5f61033eg8312f45f898089f2@DOMAIN.HIDDEN">7d5e27b60906141123k5f61033eg8312f45f898089f2@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:COL106-W490C51F5DE755AA947BB82C13E0@DOMAIN.HIDDEN">COL106-W490C51F5DE755AA947BB82C13E0@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Windows/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Jean,<br>
+If you were able to do the computation for one single time and level,
+then doing the computation time by time, level by level should work.
+For appending time steps to a netCDF file, you can simply use
+SAVE/APPEND, but to append Z levels to a netCDF file, you will need to
+set up the file to begin with to accept more levels.&#xA0; To see how this
+works, look up "append, slab to netCDF, example" in the <a rel="nofollow"
+ href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/index-1/index/">Ferret
+Users Guide Index.</a> Also, in your loop, after each append, try
+putting a CANCEL MEMORY/ALL command to recover the memory used by the
+previous computation.<br>
+<br>
+Ansley<br>
+<br>
+jean oliveira wrote:
+<blockquote cite=""
+ type="cite">
+  Hi Ronaldo,<br>
+&#xA0;<br>
+Yes, I tried time by time, level by level using repeat and append
+commands, but the&#xA0;problem is the same (see the script below).<br>
+&#xA0;<br>
+  <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">NOAA/PMEL TMAP</font></font></font></span><br>
+  <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>FERRET v6.1</font></font></font></span><br>
+  <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>Linux(g77) 2.6.9-22. -
+03/26/08</font></font></font></span><br>
+&#xA0;<br>
+use "<a rel="nofollow" moz-do-not-send="true"
+ href="http://hycom.coaps.fsu.edu:8080/thredds/dodsC/glb_analysis">http://hycom.coaps.fsu.edu:8080/thredds/dodsC/glb_analysis</a>"<br>
+use curv_map_05.nc<br>
+  <br>
+repeat/range=1504:1869:5/name=a (repeat/range=1:33/name=b (let
+out_temp1 =
+curv_to_rect(temperature[d=1,i=2699:3850,j=425:1631,l=`a`,k=`b`],map[d=2]);
+\<br>
+save/file=out_temp1.nc/append out_temp1))<br>
+exit<br>
+  <br>
+  <br>
+&#xA0;<br>
+  <hr id="stopSpelling">
+Date: Sun, 14 Jun 2009 15:23:05 -0300<br>
+From: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:palmeira@xxxxxxxxx">palmeira@xxxxxxxxx</a><br>
+Subject: Re: [ferret_users] Curv_to_rect with a big data set<br>
+To: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:jeanbrazil@xxxxxxxxxxx">jeanbrazil@xxxxxxxxxxx</a><br>
+CC: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:oar.pmel.ferret_users@xxxxxxxx">oar.pmel.ferret_users@xxxxxxxx</a><br>
+  <br>
+Hi Jean,<br>
+  <br>
+Did you tried save interpoled field time by time, level by level using
+repeat and append commands?<br>
+  <br>
+  <br>
+regards<br>
+  <br>
+  <br>
+Ronaldo Palmeira.<br>
+  <br>
+  <div class="EC_gmail_quote">On Sun, Jun 14, 2009 at 1:15 PM, jean
+oliveira <span dir="ltr">&lt;<a rel="nofollow" moz-do-not-send="true"
+ href="mailto:jeanbrazil@xxxxxxxxxxx">jeanbrazil@xxxxxxxxxxx</a>&gt;</span>
+wrote:<br>
+  <blockquote class="EC_gmail_quote" style="padding-left: 1ex;">
+    <div><span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">Hi all,</font></font></font></span><br>
+    <font size="3"><span lang="EN-US"><font color="#000000"
+ face="Times New Roman">I&#xB4;m trying to </font></span><span
+ style="color: rgb(31, 26, 23); font-family: Times;" lang="EN-US">regridding
+a big data set from a curvilinear grid to a rectilinear
+latitude-longitude grid (the area can be seen in the ssh1.gif). I&#xB4;ve
+already done the first step (to create </span><span lang="EN-US"><font
+ color="#000000"><font face="Times New Roman"><a rel="nofollow" moz-do-not-send="true"
+ href="http://curv_map.nc/">curv_map.nc</a>). But when I try <span>&#xA0;</span>&#x201C;curv_to_rect&#x201D;
+it is occurring a error (see below). I&#xB4;m working in a cluster.</font></font></span></font><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">Does Anyone have any idea?</font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">Thanks a lot</font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">Jean</font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">PS: I&#xB4;ve already tried with different numbers for "set mode
+desperate" and&#xA0;&#xA0;"set memory/size", and the result is the same.</font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">NOAA/PMEL TMAP</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>FERRET v6.1</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>Linux(g77) 2.6.9-22. -
+03/26/08</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span></font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? set memory/size=1900</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>Cached data cleared from memory</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? use "<a rel="nofollow" moz-do-not-send="true"
+ href="http://hycom.coaps.fsu.edu:8080/thredds/dodsC/glb_analysis">http://hycom.coaps.fsu.edu:8080/thredds/dodsC/glb_analysis</a>"</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? use <a rel="nofollow" moz-do-not-send="true"
+ href="http://curv_map.nc/">curv_map.nc</a></font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? sho dat</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0; </span>currently SET data sets:</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0; </span>1&gt; <a rel="nofollow"
+ moz-do-not-send="true"
+ href="http://hycom.coaps.fsu.edu:8080/thredds/dodsC/glb_analysis">http://hycom.coaps.fsu.edu:8080/thredds/dodsC/glb_analysis</a></font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>name<span>&#xA0;&#xA0;&#xA0;&#xA0; </span>title<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>I<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;</span>J<span>&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;</span>K<span>&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>L</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>LATITUDE<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;</span>...<span>&#xA0;&#xA0;
+    </span><span>&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;</span>...</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>LONGITUDE <span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>... <span>&#xA0;&#xA0;</span><span>&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;</span>...</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>DATE<span>&#xA0;&#xA0;&#xA0;&#xA0; </span>date<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>QTOT<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>surf.
+heat flux<span>&#xA0;&#xA0; </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:4500<span>&#xA0;&#xA0;&#xA0; </span>1:3298<span>&#xA0;&#xA0;&#xA0;
+    </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span
+ lang="EN-US"><span>&#xA0;</span>EMP<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>surf. water flux<span>&#xA0;
+    </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:4500<span>&#xA0;&#xA0;&#xA0; </span>1:3298<span>&#xA0;&#xA0;&#xA0;
+    </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span></span>1:2039</font></font></font><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span>&#xA0;</span>SURFACE_TEMPERATURE_TREND</font></font></font><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>surf. temp. trend [60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;</span><span>&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>SURFACE_SALINITY_TREND</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>surf. saln. trend
+[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0; </span>1:3298<span>&#xA0;&#xA0;&#xA0;
+    </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>SSH<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>sea surf.
+height<span>&#xA0; </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;</span><span>&#xA0;</span>1:4500<span>&#xA0;
+    </span><span>&#xA0;&#xA0;</span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>MIXED_LAYER_U_VELOCITY</font></font></font></span><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span
+ lang="EN-US"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span></span>mix.l. u-velocity<span>&#xA0; </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span>&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0; </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span lang="EN-US">1:2039</span></font></font></font><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>MIXED_LAYER_V_VELOCITY</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>mixl. v-velocity<span>&#xA0;
+    </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>SURFACE_BOUNDARY_LAYER_THICKNESS</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>bnd.layr.thickness
+[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>MIXED_LAYER_THICKNESS</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>mix.layr.thickness
+[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>MIXED_LAYER_TEMPERATURE</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>mix.layr.temp<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>MIXED_LAYER_SALINITY</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>mix.layr.saln<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>MIXED_LAYER_DENSITY</font></font></font></span><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span
+ lang="EN-US"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span></span>mix.layr.dens<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0; </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>...
+    <span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:2039</font></font></font><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span>&#xA0;</span>U<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>u-veloc. [60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>1:33<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span>&#xA0;</span>V<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>v-veloc. [60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>1:33<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span>&#xA0;</span>TEMPERATURE</font></font></font><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span lang="EN-US">temp [90.3H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>1:33<span>&#xA0;&#xA0; </span><span>&#xA0;&#xA0;&#xA0;</span>1:2039</span></font></font></font><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>SALINITY<span>&#xA0; </span>salinity
+[60.5H]<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span><span>&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>1:4500<span>&#xA0;&#xA0;&#xA0;
+    </span>1:3298<span>&#xA0;&#xA0;&#xA0; </span>1:33<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>1:2039</font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;&#xA0;&#xA0; </span>2&gt; ./<a rel="nofollow"
+ moz-do-not-send="true" href="http://curv_map.nc/">curv_map.nc</a><span>&#xA0;
+    </span>(default)</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>name<span>&#xA0;&#xA0;&#xA0;&#xA0; </span>title<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;</span>I<span>&#xA0;
+    </span><span>&#xA0;&#xA0;&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>J<span>&#xA0;&#xA0;&#xA0; </span><span>&#xA0;&#xA0;</span><span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</span>K<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>L</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>MAP<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; </span>CURV_TO_RECT_MAP(LONIN,LATIN,LO<span>&#xA0;
+    </span>1:369<span>&#xA0;&#xA0;&#xA0;&#xA0; </span>1:301<span>&#xA0;&#xA0;&#xA0;&#xA0; </span>1:4<span>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;
+    </span>1:3</font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? set mode diagnostic</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? set mode desperate:5000</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? let out_temp1 =
+curv_to_rect(temperature[d=1,i=2699:3850,j=425:1631,l=1504:1869],map[d=2])</font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman">yes? save/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://out_temp1.nc/">out_temp1.nc</a> out_temp1</font></font></font></span><br>
+    <span lang="EN-US"><font color="#000000" face="Times New Roman"
+ size="3">&#xA0;</font></span><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman">eval<span>&#xA0;&#xA0;&#xA0;
+    </span>EX#1<span>&#xA0;&#xA0;&#xA0;&#xA0; </span>C:<span>&#xA0; </span>4 I:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0;
+    </span>369<span>&#xA0; </span>J:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0; </span>301<span>&#xA0;
+    </span>K:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0;&#xA0; </span>33<span>&#xA0; </span>L:
+-999 -999</font></font></font><br>
+    <font size="3"><font color="#000000"><font face="Times New Roman"><span>&#xA0;</span><span
+ lang="EN-US">eval<span>&#xA0;&#xA0;&#xA0; </span>OUT-EMP1 C:<span>&#xA0; </span>6 I:<span>&#xA0;&#xA0;&#xA0;
+    </span>1<span>&#xA0; </span>369<span>&#xA0; </span>J:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0;
+    </span>301<span>&#xA0; </span>K:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0;&#xA0; </span>33<span>&#xA0;
+    </span>L: -999 -999</span></font></font></font><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>eval<span>&#xA0;&#xA0;&#xA0; </span>(C01,V01 C:<span>&#xA0;
+    </span>8 I:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0; </span>369<span>&#xA0; </span>J:<span>&#xA0;&#xA0;&#xA0;
+    </span>1<span>&#xA0; </span>301<span>&#xA0; </span>K:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0;&#xA0;
+    </span>33<span>&#xA0; </span>L: -999 -999</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>eval<span>&#xA0;&#xA0;&#xA0; </span>(C14,V01 C:
+10 I: -999 -999<span>&#xA0; </span>J: -999 -999<span>&#xA0; </span>K:<span>&#xA0;&#xA0;&#xA0; </span>1<span>&#xA0;&#xA0;
+    </span>33<span>&#xA0; </span>L: -999 -999</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>**ERROR: insufficient memory: A
+negative number of words were requested.</font></font></font></span><br>
+    <span lang="EN-US"><font size="3"><font color="#000000"><font
+ face="Times New Roman"><span>&#xA0;</span>*** NOTE: The current grid is
+most likely too large</font></font></font></span><br>
+    <span lang="EN-US"></span>&#xA0;<br>
+    <span lang="EN-US"></span>&#xA0;<br>
+    <span lang="EN-US"></span>&#xA0;<br>
+    <span lang="EN-US"></span>&#xA0;<br>
+    <span lang="EN-US"></span>&#xA0;<br>
+    <br>
+    <hr>
+Novo Internet Explorer 8: mais r&#xE1;pido e muito mais seguro. <a rel="nofollow"
+ moz-do-not-send="true"
+ href="http://brasil.microsoft.com.br/IE8/mergulhe/?utm_source=MSN;Hotmail&amp;utm_medium=Tagline&amp;utm_campaign=IE8">Baixe
+agora, &#xE9; gr&#xE1;tis!</a></div>
+  </blockquote>
+  </div>
+  <br>
+  <br>
+  <hr>Novo Internet Explorer 8: mais r&#xE1;pido e muito mais seguro. <a rel="nofollow"
+ moz-do-not-send="true"
+ href="http://brasil.microsoft.com.br/IE8/mergulhe/?utm_source=MSN%3BHotmail&amp;utm_medium=Tagline&amp;utm_campaign=IE8"
+ target="_new">Baixe agora, &#xE9; gr&#xE1;tis!</a></blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00362" href="msg00362.html">RE: [ferret_users] Curv_to_rect with a big data set</a></strong>
+<ul><li><em>From:</em> jean oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00358" href="msg00358.html">[ferret_users] Curv_to_rect with a big data set</a></strong>
+<ul><li><em>From:</em> jean oliveira</li></ul></li>
+<li><strong><a name="00359" href="msg00359.html">Re: [ferret_users] Curv_to_rect with a big data set</a></strong>
+<ul><li><em>From:</em> Ronaldo palmeira</li></ul></li>
+<li><strong><a name="00360" href="msg00360.html">RE: [ferret_users] Curv_to_rect with a big data set</a></strong>
+<ul><li><em>From:</em> jean oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00360.html">RE: [ferret_users] Curv_to_rect with a big data set</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00362.html">RE: [ferret_users] Curv_to_rect with a big data set</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00360.html">Thread Prev</a>][<a href="msg00362.html">Thread Next</a>][<A HREF="threads.html#00361">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

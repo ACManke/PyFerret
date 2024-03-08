@@ -1,0 +1,326 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 27 May 2009 12:02:49 &#45;0700 -->
+<!--X-Message-Id: 4A1D8E5E.3090801@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 4A1C81AA.4090708@noaa.gov -->
+<!--X-Derived: giflvimgO2H10.gif -->
+<!--X-Derived: gifDmmvUBUB5y.gif -->
+<!--X-Derived: binfAODWCQ8e2.bin -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00317.html">Thread Prev</a>][<a href="msg00320.html">Thread Next</a>][<A HREF="threads.html#00319">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>mick spillane &lt;<a href="mailto:Mick.Spillane@DOMAIN.HIDDEN">Mick.Spillane@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 27 May 2009 12:02:54 -0700</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4A1C81AA.4090708@DOMAIN.HIDDEN">4A1C81AA.4090708@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4A1C81AA.4090708@DOMAIN.HIDDEN">4A1C81AA.4090708@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Windows/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi all,<br>
+This is a great contribution!&nbsp; There are codes that do point-in-polygon
+calculations and I believe they do similar calculations, counting how
+many times a ray crosses the closed.&nbsp; Using Ferret to define the closed
+curve around a country is something I hadn't thought of.&nbsp; Notice in his
+figures how he uses the outline of New Zealand to make a polygon at the
+same resolution as the grid the data is on.<br>
+<br>
+You could use the scripts land or land_detail to make a plot showing
+boundaries for nations or states or even lakes, and then run
+polydef.jnl, clicking on those curves to create boundaries for&nbsp; them.&nbsp; <br>
+<br>
+yes? go/help land <br>
+yes? go/help land_detail<br>
+<br>
+<br>
+Mick and I were just talking about this and trying some examples and
+found a few additions to make. We changed polydef.jnl so it will
+automatically duplicate the first point at the end to make sure the
+polygon is closed. I'm attaching a tar file with the scripts:<br>
+<tt><br>
+polydef.jnl&nbsp;&nbsp;&nbsp;&nbsp; ! The Ferret script to use mouse-clicks to define a
+polygon. Click<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; ! to the left of the x axis to end.<br>
+<br>
+add_vertex.jnl&nbsp; ! called by polydef.&nbsp; This is changed to close the
+polygon.<br>
+<br>
+get_vertices&nbsp;&nbsp;&nbsp; ! A Unix shell script that writes a script to define a <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ! grid axis and&nbsp; opens the vertex file. Make this script<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; ! executable; perhaps install it in your bin/ directory.<br>
+<br>
+InsidePolygon.jnl&nbsp; ! Defines the varible INSIDE which is 1 inside the
+polygon,<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; ! 0 outside it.&nbsp; An example script is included at
+its start.<br>
+</tt><br>
+<br>
+Here are the examples from the start of InsidePolygon.jnl<br>
+<br>
+<br>
+!Examples:<br>
+!1) Using polydef to define the vertices vx and vy<br>
+<br>
+yes? use etopo60<br>
+yes? shade rose<br>
+<br>
+yes? go polydef&nbsp; ! Click to define a set of points. Or otherwise define
+vx and vy<br>
+yes? let x0 = x[gx=rose,d=1]<br>
+yes? let y0 = y[gy=rose,d=1]<br>
+yes? go InsidePolygon<br>
+yes? shade/over/palette=gray inside<br>
+<br>
+<br>
+!2) Read vertices vx and vy from an existing file<br>
+!&nbsp; say this file contains xloc, yloc defining some boundary.<br>
+<br>
+yes? use etopo60<br>
+yes? shade rose<br>
+yes? let x0 = x[gx=rose,d=1]<br>
+yes? let y0 = y[gy=rose,d=1]<br>
+<br>
+yes? use my_vertices.nc<br>
+yes? let vx = zsequence(xloc)<br>
+yes? let vy = zsequence(yloc)<br>
+<br>
+yes? go InsidePolygon<br>
+yes? shade/over/palette=gray inside<br>
+<br>
+<br>
+mick spillane wrote:
+<blockquote cite="" type="cite">Hello All,
+  <br>
+&nbsp;&nbsp; A recent question dealt with how to fill (or otherwise analyze) data
+from within an irregular region.&nbsp; It arose in the context of China but
+has cropped up several times in the archives and the answer of course
+is to define a mask variable to isolate the region in question.&nbsp; This
+is easier said than done, when the boundary of the region is
+convoluted, but the attached script may be of some help.&nbsp; It is based
+on deciding which of the deciding which cells of the underlying grid of
+the field being analyzed lie within a polygon defining the region
+(InsidePolygon.jnl).&nbsp; Its application is aided by using a Ferret-based
+polygon generator (polydef.jnl) using mouse clicks that works on linux
+machines.
+  <br>
+  <br>
+&nbsp;&nbsp; As an illustration consider the question -- "What is the mean
+elevation of New Zealand (based on the etopo20 topography file)?" (This
+was chosen because it can be verified by a simple calculation not
+involving polygons.)
+  <br>
+  <br>
+!&nbsp; average elevation of new zealand using polygon definition
+  <br>
+use etopo20 ; let topo=rose[d=1]
+  <br>
+shade/x=160:180/y=-50:-30/... rose
+  <br>
+go polydef&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! this allows user to
+define the polygon by a series of mouse-clicks
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! (see the
+little x's in the attached graphic) Because of the two islands
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! a land bridge
+was used to have a single polygon circumscribe both.
+  <br>
+go InsidePolygon&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! this identifies etopo20
+cells that lie within the polygon through a mask
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! variable
+"inside" that is 1 for inside cells and missing elsewhere
+  <br>
+The&nbsp;&nbsp; ! illustrates the cells selected
+  <br>
+let masked_elevation=inside*topo
+  <br>
+list/nohead masked_elevation[x=@ave,y=@ave]&nbsp; ! which in this case gives
+317.8 meters
+  <br>
+list/nohead inside[x=@ngd,y=@ngd]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! for the 267
+cells inside the polygon
+  <br>
+  <br>
+! check -- "simple method" using the fact that new zealand is
+surrounded by water
+  <br>
+let land=if(topo gt 0)then topo
+  <br>
+list/nohead/x=160:180/y=-50:-30 land[x=@ave,y=@ave] ! this gives
+320.5meters based on the 265 land cells.
+  <br>
+  <br>
+! NOTE: elimination of the 2 "land bridge" cells in the the polygon
+solution ...
+  <br>
+let  ge 0)then inside
+  <br>
+let land_elevation=onland*topo
+  <br>
+list/nohead land_elevation[x=@ave,y=@ave]&nbsp; ! ... gives the same answer
+320.5m but this is beside the point.
+  <br>
+  <br>
+&nbsp;&nbsp; For the real problem of say the average elevation of a land-locked
+country (where the "simple method" is not available) one would procede
+as follows:
+  <br>
+1) obtain a file of the political boundaries -- if the country's border
+is described by a continuous series of lon,lat values that might be the
+polygon to use. however take care that it is not made up of
+non-continuous segments, or repeated or too closely spaced points that
+might foul up the InsidePolygon calculation.&nbsp; Note that
+InsidePolygon.jnl assumes that "vertices.xy" is the filename of the
+polygon and that the polygon is closed by repeating the first point at
+the end.
+  <br>
+2) if the political boundary file is not to be used directly as a
+polygon file do an overlay plot showing (in this case) the topography
+and the political boundary:
+  <br>
+&nbsp;&nbsp; shade/x=.../y=... topo
+  <br>
+&nbsp;&nbsp; file/form=free/var=xx,yy PoliticalBoundary.file
+  <br>
+&nbsp;&nbsp; plot/o/vs/nolab/line=2 xx,yy
+  <br>
+3) now use the "polydef.jnl" tool to construct a closed polygon suited
+to the topography file; close the polygon by clicking on the initial
+point before the final click to the left of the plot area that
+signifies the polygon has been completed.&nbsp; Then, as before,
+  <br>
+&nbsp;&nbsp; go InsidePolygon
+  <br>
+&nbsp;&nbsp; shade/o/nolab/pal=red/pat=dark_vertical inside&nbsp;&nbsp;&nbsp;&nbsp; ! to verify that
+the polygon matches expectation
+  <br>
+&nbsp;&nbsp; let masked_elevation=inside*topo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! or
+whatever masked variable is desired
+  <br>
+&nbsp;&nbsp; list/nohead masked_elevation[x=@ave,y=@ave]&nbsp; ! obtain the answer
+  <br>
+  <br>
+The second attached image illustrates the use of InsidePolygon.jnl to
+get the average elevation of Switzerland using the smith-sandwell data
+(the colored background) and the political boundary provided by Ferret
+(go land_detail " " " " 4).&nbsp; The x's are the points used in digitizing
+the border and the red hatching the polygon that results.&nbsp; The average
+elevation of the hatched area is 1278 meters.&nbsp; I've had a bit of
+trouble in finding online a value to check this against.&nbsp; The min and
+max of masked_elevation are 193m and 3797m respectively.&nbsp; The minimum
+matches exactly the online value (Lake Maggiore), but the max is
+somewhat less that the 4634m of Mount Monte Rosa - (smith sandwell too
+coarse).&nbsp; However the area returned (inside[x=@din,y=@din] = 4.124E+10
+m^2 agrees well with the online value of 41285 km&sup2;. So all-in-all I
+think the validity and reative ease of use of the InsidePolygon method
+has been demonstrated.
+  <br>
+  <br>
+Hope the scripts prove useful; and the documentation is adequate.&nbsp; I&nbsp;
+would put the scripts in ~/ferret subdirectory or wherever your
+my_ferret_paths points to. Unfortunately at the moment for me,
+"polydef" only works on Linux, not on Mac Ferret.&nbsp; If someone sees why
+this is so and has a fix for Mac, I'd be delighted to learn.
+  <br>
+  <br>
+Good luck,
+  <br>
+&nbsp;&nbsp; Mick
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp; <br>
+  <br>
+  <hr size="4" width="90%"><br>
+  <center><img src="giflvimgO2H10.gif"></center>
+  <p><br>
+  </p>
+  <hr size="4" width="90%"><br>
+  <center><img src="gifDmmvUBUB5y.gif"></center>
+</blockquote>
+
+
+</font></td></tr></table><p><strong>Attachment:
+<a href="binfAODWCQ8e2.bin" ><tt>inside_polygon.tar.gz</tt></a></strong><br>
+<em>Description:</em> application/gzip</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00320" href="msg00320.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+<ul><li><em>From:</em> mick spillane</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00317" href="msg00317.html">[ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+<ul><li><em>From:</em> mick spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00317.html">[ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00320.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00317.html">Thread Prev</a>][<a href="msg00320.html">Thread Next</a>][<A HREF="threads.html#00319">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

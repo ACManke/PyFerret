@@ -1,0 +1,349 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean -->
+<!--X-From-R13: Xvna [n <wvnaznNunjnvv.rqh> -->
+<!--X-Date: Fri, 29 Jul 2011 02:38:13 &#45;0700 -->
+<!--X-Message-Id: 1311932283.4557.74.camel@fulcrum.soest.hawaii.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 1311817551.4557.51.camel@fulcrum.soest.hawaii.edu -->
+<!--X-Reference: 4E318E90.9020307@noaa.gov -->
+<!--X-Reference: 1311888688.4557.56.camel@fulcrum.soest.hawaii.edu -->
+<!--X-Reference: 4E31DA8A.4090103@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00615.html">Thread Prev</a>][<a href="msg00603.html">Thread Next</a>][<A HREF="threads.html#00616">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</strong></li>
+<li><strong>From</strong>: <strong>Jian Ma &lt;<a href="mailto:jianma@DOMAIN.HIDDEN">jianma@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 28 Jul 2011 23:38:03 -1000</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4E31DA8A.4090103@DOMAIN.HIDDEN">4E31DA8A.4090103@xxxxxx</a>&gt;</li>
+<li>Organization: University of Hawaii at Manoa</li>
+<li>References: &lt;<a href="mailto:1311817551.4557.51.camel@DOMAIN.HIDDEN">1311817551.4557.51.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4E318E90.9020307@DOMAIN.HIDDEN">4E318E90.9020307@xxxxxxxx</a>&gt; &lt;<a href="mailto:1311888688.4557.56.camel@DOMAIN.HIDDEN">1311888688.4557.56.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4E31DA8A.4090103@DOMAIN.HIDDEN">4E31DA8A.4090103@xxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:jianma@DOMAIN.HIDDEN">jianma@xxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Ansley and Patrick,
+
+Patrick's script is great for normal use in generating monthly axis. I
+was just curious how to calculate the calendar days in ferret. Now I
+have figured out a way to mimic Days1900() to calculate the day count
+from 01-jan-1900 for any date on any calendar.
+
+Attached is my script days1900_mc.jnl. Its usage is quite like the
+function Days1900() and one can generate a time axis with the method in
+user guide using the output variable, according to the calendar(s)
+he/she want to use.
+
+BTW, I made up the Julian calendar for Patrick's script (also attached).
+
+Thank you very much for your help!
+Tony
+
+On Thu, 2011-07-28 at 23:54 +0200, Brockmann Patrick wrote:
+&gt; Jian Ma a &#xE9;crit :
+&gt; &gt; Hi Ansley,
+&gt; &gt;
+&gt; &gt; Thanks.
+&gt; &gt;
+&gt; &gt; Maybe I did not state clear my purpose. It is a multi-year daily data
+&gt; &gt; and I want to make a multi-year monthly mean, not climatology. Then how
+&gt; &gt; can I define the days count for Noleap calendar?
+&gt; &gt;   
+&gt; Hi,
+&gt; 
+&gt; Have a look to the attached script. I think that it will do what you want.
+&gt; 
+&gt; yes? go def_monthaxis_days.jnl NOLEAP 2002 2005 mytaxis
+&gt; yes? show axis/t mytaxis
+&gt; 
+&gt; Patrick
+&gt; 
+</pre><pre>! days1900_mc.jnl
+! (DAYS1900 in Multiple Calendar)
+
+\cancel mode verify
+
+!**************************************************************
+! Description: Computes the number of days since 1 Jan 1900.
+!              This script is useful in converting dates to
+!              days on multiple calendars. If the year is prior
+!              to 1900 a negative number is returned. The output
+!              has the same dimension with the input.
+!
+! Usage: go days1900_mc.jnl year month day [calendar] [method]
+!
+! Arguments:
+! 		year       =    variable containing years
+!
+!               month      =    variable containing months
+!
+!               day        =    variable containing days
+!
+!               calendar   =	STANDARD or GREGORIAN
+!                               JULIAN
+!				NOLEAP   or 365_DAY
+!				ALL_LEAP or 366_DAY
+!				360_DAY
+!                               ALL (default)
+!
+!		method     =    1 (default) or 2 (and/or other number)
+!                               choose a calculation method for the first 3 calendars above
+! 
+!
+! Examples:
+!            go days1900_mc.jnl year month day JULIAN 1
+!            go days1900_mc.jnl l[l=1970:2054] 1 1 NOLEAP 2
+!            go days1900_mc.jnl 1949 l[l=1:12] 20 360_DAY 1
+!
+!
+! To define a time axis with the output:
+!
+! DEFINE AXIS/UNITS=days/T0=1-jan-1900/cal=??? truemonth = days1900_???
+!
+!
+! Calls:
+!
+! Author: Jian Ma
+! Contact: jianma@xxxxxxxxxx
+! $Date: $ 07/28/2011
+! $Name: $
+! $Revision: $
+! History:
+! Modification:
+!
+!**************************************************************
+
+let calendar=UPCASE(&quot;($4%all%)&quot;)
+let method=($5%1%)
+
+say
+say &quot;   Computing the number of days since 1 Jan 1900 on `calendar` calendar(s)&quot;
+say
+
+IF `(method EQ 1)` THEN
+
+!==================================METHOD #1============================================
+say &quot;   Using method 1&quot;
+say
+
+let monthdaycount=DAYS1900(1900,l[l=1:12],1)
+
+let monthday_0=0
+repeat/range=1:12/name=aa let monthday_`aa`=if $2 eq `aa` then monthdaycount[l=`aa`] else monthday_`aa-1`
+let monthday=monthday_12
+
+let days1900_NLP=($1-1900)*365+monthday+$3-1
+
+let JLN=days1900_NLP+int($1/4)-int(1900/4)
+let days1900_JLN=if mod($1,4) eq 0 and $2 le 2 then JLN else JLN+1
+
+let GRG=days1900_JLN-int($1/100)+int($1/400)+19-int(1900/400)
+let days1900_GRG=if mod($1,100) eq 0 and mod($1,400) ne 0 and $2 le 2 then GRG else GRG-1
+
+ELSE
+
+!==================================METHOD #2============================================
+say &quot;   Using method 2&quot;
+say
+
+let days1900_GRG=days1900($1,$2,$3)
+
+let JLN=days1900_GRG+int($1/100)-int($1/400)-19+int(1900/400)
+let days1900_JLN=if mod($1,100) eq 0 and mod($1,400) ne 0 and $2 le 2 then JLN else JLN+1
+
+let NLP=days1900_JLN-int($1/4)+int(1900/4)
+let days1900_NLP=if mod($1,4) eq 0 and $2 le 2 then NLP else NLP-1
+
+ENDIF
+
+!==================================Other calendars======================================
+
+let ALP=days1900_NLP+$1-1900
+let days1900_ALP=if $2 le 2 then ALP else ALP+1
+
+let days1900_360=($1-1900)*360+($2-1)*30+$3-1
+
+IF `(calendar EQ &quot;STANDARD&quot;) OR (calendar EQ &quot;GREGORIAN&quot;) OR (calendar EQ &quot;ALL&quot;)` THEN say &quot;   output  =  days1900_GRG for GREGORIAN calendar&quot;
+IF `(calendar EQ &quot;JULIAN&quot;) OR (calendar EQ &quot;ALL&quot;)` THEN say &quot;   output  =  days1900_JLN for JULIAN calendar&quot;
+IF `(calendar EQ &quot;NOLEAP&quot;) OR (calendar EQ &quot;365_DAY&quot;) OR (calendar EQ &quot;ALL&quot;)` THEN say &quot;   output  =  days1900_NLP for NOLEAP calendar&quot;
+IF `(calendar EQ &quot;ALL_LEAP&quot;) OR (calendar EQ &quot;366_DAY&quot;) OR (calendar EQ &quot;ALL&quot;)` THEN say &quot;   output  =  days1900_ALP for ALL_LEAP calendar&quot;
+IF `calendar EQ &quot;360_DAY&quot; OR (calendar EQ &quot;ALL&quot;)` THEN say &quot;   output  =  days1900_360 for 360_DAY calendar&quot;
+
+say
+!**************************************************************
+set mode/last verify
+</pre><pre>! def_monthaxis_days.jnl
+
+\cancel mode verify
+
+!**************************************************************
+! Description: Define a time axis in days in specific calendar 
+!              Each grid cell begins at first of the month
+!              Axis coordinates are at the middle of each month
+!
+! Usage: go def_monthaxis_days.jnl calendar year_start year_end [axis_name] [year_ref]
+!
+! Arguments:
+! 		calendar(case insensitive) =	
+!				STANDARD or GREGORIAN
+!                               JULIAN
+!				NOLEAP   or 365_DAY
+!				ALL_LEAP or 366_DAY
+!				360_DAY
+!
+!		year_start =    start year for axis
+!
+!		year_end =      start year for axis
+!
+!		axis_name =     if not specifed, monthaxis is used
+!
+!		year_ref =      if not specified, set to year_start
+! 
+! Examples:
+!            go def_monthaxis_days.jnl NOLEAP 2002 2005 mytaxis 
+!            go def_monthaxis_days.jnl ALL_LEAP 2002 2005 mytaxis
+!            go def_monthaxis_days.jnl 360_DAY 2002 2005 mytaxis 
+!
+!
+! Calls:
+!
+! Author: Patrick Brockmann
+! Contact: Patrick.Brockmann@xxxxxx
+! $Date: $
+! $Name: $
+! $Revision: $ Jian Ma added Julian calendar on 07/28/2011
+! History:
+! Modification:
+!
+!**************************************************************
+
+!=====================================================
+let calendar=UPCASE(&quot;($01)&quot;)
+let year_start=($02)
+let year_end=($03)
+def sym axisname=($04%monthaxis%)
+let year_ref=($05%($02)%)
+
+let nbyears=year_end-year_start+1
+
+!=====================================================
+IF `(calendar EQ &quot;STANDARD&quot;) OR (calendar EQ &quot;GREGORIAN&quot;)` THEN
+	let indices = L[L=1:`1+nbyears*12`]
+	let month = MOD(indices-1,12)+1
+	let year = year_start + INT((indices-1)/12)
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;GREGORIAN&quot; ($axisname) = DAYS1900(year,month,1)-DAYS1900(`year_ref`,1,1)
+
+!=====================================================
+ELIF `(calendar EQ &quot;JULIAN&quot;)` THEN
+	let indices = L[L=1:`1+nbyears*12`]
+	let month = MOD(indices-1,12)+1
+	let year = year_start + INT((indices-1)/12)
+
+	let JLN=DAYS1900(year,month,1)-DAYS1900(`year_ref`,1,1)+int(year/100)-int(year/400)-int(`year_ref`/100)+int(`year_ref`/400)
+	let days1900_JLN=if mod(year,100) eq 0 and mod(year,400) ne 0 and month le 2 then JLN else JLN+1
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;JULIAN&quot; ($axisname) = days1900_JLN
+
+!=====================================================
+ELIF `(calendar EQ &quot;NOLEAP&quot;) OR (calendar EQ &quot;365_DAY&quot;)` THEN
+	let nbdays={31,28,31,30,31,30,31,31,30,31,30,31}
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;NOLEAP&quot; ($axisname) = `(year_start-year_ref)*365`+xcat(0,xsequence(365*(j[j=1:`nbyears`]-1)+nbdays[i=@rsum]))
+
+!=====================================================
+ELIF `(calendar EQ &quot;ALL_LEAP&quot;) OR (calendar EQ &quot;366_DAY&quot;)` THEN
+	let nbdays={31,29,31,30,31,30,31,31,30,31,30,31}
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;ALL_LEAP&quot; ($axisname) = `(year_start-year_ref)*366`+xcat(0,xsequence(366*(j[j=1:`nbyears`]-1)+nbdays[i=@rsum]))
+
+!=====================================================
+ELIF `calendar EQ &quot;360_DAY&quot;` THEN
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;360_DAY&quot;/t=&quot;01-JAN-`year_start`&quot;:&quot;30-DEC-`year_end`&quot;:30 ($axisname)
+
+!=====================================================
+ELSE
+ 	say &quot;`calendar` not known&quot;
+ 	say &quot;Possible calendars are : STANDARD (or GREGORIAN), JULIAN, NOLEAP (or 365_DAY), ALL_LEAP (or 366_DAY), 360_DAY&quot;
+	exit
+
+!=====================================================
+ENDIF
+
+show axis ($axisname)
+
+!**************************************************************
+set mode/last verify
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00602" href="msg00602.html">[ferret_users] [ferret] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+<li><strong><a name="00608" href="msg00608.html">Re: [ferret_users] [ferret] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00612" href="msg00612.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+<li><strong><a name="00613" href="msg00613.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00615.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00603.html">[ferret_users] uneven grid from ASCII file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00615.html">Thread Prev</a>][<a href="msg00603.html">Thread Next</a>][<A HREF="threads.html#00616">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

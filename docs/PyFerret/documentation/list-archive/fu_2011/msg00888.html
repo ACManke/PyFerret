@@ -1,0 +1,164 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] EOF in ferret -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Mon, 5 Dec 2011 07:04:59 &#45;0800 -->
+<!--X-Message-Id: B4FD1185&#45;D142&#45;41D6&#45;B0C7&#45;EE292D05476A@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAEenqfKUho2viNt+bGtrtmVrj&#45;nmT+iSPBaeVWDTiAZgsHfUHA@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] EOF in ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00887.html">Thread Prev</a>][<a href="msg00891.html">Thread Next</a>][<A HREF="threads.html#00888">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] EOF in ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>nitin patil &lt;<a href="mailto:nitinpatil85@DOMAIN.HIDDEN">nitinpatil85@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] EOF in ferret</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 05 Dec 2011 07:04:57 -0800</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to:  &lt;<a href="mailto:CAEenqfKUho2viNt%2BbGtrtmVrj-nmT%2BiSPBaeVWDTiAZgsHfUHA@DOMAIN.HIDDEN">CAEenqfKUho2viNt+bGtrtmVrj-nmT+iSPBaeVWDTiAZgsHfUHA@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:CAEenqfKUho2viNt%2BbGtrtmVrj-nmT%2BiSPBaeVWDTiAZgsHfUHA@DOMAIN.HIDDEN">CAEenqfKUho2viNt+bGtrtmVrj-nmT+iSPBaeVWDTiAZgsHfUHA@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>Unfortunately there is no way to find just the low-mode EOFs. A matrix  
+</tt><tt>must be inverted to find its eigenvalues, then those are sorted to  
+</tt><tt>find their size order. As far as I know, there is no way to find just  
+</tt><tt>a few of the eigenvalues of a matrix.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>However, the routine used in Ferret is more efficient than many in  
+</tt><tt>that it recognizes that an N by M matrix has at most min(N,M) non-zero  
+</tt><tt>eigenvalues. It uses that fact to do the inversion in the most  
+</tt><tt>efficient order, not wasting CPU by finding extra zero eigenvalues.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Possibly a matrix-oriented tool (Matlab) would be faster in some  
+</tt><tt>situations, since there are ways to determine some characteristics of  
+</tt><tt>an input matrix before inverting it, then choosing among a menu of  
+</tt><tt>techniques for doing the inversion depending on those characteristics.  
+</tt><tt>The routine used by Ferret, which is based on the Numerical Recipes  
+</tt><tt>subroutine SVDCMP, does not do this.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I suggest you do some reading on EOFs, to find out what they can and  
+</tt><tt>cannot do, what they do well and poorly, before simply cranking your  
+</tt><tt>data through this calculation, especially since you have a large data  
+</tt><tt>set that will take a lot of time to calculate. EOFs are not a  
+</tt><tt>technique that should be applied blindly. A good reference for this is  
+</tt><tt>Bretherton, Smith and Wallace (1992, J.Clim., 5(6) 541-560). Also the  
+</tt><tt>discussion in Numerical Recipes SVDCMP section is very valuable for  
+</tt><tt>understanding the mathematics of inverting large matrices.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>EOFs are not always the best way to extract signals from a data set.  
+</tt><tt>The most important thing to recognize is that EOF patterns are not  
+</tt><tt>physical! They may or may not have physical meaning. It is also  
+</tt><tt>possible to find a single EOF that mixes two signals, or conversely  
+</tt><tt>that one signal is spread among two or more EOFs. It is essential to  
+</tt><tt>understand what these techniques do to know if they are appropriate  
+</tt><tt>for the problem at hand.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>One way to explore your data before doing a large calculation is to  
+</tt><tt>regrid to a coarser grid, then try the EOF on the smaller data set  
+</tt><tt>first.
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+
+
+On 05 Dec 2011, at 4:09 AM, nitin patil wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear ferret users,
+</pre><tt>                           I have calculated the eof as steps given  
+</tt><tt>on <a  rel="nofollow" href="http://ferret.pmel.noaa.gov/static/Demos/ef_eof_demo/ef_eof_demo.html">http://ferret.pmel.noaa.gov/static/Demos/ef_eof_demo/ef_eof_demo.html</a>
+</tt><tt>but it takes so much of time because it calculates lot of eof about  
+</tt><tt>200 to 500 thats don't need.
+</tt><tt>Is their is any way to calculate only first 4 eof with varience and  
+</tt><tt>its pcs?
+</tt><pre style="margin: 0em;">
+
+--
+Regards,
+Mr. Nitin Patil
+National Climate Centre,
+India Meteorological Department,
+Pune - 411005, INDIA.
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00891" href="msg00891.html">Re: [ferret_users] EOF in ferret</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00887" href="msg00887.html">[ferret_users] EOF in ferret</a></strong>
+<ul><li><em>From:</em> nitin patil</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00887.html">[ferret_users] EOF in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00891.html">Re: [ferret_users] EOF in ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00887.html">Thread Prev</a>][<a href="msg00891.html">Thread Next</a>][<A HREF="threads.html#00888">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

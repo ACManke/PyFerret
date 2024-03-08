@@ -1,0 +1,195 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] conform variables and how to catch common sizes of region -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Mon, 13 Dec 2010 11:15:51 &#45;0800 -->
+<!--X-Message-Id: 4D0670E7.8050902@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 38172.132.166.74.187.1292256119.squirrel@webmail.lsce.ipsl.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] conform variables and how to catch common sizes of region</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00758.html">Thread Prev</a>][<a href="msg00760.html">Thread Next</a>][<A HREF="threads.html#00759">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] conform variables and how to catch common sizes of region</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] conform variables and how to catch common sizes of region</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 13 Dec 2010 11:15:51 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:38172.132.166.74.187.1292256119.squirrel@DOMAIN.HIDDEN">38172.132.166.74.187.1292256119.squirrel@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:38172.132.166.74.187.1292256119.squirrel@DOMAIN.HIDDEN">38172.132.166.74.187.1292256119.squirrel@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.12) Gecko/20101027 Thunderbird/3.1.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    <br>
+    <br>
+    On 12/13/2010 8:01 AM, <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:Patrick.Brockmann@xxxxxx">Patrick.Brockmann@xxxxxx</a> wrote:
+    <blockquote
+      cite=""
+      type="cite">
+      <pre wrap="">Hi all,
+
+Is there a way to catch common sizes of region
+between variables ?
+
+Here is an example and its error message.
+
+yes? use piControl2_18000101_23391231_1M_tops.nc
+yes? use piControl2_18000101_20491231_1M_topl.nc
+yes? let A=tops+topl
+yes? list A[i=30,j=40]
+ **ERROR: inconsistent sizes of data regions: T axis
+          TOPL[D=2] has 3000 points (L=0001:3000)
+          _expression_ has 6480 points (L=0001:6480)
+</pre>
+    </blockquote>
+    <br>
+    Hi Patrick,<br>
+    <br>
+    It seems like the issue is not just about "sizes";&#xA0; it is about the
+    coordinate ranges and values.&#xA0; Theses two time axes could cover
+    different time ranges and could potentially have different
+    resolutions or offsets in their time coordinates.&#xA0; Even if you did
+    not suffer the error above, this _expression_ should give you an
+    "ambiguous coordinates" error message.&#xA0; (I don't see how the syntax
+    can work as-is, unless the _1M_topl.nc dataset contains both tops
+    and topl variables.&#xA0;&#xA0; Doesn't the _expression_ need to be "<tt>let
+      A=tops[d=1]+topl</tt>"?)<br>
+    <br>
+    The easy answer is to arbitrarily say that one of the two variables
+    -- say whatever is from the first dataset that gets initialized --
+    is the authoritative time range. Then you can say<br>
+    <blockquote>
+      <pre wrap="">let A=tops+topl[gt=tops[d=1]]
+</pre>
+    </blockquote>
+    and your problem should be solved.<br>
+    <br>
+    What is the "right" solution?&#xA0; My guess is that in the situation
+    above there is a region of time over which the two axes overlap
+    perfectly (have identical time step coordinates).&#xA0;&#xA0; If so then the
+    "right" solution might look something like this:<br>
+    <blockquote>
+      <pre wrap="">use piControl2_18000101_23391231_1M_tops.nc
+use piControl2_18000101_20491231_1M_topl.nc
+DEFINE AXIS/<b>OVERLAP</b>/T tnew = tops[d=1], topl[d=2]
+let A=tops[D=1,gt=tnew]+topl[gt=tnew]
+</pre>
+    </blockquote>
+    <pre wrap="">This command could only be implemented with code changes in Ferret.  But I expect that you could achieve the desired goal by creating a grid-changing external function that performed the sum.  The function would create the new time, overlap-region axis.
+
+	- Steve
+
+P.S.  Could also implement variations on this theme such as
+	
+    DEFINE AXIS/<b>SUPERSET</b>/T tnew = tops[d=1], topl[d=2]
+
+How useful would these be?
+
+
+
+
+
+</pre>
+    <blockquote>
+    </blockquote>
+    <br>
+    <br>
+    <blockquote
+      cite=""
+      type="cite">
+      <pre wrap="">
+I understand perfectly that the 2 components of the variable A
+are not conform but how to get the result of this error to process
+their common size of region on T axis, here L=0001:3000
+and then be able to do for example
+yes? save/l=0001:3000 A
+
+Note that I research the most general way to do this and
+so I cannot "simply" get lend from topl and tops and calculate
+the minimum because variable A may be the combinaison of n variables.
+
+Let me know If I have been clear enough and if there is
+a workaround I have missed.
+
+Patrick
+
+</pre>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00760" href="msg00760.html">RE: [ferret_users] conform variables and how to catch common sizes of region [SEC=UNCLASSIFIED]</a></strong>
+<ul><li><em>From:</em> Mark Williams</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00758" href="msg00758.html">[ferret_users] conform variables and how to catch common sizes of region</a></strong>
+<ul><li><em>From:</em> Patrick . Brockmann</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00758.html">[ferret_users] conform variables and how to catch common sizes of region</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00760.html">RE: [ferret_users] conform variables and how to catch common sizes of region [SEC=UNCLASSIFIED]</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00758.html">Thread Prev</a>][<a href="msg00760.html">Thread Next</a>][<A HREF="threads.html#00759">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

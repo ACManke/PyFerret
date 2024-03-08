@@ -1,0 +1,236 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Limitation of gif pixel? -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Thu, 5 Nov 2009 22:08:24 &#45;0800 -->
+<!--X-Message-Id: 20091105.200821.185676650.furue@hawaii.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 20091104.213527.218447481.furue@hawaii.edu -->
+<!--X-Reference: 4AF31221.3060101@noaa.gov -->
+<!--X-Reference: 5955c3bf0911051846u2823da6bxb7c9d65274e4aaf1@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Limitation of gif pixel?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00751.html">Thread Prev</a>][<a href="msg00754.html">Thread Next</a>][<A HREF="threads.html#00752">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Limitation of gif pixel?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:danish.url@DOMAIN.HIDDEN">danish.url@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Limitation of gif pixel?</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 05 Nov 2009 20:08:21 -1000 (HST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:5955c3bf0911051846u2823da6bxb7c9d65274e4aaf1@DOMAIN.HIDDEN">5955c3bf0911051846u2823da6bxb7c9d65274e4aaf1@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20091104.213527.218447481.furue@DOMAIN.HIDDEN">20091104.213527.218447481.furue@xxxxxxxxxx</a>&gt; &lt;<a href="mailto:4AF31221.3060101@DOMAIN.HIDDEN">4AF31221.3060101@xxxxxxxx</a>&gt; &lt;<a href="mailto:5955c3bf0911051846u2823da6bxb7c9d65274e4aaf1@DOMAIN.HIDDEN">5955c3bf0911051846u2823da6bxb7c9d65274e4aaf1@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Dan,
+
+| Thanks for your suggestion.
+| I know the ps file maybe the best solution for this kind of
+| application. But if I try to produce a series of 2d time series
+| plot, gif file naming seems easier than ps file, like
+| 
+| gif:
+| frame/file=test1_`l`.gif
+| 
+| ps:
+| ferret -batch test1_1.plt
+| Fprint test1_1.plt
+| ferret -batch test1_2.plt
+| Fprint test1_2.plt
+|      .......
+
+I see your problem.
+
+To solve it, I use a script that automatically generates
+PostScript files from a set of metafiles.  I'm attaching
+a simplified version of it for an example.
+
+Suppose you make four plots.  Ferret will name them
+
+  metafile.plt.~1~
+  metafile.plt.~2~
+  metafile.plt.~3~
+  metafile.plt
+
+in this order.  If you use my script as
+
+  $ fer2ps
+
+it will convert the metafiles in the current directory into
+
+  metafile001.eps
+  metafile002.eps
+  metafile003.eps
+  metafile004.eps
+
+in the correct order.  You can change the prefix
+from &quot;metafile&quot; to whatever you like, by a -p option
+to the script as &quot;fer2ps -p yourprefix&quot;.  I've added
+an additional option &quot;--pdf&quot; that generates PDF files
+instead of EPS files.
+
+The script assumes that gksm2ps (and ps2pdf if you
+use the --pdf option) is in the PATH. 
+
+Hope this helps,
+Ryo
+-----------------
+The script uses temporary files and I haven't given
+provisions for emergency exit, so that temporary files
+may be left behind if you interrupt the script.
+</pre><pre>#!/bin/sh
+# convert Ferret metafiles to EPS files.
+#
+
+set -u
+
+com=`basename $0`
+
+metafile_to_stdout() #--- use gksm2ps
+{
+    in_=&quot;$1&quot;
+    shift
+
+    tmp_gksm2ps_=$com.gksm2ps.tmp-$$
+
+    gksm2ps -R -p portrait -l cps &quot;$@&quot; -o &quot;$tmp_gksm2ps_&quot; &quot;$in_&quot;
+
+    cat $tmp_gksm2ps_
+    rm $tmp_gksm2ps_
+}
+
+
+#----
+max()
+{
+    if [ $1 -gt $2 ]; then echo $1; else echo $2; fi
+}
+
+#----
+usage_exit()
+{
+    echo 'Usage: fer2ps [-p &lt;prefix&gt;] [--pdf]'
+    exit $1
+}
+
+#----- Main -----------------------------------------
+pdf=''
+prefix=metafile
+
+while [ $# -gt 0 ]; do
+    case &quot;$1&quot; in
+    -p)       shift; prefix=&quot;$1&quot;;;
+    --pdf)    pdf=1;;
+    *)        usage_exit;;
+    esac
+    shift
+done
+
+#--- process files --------------
+m=0
+for file in metafile.plt.~*~ metafile.plt; do
+    [ ! -f &quot;$file&quot; ] &amp;&amp; continue
+    n=`expr &quot;$file&quot; : 'metafile\.plt\.~\(.*\)~$'`
+    if [ -z &quot;$n&quot; ]; then
+	n=`expr $m + 1`
+    else
+	case &quot;$n&quot; in
+	[0-9]|[0-9][0-9]|[0-9]|[0-9][0-9])
+	    ;;
+	*)
+	    echo &quot;$com: malformed filename: $file&quot; &gt;&amp;2
+	    continue;;
+	esac
+    fi
+    nn=`printf '%3.3d' $n`
+    ps=&quot;$prefix$nn.eps&quot;
+
+    metafile_to_stdout &quot;$file&quot; &gt; &quot;$ps&quot;
+
+    if [ -n &quot;$pdf&quot; ]; then
+	ps2pdf &quot;$ps&quot;
+	rm &quot;$ps&quot;
+	out=&quot;`basename $ps .eps`.pdf&quot;
+    else
+	out=&quot;$ps&quot;
+    fi
+    echo &quot;$file -&gt; $out&quot;
+    rm &quot;$file&quot;
+
+    m=`max $n $m`
+done
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00754" href="msg00754.html">Re: [ferret_users] Limitation of gif pixel?</a></strong>
+<ul><li><em>From:</em> Yu, Hao-Cheng</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00746" href="msg00746.html">Re: [ferret_users] Limitation of gif pixel?</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00748" href="msg00748.html">Re: [ferret_users] Limitation of gif pixel?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00751" href="msg00751.html">Re: [ferret_users] Limitation of gif pixel?</a></strong>
+<ul><li><em>From:</em> Yu, Hao-Cheng</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00751.html">Re: [ferret_users] Limitation of gif pixel?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00754.html">Re: [ferret_users] Limitation of gif pixel?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00751.html">Thread Prev</a>][<a href="msg00754.html">Thread Next</a>][<A HREF="threads.html#00752">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

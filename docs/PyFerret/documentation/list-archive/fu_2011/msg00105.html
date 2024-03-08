@@ -1,0 +1,167 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] accessing environment variables within ferret -->
+<!--X-From-R13: Oaqerj Ivggraoret <Oaqerj.IvggraoretNabnn.tbi> -->
+<!--X-Date: Tue, 15 Feb 2011 15:02:55 &#45;0800 -->
+<!--X-Message-Id: alpine.LRH.2.00.1102151746040.4199@atw -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: alpine.LRH.2.00.1102151439510.13921@flywheel.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] accessing environment variables within ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00104.html">Thread Prev</a>][<a href="msg00107.html">Thread Next</a>][<A HREF="threads.html#00105">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] accessing environment variables within ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Keith Lindsay &lt;<a href="mailto:klindsay@DOMAIN.HIDDEN">klindsay@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] accessing environment variables within ferret</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 15 Feb 2011 18:02:51 -0500 (EST)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:alpine.LRH.2.00.1102151439510.13921@DOMAIN.HIDDEN">alpine.LRH.2.00.1102151439510.13921@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:alpine.LRH.2.00.1102151439510.13921@DOMAIN.HIDDEN">alpine.LRH.2.00.1102151439510.13921@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Alpine 2.00 (LRH 1167 2008-08-23)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Keith,
+
+Here's the short answer for how to import an environment variable:
+
+  let result = spawn(&quot;echo $CASE&quot;)
+
+</pre><tt>Note that this defines a string variable, not a symbol.  If you'd rather 
+</tt><tt>have a symbol instead, you can do this:
+</tt><pre style="margin: 0em;">
+
+  define symbol result &quot;`spawn(&quot;echo $CASE&quot;)`&quot;
+
+And here's a more in-depth example, showing delayed-evaluation and variable
+re-use in Ferret:
+
+% setenv ENV1 keith
+% setenv ENV2 andrew
+% ferret
+        NOAA/PMEL TMAP
+        FERRET v6.67
+        Linux rh5 (gfortran) 2.6.18-238.1.1.el5P - 02/11/11
+        15-Feb-11 17:51
+
+yes? let result = spawn(command)
+yes? let command = &quot;echo $ENV1&quot;
+yes? let keep_result = &quot;`result`&quot;
+yes? list result, keep_result
+             X: 1
+ Column  1: RESULT is SPAWN(COMMAND)
+ Column  2: KEEP_RESULT is &quot;keith&quot;
+          RESULT  KEEP_RESULT
+I / *:    &quot;keith&quot; &quot;keith&quot;
+yes? let command = &quot;echo $ENV2&quot;
+yes? list result, keep_result
+             X: 1
+ Column  1: RESULT is SPAWN(COMMAND)
+ Column  2: KEEP_RESULT is &quot;keith&quot;
+           RESULT  KEEP_RESULT
+I / *:    &quot;andrew&quot; &quot;keith&quot;
+
+Cheers,
+
+Andrew
+
+On Tue, 15 Feb 2011, Keith Lindsay wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+</pre><tt>Is there a way to set a ferret symbol to be equal to an environment variable 
+</tt><tt>that had been set in the environmet from which ferret was run?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>It looks like the environment variables are being inherited in the shell 
+</tt><tt>created by the spawn command, so &quot;spawn echo $CASE&quot; is returning the value of 
+</tt><tt>$CASE. But I haven't figure out the magic incantation to get the result of 
+</tt><tt>this into a ferret symbol.
+</tt><pre style="margin: 0em;">
+
+The following doesn't work, but indicates what I'm trying to accomplish:
+
+define symbol CASE = `spawn echo $CASE`
+
+</pre><tt>Any suggestions on how to get this to work, or pointers to another mechanism 
+</tt><tt>to retrieve an environment variable within ferret?
+</tt><pre style="margin: 0em;">
+
+Thanks, Keith
+
+******************************************************************
+Keith Lindsay                <a  rel="nofollow" href="http://www.cgd.ucar.edu/oce/klindsay/">http://www.cgd.ucar.edu/oce/klindsay/</a>
+email: klindsay@xxxxxxxx   phone: 303-497-1722   fax: 303-497-1700
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00103" href="msg00103.html">[ferret_users] accessing environment variables within ferret</a></strong>
+<ul><li><em>From:</em> Keith Lindsay</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00104.html">Re: [ferret_users] accessing environment variables within ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00107.html">[ferret_users] Changing data in NetCDF file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00104.html">Thread Prev</a>][<a href="msg00107.html">Thread Next</a>][<A HREF="threads.html#00105">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] vertical and horizontal lines in ps images -->
+<!--X-From-R13: Egrcura Uhvzbaq <fthvzbaqNsfh.rqh> -->
+<!--X-Date: Fri, 19 Feb 2010 15:02:13 &#45;0800 -->
+<!--X-Message-Id: f6f4eca4993.4b7ed1ea@fsu.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 6530494.11781266616379864.JavaMail.root@gangotri -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] vertical and horizontal lines in ps images</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00141.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00142">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] vertical and horizontal lines in ps images</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:nuncio@DOMAIN.HIDDEN">nuncio@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] vertical and horizontal lines in ps images</strong></li>
+<li><strong>From</strong>: <strong>Stephen Guimond &lt;<a href="mailto:sguimond@DOMAIN.HIDDEN">sguimond@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 19 Feb 2010 18:01:14 -0500</li>
+<li>Cc: ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:6530494.11781266616379864.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00140.html">6530494.11781266616379864.JavaMail.root@gangotri</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:6530494.11781266616379864.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00140.html">6530494.11781266616379864.JavaMail.root@gangotri</a></a>&gt;</li>
+<li>Reply-to: <a href="mailto:guimond@DOMAIN.HIDDEN">guimond@xxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Nuncio,
+
+I had trouble with this before but found a work-around.  Here is some info...
+
+<a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2009/msg00601.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2009/msg00601.html</a>
+
+Basically, what worked for me was to convert the metafile to postscript then I used Imagemagick's &quot;convert&quot; command which has an antialias flag that will remove the lines.  I had to use a very high resolution to retain the quality of the original postscript in the conversion.  Here is a shell script I wrote to do some of these things.  You could edit it to meet your needs.  Note that without the &quot;convert&quot; command, this will not work.
+
+#! /bin/tcsh
+ferret -unmapped -script fourier.jnl
+set file = `echo *.plt | cut -d&quot;.&quot; -f1 `
+gksm2ps -p portrait -o $file.ps $file.plt
+
+# script to increase line weights of Ferret output
+sed 's_3.000000 lw_6.000000 lw_g' &lt; $file.ps &gt;! foo; \mv foo $file.ps
+sed 's_2.000000 lw_4.000000 lw_g' &lt; $file.ps &gt;! foo; \mv foo $file.ps
+sed 's_1.000000 lw_2.000000 lw_g' &lt; $file.ps &gt;! foo; \mv foo $file.ps
+
+#I converted the .ps files to .pdf in here, you could try with just .ps, though
+
+foreach fig (`ls -1 *.pdf`)
+set file = `echo $fig | cut -d&quot;.&quot; -f1 `
+convert -density 1500x1500 +antialias $file.pdf $file.png   #this is the key line
+#could go back to .pdf or .ps here
+end
+
+
+Steve
+
+
+----- Original Message -----
+From: nuncio@xxxxxxxxx
+Date: Friday, February 19, 2010 5:26 pm
+Subject: [ferret_users] vertical and horizontal lines in ps images
+To: ferret &lt;ferret_users@xxxxxxxx&gt;
+
+&gt; Hi users,
+&gt;          I converted the metafile.plt to ps images using gksm2ps 
+&gt; command, the resulting image when opened in gv shows numerous, thin 
+&gt; vertical and horizontal white lines. Is it possible to remove this?
+&gt; thanks
+&gt; nuncio  
+&gt; 
+
+=======================================================
+Stephen R. Guimond
+Graduate Research Assistant
+Florida State University
+Center for Ocean-Atmospheric Prediction Studies (COAPS)
+=======================================================
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00155" href="msg00155.html">Re: [ferret_users] vertical and horizontal lines in ps images</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00140" href="msg00140.html">[ferret_users] vertical and horizontal lines in ps images</a></strong>
+<ul><li><em>From:</em> nuncio</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00141.html">Re: [ferret_users] vertical and horizontal lines in ps images</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00155.html">Re: [ferret_users] vertical and horizontal lines in ps images</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00141.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00142">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Outlining grid boxes -->
+<!--X-From-R13: Pebpxznaa Bngevpx <Bngevpx.PebpxznaaNprn.se> -->
+<!--X-Date: Thu, 5 Nov 2009 04:56:24 &#45;0800 -->
+<!--X-Message-Id: 4AF2CB22.40909@cea.fr -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 869310.64082.qm@web31906.mail.mud.yahoo.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Outlining grid boxes</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00733.html">Thread Prev</a>][<a href="msg00729.html">Thread Next</a>][<A HREF="threads.html#00747">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Outlining grid boxes</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jagadish karmacharya &lt;<a href="mailto:j_karmacharya@DOMAIN.HIDDEN">j_karmacharya@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Outlining grid boxes</strong></li>
+<li><strong>From</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 05 Nov 2009 13:54:58 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:869310.64082.qm@DOMAIN.HIDDEN">869310.64082.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:869310.64082.qm@DOMAIN.HIDDEN">869310.64082.qm@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.17 (X11/20080926)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+jagadish karmacharya a &#xE9;crit :
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Partick,
+
+</pre><tt>Thanks. you script works fine over the entire domain of the dataset. 
+</tt><tt>But it doesn't work when I try to diplay and overlay  over a sub 
+</tt><tt>region of the entire domain.
+</tt><pre style="margin: 0em;">
+
+Any idea?
+
+</pre></blockquote><tt>Yes, the cause is that the use of region limits excursion of X and Y 
+</tt><tt>dimensions.
+</tt><pre style="margin: 0em;">
+The initial script uses the 2D form of x- and y- vertices as described in
+<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/POLYGON">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/POLYGON</a>
+
+</pre><tt>But you can modify it to get the x- and y- vertices set over K and L 
+</tt><tt>dimensions.
+</tt><pre style="margin: 0em;">
+This is what I have done in the attached script and its demo.
+
+</pre><tt>Note that /modulo qualifier does not exist for polygon command so the 
+</tt><tt>command
+</tt><pre style="margin: 0em;">
+is repeated twice (lon and lon+360).
+
+Patrick
+
+</pre><pre>
+!========================================================
+let ME_VAR=($01)
+let ME_VAR0=TSEQUENCE(ME_VAR)
+
+!========================================================
+! build vector boundaries
+let XLO = TSEQUENCE(X[GX=ME_VAR]*Y[GY=ME_VAR]*0+XBOXLO[GX=ME_VAR])
+let XHI = TSEQUENCE(X[GX=ME_VAR]*Y[GY=ME_VAR]*0+XBOXHI[GX=ME_VAR])
+let YHI = TSEQUENCE(X[GX=ME_VAR]*Y[GY=ME_VAR]*0+YBOXHI[GY=ME_VAR])
+let YLO = TSEQUENCE(X[GX=ME_VAR]*Y[GY=ME_VAR]*0+YBOXLO[GY=ME_VAR])
+
+!========================================================
+!   (1) x-------x (2) 
+!       |       |
+!       |   +   |
+!       |       |
+!   (4) x-------x (3)
+!
+
+! build a variable with longitude boundaries 
+let BOUNDS_LON_0 = TSEQUENCE(X[GX=ME_VAR]*Y[GY=ME_VAR]*0)+K[K=1:4]
+let BOUNDS_LON_1 = IF BOUNDS_LON_0 EQ 1 THEN XLO ELSE BOUNDS_LON_0
+let BOUNDS_LON_2 = IF BOUNDS_LON_0 EQ 2 THEN XHI ELSE BOUNDS_LON_1
+let BOUNDS_LON_3 = IF BOUNDS_LON_0 EQ 3 THEN XHI ELSE BOUNDS_LON_2
+let BOUNDS_LON_4 = IF BOUNDS_LON_0 EQ 4 THEN XLO ELSE BOUNDS_LON_3
+set variable/title=&quot;Longitude&quot; BOUNDS_LON_4
+
+! build a variable with latitude boundaries 
+let BOUNDS_LAT_0 = TSEQUENCE(X[GX=ME_VAR]*Y[GY=ME_VAR]*0)+K[K=1:4]
+let BOUNDS_LAT_1 = IF BOUNDS_LAT_0 EQ 1 THEN YHI ELSE BOUNDS_LAT_0
+let BOUNDS_LAT_2 = IF BOUNDS_LAT_0 EQ 2 THEN YHI ELSE BOUNDS_LAT_1
+let BOUNDS_LAT_3 = IF BOUNDS_LAT_0 EQ 3 THEN YLO ELSE BOUNDS_LAT_2
+let BOUNDS_LAT_4 = IF BOUNDS_LAT_0 EQ 4 THEN YLO ELSE BOUNDS_LAT_3
+set variable/title=&quot;Latitude&quot; BOUNDS_LAT_4
+
+!========================================================
+polygon/over/fill/line/nolab/key/lev=20 BOUNDS_LON_4, BOUNDS_LAT_4, ME_VAR0
+
+! Note that /modulo qualifier does not exist for polygon command
+! so repeat polygon command with bounds_lon+360 and same levels as previous
+polygon/over/fill/line/nolab/key/lev BOUNDS_LON_4+360, BOUNDS_LAT_4, ME_VAR0
+</pre><pre>
+!========================================================
+use levitus_climatology
+
+!========================================================
+set region W
+go basemap &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; hollow
+go shade_polygon.jnl temp[k=1] 
+go land
+
+!========================================================
+pause
+
+!========================================================
+set region/x=330:420/y=30:60
+go basemap &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; hollow
+go shade_polygon.jnl temp[k=1]
+go land
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00733" href="msg00733.html">Re: [ferret_users] Outlining grid boxes</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00733.html">Re: [ferret_users] Outlining grid boxes</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00729.html">Re: [ferret_users] Outlining grid boxes</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00733.html">Thread Prev</a>][<a href="msg00729.html">Thread Next</a>][<A HREF="threads.html#00747">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

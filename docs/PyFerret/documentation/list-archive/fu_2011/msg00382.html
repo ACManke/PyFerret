@@ -1,0 +1,269 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] current path length -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Thu, 19 May 2011 13:02:35 &#45;0700 -->
+<!--X-Message-Id: 4DD57742.9090006@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: BFAB582F&#45;8F26&#45;4C35&#45;9E1B&#45;B07FCA7CC798@gmail.com -->
+<!--X-Derived: pngU36c08PmiF.png -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] current path length</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00382">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] current path length</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Leela Frankcombe &lt;<a href="mailto:leela.frankcombe@DOMAIN.HIDDEN">leela.frankcombe@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] current path length</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 19 May 2011 13:02:10 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:BFAB582F-8F26-4C35-9E1B-B07FCA7CC798@DOMAIN.HIDDEN">BFAB582F-8F26-4C35-9E1B-B07FCA7CC798@xxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:BFAB582F-8F26-4C35-9E1B-B07FCA7CC798@DOMAIN.HIDDEN">BFAB582F-8F26-4C35-9E1B-B07FCA7CC798@xxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.2.17) Gecko/20110414 Lightning/1.0b2 Thunderbird/3.1.10</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Leela,
+
+</pre><tt>    This is not necessarily a better solution to your problem than use 
+</tt><tt>of transformations like @loc or @weq, but it illustrates how using 
+</tt><tt>Ferret as a digitizer, coupled with a Great Circle Distance calculator 
+</tt><tt>can be useful in a variety of situations. Apologies if this is already 
+</tt><tt>known to you but it may serve a wider audience.
+</tt><pre style="margin: 0em;">
+
+First: Check that Ferret's &quot;where&quot; command is working for you:
+    go ptest
+    where
+</pre><tt>When you move the cursor over the plot and click. Ferret should report 
+</tt><tt>the &quot;mouse&quot; coordinates in user units. This is the key to digitizing and 
+</tt><tt>a variety of other tasks one could imagine.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Next: Add the attached scripts to your directories (I would typically 
+</tt><tt>put the .jnl ones in my &quot;ferret&quot; directory and the shell script 
+</tt><tt>get_vertices [with chmod +x get_vertices] in &quot;bin&quot;)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Demo: Here is an illustration. What is the length of the 25C isotherm of 
+</tt><tt>Levitus SST between Australia and South America?
+</tt><pre style="margin: 0em;">
+    use levitus_climatology ; let sst=temp[k=1]
+    fill/x=140:310/y=-30:10 sst ; cont/o/lev=(25)/x=140:310/y=-30:10 sst
+    go polydef  ! prompts user to click on desired points, terminating by
+</pre><tt>                        ! clicking offchart to the left. When this is 
+</tt><tt>done the coords of
+</tt><tt>                        ! the point are loaded as a file with variables 
+</tt><tt>VX,VY
+</tt><pre style="margin: 0em;">
+    sho data
+   2&gt; ./vertices.xy  (default)
+ name     title                             I         J         K         L
+</pre><tt> VX       VX                               ...       ...       1:76 
+</tt><tt>     ...
+</tt><tt> VY       VY                               ...       ...       1:76 
+</tt><tt>     ...
+</tt><tt>! As seen in the attached graphic I took 76 points to delineate the 
+</tt><tt>isotherm.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>! In this case, where VX,VY are lon,lat values, what is needed is to sum 
+</tt><tt>the great
+</tt><pre style="margin: 0em;">
+! circle distances along the curve. One way to do this is as follows:
+    go greatcircle  ! definitions for great circle calculations
+    let lon1=vx ; let lat1=vy ; let lon2=vx[k=@shf] ; let lat2=vy[k=@shf]
+</pre><tt>    list gckm[k=1:75@sum]  ! sum up the GC contributions, giving the 
+</tt><tt>answer (in kilometers)
+</tt><pre style="margin: 0em;">
+    18033.
+</pre><tt>Note that you sum over one less than the number of vertices so as not to 
+</tt><tt>run off the end. I did the above twice, because I forgot to save the 
+</tt><tt>plot, and the first time got 18042. This suggests the method is good 
+</tt><tt>enough for a certain class of problem. Perhaps a better demo would have 
+</tt><tt>been to use the hints in &quot;greatcircle.jnl&quot; to plot a portion of a great 
+</tt><tt>circle, then digitize it and compare the result with the known answer, 
+</tt><tt>but this one at least illustrates how it can deal with complex paths.
+</tt><pre style="margin: 0em;">
+
+Hope it is of use,
+    Mick
+----------------
+On 5/19/11 11:06 AM, Leela Frankcombe wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Ferreters,
+
+I've come across a question which is simple in theory but in practice I'm having a little trouble. So I'm wondering if anyone else has found a solution.
+
+What I would like to do is calculate the path length of an ocean current. To define the path of the current I pick a particular sea surface height contour, now I would like to be able to calculate the length of that contour. I've been trying to use @loc or @weq to select the points at which SSH reaches the value that I've chosen but they only find the first instance along a given latitude or longitude so they miss parts where the current meanders (and also sometimes pick up eddies). Is there a way to use @loc or @weq to find every instance of a particular value? Or has someone got a better solution?
+
+Thanks!
+Leela.
+
+-----------------------------------------------------------------------------------
+Leela Frankcombe
+Post-doctoral researcher
+Institute for Marine and Atmospheric research Utrecht
+Utrecht University
+The Netherlands
+www.phys.uu.nl/~frankcmb
+l.m.frankcombe@xxxxx
+-----------------------------------------------------------------------------------
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><p><strong>Attachment:
+<a href="pngU36c08PmiF.png" ><tt>demo.png</tt></a></strong><br>
+<em>Description:</em> PNG image</p>
+<pre>! polydef : use mouse click to define polygon vertices
+
+can mode verify
+let done=0 ; sp rm -f vertices.xy
+
+say &quot;****************************************************&quot;
+say &quot;*                                                  *&quot;
+say &quot;* Add polygon vertices by mouse clicks.  Terminate *&quot;
+say &quot;*     by clicking to the left of the plot area.    *&quot;
+say &quot;*                                                  *&quot;
+say &quot;****************************************************&quot;
+
+! add new vertices to the file vertices.xy
+repeat/range=1:1000 go add_vertex
+
+! then read in the resulting file 
+sp get_vertices ; go get_vertices
+
+set mode verify
+
+</pre><pre>! add a new vertex to the vertex file while done=0
+
+if `done eq 0` then 
+  where
+  if `($XMOUSE) gt ($XAXIS_MIN)` then
+    list/nohead/app/form=(2f12.6)/file=vertices.xy ($XMOUSE),($YMOUSE)
+! if visible marks at the vertices are not desired drop the next line
+    plot/o/nolab/vs/sym=1 ($XMOUSE),($YMOUSE)
+  else
+    let done=1
+  endif
+endif
+
+</pre><pre>! greatcircle : definitions for great circle calculations between
+!               two locations lon1,lat1 and lon2,lat2 (in degrees)
+!
+let d2r=atan(1.)/45
+let rlon1=d2r*lon1 ; let rlat1=d2r*lat1
+let rlon2=d2r*lon2 ; let rlat2=d2r*lat2
+
+! define great circle distances from lon1,lat1 to lon2,lat2 in radians ...
+let/title=&quot;Great Circle Distance (radians)&quot; \
+   gcrad=acos(sin(rlat1)*sin(rlat2)+cos(rlat1)*cos(rlat2)*cos(rlon2-rlon1))
+! ... and kilometers
+let/title=&quot;Great Circle Distance (km)&quot; gckm=111.11*gcrad/d2r
+let/title=&quot;Great Circle Distance (nm)&quot; gcnm=60*gcrad/d2r
+
+! define initial heading from lon1,lat1 to lon2,lat2 (clockwise from north)
+let gcharg=acos((sin(rlat2)-sin(rlat1)*cos(gcrad))/(sin(gcrad)*cos(rlat1)))
+! correct for near north-south pairings
+let gchfix=gcharg[x=@fln]/d2r
+let/title=&quot;Initial Heading (degrees)&quot; \
+   gchead=if(sin(rlon2-rlon1) gt 0)then gchfix else 360-gchfix
+
+let/title=&quot;Secant Distance (3-D separation in km)&quot; seckm=gckm*sin(gcrad/2)/(gcrad/2)
+
+let lat=atan((tan(d2r*lat2)*sin(d2r*(lon-lon1))-tan(d2r*lat1)*sin(d2r*(lon-lon2)))/ \
+   sin(d2r*(lon2-lon1)))/d2r
+
+! Usage: the results &quot;gcrad&quot;, &quot;gckm&quot;, and &quot;gchead&quot; are computed based on
+!        existing variables lon1,lat1 representing the start point and
+!        lon2,lat2 representing the destination.
+!
+! NOTE : To plot a greatcircle from lon1,lat1 to lon2,lat2 define a variable &quot;lon&quot;
+!        that spans the interval between them with sufficient resolution, for example
+!               def axis/x=`lon1`:`lon2`:0.1 xax ; let lon=x[gx=xax]
+!               plot/o/vs/nolab/line=2 lon,lat
+!        If a gridded file such as a topography is available it may be convenient to 
+!        use that x-axis for &quot;lon&quot;:
+!                       let lon=x[g=...]
+!               plot/o/vs/nolab/line=2/x=`lon1`:`lon2` lon,lat
+!
+</pre><pre>#! /bin/csh -f
+
+# get_vertices : create ferret script to access vertex data
+
+set nrec=`wc -l vertices.xy | awk '{print $1}'`
+echo 'def axis/z=1:'$nrec':1/mod zpoly ; def grid/z=zpoly gpoly' &gt;! get_vertices.jnl
+echo 'file/form=free/g=gpoly/var=vx,vy vertices.xy'              &gt;&gt; get_vertices.jnl
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00384" href="msg00384.html">Re: [ferret_users] current path length</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg</li></ul></li>
+<li><strong><a name="00383" href="msg00383.html">Re: [ferret_users] current path length</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00381" href="msg00381.html">[ferret_users] current path length</a></strong>
+<ul><li><em>From:</em> Leela Frankcombe</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00381.html">[ferret_users] current path length</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00383.html">Re: [ferret_users] current path length</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00381.html">Thread Prev</a>][<a href="msg00383.html">Thread Next</a>][<A HREF="threads.html#00382">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

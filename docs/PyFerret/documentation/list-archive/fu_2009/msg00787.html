@@ -1,0 +1,165 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] shade 3 args with time -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 23 Nov 2009 15:11:30 &#45;0800 -->
+<!--X-Message-Id: 4B0B16A4.3030601@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4B0A8EF4.6040707@cea.fr -->
+<!--X-Derived: gifdVmV8LzpO3.gif -->
+<!--X-Derived: gif8yTsoD5SMV.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] shade 3 args with time</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00785.html">Thread Prev</a>][<a href="msg00788.html">Thread Next</a>][<A HREF="threads.html#00787">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shade 3 args with time</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shade 3 args with time</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 23 Nov 2009 15:11:32 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4B0A8EF4.6040707@DOMAIN.HIDDEN">4B0A8EF4.6040707@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4B0A8EF4.6040707@DOMAIN.HIDDEN">4B0A8EF4.6040707@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Patrick,<br>
+I think we could probably do this but first I want to understand more
+about your grid. Is your grid actually curvilinear in longitude-time?&nbsp;
+Or are you thinking of plots using the 2-dimensional longitude
+coordinates from a grid that is curvilinear in xy and a time variable
+that is somehow generated?<br>
+<br>
+If the curvilinear nature of the grid is in the horizontal dimensions,
+then to make a Hovmoller plot in X-T, I think you'd want to use the
+curvilinear sampling function, SAMPLEXY_CURV, to get a subset of the
+data at a particular latitude, and then plot that. So if your data
+looks like<tt><br>
+</tt>
+<blockquote><tt>yes? show data</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; currently SET data sets:</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; 1&gt; ./curvi_data.nc&nbsp; (default)</tt><br>
+  <tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+L</tt><br>
+  <tt>&nbsp;U&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zonal current&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:360&nbsp;&nbsp;&nbsp;&nbsp; 1:180 &nbsp;&nbsp;&nbsp; 1:1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:123</tt><br>
+  <tt>&nbsp;GEOLON&nbsp;&nbsp; longitude&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:360&nbsp;&nbsp;&nbsp;&nbsp; 1:180 &nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...</tt><br>
+  <tt>&nbsp;GEOLAT&nbsp;&nbsp; latitude&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:360&nbsp;&nbsp;&nbsp;&nbsp; 1:180 &nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+...</tt><br>
+</blockquote>
+you could define some longitude and latitude pairs to sample:<br>
+<blockquote><tt>let xpts = x[x=2:360:2]</tt><br>
+  <tt>let ypts = 0* xpts + 31.</tt><br>
+  <br>
+  <tt>let u_at_31N = samplexy_curv(u, geolon, geolat, xpts, ypts)</tt><br>
+</blockquote>
+This would return U sampled at each of the longitude-latitude locations
+(2,31), (4,31) , ... (360,31), for all times on the time axis of U. The
+result of the function is on an abstract axis in the X direction, so
+you would need to define the equivalent longitude axis, and put
+u_at_31N onto that axis, and then you could plot it as a longitude-time
+plot with&nbsp; the regular 1-argument plot commands.<br>
+<br>
+Ansley<br>
+<br>
+<br>
+<br>
+Brockmann Patrick wrote:
+<blockquote cite="" type="cite">Hi all,
+  <br>
+  <br>
+Is there a way to activate time labeling when a shade command is used
+with 3 args ?
+  <br>
+It would be usefull to plot hovmoller plot from curvilinear model
+output.
+  <br>
+  <br>
+Attached is a script using classic navy_winds netcdf file to simulate
+the problem.
+  <br>
+Thanks
+  <br>
+  <br>
+Patrick
+  <br>
+  <br>
+  <pre wrap="">
+<hr size="4" width="90%">
+<center><img src="gifdVmV8LzpO3.gif"></center><p>
+</p><hr size="4" width="90%">
+<center><img src="gif8yTsoD5SMV.gif"></center></pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00785" href="msg00785.html">[ferret_users] shade 3 args with time</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00785.html">[ferret_users] shade 3 args with time</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00788.html">[ferret_users] Where are the contour labels in my postscript file?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00785.html">Thread Prev</a>][<a href="msg00788.html">Thread Next</a>][<A HREF="threads.html#00787">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

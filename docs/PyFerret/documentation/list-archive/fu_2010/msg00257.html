@@ -1,0 +1,156 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Plotting Argo data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 20 Apr 2010 12:55:32 &#45;0700 -->
+<!--X-Message-Id: 4BCE06B4.6040906@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 31032031.9733151271777265955.JavaMail.root@neo&#45;mail&#45;3 -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Plotting Argo data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00256.html">Thread Prev</a>][<a href="msg00258.html">Thread Next</a>][<A HREF="threads.html#00257">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Plotting Argo data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Balaguru, Karthik&quot; &lt;<a href="mailto:karthiknaidu@DOMAIN.HIDDEN">karthiknaidu@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Plotting Argo data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 20 Apr 2010 12:55:32 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:31032031.9733151271777265955.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00256.html">31032031.9733151271777265955.JavaMail.root@neo-mail-3</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:31032031.9733151271777265955.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00256.html">31032031.9733151271777265955.JavaMail.root@neo-mail-3</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.24 (Windows/20100228)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Karthik,<br>
+If you are plotting a variable in time, then Ferret automatically
+chooses labels on the time axis according to the range of time you have
+specified.&#xA0; The line that is drawn on a line plot just connects the
+points.&#xA0; If you are plotting a variable in 2 dimensions, then indeed
+Ferret fills in data between coordinate points using an algorithm to
+make contour lines or color contoured areas; or you can use the SHADE
+command to do a raster plot. It fills each grid box with color.<br>
+<br>
+I'll do a quick example and the point you to the parts of the
+documentation that you should look at for further details.<br>
+<br>
+For example, let's define a time axis with 10 day intervals and plot a
+variable on it.&#xA0; This axis is regularly spaced; if yours is irregularly
+spaced it will still be drawing lines between the individual points.&#xA0;
+We'll use PLOT/LINE/SYMBOL to mark the location of the variable at each
+coordinate location.<br>
+<blockquote>yes? define
+axis/t="1-oct-2000":"1-oct-2001":10/units=days/t0=1-jan-2000&#xA0; timeaxis10<br>
+yes? let tt = t[gt=timeaxis10]<br>
+yes? let var = cos(tt/20)<br>
+yes? plot var<br>
+  <br>
+yes? plot/line/symbol var&#xA0;&#xA0;&#xA0;&#xA0; ! mark the points with a symbol<br>
+  <br>
+yes? plot/line/symbol/t=1-oct-2000:1-nov-2000 var&#xA0; ! a shorter subset<br>
+</blockquote>
+If you want to plot a short section between two dates which don't
+correspond to the coordinate points, then this would happen:<br>
+<blockquote>yes? plot/line/symbol/t=20-oct-2000:24-oct-2000 var<br>
+&#xA0;**ERROR: illegal limits: One-point independent axis: Requires a
+/HLIMIT or /VLIMIT specification<br>
+</blockquote>
+Here you would need to define a new time axis at a finer resolution and
+regrid the data to that new axis.&#xA0; Continuing the example, here is a
+daily time axis, and our variable regridded to it.<br>
+<blockquote>yes? define
+axis/t="1-oct-2000":"1-oct-2001":1/units=days/t0=1-jan-2000&#xA0; timeaxis1<br>
+yes? let var_day = var[gt=timeaxis1]<br>
+yes? plot/line/symbol/t=1-oct-2000:1-nov-2000 var_day&#xA0; <br>
+</blockquote>
+In the Ferret Users Guide, I would suggest looking through the first
+several chapters.&#xA0; The regridding section is in Chapter 4, and that
+chapter would be especially useful to you. It talks about grids and
+regions will help you to understand how data is organized and how to
+interact with it.<br>
+<br>
+Ansley<br>
+<br>
+Balaguru, Karthik wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">
+  Dear Ferret Users,
+
+       I have a question regarding plotting of Argo data using ferret. Once I've transformed the data as shown in a tutorial, I have been able to perform all the normal functions. But I have a small problem. The time step typically for Argo is around 10 days. Let's say l = 10 is Oct 20 and l = 11 is Nov 4. When I plot the data from l=10:11, it also shows days in between these two dates. I wonder how it is able to get the information in between these dates. Also if I want to plot until a day in between l= 10 and l=11, say until Oct 27th how do I do it. Any help would be greatly appreciated. Thanks!
+
+  Karthik.
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00256" href="msg00256.html">[ferret_users] Plotting Argo data</a></strong>
+<ul><li><em>From:</em> Balaguru, Karthik</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00256.html">[ferret_users] Plotting Argo data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00258.html">[ferret_users] Average of multiple inconsistent time series  data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00256.html">Thread Prev</a>][<a href="msg00258.html">Thread Next</a>][<A HREF="threads.html#00257">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

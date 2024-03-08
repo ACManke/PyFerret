@@ -1,0 +1,329 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] ASCII to netCDF via ferret. -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Wed, 21 Sep 2011 10:28:58 &#45;0700 -->
+<!--X-Message-Id: 4E7A1ED8.3070708@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4E774D5D.5090507@knmi.nl -->
+<!--X-Reference: 20110920125524.GA18740@giotto.bmtargoss.org -->
+<!--X-Reference: 21C58843D32B2643846D6B57CEC2B357EF4AB33234@NDMSSCC05.ndc.nasa.gov -->
+<!--X-Reference: 201109211034.44990.russell.fiedler@csiro.au -->
+<!--X-Reference: 1DF3CDDA&#45;C9B2&#45;4F74&#45;B5A6&#45;54FFE63D643E@nasa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] ASCII to netCDF via ferret.</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00715.html">Thread Prev</a>][<a href="msg00708.html">Thread Next</a>][<A HREF="threads.html#00720">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ASCII to netCDF via ferret.</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Oostra, Daniel H. (LARC-E302)[SCIENCE SYSTEMS AND APPLICATIONS, INC]&quot; &lt;<a href="mailto:daniel.h.oostra@DOMAIN.HIDDEN">daniel.h.oostra@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ASCII to netCDF via ferret.</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 21 Sep 2011 10:28:56 -0700</li>
+<li>Cc: <a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>, ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1DF3CDDA-C9B2-4F74-B5A6-54FFE63D643E@DOMAIN.HIDDEN">1DF3CDDA-C9B2-4F74-B5A6-54FFE63D643E@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4E774D5D.5090507@DOMAIN.HIDDEN">4E774D5D.5090507@xxxxxxx</a>&gt; &lt;<a href="mailto:20110920125524.GA18740@DOMAIN.HIDDEN">20110920125524.GA18740@xxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:21C58843D32B2643846D6B57CEC2B357EF4AB33234@DOMAIN.HIDDEN">21C58843D32B2643846D6B57CEC2B357EF4AB33234@xxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:201109211034.44990.russell.fiedler@DOMAIN.HIDDEN">201109211034.44990.russell.fiedler@xxxxxxxx</a>&gt; &lt;<a href="mailto:1DF3CDDA-C9B2-4F74-B5A6-54FFE63D643E@DOMAIN.HIDDEN">1DF3CDDA-C9B2-4F74-B5A6-54FFE63D643E@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:6.0.2) Gecko/20110902 Thunderbird/6.0.2</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    Hi Dan,<br>
+    <br>
+    I'm just tuning in from the wings ... ignore if I'm in left field.<br>
+    <br>
+    Normally in Ferret you'd read data such as this onto a single
+    variable -- i.e. you would create a time axis for your grid that
+    encompasses all of the years and a 3D grid of shape lon-lat-year.&nbsp;
+    Then you won't see this artificial limitation in the number of
+    distinct variables that you can read.&nbsp; It looks like the way the
+    file is organized each year is a separate column.&nbsp; The year number
+    is in effect the "fastest moving axis" of a grid of shape
+    year-lon-lat.&nbsp; This is permuted from Ferret's default ordering.<br>
+    <br>
+    You'll want to<br>
+    <ol>
+      <li>define a grid something like this:</li>
+      <ol>
+        <li>DEFINE AXIS/T=1868:1999:1&nbsp; year&nbsp;&nbsp;&nbsp; ! see #3<br>
+          def axis/modulo/x=-180:179/npoints=360/units="degrees_east"
+          xax <br>
+          def axis/y=-90:89/npoints=180/units="degrees_north" yax<br>
+          DEFINE GRID/x=xax/y=yax/t=year&nbsp; my_grid3d<br>
+        </li>
+      </ol>
+      <li>On your FILE command</li>
+      <ol>
+        <li>/grid=my_grid3d<br>
+        </li>
+        <li>Use the /COLUMNS qualifier tell Ferret that all of the
+          columns belong to a single variable</li>
+        <li>use the /ORDER=TXY qualifier to tell Ferret the permutation
+          of your file axes</li>
+        <li>use /VAR=my_var_name<br>
+        </li>
+      </ol>
+      <li>The way the data are organized the lon lat values lie at the
+        start of each line of data.&nbsp; They will appear in this method of
+        reading as if they are data for years 1868 and 1869.&nbsp; All you
+        need do is to make the time axis longer by these two
+        introductory years and then ignore the resulting time values
+        (which will actually contain lat/long positions).&nbsp; See step #4<br>
+        <br>
+        Your time axis can be simplistic ... just numbers 1868 ...
+        1999&nbsp;&nbsp; or it can be correct in every detail, incorporating leap
+        year length variations.&nbsp; To do the latter define an axis that is
+        1-jan for each year per the instructions found under "DEFINE
+        AXIS/EDGES" at Ferret Users guide section
+        <a rel="nofollow" class="moz-txt-link-freetext"
+href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/DEFINE#_VPINDEXENTRY_1299">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/DEFINE#_VPINDEXENTRY_1299</a><br>
+      </li>
+      <li>Best to save the resulting data into a netCDF&nbsp; file ... and
+        never have to deal with the messy parts again&nbsp;<span
+          class="moz-smiley-s1"><span> :-) </span></span> .<br>
+      </li>
+      <ul>
+        <li>SET VARIABLE/TITLE="my title"/UNITS="my_units" my_var_name</li>
+        <li>SAVE/FILE=my_file.nc my_var_name[l=3:&lt;whatever&gt;]&nbsp;&nbsp;&nbsp;&nbsp; !
+          start at L=3 to skip the first 2 years, which contain lon-lat
+          values<br>
+        </li>
+      </ul>
+    </ol>
+    &nbsp;&nbsp;&nbsp; - Steve<br>
+    <br>
+    ==========================<br>
+    <br>
+    On 9/20/2011 6:36 PM, Oostra, Daniel H. (LARC-E302)[SCIENCE SYSTEMS
+    AND APPLICATIONS, INC] wrote:
+    <blockquote cite=""
+      type="cite">
+      <pre wrap="">Hi Russ,
+
+Thanks for your advice.  This was a rookie error on my part, while the code works, I had somehow decided that it was a 360x180 degree grid, when it was actually a 256x128 degree grid.  So my x and y axes were off.  Once I changed these values for xax and yax the plots came out as intended.
+
+The issue I'm having now is that ferret will only allow me to assign 20 variables.  I'm going to try to break up the data into 20 year blocks but this seems clumsy.  Any idea on how to do this without manipulating the file original data file?
+
+Thanks again,
+
+Dan
+
+
+
+On Sep 20, 2011, at 8:34 PM, "Russell Fiedler" <a rel="nofollow" class="moz-txt-link-rfc2396E" href="mailto:russell.fiedler@xxxxxxxx">&lt;russell.fiedler@xxxxxxxx&gt;</a> wrote:
+
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">Hi Daniel,
+
+I think the problem is with the way you have defined your time axis. Is it supposed to have values at the
+end of the year or should it represent the middle of the year?
+
+-------------
+yes? show grid my_grid1
+   GRID MY_GRID1
+name       axis              # pts   start                end
+XAX       LONGITUDE          360mr   180E(-180)           179E
+YAX       LATITUDE           180 r   90S                  89N
+normal    Z
+TAX1      TIME                 2 r   01-JAN-1870 00:00    01-JAN-1871 05:49
+--------------
+
+If these values are meant to be in the middle of the year then the time axis should be specified as
+
+define axis/t="01-jan-1870":"01-jan-1871"/npoints=1/edges/units=years tax1
+
+Note that we put the bounds at the extremes of the year of which the end date is the start of january of the next year
+and not 31 December.
+
+Another problem might be the length of the lines. You may have to use the /FORMAT="(some_fortran_format)"  
+option on the FILE command.
+
+Russ
+
+
+On Wednesday 21 September 2011 01:11, Oostra, Daniel H. (LARC-E302)[SCIENCE SYSTEMS AND APPLICATIONS, INC] wrote:
+</pre>
+        <blockquote type="cite">
+          <pre wrap="">Hi Ferret users,
+
+I'm trying to use ferret to convert an ASCII Tabular dataset into a netCDF file that I can use in our Live Access Server.
+
+So far I've been able to successfully create plots but they are not coming out correctly.  It seems the data portion is being displayed in the southern hemisphere only.
+
+I've run into some memory problems and variable assignment issues, but both of those can be solved.
+
+Here's a data sample (first 16 lines):
+
+*******************
+Band Name:                    tas
+Description:                  (deg. C). NCAR-CCSM3 ensemble average for the IPCC Climate of the 20th Century experiment. This experiment simulates past climate starting from the mid-19th Century and is part of the 4th IPCC Assessment. Data represent averages for 5 ensembles.
+Holding name:                 air temperature - Annual
+Collection name:              Climate Changes in the 21st Century
+Date class:                   time series
+Begin date of output          1870-01-01
+End date of output            1999-12-31
+Time step units:              years
+Data units:                   Deg C
+Fill value:                   -99
+
+Center Lon,Center Lat,1870,1871,1872,1873,1874,1875,1876,1877,1878,1879,1880,1881,1882,1883,1884,1885,1886,1887,1888,1889,1890,1891,1892,1893,1894,1895,1896,1897,1898,1899,1900,1901,1902,1903,1904,1905,1906,1907,1908,1909,1910,1911,1912,1913,1914,1915,1916,1917,1918,1919,1920,1921,1922,1923,1924,1925,1926,1927,1928,1929,1930,1931,1932,1933,1934,1935,1936,1937,1938,1939,1940,1941,1942,1943,1944,1945,1946,1947,1948,1949,1950,1951,1952,1953,1954,1955,1956,1957,1958,1959,1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999
+-179.296875,89.296875,-18.2,-17.6,-17.8,-17.5,-17.6,-17.6,-17.8,-17.5,-18.2,-18.0,-17.6,-17.8,-17.9,-18.3,-18.7,-18.8,-18.4,-18.9,-19.1,-19.5,-18.5,-18.9,-19.4,-18.9,-19.1,-19.0,-18.8,-18.7,-18.6,-18.3,-18.0,-18.9,-18.8,-19.5,-19.9,-19.5,-19.6,-19.4,-19.2,-18.5,-19.5,-19.0,-19.2,-19.5,-19.2,-19.0,-18.7,-19.0,-18.6,-18.7,-18.7,-18.4,-18.5,-18.4,-18.3,-18.3,-18.0,-18.8,-18.4,-18.8,-18.9,-18.2,-19.1,-18.2,-18.3,-18.2,-18.5,-17.9,-18.1,-17.9,-18.2,-18.1,-18.2,-18.3,-17.6,-17.8,-18.1,-18.1,-17.4,-17.2,-17.6,-17.6,-17.9,-17.9,-17.9,-17.8,-18.2,-17.0,-17.6,-17.8,-17.4,-17.4,-17.3,-18.0,-17.6,-18.5,-18.0,-17.8,-17.4,-17.1,-16.9,-16.9,-17.1,-17.7,-17.2,-16.9,-17.9,-17.3,-17.1,-17.3,-17.0,-16.8,-16.8,-16.7,-16.7,-16.9,-16.7,-16.4,-16.7,-16.4,-15.6,-16.4,-16.1,-16.4,-15.8,-16.2,-16.4,-15.6,-15.7,-15.3
+-177.890625,89.296875,-18.2,-17.7,-17.8,-17.5,-17.6,-17.7,-17.8,-17.5,-18.3,-18.0,-17.6,-17.8,-17.9,-18.3,-18.8,-18.8,-18.4,-18.9,-19.1,-19.5,-18.5,-18.9,-19.4,-18.9,-19.1,-19.0,-18.8,-18.7,-18.6,-18.3,-18.0,-18.9,-18.8,-19.5,-19.9,-19.5,-19.7,-19.4,-19.2,-18.5,-19.5,-19.0,-19.2,-19.5,-19.3,-19.0,-18.8,-19.0,-18.6,-18.7,-18.7,-18.4,-18.5,-18.4,-18.3,-18.3,-18.0,-18.8,-18.4,-18.8,-18.9,-18.2,-19.1,-18.2,-18.3,-18.2,-18.5,-18.0,-18.1,-17.9,-18.2,-18.1,-18.2,-18.3,-17.6,-17.8,-18.1,-18.1,-17.4,-17.2,-17.6,-17.6,-17.9,-18.0,-17.9,-17.8,-18.3,-17.0,-17.6,-17.8,-17.5,-17.4,-17.3,-18.0,-17.6,-18.6,-18.1,-17.8,-17.4,-17.1,-16.9,-16.9,-17.1,-17.8,-17.2,-16.9,-17.9,-17.3,-17.1,-17.3,-17.0,-16.8,-16.8,-16.7,-16.8,-17.0,-16.7,-16.4,-16.7,-16.5,-15.7,-16.4,-16.2,-16.4,-15.8,-16.2,-16.4,-15.6,-15.7,-15.4
+-176.484375,89.296875,-18.2,-17.7,-17.9,-17.5,-17.6,-17.7,-17.8,-17.5,-18.3,-18.1,-17.7,-17.8,-18.0,-18.4,-18.8,-18.9,-18.4,-19.0,-19.1,-19.5,-18.5,-18.9,-19.4,-18.9,-19.1,-19.0,-18.8,-18.7,-18.6,-18.4,-18.0,-18.9,-18.8,-19.6,-19.9,-19.5,-19.7,-19.4,-19.2,-18.6,-19.5,-19.0,-19.2,-19.5,-19.3,-19.1,-18.8,-19.0,-18.6,-18.8,-18.8,-18.4,-18.5,-18.4,-18.3,-18.4,-18.1,-18.9,-18.4,-18.9,-18.9,-18.2,-19.1,-18.2,-18.3,-18.2,-18.5,-18.0,-18.1,-17.9,-18.2,-18.1,-18.3,-18.3,-17.7,-17.8,-18.1,-18.1,-17.5,-17.2,-17.6,-17.6,-17.9,-18.0,-17.9,-17.8,-18.3,-17.0,-17.6,-17.8,-17.5,-17.4,-17.3,-18.0,-17.6,-18.6,-18.1,-17.8,-17.5,-17.1,-16.9,-16.9,-17.2,-17.8,-17.2,-16.9,-17.9,-17.3,-17.1,-17.3,-17.0,-16.8,-16.8,-16.7,-16.8,-17.0,-16.7,-16.5,-16.7,-16.5,-15.7,-16.4,-16.2,-16.4,-15.8,-16.2,-16.5,-15.6,-15.7,-15.4
+-175.078125,89.296875,-18.2,-17.7,-17.9,-17.5,-17.6,-17.7,-17.8,-17.5,-18.3,-18.1,-17.7,-17.8,-18.0,-18.4,-18.8,-18.9,-18.5,-19.0,-19.1,-19.6,-18.5,-18.9,-19.4,-18.9,-19.1,-19.0,-18.8,-18.7,-18.6,-18.4,-18.0,-18.9,-18.8,-19.6,-19.9,-19.6,-19.7,-19.4,-19.3,-18.6,-19.5,-19.1,-19.2,-19.5,-19.3,-19.1,-18.8,-19.0,-18.6,-18.8,-18.8,-18.4,-18.5,-18.4,-18.3,-18.4,-18.1,-18.9,-18.4,-18.9,-18.9,-18.2,-19.1,-18.2,-18.4,-18.2,-18.6,-18.0,-18.1,-17.9,-18.2,-18.2,-18.3,-18.3,-17.7,-17.8,-18.1,-18.1,-17.5,-17.2,-17.7,-17.6,-17.9,-18.0,-17.9,-17.8,-18.3,-17.0,-17.6,-17.8,-17.5,-17.5,-17.3,-18.0,-17.6,-18.6,-18.1,-17.8,-17.5,-17.1,-17.0,-16.9,-17.2,-17.8,-17.2,-16.9,-18.0,-17.3,-17.2,-17.4,-17.0,-16.9,-16.8,-16.7,-16.8,-17.0,-16.7,-16.5,-16.7,-16.5,-15.7,-16.4,-16.2,-16.5,-15.9,-16.2,-16.5,-15.6,-15.7,-15.4
+*************
+
+
+Here is my ferret script, I'm processing the first 5 years 1870-1874 (of 130 years):
+
+
+**********************
+set memory/size=512
+
+def axis/modulo/x=-180:179/npoints=360/units="degrees_east" xax
+def axis/y=-90:89/npoints=180/units="degrees_north" yax
+
+define axis/t="01-jan-1870":"31-dec-1870":1/units=years tax1
+def grid/x=xax/y=yax/t=tax1 my_grid1
+file/skip=13/var="longitude,latitude,r1870,r1871,r1872,r1873,r1874,r1875,r1876,r1877,r1878,r1879"/grid=my_grid1 "12890ncar_ccm3_tas_EA1-5_20C3M-annual.txt"
+let air_temp = r1870
+set variable/title="Monthly, Annual Average Air Tempurature" air_temp
+set variable/units="Degrees C"/bad=-99 air_temp
+save/file=air_temp_1870.nc/clobber air_temp
+
+
+define axis/t="01-jan-1871":"31-dec-1871":1/units=years tax1
+def grid/x=xax/y=yax/t=tax1 my_grid2
+file/skip=13/var="longitude,latitude,r1870,r1871,r1872,r1873,r1874,r1875,r1876,r1877,r1878,r1879"/grid=my_grid2 "12890ncar_ccm3_tas_EA1-5_20C3M-annual.txt"
+let air_temp = r1871
+set variable/title="Monthly, Annual Average Air Tempurature" air_temp
+set variable/units="Degrees C"/bad=-99 air_temp
+save/file=air_temp_1871.nc/clobber air_temp
+
+define axis/t="01-jan-1872":"31-dec-1872":1/units=years tax1
+def grid/x=xax/y=yax/t=tax1 my_grid3
+file/skip=13/var="longitude,latitude,r1870,r1871,r1872,r1873,r1874,r1875,r1876,r1877,r1878,r1879"/grid=my_grid3 "12890ncar_ccm3_tas_EA1-5_20C3M-annual.txt"
+let air_temp = r1872
+set variable/title="Monthly, Annual Average Air Tempurature" air_temp
+set variable/units="Degrees C"/bad=-99 air_temp
+save/file=air_temp_1872.nc/clobber air_temp
+
+
+define axis/t="01-jan-1873":"31-dec-1873":1/units=years tax1
+def grid/x=xax/y=yax/t=tax1 my_grid4
+file/skip=13/var="longitude,latitude,r1870,r1871,r1872,r1873,r1874,r1875,r1876,r1877,r1878,r1879"/grid=my_grid4 "12890ncar_ccm3_tas_EA1-5_20C3M-annual.txt"
+let air_temp = r1873
+set variable/title="Monthly, Annual Average Air Tempurature" air_temp
+set variable/units="Degrees C"/bad=-99 air_temp
+save/file=air_temp_1873.nc/clobber air_temp
+
+
+define axis/t="01-jan-1874":"31-dec-1874":1/units=years tax1
+def grid/x=xax/y=yax/t=tax1 my_grid5
+file/skip=13/var="longitude,latitude,r1870,r1871,r1872,r1873,r1874,r1875,r1876,r1877,r1878,r1879"/grid=my_grid5 "12890ncar_ccm3_tas_EA1-5_20C3M-annual.txt"
+let air_temp = r1874
+set variable/title="Monthly, Annual Average Air Tempurature" air_temp
+set variable/units="Degrees C"/bad=-99 air_temp
+save/file=air_temp_1874.nc/clobber air_temp
+***********************
+
+Any insights, advice, criticism is welcome!  Thanks ahead.
+
+Bests,
+
+Daniel Oostra (SSAI)
+NASA/LaRC Atmospheric Sciences Data Center
+2 South Wright Street
+Hampton, VA 23681-2199
+Ph: 757.864.6157
+<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:daniel.h.oostra@xxxxxxxx">daniel.h.oostra@xxxxxxxx</a>
+
+
+
+
+
+
+
+
+</pre>
+        </blockquote>
+      </blockquote>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00706" href="msg00706.html">[ferret_users] contour labels</a></strong>
+<ul><li><em>From:</em> wang</li></ul></li>
+<li><strong><a name="00712" href="msg00712.html">Re: [ferret_users] contour labels</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+<li><strong><a name="00713" href="msg00713.html">[ferret_users] ASCII to netCDF via ferret.</a></strong>
+<ul><li><em>From:</em> Oostra, Daniel H. (LARC-E302)[SCIENCE SYSTEMS AND APPLICATIONS, INC]</li></ul></li>
+<li><strong><a name="00714" href="msg00714.html">Re: [ferret_users] ASCII to netCDF via ferret.</a></strong>
+<ul><li><em>From:</em> Russell Fiedler</li></ul></li>
+<li><strong><a name="00715" href="msg00715.html">Re: [ferret_users] ASCII to netCDF via ferret.</a></strong>
+<ul><li><em>From:</em> Oostra, Daniel H. (LARC-E302)[SCIENCE SYSTEMS AND APPLICATIONS, INC]</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00715.html">Re: [ferret_users] ASCII to netCDF via ferret.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00708.html">Re: [ferret_users] contour labels</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00715.html">Thread Prev</a>][<a href="msg00708.html">Thread Next</a>][<A HREF="threads.html#00720">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

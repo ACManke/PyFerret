@@ -1,0 +1,206 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Puzzling metafile error with Fprint -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 25 Feb 2009 17:20:30 &#45;0800 -->
+<!--X-Message-Id: 49A5EE5E.1090009@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 189A73AE&#45;F87A&#45;4F6A&#45;A257&#45;07666E5F2800@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Puzzling metafile error with Fprint</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00104.html">Thread Prev</a>][<a href="msg00100.html">Thread Next</a>][<A HREF="threads.html#00099">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Puzzling metafile error with Fprint</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Paul Young &lt;<a href="mailto:Paul.J.Young@DOMAIN.HIDDEN">Paul.J.Young@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Puzzling metafile error with Fprint</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 25 Feb 2009 17:20:30 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:189A73AE-F87A-4F6A-A257-07666E5F2800@DOMAIN.HIDDEN">189A73AE-F87A-4F6A-A257-07666E5F2800@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:189A73AE-F87A-4F6A-A257-07666E5F2800@DOMAIN.HIDDEN">189A73AE-F87A-4F6A-A257-07666E5F2800@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.19 (Windows/20081209)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Paul,<br>
+If Billy's suggestions aren't the whole answer -&nbsp; a couple more quick
+ideas.<br>
+<br>
+To use polymark, call the map-projection script mp_polymark.jnl Try
+running this demo script:<br>
+<blockquote>yes? go mp_stereo_demo<br>
+</blockquote>
+which shows the call to mp_demo. So that's one answer.<br>
+<br>
+Trying the PLOT/VS command, I ran this test, and did not get an error
+when calling Fprint.<br>
+Why don't you give it a try too:<br>
+<blockquote><tt>yes? set mode meta<br>
+yes? go mp_stereo_demo<br>
+yes? let rmask = if rose gt 2000 then 1<br>
+yes? plot/vs/over/nolab/color=red/sym=dot&nbsp; x_page*rmask, y_page*rmask</tt><br>
+</blockquote>
+For debugging&nbsp; purposes, you might also try it with a different symbol,
+and a small size.&nbsp; The /sym=dot makes a different graphics call from
+other symbols, and might be putting something funny in the metafile.
+Something like this:<br>
+<blockquote><tt>plot/vs/over/nolab/sym=25/siz=0.01 ...</tt><br>
+</blockquote>
+Are you running Fprint with any special settings?<br>
+<br>
+<br>
+Paul Young wrote:
+<blockquote cite=""
+ type="cite">Hi all,
+  <br>
+  <br>
+I'm having a problem generating a postscript file using Fprint. I get
+the following error:
+  <br>
+  <br>
+GKSM item 12121226 is undefined
+  <br>
+ggetgksm()&nbsp; 163 Metafile item is invalid
+  <br>
+greadgksm()&nbsp; 162 No item is left in GKS Metafile input
+  <br>
+  <br>
+which I have not had any luck finding on these forums or via google.
+  <br>
+  <br>
+Essentially, the problem seems to be related to my "shading" certain
+areas of a fill/ plot with plot/vs. Here's a sketch of what I am doing:
+  <br>
+  <br>
+use my_data1.nc&nbsp;&nbsp;&nbsp;&nbsp; !Time series of (e.g.) winter averages
+  <br>
+use my_data2.nc
+  <br>
+  <br>
+let variance1 = my_var1[d=1,t=@var]&nbsp; !Standard deviation calculation
+  <br>
+let sd1 = variance1^0.5
+  <br>
+  <br>
+let delta = my_var2[d=2,t=@ave] - my_var1[d=1,t=@ave]
+  <br>
+let signif = if abs(delta) gt sd1 then 1 else 0
+  <br>
+  <br>
+set region/x=0:360/y=-90:-20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; !Define SH region
+  <br>
+  <br>
+set grid delta
+  <br>
+go mp_stereographic_south 0 -40
+  <br>
+fill/noaxes/nolab/lev=(-80)(-40,40,10)(80)/y=-90:-20/set delta, x_page,
+y_page
+  <br>
+ppl title "1981to1986 - 1979to1980: Dec-May Avg"
+  <br>
+ppl fill
+  <br>
+go mp_land
+  <br>
+  <br>
+plot/vs/over/sym=dot/nolab&nbsp; x_page*signif, y_page*signif
+  <br>
+  <br>
+-----
+  <br>
+Removing the plot/vs removes the error, so I guess this is where things
+are going awry.
+  <br>
+  <br>
+Btw, I tried using the polymark.jnl script to shade the data, but it
+just shaded a ring around the south pole - don't think I've got the
+command quite right:
+  <br>
+  <br>
+go polymark poly/pal=black/over&nbsp; xsequence(x_page), xsequence(y_page),
+xsequence(signif), circle, 0.2
+  <br>
+  <br>
+As usual, thanks for any help,
+  <br>
+  <br>
+Paul
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00100" href="msg00100.html">Re: [ferret_users] Puzzling metafile error with Fprint</a></strong>
+<ul><li><em>From:</em> Paul Young</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00095" href="msg00095.html">[ferret_users] Puzzling metafile error with Fprint</a></strong>
+<ul><li><em>From:</em> Paul Young</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00104.html">Re: PPL CLSPLT Was: Re: [ferret_users] Puzzling metafile error with Fprint</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00100.html">Re: [ferret_users] Puzzling metafile error with Fprint</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00104.html">Thread Prev</a>][<a href="msg00100.html">Thread Next</a>][<A HREF="threads.html#00099">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

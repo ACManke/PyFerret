@@ -1,0 +1,182 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] @sum bug ? -->
+<!--X-From-R13: Pebpxznaa Bngevpx <Bngevpx.PebpxznaaNprn.se> -->
+<!--X-Date: Wed, 24 Nov 2010 16:00:07 &#45;0800 -->
+<!--X-Message-Id: 4CEDA549.8000101@cea.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4CEC5647.5090207@cea.fr -->
+<!--X-Reference: 4CED709C.1010606@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] @sum bug ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00724.html">Thread Prev</a>][<a href="msg00727.html">Thread Next</a>][<A HREF="threads.html#00726">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] @sum bug ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] @sum bug ?</strong></li>
+<li><strong>From</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 25 Nov 2010 00:52:41 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4CED709C.1010606@DOMAIN.HIDDEN">4CED709C.1010606@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4CEC5647.5090207@DOMAIN.HIDDEN">4CEC5647.5090207@xxxxxx</a>&gt; &lt;<a href="mailto:4CED709C.1010606@DOMAIN.HIDDEN">4CED709C.1010606@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.17 (X11/20080926)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Ansley Manke a &#xE9;crit :
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Patrick,
+</pre><tt>I really think this is a precision issue. The numbers involved are 
+</tt><tt>down near the limit of single-precision accuracy. The source code for 
+</tt><tt>the sum operation has never been changed, since Ferret was first 
+</tt><tt>written. Note that the difference between 2526427.250  and 2526434.500 
+</tt><tt>are in the 6th decimal place, and both would be rounded  off to 
+</tt><tt>2526430. at  a precision of 6 decimal places. Single-precision 
+</tt><tt>variables are really only this accurate, to 6 or 7 decimal places.  I 
+</tt><tt>have to conclude that the differences in the results from one Ferret 
+</tt><tt>executable to another are due to slight changes in the way Ferret is 
+</tt><tt>compiled and linked.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The reason that the sums of var and  xsequence(var) differ somewhat is 
+</tt><tt>again because of computational accuracy.  When computing the sum of 
+</tt><tt>the multi-dimensioned variable, the sum over x is first computed, 
+</tt><tt>leaving a variable in y, then that is summed over y.  When the 
+</tt><tt>one-dimensional variable's sum is computed, that is done in just one 
+</tt><tt>step, so there's just a bit of a difference in the way the numbers are 
+</tt><tt>added up. We're looking into the possibility of changing the summation 
+</tt><tt>routines to make the results of the two computations consistent and 
+</tt><tt>perhaps more accurate.
+</tt></blockquote><pre style="margin: 0em;">
+Ansley,
+Indeed your analysis of the problem seems correct : it is a precision issue.
+This poor precision on a sum operation gives of course error on a mean too.
+More than 1E-4 between a mean calculated from ncap2 and ferret.
+</pre><tt>I would really like that all internal calculations be casted to double 
+</tt><tt>precision float
+</tt><pre style="margin: 0em;">
+then be written as float.
+
+Here the test you can do from
+<a  rel="nofollow" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/tas_day_IPSL-CM5A-LR_piControl_r1i1p1_extract.nc">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/tas_day_IPSL-CM5A-LR_piControl_r1i1p1_extract.nc</a>
+
+Then calculate a sum (total) and a mean (avg) with ncap2
+</pre><tt>$ ncap2 -Oh -s 'tas_mean=tas.avg($lat,$lon); 
+</tt><tt>tas_sum=tas.total($lat,$lon)' 
+</tt><tt>tas_day_IPSL-CM5A-LR_piControl_r1i1p1_extract.nc tyty.nc
+</tt><pre style="margin: 0em;">
+
+Then compare results in a ferret session (Linux 6.64 X86_64):
+
+$ ferret
+yes? use tyty.nc
+</pre><tt>yes? list tas_sum-tas[i=@sum,j=@sum], 
+</tt><tt>tas_mean-tas[i=@sum,j=@sum]/tas[i=@ngd,j=@ngd]
+</tt><pre style="margin: 0em;">
+            DATA SET: ./tyty.nc
+</pre><tt>            IPSL-CM5A-LR model output prepared for CMIP5 pre-industrial 
+</tt><tt>control
+</tt><pre style="margin: 0em;">
+            TIME: 01-JAN-1800 00:00 to 11-APR-1800 00:00 NOLEAP
+            LONGITUDE: 1.9W(-1.9) to 1.9W
+            LATITUDE: 90S to 90N
+Column  1: EX#1 is TAS_SUM-TAS[I=@SUM,J=@SUM]
+Column  2: EX#2 is TAS_MEAN-TAS[I=@SUM,J=@SUM]/TAS[I=@NGD,J=@NGD]
+                      EX#1     EX#2
+01-JAN-1800 12 /   1:   7.25  0.000793
+02-JAN-1800 12 /   2:   9.75  0.001068
+03-JAN-1800 12 /   3:  -6.25 -0.000671
+04-JAN-1800 12 /   4:  11.75  0.001282
+05-JAN-1800 12 /   5: -11.50 -0.001251
+06-JAN-1800 12 /   6:   3.50  0.000397
+07-JAN-1800 12 /   7:   9.00  0.000977
+08-JAN-1800 12 /   8:  -7.50 -0.000824
+09-JAN-1800 12 /   9:  -7.50 -0.000793
+10-JAN-1800 12 /  10:  -8.50 -0.000916
+11-JAN-1800 12 /  11:  -4.50 -0.000488
+12-JAN-1800 12 /  12:   9.50  0.001007
+13-JAN-1800 12 /  13: -13.75 -0.001495
+14-JAN-1800 12 /  14:  12.00  0.001312
+
+Patrick
+
+--
+LSCE/IPSL, Laboratoire CEA-CNRS-UVSQ
+Data Analysis and Visualization Engineer
+IPSL Global Climate Modelling Group
+--
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00727" href="msg00727.html">Re: [ferret_users] @sum bug ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00712" href="msg00712.html">[ferret_users] @sum bug ?</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00724" href="msg00724.html">Re: [ferret_users] @sum bug ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00724.html">Re: [ferret_users] @sum bug ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00727.html">Re: [ferret_users] @sum bug ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00724.html">Thread Prev</a>][<a href="msg00727.html">Thread Next</a>][<A HREF="threads.html#00726">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

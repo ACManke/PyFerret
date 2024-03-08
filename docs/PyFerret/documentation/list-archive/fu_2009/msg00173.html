@@ -1,0 +1,188 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Visualizing GEBCO with Ferret -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Tue, 24 Mar 2009 15:48:27 &#45;0700 -->
+<!--X-Message-Id: 49C9632D.3010402@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 49C90FAD.6070109@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Visualizing GEBCO with Ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00169.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00173">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Visualizing GEBCO with Ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Tim Loomis &lt;<a href="mailto:tim.loomis@DOMAIN.HIDDEN">tim.loomis@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Visualizing GEBCO with Ferret</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 24 Mar 2009 23:48:13 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>, <a href="mailto:Edward.D.Cokelet@DOMAIN.HIDDEN">Edward.D.Cokelet@xxxxxxxx</a>, <a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:49C90FAD.6070109@DOMAIN.HIDDEN">49C90FAD.6070109@xxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:49C90FAD.6070109@DOMAIN.HIDDEN">49C90FAD.6070109@xxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.7.13.1) Gecko/20070301</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Tim, Ansley and Ned,
+
+many thanks for your suggestions. I was not aware of the npoints specifier.
+
+</pre><tt>The GEBCO - topography is available in the web, but not at an 
+</tt><tt>OPeNDAP-Server. Just visit <a  rel="nofollow" href="http://www.gebco.net/">http://www.gebco.net/</a>. You will have to 
+</tt><tt>register there. Data are available with a manual. For my example I have 
+</tt><tt>the number of points and the grid spacing. From this it is clear that 
+</tt><tt>the coordinates must be edges. But you are right, this needs to be verified.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Tim, I will send you a script to read and visualise data Thursday. For 
+</tt><tt>me it is late in the evening and tomorrow I am away. If you need it 
+</tt><tt>today, please try the following:
+</tt><pre style="margin: 0em;">
+
+- download your data segments, the full set is huge!
+</pre><tt>- use nco-tools (ncrename) to change the name of data in the file from z 
+</tt><tt>to za (please use the man page). I did not find another solution.
+</tt><pre style="margin: 0em;">
+
+  ncrename -v z,za   your_file_name
+
+</pre><tt>- use ncdump to find the numer of grid points to be used with the 
+</tt><tt>npoints specifier to get your axes
+</tt><pre style="margin: 0em;">
+
+  ncdump your_file | less
+
+</pre><tt>- modifiy the following script for your purposes. Use your coordinates 
+</tt><tt>and you may want to use the npoints specifier as proposed by Ansley and 
+</tt><tt>Ned in their letters.
+</tt><pre style="margin: 0em;">
+
+use &quot;20n50s60w50e_GEBCO_08.nc&quot;
+</pre><tt>define axis/x=`X_RANGE[i=1]`:`X_RANGE[i=2]`:`0.0083334`/edges 
+</tt><tt>/units=&quot;degrees_east&quot; xax
+</tt><tt>define axis/y=`Y_RANGE[i=1]`:`Y_RANGE[i=2]`:`0.0083334`/edges 
+</tt><tt>/units=&quot;degrees_north&quot; yax
+</tt><pre style="margin: 0em;">
+define grid/x=xax/y=yax xygrid
+let dummy=0*x[gx=xygrid]+0*y[gy=xygrid]
+</pre><tt>!reshape data that are stored 1D to a 2D field, dummy has the correct 
+</tt><tt>dimension and the right axes
+</tt><pre style="margin: 0em;">
+let depth=reshape(za,dummy)
+SET MEMORY/SIZE=500
+save/file=zw.nc/clobber depth
+can data/all
+can var depth
+can grid xygrid
+
+</pre><tt>! Now we need to flip the axis. Possibly this can be done in connection 
+</tt><tt>with the data reading step ....
+</tt><pre style="margin: 0em;">
+SET MEMORY/SIZE=500
+use/order=X-Y zw.nc
+let/unit=m/title=&quot;gebco topography&quot; topo=depth
+save/file=depth_20n50s60w50e_GEBCO_08.nc/clobber topo
+
+There may be better solutions ...
+
+</pre><tt>Now you can use ferret to make plots or use shade and fill. Please be 
+</tt><tt>aware that the data set may be huge and do not plot much more points 
+</tt><tt>than needed.
+</tt><pre style="margin: 0em;">
+
+use your file
+set region/x=xl:xh/y=yl:yh
+shade/lev=   your levels  topo
+
+or
+
+use your file
+shade/lev=   your levels  topo[i=1:10000:100,j=1:5000:20]
+
+Please see the ferret doc for more details.
+
+Good luck,
+Martin
+
+
+Tim Loomis wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+All,
+</pre><tt>I'm new to Ferret and would like to find someone who has used it to 
+</tt><tt>access the gebco_08.nc. I need some high resolution images out of it. 
+</tt><tt>Any help would be appreciated. Any tutorials out there?....Tim
+</tt><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00169" href="msg00169.html">[ferret_users] Visualizing GEBCO with Ferret</a></strong>
+<ul><li><em>From:</em> Tim Loomis</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00169.html">[ferret_users] Visualizing GEBCO with Ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00179.html">Re: [ferret_users] Visualizing GEBCO with Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00169.html">Thread Prev</a>][<a href="msg00179.html">Thread Next</a>][<A HREF="threads.html#00173">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

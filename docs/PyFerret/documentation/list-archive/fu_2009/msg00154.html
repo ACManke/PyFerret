@@ -1,0 +1,208 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Re: axis scaling in ferret? -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 16 Mar 2009 16:41:08 &#45;0700 -->
+<!--X-Message-Id: 49BEE394.60908@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 2D164ECA&#45;A42B&#45;4A8A&#45;9426&#45;7CCDC015F6CE@uu.nl -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Re: axis scaling in ferret?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00150.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: axis scaling in ferret?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Thomas Reerink &lt;<a href="mailto:t.reerink@DOMAIN.HIDDEN">t.reerink@xxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: axis scaling in ferret?</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 16 Mar 2009 16:41:08 -0700</li>
+<li>Cc: ferret_users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:2D164ECA-A42B-4A8A-9426-7CCDC015F6CE@DOMAIN.HIDDEN">2D164ECA-A42B-4A8A-9426-7CCDC015F6CE@xxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:2D164ECA-A42B-4A8A-9426-7CCDC015F6CE@DOMAIN.HIDDEN">2D164ECA-A42B-4A8A-9426-7CCDC015F6CE@xxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.19 (Windows/20081209)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Thomas,<br>
+This is really a question that should go to the Ferret Users List. If
+you haven't already subscribed, you can do that by following the
+directions at <a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/email-users-group">http://ferret.pmel.noaa.gov/Ferret/email-users-group</a>. The
+list has some very experienced and helpful people who are happy to
+answer questions like yours.&nbsp; <br>
+<br>
+But, since you wrote,&nbsp; You can access the values of the coordinate
+variables with Pseudo-variables x, y, etc. (look up Pseudo-variables in
+the Users Guide for a description).&nbsp; Use pseudo-variables to define new
+axes based on the old ones.<br>
+<blockquote><tt>let xyvar = $3[d=3] &nbsp;&nbsp; ! just to make things easier to
+read<br>
+  <br>
+  </tt><tt>! The pseudo-variables X &amp; Y capitalized here to make it
+clearer<br>
+! These are variables containing the coordinate values <br>
+  <br>
+  </tt><tt>let x_meters = X[gx=xyvar ] <br>
+let y_meters = Y[gy=xyvar ] <br>
+  <br>
+! Now define new coordinate axes in terms of km.<br>
+  <br>
+define axis/x/units=km x_km = x_meters/1000<br>
+define axis/y/units=km y_km = y_meters/1000</tt><br>
+</blockquote>
+<blockquote>! This is the short form of DEFINE AXIS/FROM_DATA. Now, the
+values <br>
+! in your variable $3 are not going to change, but you want to just
+assign the <br>
+! variable to the new coordinate axes:<br>
+</blockquote>
+<blockquote><tt>LET xyvar_km = xyvar[gx=x_km@ASN, gy=y_km@ASN]</tt><br>
+</blockquote>
+<blockquote>! And you would just use the same index values in the SHADE
+command, <br>
+! if I understand what you are doing with the $ variables.&nbsp; /XAXIS is
+not a <br>
+! qualifier for SHADE, so maybe that was just a typo.<br>
+</blockquote>
+<blockquote><tt>SHADE/LEVELS=$LEVELS/NOLAB xyvar_km[ ...</tt><br>
+</blockquote>
+By the way, if you define the axes with units, they will automatically
+be labeled with the units, Km , and you might want to define your
+variable with its title, so you don't have to use PPL commands.&nbsp; So
+where we define the value on the kilometer grid, this would be:<br>
+<blockquote><tt>LET/title="Mapped to IM"</tt><tt> xyvar_km</tt><tt> =
+$3[d=3]</tt><br>
+</blockquote>
+<br>
+Ansley<br>
+<br>
+Thomas Reerink wrote:
+<blockquote cite=""
+ type="cite">Dear ferret-expert,
+  <div><br>
+  </div>
+  <div>Using netcdf for both my GCM and ice model files, I plot my
+results &nbsp;by scripting ferret. &nbsp;A very simple thing, I thought, is to
+rescale in the final plots the values of my coordinates: from meters to
+kilometers. I want nothing more than exactly the same plot of my netcdf
+data, but the values along the x and y coordinate divided by 1000.
+&nbsp;(The ranges of those axis can vary and be completely different for
+various data sets.)</div>
+  <div><br>
+  </div>
+  <div>Is this possible? To divide the field values is really simple,
+but I can not find the variable in which the coordinates are stored in
+ferret, because then I could manipulate them.</div>
+  <div><br>
+  </div>
+  <div>
+  <div>Part of my script (the $-variables are variables in csh) is:</div>
+  <div><br>
+  </div>
+  <div>SET VIEW 2</div>
+  <div>SHADE/LEVELS=$LEVELS/NOLAB/XAXIS $3[d=3, i = $i_IM_low :
+$i_IM_high, j = $j_IM_low : $j_IM_high ]</div>
+  <div>PPL XLAB X</div>
+  <div>PPL YLAB Y</div>
+  <div>PPL TITLE Mapped to IM</div>
+  <div>PPL SHADE</div>
+  <div>!PPL FILL</div>
+  <div><br>
+  </div>
+  <div>I would by really gratefull for an answer,</div>
+  <div><br>
+  </div>
+  <div>
+  <p style="margin: 0px;"><font
+ style="font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal;"
+ face="Helvetica" size="3">Thomas Reerink</font></p>
+  <p style="margin: 0px;"><font
+ style="font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal;"
+ face="Helvetica" size="3">IMAU, Universiteit Utrecht</font></p>
+  <p style="margin: 0px;"><font
+ style="font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal;"
+ face="Helvetica" size="3">Princetonplein 5</font></p>
+  <p style="margin: 0px;"><font
+ style="font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal;"
+ face="Helvetica" size="3">3584 CC Utrecht</font></p>
+  <p style="margin: 0px;"><font
+ style="font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal;"
+ face="Helvetica" size="3">room 656<span class="Apple-converted-space">&nbsp;
+  </span>BBL-building</font></p>
+  <p style="margin: 0px;"><font
+ style="font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal;"
+ face="Helvetica" size="3">++31 (0)30 253 3274</font></p>
+  <p
+ style="margin: 0px; font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal; min-height: 14px;"><br>
+  </p>
+  <p style="margin: 0px;"><font
+ style="font-family: Helvetica; font-style: normal; font-variant: normal; font-weight: normal; font-size: 12px; line-height: normal; font-size-adjust: none; font-stretch: normal;"
+ face="Helvetica" size="3">++31 (0)6 546 85 866</font></p>
+  </div>
+  <br>
+  </div>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00150.html">[ferret_users]</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00155.html">[ferret_users] regression issue: one variable VS another variables</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00150.html">Thread Prev</a>][<a href="msg00155.html">Thread Next</a>][<A HREF="threads.html#00154">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

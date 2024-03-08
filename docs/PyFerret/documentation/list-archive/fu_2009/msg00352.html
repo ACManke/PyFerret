@@ -1,0 +1,208 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Reading an ascii file: time and depth variable (ctd sections) -->
+<!--X-From-R13: =?GFT&#45;8?C?Oyrxfv_@hzzryva?= <nyrxfv.ahzzryvaNqanvagrearg.arg> -->
+<!--X-Date: Tue, 9 Jun 2009 05:13:01 &#45;0700 -->
+<!--X-Message-Id: 20090609121256.86F5B13C062@ruotsinpihlaja.dnainternet.net -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Reading an ascii file: time and depth variable (ctd sections)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00349.html">Thread Prev</a>][<a href="msg00353.html">Thread Next</a>][<A HREF="threads.html#00352">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Reading an ascii file: time and depth variable (ctd sections)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Reading an ascii file: time and depth variable (ctd sections)</strong></li>
+<li><strong>From</strong>: <strong>Aleksi Nummelin &lt;<a href="mailto:aleksi.nummelin@DOMAIN.HIDDEN">aleksi.nummelin@xxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 09 Jun 2009 15:12:56 +0300</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Taajama</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi all,
+
+I have an ASCII file including variables year, month, day, time depth and P (=Phosphate) (there are some other variables in the file too but they are less important). I'm using FERRET v5.51 cygwin 1.3.x - 02/28/03.
+
+data is structured like this (note that it is point data so that &quot;the grid&quot; is totally irregular):
+
+year, month, day, time   decimal year   depth P (=Phosphate)
+1979,  3,    14,  10.00, 1979.1973,      0.0, 0.3
+1979,  3,    14,  10.00, 1979.1973,     15.0, 0.25
+1979,  3,    14,  10.00, 1979.1973,     40.0, 0.31
+  .    .      .     .        .            .    .
+  .    .      .     .        .            .    .
+1979, 10,    10,  09.00, 1979.7726,      0.0, 0.18
+1979, 10,    10,  09.00, 1979.7726,     10.0, 0.16
+
+I would like to save this information in netCDF file, so that I would have a time axis and depth (Z) axis. I have already succeeded making a time axis thanks to this: <a  rel="nofollow" href="http://ferret.pmel.noaa.gov/static/FAQ/axes_and_data/time_axis_from_variables.html">http://ferret.pmel.noaa.gov/static/FAQ/axes_and_data/time_axis_from_variables.html</a> (FAQ: Creating a time axis from time variables) but then I found this discussion: <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2009/msg00232.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2009/msg00232.html</a> (you can find it from the end of this message), from the mailing list, which I though would save my day, but it didn't.
+
+I used
+yes? let zdif=depth[i=@evnt:0]
+yes? let zcross = zdif[i=@evnt:0]
+yes? let npts = `zcross[i=@loc:1]`
+yes? let total = `depth,return=isize`  ! total points read from the file
+!
+!****HERE COMES THE PROBLEM!****
+!
+yes? define axis/z/units=meters/DEPTH zaxis=depth[i=1:`totalz`:`npts`]
+ !-&gt; define axis/z/units=meters/DEPTH zaxis = depth[i=1:650:7]
+**ERROR: improper grid or axis definition: data for DEFINE AXIS/FROM_VARIABLE is not monotonic
+
+So the data is not monotonic which I already knew, I hope some of you can tell me that was the script I used able to define irregular axis at all and if it was what did I do wrong. I would also appreciate your opinion about using ferret to do the job (converting ascii to netCDF), should I use some other program?
+
+Thank you all, I'll be more than grateful if you have solution to this.
+
+-Aleksi Nummelin-
+
+discussion from the mailing list --&gt; 
+
+Hi Angela,
+It looks as if your data is on a regularly spaced grid, so the longitude and latitude points listed are not single axes but instead represent the whole grid.  There are a couple ways to handle this.
+
+If you are doing just this one problem, and if the grid is regularly spaced, then a quick and easy way to define the right grid is to just look at your file and see what the axis definitions should be, and define the axes without specifically reading the coordinates into Ferret. This would go something like this:
+
+    yes? define axis/x=-53:120:0.5/units=degrees xaxis
+    yes? define axis/y=68.5:88.5:0.5/units=degrees yaxis
+
+    (or whatever the true ranges and delta-values are in the file)
+
+    yes? ! Define the grid and read, skipping the first two values in each input record.
+    yes? define grid/x=xaxis/y=yaxis xygrid
+    yes? file/var=&quot;dummy1,dummy2,dry&quot;/grid=xygrid  myfile.txt
+
+If you want a more general script, or if the spacing of the grid is not even, then you'll need to first use the data in the file to define the axes and then define a grid to read the data field. (Try LIST or PLOT commands with these different variables to see what we're doing here.)
+
+    yes? file/var=&quot;xpoints,ypoints&quot;  myfile.txt
+
+    yes? ! The first N points of the variable xpoints will define the x axis. 
+    yes? ! Let's find where xpoints starts to repeat itself.
+    yes? ! Where does the first derivative cross zero?
+
+    yes? let xdif = xpoints[i=@ddf]
+
+    yes? let xcross = xdif[i=@evnt:0]
+    yes? let npts = `xcross[i=@loc:1]`  ! the first place xcross crosses 0.
+
+    yes? ! Now use the first npts of the data from the file to define the axis
+    yes? define axis/x/units=degrees xaxis = xpoints[i=1:`npts`]
+
+    yes? ! the values for the y axis should be the first value of ypoints,
+    yes? ! then one point every `npts` after that
+    yes? let total = `ypoints,return=isize`  ! total points read from the file
+    yes? define axis/y/units=degrees yaxis=ypoints[i=1:`total`:`npts`]
+
+    yes? ! Now define the grid and read the variable
+    yes? cancel data myfile.txt
+
+    yes? define grid/x=xaxis/y=yaxis xygrid
+    yes? file/var=&quot;dummy1,dummy2,dry&quot;/grid=xygrid  myfile.txt
+
+I'll put this into an FAQ - seems like something people must run into all the time.
+
+AV Gallego-Sala wrote:
+&gt; Dear Ferret Users,
+&gt;
+&gt; I am new to Ferret and would be very grateful if somebody could help me
+&gt; with a &quot;simple&quot; problem. I am using FERRET v5.70 (alpha) on a Mac OS X
+&gt; 10.5.6 and I don't seem to be able to read a simple ascii file of the
+&gt; following kind:
+&gt;
+&gt;   -53.500000       68.500000      0.99750608
+&gt;   -53.000000       68.500000      0.99756086
+&gt;   -52.500000       68.500000      0.99761266
+&gt;   -52.000000       68.500000      0.99761307
+&gt;   -51.500000       68.500000      0.99767214
+&gt;   -51.000000       68.500000      0.99771249
+&gt;   -50.500000       68.500000       0.0000000
+&gt;
+&gt; where the first column is the longitude, the second is the latitude and
+&gt; the last is the variable (dryness index).
+&gt;
+&gt; I tried:
+&gt;
+&gt; FILE/VAR=xpoints,ypoints,dry filename
+&gt; DEFINE AXIS/from_data/X/name=xaxis/UNITS=degrees xpoints
+&gt;  **ERROR: improper grid or axis definition: data for DEFINE
+&gt; AXIS/FROM_VARIABLE is not monotonic
+&gt;
+&gt; I then thought perhaps the longitude needs to be sorted monotonically, so
+&gt; I changed the file so that the longitude increased all the time, this
+&gt; worked for the x axis, but still got the same error for the y axis (which
+&gt; of course is not monotonic now):
+&gt;
+&gt; FILE/VAR=xpoints,ypoints,dry filename
+&gt; yes? DEFINE AXIS/from_data/X/name=xaxis/UNITS=degrees xpoints
+&gt;  *** NOTE: Axis has repeated values -- micro-adjusting ...
+&gt; yes? DEFINE AXIS/from_data/Y/name=yaxis/UNITS=degrees ypoints
+&gt;  **ERROR: improper grid or axis definition: data for DEFINE
+&gt; AXIS/FROM_VARIABLE is not monotonic
+&gt;
+&gt; Anybody has any suggestions? I will so very, very grateful!
+&gt;
+&gt; Cheers,
+&gt; Angela
+&gt;   
+
+
+
+	
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00349.html">[ferret_users] netcdf file larger than 2GB</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00353.html">[ferret_users] &quot;let&quot; converts &quot;d&quot; to &quot;k&quot;?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00349.html">Thread Prev</a>][<a href="msg00353.html">Thread Next</a>][<A HREF="threads.html#00352">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

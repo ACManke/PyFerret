@@ -1,0 +1,151 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] apparent bug in frequency_histogram.jnl -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 15 Jun 2011 16:31:29 &#45;0700 -->
+<!--X-Message-Id: 4DF94160.4050308@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: alpine.LRH.2.00.1106151517210.10577@flywheel.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] apparent bug in frequency_histogram.jnl</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00462.html">Thread Prev</a>][<a href="msg00463.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] apparent bug in frequency_histogram.jnl</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Keith Lindsay &lt;<a href="mailto:klindsay@DOMAIN.HIDDEN">klindsay@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] apparent bug in frequency_histogram.jnl</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 15 Jun 2011 16:33:52 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:alpine.LRH.2.00.1106151517210.10577@DOMAIN.HIDDEN">alpine.LRH.2.00.1106151517210.10577@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:alpine.LRH.2.00.1106151517210.10577@DOMAIN.HIDDEN">alpine.LRH.2.00.1106151517210.10577@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.17) Gecko/20110414 Thunderbird/3.1.10</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Keith,
+</pre><tt>Thank you for the report and the solution. I agree with you about what 
+</tt><tt>was going on.  This is sure an old script! I've updated our copy and 
+</tt><tt>we'll include the fix with the next Ferret release.  Writing 
+</tt><tt>floating-point numbers in a fixed format is always a bit perilous.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 6/15/2011 2:38 PM, Keith Lindsay wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+</pre><tt>I think I have found a bug in frequency_histogram.jnl. In particular 
+</tt><tt>instances, the bars are shifted by two bins horizontally.
+</tt><pre style="margin: 0em;">
+
+The attached CDL file leads to a demonstration of the problem.
+
+The commands
+
+sp ncgen -b hist_test.cdl
+set data hist_test.nc
+go frequency_histogram.jnl var .5 4.5 .1 weight
+
+</pre><tt>produce the attached figure. The bins should be centered over 1, 2, 
+</tt><tt>and 3, but they are shifted to the right by two bins.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>It seems to be problem with missing values in the expression and 
+</tt><tt>weight leading to lines in the generated frequency_h.raw file with no 
+</tt><tt>space between the value pairs, and then the frequency.awk script 
+</tt><tt>generates extra lines of output which ends up shifting the bars.
+</tt><pre style="margin: 0em;">
+
+If I replace the following lines of frequency_histogram.jnl
+
+list/nohead/form=(F10.0,1PG14.7)/file=frequency_h.raw index, wt_index
+</pre><tt>list/nohead/form=(F10.0,1PG14.7)/file=frequency_h.raw/append vn+1,0  ! 
+</tt><tt>MAX index + 1
+</tt><pre style="margin: 0em;">
+
+with
+
+list/nohead/form=(F10.0,x,1PG14.7)/file=frequency_h.raw index, wt_index
+</pre><tt>list/nohead/form=(F10.0,x,1PG14.7)/file=frequency_h.raw/append vn+1,0  
+</tt><tt>! MAX index + 1
+</tt><pre style="margin: 0em;">
+
+I get the expected results.
+
+This does not appear to be a problem with frequency_histogram2.jnl
+
+Keith
+
+******************************************************************
+Keith Lindsay                <a  rel="nofollow" href="http://www.cgd.ucar.edu/oce/klindsay/">http://www.cgd.ucar.edu/oce/klindsay/</a>
+email: klindsay@xxxxxxxx   phone: 303-497-1722   fax: 303-497-1700
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00462" href="msg00462.html">[ferret_users] apparent bug in frequency_histogram.jnl</a></strong>
+<ul><li><em>From:</em> Keith Lindsay</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00462.html">[ferret_users] apparent bug in frequency_histogram.jnl</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00463.html">[ferret_users] Color filling contours in Plate Caree projection - problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00462.html">Thread Prev</a>][<a href="msg00463.html">Thread Next</a>][<A HREF="threads.html#00464">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

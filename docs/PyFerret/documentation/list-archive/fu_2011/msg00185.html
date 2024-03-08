@@ -1,0 +1,188 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] unexplained hang during list/format=cdf -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Wed, 16 Mar 2011 15:16:08 &#45;0700 -->
+<!--X-Message-Id: 4D8136A8.6050403@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: alpine.LRH.2.00.1103160910120.1346@poorman.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] unexplained hang during list/format=cdf</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00184.html">Thread Prev</a>][<a href="msg00186.html">Thread Next</a>][<A HREF="threads.html#00185">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] unexplained hang during list/format=cdf</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Keith Lindsay &lt;<a href="mailto:klindsay@DOMAIN.HIDDEN">klindsay@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] unexplained hang during list/format=cdf</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 16 Mar 2011 15:16:08 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:alpine.LRH.2.00.1103160910120.1346@DOMAIN.HIDDEN">alpine.LRH.2.00.1103160910120.1346@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:alpine.LRH.2.00.1103160910120.1346@DOMAIN.HIDDEN">alpine.LRH.2.00.1103160910120.1346@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.15) Gecko/20110303 Thunderbird/3.1.9</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi Keith,<br>
+    <br>
+    Try <br>
+    &nbsp;&nbsp;&nbsp; yes? SET MODE DIAGNOSTIC<br>
+    <br>
+    before issuing the "list" command.&nbsp; The output tells you each
+    activity that Ferret is about to do.&nbsp; From that you can tell us what
+    Ferret is doing when the hang occurs. <br>
+    <br>
+    Example below.&nbsp; "reading", "doing", and "LISTing" are the key
+    actions -- the other parts are Ferret internal machinery, doing
+    things like determining the result grid for the calculation.<br>
+    <br>
+    &nbsp;&nbsp;&nbsp; - Steve<br>
+    <blockquote><tt>yes? use coads_climatology<br>
+        yes? set mode diag<br>
+        yes? save/file=test.nc/clobber sst[x=@din,y=@din]<br>
+        &nbsp;getgrid EX#1&nbsp;&nbsp;&nbsp;&nbsp; C:&nbsp; 5 I:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp; 1&nbsp; J:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp; 1&nbsp; K:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;
+        1&nbsp; L:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp; 1<br>
+        &nbsp;allocate dynamic grid GSQ1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; COADSX&nbsp;&nbsp;&nbsp; COADSY&nbsp;&nbsp;&nbsp;
+        NORMAL&nbsp;&nbsp;&nbsp; TIME<br>
+        &nbsp;eval&nbsp;&nbsp;&nbsp; EX#1&nbsp;&nbsp;&nbsp;&nbsp; C:&nbsp; 4 I:&nbsp;&nbsp;&nbsp; 1&nbsp; 180&nbsp; J:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp; 90&nbsp; K: -999
+        -999&nbsp; L:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp; 12<br>
+        &nbsp;strip --&gt; SST[Y=90S:90N@IN4,D=1]<br>
+        &nbsp;reading SST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; M:&nbsp; 1 I:&nbsp;&nbsp;&nbsp; 1&nbsp; 180&nbsp; J:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp; 90&nbsp; K: -999
+        -999&nbsp; L:&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp; 12<br>
+        &nbsp;doing --&gt; SST[Y=90S:90N@IN4,D=1]<br>
+        &nbsp;LISTing to file test.nc</tt><br>
+    </blockquote>
+    =================<br>
+    <br>
+    On 3/16/2011 8:22 AM, Keith Lindsay wrote:
+    <blockquote
+      cite=""
+      type="cite">Hi,
+      <br>
+      <br>
+      I'm experiencing a hang in ferret when I attempt to save a
+      variable to a NetCDF file. The commands I am using are
+      <br>
+      <br>
+      let/units="PgC/y"/title="CO2 Flux, Net"&nbsp;&nbsp; sfco2_int&nbsp;&nbsp;&nbsp;&nbsp; =
+      (60*60*24*365)*(12/44)*1e-12*sfco2[x=@din,y=@din]
+      <br>
+      let/units="PgC/y"/title="CO2 Flux, Ocean" sfco2_int_ocn =
+      (60*60*24*365)*(12/44)*1e-12*sfco2_ocn[x=@din,y=@din]
+      <br>
+      let/units="PgC/y"/title="CO2 Flux, Land"&nbsp; sfco2_int_lnd =
+      (60*60*24*365)*(12/44)*1e-12*sfco2_lnd[x=@din,y=@din]
+      <br>
+      list/clobber/file="testfile"/format="cdf" sfco2_int,
+      sfco2_int_ocn, sfco2_int_lnd
+      <br>
+      <br>
+      If I change format to "comma" or "tab", the file is created and
+      looks fine. But with format="cdf", ferret appears to hang.
+      <br>
+      <br>
+      ferret reports its version as
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FERRET v6.64
+      <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Linux(gfortran) 2.6.9-89.0.20.ELsmp - 09/16/10
+      <br>
+      <br>
+      This is on a linux system where "uname -a" reports
+      <br>
+      Linux mirage2 2.6.18-194.17.4.el5 #1 SMP Wed Oct 20 13:03:08 EDT
+      2010 x86_64 x86_64 x86_64 GNU/Linux
+      <br>
+      <br>
+      Any idea what's going on?
+      <br>
+      <br>
+      Have others experienced this sort of behavior?
+      <br>
+      <br>
+      Thanks, Keith
+      <br>
+      <br>
+      ******************************************************************
+      <br>
+      Keith Lindsay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a rel="nofollow" class="moz-txt-link-freetext" href="http://www.cgd.ucar.edu/oce/klindsay/">http://www.cgd.ucar.edu/oce/klindsay/</a>
+      <br>
+      email: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:klindsay@xxxxxxxx">klindsay@xxxxxxxx</a>&nbsp;&nbsp; phone: 303-497-1722&nbsp;&nbsp; fax: 303-497-1700
+      <br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00186" href="msg00186.html">Re: [ferret_users] unexplained hang during list/format=cdf</a></strong>
+<ul><li><em>From:</em> Steve Hankin</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00179" href="msg00179.html">[ferret_users] unexplained hang during list/format=cdf</a></strong>
+<ul><li><em>From:</em> Keith Lindsay</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00184.html">Re: [ferret_users] unexplained hang during list/format=cdf</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00186.html">Re: [ferret_users] unexplained hang during list/format=cdf</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00184.html">Thread Prev</a>][<a href="msg00186.html">Thread Next</a>][<A HREF="threads.html#00185">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

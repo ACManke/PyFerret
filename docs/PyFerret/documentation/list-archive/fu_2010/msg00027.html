@@ -1,0 +1,159 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Problems saving a file -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 12 Jan 2010 16:37:02 &#45;0800 -->
+<!--X-Message-Id: 4B4D15AD.5090407@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 806a3b94dd210c4a07282963bfc7aee8.squirrel@calmecac.cicese.mx -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Problems saving a file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00025.html">Thread Prev</a>][<a href="msg00023.html">Thread Next</a>][<A HREF="threads.html#00027">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Problems saving a file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:gcolorad@DOMAIN.HIDDEN">gcolorad@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Problems saving a file</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 12 Jan 2010 16:37:01 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:806a3b94dd210c4a07282963bfc7aee8.squirrel@DOMAIN.HIDDEN">806a3b94dd210c4a07282963bfc7aee8.squirrel@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:806a3b94dd210c4a07282963bfc7aee8.squirrel@DOMAIN.HIDDEN">806a3b94dd210c4a07282963bfc7aee8.squirrel@xxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Gaby,<br>
+Leaving aside for the moment the size of your dataset, the right way to
+create the daily average for your data is to define the daily time axis
+and use a regridding operation.&nbsp; I don't think you want the axis to be
+a /modulo axis (unless you are averaging data from more than one year
+into a modulo time axis in 2002?)<br>
+<blockquote>
+  <pre wrap="">define axis/t="1-jan-2002":"03-apr-2002":1/unit=day tdiario
+let ave_T =temp[gt=tdiario@ave]
+  </pre>
+</blockquote>
+Now, can you do the calculation for each depth?&nbsp; I think so. We can
+loop over K.&nbsp; As long as we define the entire K axis on the first write
+using the KLIMITS qualifier, then we can append to the dataset in K.&nbsp;
+(See "append, slab to NetCDF" in the Ferret Users Guide index).<br>
+<blockquote>
+  <pre>set mem/size=200
+save/clobber/file=day_data.nc/KLIMITS=1:47/K=1 ave_T
+
+repeat/K=2:47 (save/APPEND/file=day_data.nc/K=`k` ave_T)</pre>
+</blockquote>
+Ansley<br>
+<br>
+<br>
+<a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:gcolorad@xxxxxxxxx">gcolorad@xxxxxxxxx</a> wrote:350`
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">Hi all:
+
+I'm trying to calculate the dialy mean for a time series (dt = 4hours) but
+my problem is when I want to save the data, I can plot it but when i save
+it ferret says ERROR: request exceeds memory setting: 276735264 words were
+requested, but is too much anyway... My data is in a big grid 92 x 311 x
+47 x 350,
+
+I'm calculating the mean by two way
+
+let temp31 = temp[l=90:648:6@ave]  , with this I'm saving it in parts,
+because here is where the error appears, the problem is that it produce
+many files...
+
+save/file=GC_lmd1_avg.nc/l=1/clobber temp31[k=1:24,l=`l`]
+repeat/l=2:93 save/file=GC_lmd1_avg.nc/app
+
+save/file=GC_lmd2_avg.nc/l=1/clobber temp31[k=25:47,l=`l`]
+repeat/l=2:93 save/file=GC_lmd5_avg.nc/app temp31[l=`l`,k=25:47]
+
+and
+
+define axis/t="1-jan-2002":"03-apr-2002":1/unit=day/modulo tdiario
+let ave_T =temp[gt=tdiario@mod]
+
+save/file=lmd_1.nc/l=1/clobber ave_T[l=`l`]
+repeat/l=2:93 save/file=lmd_1.nc/app ave_T[l=`l`]    !here there is no
+error but take a long time, 8 hours aprox by time step
+
+
+Someone know a more efficient methods to do this??, thanks
+
+Gaby
+
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00022" href="msg00022.html">[ferret_users] Problems saving a file</a></strong>
+<ul><li><em>From:</em> gcolorad</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00025.html">Re: [ferret_users] Problems saving a file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00023.html">[ferret_users] float to double conversion, axis</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00025.html">Thread Prev</a>][<a href="msg00023.html">Thread Next</a>][<A HREF="threads.html#00027">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

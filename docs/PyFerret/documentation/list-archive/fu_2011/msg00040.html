@@ -1,0 +1,167 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Unable to write to the next vertical level -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Tue, 25 Jan 2011 09:17:18 &#45;0800 -->
+<!--X-Message-Id: 4D3F059E.8030405@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 1478535489.4849301295972227707.JavaMail.root@neo&#45;mail&#45;2 -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Unable to write to the next vertical level</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00039.html">Thread Next</a>][<A HREF="threads.html#00040">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Unable to write to the next vertical level</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:sray@DOMAIN.HIDDEN">sray@xxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Unable to write to the next vertical level</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 25 Jan 2011 09:17:18 -0800</li>
+<li>Cc: ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1478535489.4849301295972227707.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00037.html">1478535489.4849301295972227707.JavaMail.root@neo-mail-2</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:1478535489.4849301295972227707.JavaMail.root@DOMAIN.HIDDEN"><a href="msg00037.html">1478535489.4849301295972227707.JavaMail.root@neo-mail-2</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.13) Gecko/20101207 Thunderbird/3.1.7</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi Sulagna,<br>
+    <br>
+    Two things:<br>
+    <ol>
+      <li>The syntax "let sst = temp[d=1,g=tgrid]+0*z[gz=znum,z=1]"
+        isn't what you want for this purpose.&#xA0; Yes, this syntax attaches
+        the coordinate Z=1 to the definition of SST.&#xA0; But when you later
+        issue the command "let sst = temp[g=tgrid]+0*z[gz=znum,z=2]" you
+        are replacing the first definition with this new one. &#xA0; What you
+        want instead is a sequence of definitions using the "IF" syntax
+        on the order of this:</li>
+      <ul>
+        <li>LET ensemble_sst = IF K[gz=znum] EQ 1 THEN temp[d=1] ELSE
+          sst2</li>
+        <li>LET sst2 = IF K[gz=znum] EQ 2 THEN temp[d=2] ELSE sst3</li>
+        <li>LET sst3 = IF K[gz=znum] EQ 3 THEN temp[d=3] ELSE sst4</li>
+        <li>...</li>
+      </ul>
+      <li>It looks as if you are using K=1 and Z=1 interchangeably. &#xA0;
+        That's OK if the axis znum is simply the coordinates 1, 2, 3,
+        ....&#xA0; But if so you can define it as simply as "DEFINE
+        AXIS/Z=1:8:1 znum"&#xA0; <br>
+      </li>
+    </ol>
+    &#xA0;&#xA0;&#xA0; - Steve<br>
+    <br>
+    On 1/25/2011 8:17 AM, <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:sray@xxxxxxxxxxxxxx">sray@xxxxxxxxxxxxxx</a> wrote:
+    <blockquote
+      cite=""
+      type="cite">
+      <pre wrap="">
+Hi Ferreters,
+
+   I have been trying to work with 8 ensemble outputs, which I have only at the surface level.
+I added a z-axis to the data using a pseudo-dataset which has existing vertical levels.
+Now my problem is though the vertical axis is created andI couldi write at k=1, but 
+I could not write data from k=2:8. 
+   I am attaching my script. Does any of you have some suggestions?
+
+use Ensemble_1.cdf  ! Ensemble run 1
+use test.cdf        ! A dataset which has z-axis (znum)
+
+! Now add the z-axis (znum) to the existing grid
+
+def grid/x=I/y=J263_289/z=znum/t=TIME tgrid  ! I, J263_289,TIME are axes names in Ensemble_1.cdf
+
+!Create a new variable having a zaxis
+
+let sst = temp[d=1,g=tgrid]+0*z[gz=znum,z=1]
+set var/title="Ensembles"/units=ensemble sst
+
+!save the new variable as k=1 in a file having 8 vertical levels
+save/file=Outfile.cdf/KLIMITS=1:8/k=1/clobber sst
+cancel data/all
+
+! Similarly with the 2nd ensemble member
+use Ensemble_2.cdf
+let sst = temp[g=tgrid]+0*z[gz=znum,z=2]
+save/append/file=Outfile.cdf/k=2 sst
+
+!Though the Outfile.cdf has 8 vertical levels yet it has data only in k=1,
+!but do not write the data of Ensemble_2.cdf in k=2
+
+Thanking you,
+Sulagna
+Graduate student
+Department of Oceanography
+Physical Oceanography
+Texas A&amp;M University
+</pre>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00037" href="msg00037.html">[ferret_users] Unable to write to the next vertical level</a></strong>
+<ul><li><em>From:</em> sray</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00037.html">[ferret_users] Unable to write to the next vertical level</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00039.html">[ferret_users] scattered data vector plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00037.html">Thread Prev</a>][<a href="msg00039.html">Thread Next</a>][<A HREF="threads.html#00040">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

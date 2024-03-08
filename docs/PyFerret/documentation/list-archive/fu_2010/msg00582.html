@@ -1,0 +1,174 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 5 Oct 2010 12:02:53 &#45;0700 -->
+<!--X-Message-Id: 4CAB765C.8060808@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: AANLkTim+eN8RvAecqKPhdvMMT1rL9cH5j1S54LN5g9VJ@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00581.html">Thread Prev</a>][<a href="msg00583.html">Thread Next</a>][<A HREF="threads.html#00582">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Szymon Roziewski &lt;<a href="mailto:szymon.roziewski@DOMAIN.HIDDEN">szymon.roziewski@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 05 Oct 2010 12:02:52 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:AANLkTim%2BeN8RvAecqKPhdvMMT1rL9cH5j1S54LN5g9VJ@DOMAIN.HIDDEN">AANLkTim+eN8RvAecqKPhdvMMT1rL9cH5j1S54LN5g9VJ@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:AANLkTim%2BeN8RvAecqKPhdvMMT1rL9cH5j1S54LN5g9VJ@DOMAIN.HIDDEN">AANLkTim+eN8RvAecqKPhdvMMT1rL9cH5j1S54LN5g9VJ@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.9) Gecko/20100915 Thunderbird/3.1.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+ Hi -
+It should not be a problem to use a small subset of the range of the curvilinear grid. What is the approximate resolution of the curvilinear grid? If there are only a few points on the curvilinear grid and you want to regrid to this very fine output grid, I expect your results might not be very good.
+
+Are the longitude curvilinear coordinates also expressed as East longitudes, so that they contain the range x=-5.666667:5.25 ?  If not then use values for the longitudes in your axis definition that are on the same branch of modulo longitudes as what is in the curvilinear coordinate variable. You have probably done this, but it's always a good idea to make plots of the data in its curvilinear form to be sure you are reading it correctly.
+
+
+On 10/5/2010 11:03 AM, Szymon Roziewski wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi there,
+
+I have problem with an applying of functions  CURV_TO_RECT_MAP and then CURV_TO_RECT.
+Curvilinear grid reffers to greater area than the output rectilinear grid - maybe this issue causes problem.
+
+! making grid for curvilinear coordinates - lon and lat
+
+DEFINE AXIS/x=1:448:1/unit=degree xaxis
+DEFINE AXIS/y=1:615:1/unit=degree yaxis
+DEFINE GRID/x=xaxis/y=yaxis gridlonlat
+
+!loading curvilinear coords
+
+FILE/VARIABLES=clon_in/COLUMNS=448/GRID=gridlonlat &quot;/home/szymon/WAM/CHECK/um_c3_lon_448x615.txt&quot;
+FILE/VARIABLES=clat_in/COLUMNS=448/GRID=gridlonlat &quot;/home/szymon/WAM/CHECK/um_c3_lat_448x615.txt&quot;
+
+!making an output grid 132x145
+
+define axis/x=-5.666666667:5.25:0.083333333/modulo/units=degrees xax
+def axis/y=-2.0:10.0:0.083333333/units=degrees yax
+let grid_out = y[gy=yax] + x[gx=xax]
+
+let map = CURV_TO_RECT_MAP(clon_in[d=1], clat_in[d=2], grid_out, 10)
+save/clobber/file=curv_map_UM_TO_ICM.nc map
+Everything was done without any problems.
+
+Then next step is to use this variable data for remapping wind field to smaller rectilinear grid which reffers to the area that is contained in greater curvilinear area.
+
+DEFINE AXIS/x=1:448:1/unit=degree xaxis
+DEFINE AXIS/y=1:615:1/unit=degree yaxis
+
+DEFINE GRID/x=xaxis/y=yaxis gridlonlat
+
+!loading  wind which reffers to curvilinear grid.
+
+file/var=wlon/grid=gridlonlat/format=stream/type=r4/swap &quot;/home/szymon/WAM/CHECK/03225_2010092100+03000000c3hs000000000000000&quot;
+file/var=wlat/grid=gridlonlat/format=stream/type=r4/swap &quot;/home/szymon/WAM/CHECK/03226_2010092100+03000000c3hs000000000000000&quot;
+
+! using mapping data
+use curv_map_UM_TO_ICM.nc
+
+!remapping
+let wlon_icm = curv_to_rect(wlon[d=1], map[d=3])
+let wlat_icm = curv_to_rect(wlat[d=2], map[d=3])
+
+vector/over/title=&quot;WIND&quot;/length=15/xskip=10/yskip=10 wlon_icm, wlat_icm
+!unfortunately there's no any data for plotting..
+frame/file=interpolate.gif
+
+these are data sets:
+
+     currently SET data sets:
+    1&gt; /home/szymon/WAM/CHECK/03225_2010092100+03000000c3hs000000000000000
+ name     title                             I         J         K         L
+ WLON     WLON                             1:448     1:615     ...       ...
+
+    2&gt; /home/szymon/WAM/CHECK/03226_2010092100+03000000c3hs000000000000000
+ name     title                             I         J         K         L
+ WLAT     WLAT                             1:448     1:615     ...       ...
+
+    3&gt; ./curv_map_UM_TO_ICM.nc  (default)
+ name     title                             I         J         K         L
+ MAP      CURV_TO_RECT_MAP(CLON_IN[D=1],   1:132     1:145     1:4       1:3
+
+How can I work around that issue?
+
+--
+With best regards,
+Simon
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00583" href="msg00583.html">Re: [ferret_users] Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping)</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00578" href="msg00578.html">[ferret_users] Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping)</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00581.html">[ferret_users] Re: Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00583.html">Re: [ferret_users] Question to CURV_TO_RECT_MAP, CURV_TO_RECT (remapping)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00581.html">Thread Prev</a>][<a href="msg00583.html">Thread Next</a>][<A HREF="threads.html#00582">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

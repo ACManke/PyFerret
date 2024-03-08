@@ -1,0 +1,201 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Customized palette -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Thu, 21 Oct 2010 15:06:13 &#45;0700 -->
+<!--X-Message-Id: FD535F7A&#45;4812&#45;4F4E&#45;AB16&#45;95EA8C8083E8@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1287624682.10881.41.camel@fulcrum.soest.hawaii.edu -->
+<!--X-Reference: 344C7233&#45;E81C&#45;4243&#45;BC22&#45;837A227033AA@noaa.gov -->
+<!--X-Reference: 1287693407.4598.7.camel@fulcrum.soest.hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Customized palette</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00643.html">Thread Prev</a>][<a href="msg00645.html">Thread Next</a>][<A HREF="threads.html#00644">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Customized palette</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:jianma@DOMAIN.HIDDEN">jianma@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Customized palette</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 21 Oct 2010 15:06:12 -0700</li>
+<li>Cc: &quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;,        Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1287693407.4598.7.camel@DOMAIN.HIDDEN">1287693407.4598.7.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1287624682.10881.41.camel@DOMAIN.HIDDEN">1287624682.10881.41.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:344C7233-E81C-4243-BC22-837A227033AA@DOMAIN.HIDDEN">344C7233-E81C-4243-BC22-837A227033AA@xxxxxxxx</a>&gt; &lt;<a href="mailto:1287693407.4598.7.camel@DOMAIN.HIDDEN">1287693407.4598.7.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>You can write the palette from within Ferret. This is probably not the  
+</tt><tt>most elegant solution, but it works:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>1) make a one-line file in your Ferret path consisting of the line (I  
+</tt><tt>call it &quot;palette_header&quot;):
+</tt><pre style="margin: 0em;">
+
+RGB_Mapping By_Value
+
+</pre><tt>2) make a script in your Ferret path with the following lines (I call  
+</tt><tt>it &quot;make_centered_palette.jnl&quot;):
+</tt><pre style="margin: 0em;">
+
+sp \rm centered_palette.spk
+sp cat palette_header &gt; centered_palette.spk
+</pre><tt>list/nohead/append/file=centered_palette.spk/format=(4f8.0)  
+</tt><tt>`vname[i=@min,j=@min,k=@min,l=@min]-1`,`0`,`0`,`80`
+</tt><tt>list/nohead/append/file=centered_palette.spk/format=(4f8.0)  
+</tt><tt>`0`,`90`,`90`,`90`
+</tt><tt>list/nohead/append/file=centered_palette.spk/format=(4f8.0)  
+</tt><tt>`vname[i=@max,j=@max,k=@max,l=@max]+1`,`80`,`0`,`0`
+</tt><pre style="margin: 0em;">
+
+</pre><tt>3) in your Ferret session (or another script), suppose you want to  
+</tt><tt>shade the variable &quot;rose&quot; (e.g. from etopo20, as I tested):
+</tt><pre style="margin: 0em;">
+
+set dat etopo20
+let vname=rose
+go make_centered_palette.jnl
+pal centered_palette
+shade rose
+
+</pre><tt>I suppose this will fail if there is no zero in the data being  
+</tt><tt>shaded ....
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+On Oct 21, 2010, at 1:36 PM, Jian Ma wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Andy,
+
+Thanks! But that (percentage method) only works when you use
+</pre><tt>lev=(-a,a,b). If 0 is not in the middle of your value range, it does  
+</tt><tt>not
+</tt><pre style="margin: 0em;">
+work to show 0 as white.
+
+Tony
+
+On Thu, 2010-10-21 at 08:59 -0600, Andy Jacobson wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Tony,
+
+</pre><tt>Did you try light_centered.spk or white_centered.spk?  If you don't  
+</tt><tt>like those, my memory is that you can define a palette with just  
+</tt><tt>three colors (white and the two endpoints), and ferret will  
+</tt><tt>interpolate.
+</tt><pre style="margin: 0em;">
+
+-Andy
+
+
+On Wed 20 Oct 2010, at 19:31 , Jian Ma wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi All,
+
+</pre><tt>There are 3 methods in Ferret to define new pal files. However, I  
+</tt><tt>found
+</tt><pre style="margin: 0em;">
+no way to define one like this:
+
+White near 0, dark red on maximum, and blue on minimum.
+
+</pre><tt>I know I can use blue_darkred to achieve this when I have proper  
+</tt><tt>level
+</tt><tt>values or change the percentage values in the pal file, but is  
+</tt><tt>there any
+</tt><tt>method to make a universal pal file to self adjust correctly about  
+</tt><tt>0?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The last method is to write a fortran program to generate files,  
+</tt><tt>given
+</tt><pre style="margin: 0em;">
+particular level values.
+
+Many thanks,
+Tony
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00645" href="msg00645.html">Re: [ferret_users] Customized palette</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00639" href="msg00639.html">[ferret_users] Customized palette</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+<li><strong><a name="00641" href="msg00641.html">Re: [ferret_users] Customized palette</a></strong>
+<ul><li><em>From:</em> Andy Jacobson</li></ul></li>
+<li><strong><a name="00642" href="msg00642.html">Re: [ferret_users] Customized palette</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00643.html">Re: [ferret_users] Customized palette</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00645.html">Re: [ferret_users] Customized palette</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00643.html">Thread Prev</a>][<a href="msg00645.html">Thread Next</a>][<A HREF="threads.html#00644">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

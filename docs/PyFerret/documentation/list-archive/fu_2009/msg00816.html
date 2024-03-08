@@ -1,0 +1,225 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] EOF: area weighting? -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Wed, 9 Dec 2009 10:49:33 &#45;0800 -->
+<!--X-Message-Id: 20091209.084923.251020702.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4B1CEADF.7030109@mpic.de -->
+<!--X-Reference: DC4D11CA&#45;AFC7&#45;4DF0&#45;82CC&#45;5AD7E28A520B@noaa.gov -->
+<!--X-Reference: 4B1FDC33.60801@mpic.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] EOF: area weighting?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00815.html">Thread Prev</a>][<a href="msg00811.html">Thread Next</a>][<A HREF="threads.html#00816">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] EOF: area weighting?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] EOF: area weighting?</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 09 Dec 2009 08:49:23 -1000 (HST)</li>
+<li>In-reply-to: &lt;<a href="mailto:4B1FDC33.60801@DOMAIN.HIDDEN">4B1FDC33.60801@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4B1CEADF.7030109@DOMAIN.HIDDEN">4B1CEADF.7030109@xxxxxxx</a>&gt; &lt;<a href="mailto:DC4D11CA-AFC7-4DF0-82CC-5AD7E28A520B@DOMAIN.HIDDEN">DC4D11CA-AFC7-4DF0-82CC-5AD7E28A520B@xxxxxxxx</a>&gt; &lt;<a href="mailto:4B1FDC33.60801@DOMAIN.HIDDEN">4B1FDC33.60801@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Andreas,
+
+| Baldwin, Mark P.; Stephenson, David B.; Jolliffe, Ian T., 2009.	Spatial
+| Weighting and Iterative Projection Methods for EOFs, Journal of Climate,
+| 22: 234-243, DOI: 10.1175/2008JCLI2147.1
+
+I was writing the following message when your message came in.
+I've just browsed the reference above and found that probably
+it's basically the same.  I've simplified the derivation
+for a special case where the metric tensor is diagonal.
+
+Well, instead of throwing it away, I just dump below what
+I wrote.  There may be (or likely to be) errors, but the
+basic idea should hold.
+
+Regards,
+Ryo
+------------------------------------------------
+| Good question. The area represented by each gridpoint should indeed be
+| taken into account in computing an EOF. However, in the present EOF
+| functions, it is not.
+| 
+| You should therefore do the weighting explicitly before computing
+| EOFs.
+| 
+| But is your expression for the weighting (cos(y/(180/pi))^(0.5))
+| correct?
+
+I think the weight should be 1/sqrt(cosine).
+
+Here's a rough sketch of the formulation and solution of
+the problem.  To write linear algebra all in ASCII characters,
+let me introduce some ad hoc notation:
+
+* Capital alphabets (A, B, . . .) represent Matrices.
+* Small alphabets: Column vectors
+* &quot;+&quot; symbol as in &quot;A+&quot;: the transpose of the matrix.
+* &quot;-&quot; symbol as in &quot;A-&quot;: the inverse of the matrix.
+* B_{ij}: The (i,j) component of matrix B.
+* [ a(i) ]: Row vector composed of components a(1), a(2), . . .
+* [ a(i,j) ]: Matrix composed of components a(1,1), a(2,1), . . .
+
+So, u = &quot;[u(1), u(2), . . . , u(N)]+&quot; is a column vector. (Notice
+the &quot;+&quot; symbol at the end.)
+
+Suppose we have observational data on the surface of the Earth
+u(x,y,t).  Let us rearrange our N datapoints from the two spacial
+dimensions to one: u = [u(1), u(2), . . . , u(N)]+.  Let us define
+a weight function (to be determined later) for the datapoints and denote
+it f(1), f(2), . . . , f(N).  Let F = diag(f(1), . . . , f(N)),
+a diagonal matrix constructed with f's.
+
+Then the weighted covariance matrix B is
+
+   B_{ij} = &lt; f(i) u(i) f(j) u(j) &gt;
+
+That is
+
+   B = F [ &lt;u(i) u(j)&gt; ]  F
+     = F A F
+
+where &quot;&lt; &gt;&quot; is an ensemble or time average and
+A is the unweighted covariance matrix.
+
+Note that B is symmetric, so it's eigenvectors
+q_1, q_2, . . . , q_N form an orthogonal basis.  Let us construct
+an orthonormal matrix Q from q's: 
+
+  Q = [q_1, q_2, . . . , q_N]
+
+where q_1, q_2, . . . , q_N are normalized in the sense that
+
+  (Q+) Q = I.     ---- (1)
+
+With this, B is diagonalized:
+
+  L = (Q+) B Q,   ---- (2)
+
+where L = diag(a(1), a(2), . . . , a(N)) is a diagonal matrix
+constructed from the eigenvalues a(1), . . . , a(N),
+and &quot;I&quot; is the identity matrix.
+
+Now, let us relate (1) and (2) to unweighted variables.
+First, let p = F q, so that
+
+    P = F Q,
+
+where P = [p_1, p_2, . . . , p_N].  From (1),
+
+  I = (((F-)P)+) (F-)P
+    = (P+)(F-)(F-)P
+    = (P+) (G-) P
+
+because F is symmetric.  Here G = F F  = F^2 .
+That is,
+
+    p_i+ (G-) p_j = delta_{i j},   ---(3)
+
+where &quot;delta&quot; is Kronecker's delta.
+That is, p's are orthogonal with respect to the
+&quot;metric&quot; G-.
+
+&gt;From (2),
+
+   L = (((F-)P)+) (F A F) (F-) P
+     = (P+) A P
+
+That is, P diagonalizes A.  Good!
+
+Now, we have to determine F .  Eq. (3) should correspond
+to an area integral over the Earth's surface.  So, &quot;G-&quot; must
+be the weight function containing cosines.  Since G = F^2,
+F- must have the square root of cosines.  Therefore,
+F must have 1/sqrt(cosine) in it.
+
+So, the recipe is
+
+1. Transform your variable u with v = F u,
+   where F = diag(1/sqrt(cosine), . . .)
+
+2. Do the usual EOF on B = &lt; v v+ &gt;.  Normalize the
+   eigenvectors q's as usual: q_i q_j = delta_{i j}
+
+3. The EOFs you want are p's, where p = F q .
+   p's are orthogonal with respect to the usual
+   area integral over (a portion of) the sphere (Eq. 3).
+
+4. p's diagonalize the unweighted covariance matrix.
+   (That is, if you project the variable u onto the
+    p axes, via w = (P+)u, the new variables w's are
+    statistically independent of each other.)
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00809" href="msg00809.html">[ferret_users] EOF: area weighting?</a></strong>
+<ul><li><em>From:</em> Andreas Baumgaertner</li></ul></li>
+<li><strong><a name="00810" href="msg00810.html">Re: [ferret_users] EOF: area weighting?</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+<li><strong><a name="00815" href="msg00815.html">Re: [ferret_users] EOF: area weighting?</a></strong>
+<ul><li><em>From:</em> Andreas Baumgaertner</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00815.html">Re: [ferret_users] EOF: area weighting?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00811.html">[ferret_users] Announcing the official release of Ferret version 6.4</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00815.html">Thread Prev</a>][<a href="msg00811.html">Thread Next</a>][<A HREF="threads.html#00816">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

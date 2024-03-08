@@ -1,0 +1,255 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: Fwd: [ferret_users] Time Series Plot with variability -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 20 Apr 2009 10:17:38 &#45;0700 -->
+<!--X-Message-Id: 49ECAE31.3030400@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: a0350d590904101400x429a2a32y1ddabb020d1fde32@mail.gmail.com -->
+<!--X-Reference: a0350d590904171509hafabc72if66886d4f4908552@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: Fwd: [ferret_users] Time Series Plot with variability</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00227.html">Thread Prev</a>][<a href="msg00228.html">Thread Next</a>][<A HREF="threads.html#00230">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: Fwd: [ferret_users] Time Series Plot with variability</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ag &lt;<a href="mailto:agdc2005@DOMAIN.HIDDEN">agdc2005@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: Fwd: [ferret_users] Time Series Plot with variability</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 20 Apr 2009 10:17:37 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:a0350d590904171509hafabc72if66886d4f4908552@DOMAIN.HIDDEN">a0350d590904171509hafabc72if66886d4f4908552@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:a0350d590904101400x429a2a32y1ddabb020d1fde32@DOMAIN.HIDDEN">a0350d590904101400x429a2a32y1ddabb020d1fde32@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:a0350d590904171509hafabc72if66886d4f4908552@DOMAIN.HIDDEN">a0350d590904171509hafabc72if66886d4f4908552@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Windows/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ag,<br>
+There are some peculiarities involving time axes.&nbsp; Run this script,
+reading the comments that are displayed as you go along.&nbsp; Notice that
+the last example in the script compares what happens when the axis
+happens to be defined in units of days versus when it's defined in
+hours.&nbsp; <br>
+<blockquote><tt>yes? go shaded_error_bar_zone</tt><br>
+</blockquote>
+The script is using a different means of plotting a region of
+uncertainty, but I think this is what's happening with your scirpt. For
+your example, before calling the erorr_bars script, define yet another
+time axis, this time in terms of hours, and regrid your data to that
+new axis.<br>
+<blockquote><tt>DEFINE axis/T/T0=1-jan-2001/UNIT=hours thours =
+24*tstep[L=1:`ntime`]<br>
+  <br>
+LET var_hours = new_var[gt=thours]<br>
+  <br>
+PLOT /SYMBOL=17/SIZE=0.07/Line=2/NOLABELS var_hours<br>
+GO error_bars polygon/color=blue/thickness=1/nolab var_hours new_err</tt><br>
+</blockquote>
+<br>
+Some more discussion of this feature of Ferret graphics is also
+discussed in this FAQ,<br>
+<br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/custom_plots/time_series_overlay.html">http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/custom_plots/time_series_overlay.html</a><br>
+<br>
+<br>
+ag wrote:
+<blockquote
+ cite=""
+ type="cite">Dear Ferret Usergroup<br>
+  <br>
+  <div class="gmail_quote">Many thanks for the ferret support I have
+received in the past on this Usergroup.<br>
+  <br>
+I am stuck on problem with Ferret that I (after spending some time on
+it and trying various options) appear unable to solve, so your
+suggestions are greatly appreciated.<br>
+  <br>
+I am trying to add variability to a dependent variable (plotted on
+Y-axis) with X-axis being a Time axis. I am using the go script
+error_bars.jnl but am having some problems.&nbsp; A sample of the data file
+appears at the end of this email. Using FERRET v6.1&nbsp; on Linux(g77)
+2.6.9-22. - 03/26/08<br>
+  <br>
+Ascii File is read in using<br>
+SET DATA/FORM=DELIM/SKIP=1 .....<br>
+  <br>
+Initially I have to grid the "mean" along the properly setup time-axis
+which I am able to do using <br>
+LET days_2001 = DAYS1900(2001,1,1)<br>
+LET day_frac&nbsp; = (var_hour + var_minute/60 ) / 24<br>
+LET tstep&nbsp;&nbsp;&nbsp;&nbsp; = DAYS1900(var_year,var_month,var_day) - days_2001 +
+day_frac<br>
+LET ntime = `begindatetime,return=isize`<br>
+LET dummy&nbsp;&nbsp; = t[GT=ttaxis]<br>
+LET new_var = RESHAPE(mean,dummy)<br>
+  <br>
+Then I also grid the "sdev" variable along the same time axis using<br>
+LET new_err = RESHAPE(sdev,dummy)<br>
+  <br>
+Then when I issue the following commands..I get a Time Series plot that
+has all the values bunched up one end (basically the time axis is
+expanded for some reason). This does not happen if I omit the GO script
+call below. Any ideas?&nbsp; Am I doing something wrong?<br>
+  <br>
+PLOT /SYMBOL=17/SIZE=0.07/Line=2/NOLABELS new_var<br>
+GO error_bars polygon/color=blue/thickness=1/nolab new_var new_err<br>
+  <br>
+Here is a file sample of the ASCCII<br>
+  <br>
+filename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; begindatetime&nbsp;&nbsp; location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SolarZenith&nbsp;&nbsp;&nbsp;&nbsp; npix&nbsp;&nbsp;&nbsp;
+mean&nbsp;&nbsp;&nbsp; sdev<br>
+MOD04_L2.A2007001.1500.005.2007003093108.hdf&nbsp;&nbsp;&nbsp; 2007-01-01 15:00:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 69.450&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007001.1635.005.2007003093604.hdf&nbsp;&nbsp;&nbsp; 2007-01-01 16:35:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 63.960&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007002.1540.005.2007004182338.hdf&nbsp;&nbsp;&nbsp; 2007-01-02 15:40:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 66.020&nbsp; 9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.081&nbsp;&nbsp; 0.058<br>
+MOD04_L2.A2007003.1625.005.2007005151340.hdf&nbsp;&nbsp;&nbsp; 2007-01-03 16:25:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 64.020&nbsp; 15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.027&nbsp;&nbsp; 0.013<br>
+MOD04_L2.A2007004.1530.005.2007007055054.hdf&nbsp;&nbsp;&nbsp; 2007-01-04 15:30:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 66.790&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007005.1615.005.2007008173325.hdf&nbsp;&nbsp;&nbsp; 2007-01-05 16:15:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 64.230&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007006.1520.005.2007010020024.hdf&nbsp;&nbsp;&nbsp; 2007-01-06 15:20:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 67.540&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007007.1600.005.2007012202039.hdf&nbsp;&nbsp;&nbsp; 2007-01-07 16:00:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 64.630&nbsp; 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.167&nbsp;&nbsp; 0.079<br>
+MOD04_L2.A2007008.1505.005.2007012223915.hdf&nbsp;&nbsp;&nbsp; 2007-01-08 15:05:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 68.360&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007008.1645.005.2007012225717.hdf&nbsp;&nbsp;&nbsp; 2007-01-08 16:45:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 63.230&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007009.1550.005.2007013005323.hdf&nbsp;&nbsp;&nbsp; 2007-01-09 15:50:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 65.080&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007010.1630.005.2007013053221.hdf&nbsp;&nbsp;&nbsp; 2007-01-10 16:30:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 63.060&nbsp; 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.039&nbsp;&nbsp; 0.017<br>
+MOD04_L2.A2007011.1535.005.2007014063943.hdf&nbsp;&nbsp;&nbsp; 2007-01-11 15:35:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 65.630&nbsp; 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.113&nbsp;&nbsp; 0.068<br>
+MOD04_L2.A2007012.1620.005.2007014045513.hdf&nbsp;&nbsp;&nbsp; 2007-01-12 16:20:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 63.130&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007013.1525.005.2007015044928.hdf&nbsp;&nbsp;&nbsp; 2007-01-13 15:25:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 66.360&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007014.1605.005.2007017161152.hdf&nbsp;&nbsp;&nbsp; 2007-01-14 16:05:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 63.360&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007015.1510.005.2007017183912.hdf&nbsp;&nbsp;&nbsp; 2007-01-15 15:10:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 67.080&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007016.1555.005.2007018180305.hdf&nbsp;&nbsp;&nbsp; 2007-01-16 15:55:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 63.700&nbsp; 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+MOD04_L2.A2007017.1500.005.2007019123555.hdf&nbsp;&nbsp;&nbsp; 2007-01-17 15:00:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 67.970&nbsp; 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.000&nbsp;&nbsp; 0.004<br>
+MOD04_L2.A2007017.1635.005.2007019125327.hdf&nbsp;&nbsp;&nbsp; 2007-01-17 16:35:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 61.780&nbsp; 15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.028&nbsp;&nbsp; 0.012<br>
+MOD04_L2.A2007018.1540.005.2007020111006.hdf&nbsp;&nbsp;&nbsp; 2007-01-18 15:40:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 64.170&nbsp; 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.126&nbsp;&nbsp; 0.044<br>
+  <br>
+  <div class="gmail_quote">On Fri, Apr 3, 2009 at 12:45 PM, Ansley
+Manke <span dir="ltr">&lt;<a rel="nofollow" moz-do-not-send="true"
+ href="mailto:Ansley.B.Manke@xxxxxxxx" target="_blank">Ansley.B.Manke@xxxxxxxx</a>&gt;</span>
+wrote:<br>
+  <blockquote class="gmail_quote"
+ style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+    <div bgcolor="#ffffff" text="#000000">Hi -<br>
+Yes, you can get the number of records. Once you've opened the dataset
+you can get that with<br>
+    <blockquote>LET ntime = `v1,return=isize`<br>
+    </blockquote>
+then <br>
+    <blockquote>DEFINE axis/T/T0=1-jan-2001/UNIT=days
+ttaxis=tstep[L=1:`ntime`]<br>
+    </blockquote>
+The grave-accent syntax, also called immediate-mode expressions if you
+want to find it in the documentation, causes Ferret to evaluate the
+variable at the time of command-parsing so it can be used immediately
+in the DEFINE command.<br>
+    <br>
+To get axis labels correct, assign units and title to variables as you
+define them. <br>
+    <blockquote>LET/units="meters"/title="Station Location" new_var =
+reshape(v6,dummy)<br>
+    </blockquote>
+Or whatever.<br>
+    <font color="#888888"><br>
+Ansley</font>
+    <div>
+    <div><br>
+    <br>
+    <br>
+    <br>
+    </div>
+    </div>
+    </div>
+  </blockquote>
+  </div>
+  <br>
+  </div>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00227" href="msg00227.html">Fwd: [ferret_users] Time Series Plot with variability</a></strong>
+<ul><li><em>From:</em> ag</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00227.html">Fwd: [ferret_users] Time Series Plot with variability</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00228.html">[ferret_users] Reading an ascii file: longitute latitute variable</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00227.html">Thread Prev</a>][<a href="msg00228.html">Thread Next</a>][<A HREF="threads.html#00230">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

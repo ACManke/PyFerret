@@ -1,0 +1,163 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Searching for local maxima with a running time window. Recursion workarounds -->
+<!--X-From-R13: "Bnhyb P. Ayvirven" <cobNvcvzne.cg> -->
+<!--X-Date: Fri, 5 Nov 2010 10:20:50 &#45;0700 -->
+<!--X-Message-Id: 1288977537.13700.156.camel@eo -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Searching for local maxima with a running time window. Recursion workarounds</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00680.html">Thread Prev</a>][<a href="msg00685.html">Thread Next</a>][<A HREF="threads.html#00681">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Searching for local maxima with a running time window. Recursion workarounds</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Searching for local maxima with a running time window. Recursion workarounds</strong></li>
+<li><strong>From</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 05 Nov 2010 17:18:57 +0000</li>
+<li>Organization: IPIMAR</li>
+<li>Reply-to: <a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+
+
+
+
+Hi all,<BR>
+<BR>
+I'm trying to circumvent the recursion problem by storing intermediate calculations on an external file. However, it seems that ferret keeps increasing the virtual memory used and the process stops at some point depending on system load. <BR>
+I've tried to issue a cancel mem/all at each time step but it doesn't solve the problem.<BR>
+<BR>
+A jnl file to reproduce the type of calculation I want is attached. Any hints to workaround this problem or on how to make this time window search without using external files will be appreciated.<BR>
+<BR>
+Paulo 
+
+
+<pre>\canc mode verif 
+
+def sym iinf  test_xp
+
+!==================================================================== ... build time series...
+def ax/t=&quot;15-jul-2006&quot;:&quot;15-sep-2006&quot;:10/unit=min/t0=15-jul-2006 t10m
+let pi = 4*atan(1)
+let xp_top0 =  lsl_lowpass(1000*sin(t[gt=t10m]*2*pi/60000)+5000*randu(t[gt=t10m]), `6*6`,`6*6`)
+let xp_top  = if xp_top0 then xp_top0 else xp_top0[t=@ave]
+save/clobber/file=($iinf).cdf xp_top
+canc var/all; canc ax/all; canc mem/all
+!===============================================================================================
+
+!---------------------------- search max dif between each sample and the next ($delT) samples (running window)
+!                             assign the result to the first time step of the running window 
+def sym delT  432
+def sym outf  test_xp_max432
+
+use ($iinf)
+                                   !............. just to see whats going on ....................
+                                   set viewp upper; plot xp_top
+                                   set viewp lower; plot/sym=dot/vlim=0:`xp_top[t=@max]` 0*xp_top
+
+def sym lend `xp_top,ret=lend`
+
+let ll = l[g=xp_top[d=($iinf)]]
+
+let xp_dif_top_max_0 = 0*xp_top
+ save/quiet/clob/file=($outf)_lprev.cdf xp_dif_top_max_0
+ canc var xp_dif_top_max_0
+
+SET MODE STUPID
+
+let lprev = 0
+sp \rm ($outf).cdf
+repeat/range=1:`($lend)-($delT)`:1/name=li ( \
+ if `mod(li,100) eq 1` then say `li`;\
+ let msk = if ll eq li then 1 else 0;\
+ use ($outf)_lprev.cdf;\
+  let last_xp_dif_top_max = xp_dif_top_max_`lprev`[d=($outf)_lprev];\
+  let xp_dif_top     = xp_top[d=($iinf)] - xp_top[d=($iinf),l=`li`];\
+  let xp_dif_top_max = xp_dif_top[d=($iinf),l=`li`:`li+($delT)`@max]*msk + last_xp_dif_top_max;\
+ plot/nolab/ov/sym=dot/col=red xp_dif_top_max;\
+ save/quiet/clob/file=($outf).cdf xp_dif_top_max;\
+  let xp_dif_top_max_`li` = xp_dif_top_max;\
+ save/quiet/clob/file=($outf)_`li`.cdf xp_dif_top_max_`li`;\
+ canc var msk, last_xp_dif_top_max, xp_dif_top, xp_dif_top_max, xp_dif_top_max_`li`, lprev;\
+ canc data ($outf)_lprev.cdf;\
+ sp mv ($outf)_`li`.cdf ($outf)_lprev.cdf;\
+ let lprev = `li`;\
+)
+      
+</pre><pre>  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND                 
+  335 pbo       20   0  234m 108m 3932 R 90.6 10.8   0:14.78 ferret                          
+  335 pbo       20   0  349m 200m 2464 D 42.6 20.0   0:34.82 ferret
+  335 pbo       20   0  497m 225m 2472 D 73.3 22.5   1:01.32 ferret
+  335 pbo       20   0  582m 252m 2484 D 47.7 25.2   1:23.58 ferret 
+  335 pbo       20   0  582m 260m 1584 R 55.8 26.0   1:42.16 ferret                  
+  335 pbo       20   0  889m 241m 2436 R 12.6 24.1   2:55.29 ferret                  
+  335 pbo       20   0 1122m 248m 2436 R 25.2 24.8   3:39.25 ferret                  
+  335 pbo       20   0 1375m 238m 2436 S 13.6 23.8   4:27.87 ferret                  
+  335 pbo       20   0 1398m 199m 2492 D 30.5 19.9   4:32.25 ferret                  
+
+
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00680.html">[ferret_users] bad value problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00685.html">Re: [ferret_users] Searching for local maxima with a running time window. Recursion workarounds</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00680.html">Thread Prev</a>][<a href="msg00685.html">Thread Next</a>][<A HREF="threads.html#00681">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

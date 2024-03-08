@@ -1,0 +1,152 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] MONTH_GREGORIAN climatological axis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 3 Nov 2010 13:41:22 &#45;0700 -->
+<!--X-Message-Id: 4CD1C8F1.7060506@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4CD17E46.9040208@cea.fr -->
+<!--X-Reference: alpine.LRH.2.00.1011031239210.12715@atw -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] MONTH_GREGORIAN climatological axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00677.html">Thread Prev</a>][<a href="msg00674.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] MONTH_GREGORIAN climatological axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] MONTH_GREGORIAN climatological axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 03 Nov 2010 13:41:21 -0700</li>
+<li>In-reply-to: &lt;<a href="mailto:alpine.LRH.2.00.1011031239210.12715@DOMAIN.HIDDEN"><a href="msg00677.html">alpine.LRH.2.00.1011031239210.12715@atw</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:4CD17E46.9040208@DOMAIN.HIDDEN">4CD17E46.9040208@xxxxxx</a>&gt; &lt;<a href="mailto:alpine.LRH.2.00.1011031239210.12715@DOMAIN.HIDDEN"><a href="msg00677.html">alpine.LRH.2.00.1011031239210.12715@atw</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.11) Gecko/20101013 Thunderbird/3.1.5</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi all,
+A side note here. The MONTH_GREGORIAN  and MONTH_IRREG axes that are defined by the climatological_axes.cdf file are identical.  Some time back we added monthly climatological axes that correspond to the different calendar types. The Proleptic Gregorian calendar is the default in Ferret and so the monthly Gregorian and default MONTH_IRREG axes are the same.
+
+Ansley
+
+On 11/3/2010 10:16 AM, Andrew Wittenberg wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Patrick,
+
+The basic issue comes down to: how does one define a &quot;climatological February 29th?&quot;
+
+In the climatological_axes file, the climatological Gregorian year is defined so that 400 of them span the same time as 400 Gregorian years, which is the modulo span of the Gregorian calendar cycle.  The average length of a Gregorian February is 28.2425 days -- so that is taken as the length of the climatological February.
+
+As a result, you'll see gradual drifts and sudden jumps of the Gregorian climatological dates/times relative to the true Gregorian dates/times, reminiscent of the leap-shifting seen in the date of the solstices:
+
+   <a  rel="nofollow" href="http://en.wikipedia.org/wiki/Gregorian_calendar">http://en.wikipedia.org/wiki/Gregorian_calendar</a>
+
+The associated errors will be minor if you're working with monthly or annual means, but it could be problematic if you're looking at slow trends in the diurnal cycle.  Unfortunately, the only &quot;true&quot; climatological cycle for the Gregorian calendar would be to define a climatological 400-year cycle -- complete with leap years every 4th year, except every century (unless the century is divisible by 400).
+
+For observational applications (where the Gregorian calendar is most relevant) you won't have the many millennia required to define a robust climatological 400yr cycle.  A way around this would be to (say) find the mean diurnal cycle for each month, and then analyze the behavior of that time series of &quot;monthly-mean diurnal cycles&quot;.
+
+Andrew
+
+On Wed, 3 Nov 2010, Brockmann Patrick wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+
+Looking carefully  to the climatological axis of a gregorian calendar,
+I don't understand why there an offset of 05:49:12  hours in
+information given by TBOXLO
+Though, TBOX is ok.
+
+yes? use climatological_axes
+yes? show axis/t MONTH_GREGORIAN
+name       axis              # pts   start                end
+MONTH_GREGORIAN TIME          12mi   16-JAN 12:00         15-DEC 17:49
+T0 = 01-JAN-0000 00:00:00
+ Axis span (to cell edges) = 365.2425 (modulo length = axis span)
+
+     L     T                   TBOX      TBOXLO                TSTEP (days)
+     1&gt;  16-JAN 12:00:00       31         01-JAN 00:00:00         15.5
+     2&gt;  15-FEB 02:54:36       28.2425    01-FEB 00:00:00         45.12125
+     3&gt;  15-MAR 17:49:12       31         29-FEB 05:49:12         74.7425
+     4&gt;  15-APR 05:49:12       30         31-MAR 05:49:12         105.2425
+     5&gt;  15-MAY 17:49:12       31         30-APR 05:49:12         135.7425
+     6&gt;  15-JUN 05:49:12       30         31-MAY 05:49:12         166.2425
+     7&gt;  15-JUL 17:49:12       31         30-JUN 05:49:12         196.7425
+     8&gt;  15-AUG 17:49:12       31         31-JUL 05:49:12         227.7425
+     9&gt;  15-SEP 05:49:12       30         31-AUG 05:49:12         258.2425
+    10&gt;  15-OCT 17:49:12       31         30-SEP 05:49:12         288.7425
+    11&gt;  15-NOV 05:49:12       30         31-OCT 05:49:12         319.2425
+    12&gt;  15-DEC 17:49:12       31         30-NOV 05:49:12         349.7425
+
+Any clarification is welcome.
+Patrick
+
+
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00673" href="msg00673.html">[ferret_users] MONTH_GREGORIAN climatological axis</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00677" href="msg00677.html">Re: [ferret_users] MONTH_GREGORIAN climatological axis</a></strong>
+<ul><li><em>From:</em> Andrew Wittenberg</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00677.html">Re: [ferret_users] MONTH_GREGORIAN climatological axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00674.html">[ferret_users] bad value</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00677.html">Thread Prev</a>][<a href="msg00674.html">Thread Next</a>][<A HREF="threads.html#00679">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

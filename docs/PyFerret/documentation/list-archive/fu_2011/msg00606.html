@@ -1,0 +1,189 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Different results between ferret and other softwares -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Thu, 28 Jul 2011 09:00:35 &#45;0700 -->
+<!--X-Message-Id: 4E3187A6.2000008@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 10869587.283841311846073221.JavaMail.defaultUser@defaultHost -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Different results between ferret and other softwares</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00604.html">Thread Prev</a>][<a href="msg00607.html">Thread Next</a>][<A HREF="threads.html#00606">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Different results between ferret and other softwares</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<a href="mailto:markus.mingel@DOMAIN.HIDDEN">markus.mingel@xxxxxxxxx</a>&quot; &lt;<a href="mailto:markus.mingel@DOMAIN.HIDDEN">markus.mingel@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Different results between ferret and other softwares</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 28 Jul 2011 09:00:38 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:10869587.283841311846073221.JavaMail.defaultUser@DOMAIN.HIDDEN"><a href="msg00604.html">10869587.283841311846073221.JavaMail.defaultUser@defaultHost</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:10869587.283841311846073221.JavaMail.defaultUser@DOMAIN.HIDDEN"><a href="msg00604.html">10869587.283841311846073221.JavaMail.defaultUser@defaultHost</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:5.0) Gecko/20110624 Thunderbird/5.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    Hi Markus,<br>
+    <br>
+    This is a huge difference in value (285 versus 275) -- not something
+    attributable to round off errors.&#xA0; It's as if the calculations are
+    using data from a different vertical level?&#xA0; Or averaging missing
+    value points in as zero values?&#xA0; Or something of that nature.<br>
+    <br>
+    One difference that seems apparent:&#xA0; this matlab calculation<br>
+    <blockquote>
+      <pre wrap="">tas          = input_nc{'tas'}(:) ;
+tas          = squeeze(tas(1,:,:));
+mean2(tas)</pre>
+    </blockquote>
+    is a simple arithmetic mean of the non-missing values, whereas the
+    Ferret calculation of <br>
+    <blockquote>
+      <pre wrap="">tas[i=@ave,j=@ave,l=1]
+</pre>
+    </blockquote>
+    is an area-weighted average.<br>
+    <br>
+    &#xA0;&#xA0;&#xA0; - Steve<br>
+    <pre wrap="">===================================================================
+</pre>
+    <br>
+    On 7/28/2011 2:41 AM, <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:markus.mingel@xxxxxxxxx">markus.mingel@xxxxxxxxx</a> wrote:
+    <blockquote
+      cite=""
+      type="cite">
+      <pre wrap="">Dear Users,
+
+I got different results between ferret and matlab/idl/ncl when I compute the 
+global mean temperature from the CMIP5 models.
+
+Namely, taking the Canadian atmospheric model this is the result of the dump 
+for the temperature:
+
+	float tas(time, lat, lon) ;
+		tas:standard_name = "air_temperature" ;
+		tas:long_name = "Near-Surface Air Temperature" ;
+		tas:units = "K" ;
+		tas:original_name = "ST" ;
+		tas:cell_methods = "time: mean (interval: 15 minutes)" ;
+		tas:cell_measures = "area: areacella" ;
+		tas:history = "2011-03-16T18:49:59Z altered by CMOR: Treated scalar 
+dimension: \'height\'. 2011-03-16T18:49:59Z altered by CMOR: replaced missing 
+value flag (1e+38) with standard missing value (1e+20)." ;
+		tas:coordinates = "height" ;
+		tas:missing_value = 1.e+20f ;
+		tas:_FillValue = 1.e+20f ;
+		tas:associated_files = "baseURL: <a rel="nofollow" class="moz-txt-link-freetext" href="http://cmip-pcmdi.llnl">http://cmip-pcmdi.llnl</a>.
+gov/CMIP5/dataLocation gridspecFile: 
+gridspec_atmos_fx_CanESM2_historical_r0i0p0.nc areacella: 
+areacella_fx_CanESM2_historical_r0i0p0.nc" ;
+
+
+To compute the mean global temperature of the first month of data with ferret 
+I use the following command:
+
+list tas[i=@ave,j=@ave,l=1]
+             VARIABLE : Near-Surface Air Temperature (K)
+             DATA SET : CanESM2 model output prepared for CMIP5 historical
+             FILENAME : tas_Amon_CanESM2_historical_r1i1p1_185001-200512.nc
+             LONGITUDE: 1.4W(-1.4) to 1.4W(358.6) (XY ave)
+             LATITUDE : 90S to 90N (XY ave)
+             TIME     : 16-JAN-1850 12:00 NOLEAP
+             284.8
+
+
+Now I expect having the same value (284.8) in matlab/IDL/NCL; indeed with all 
+these other 3 softwares I get the same value (275.13). Why???
+
+Am I wrong reading the data with matlab/IDL/NCL? Since there aren't any 
+scale_factor or add_offset values to read, in matlab/IDL/NCL I just read the 
+value tas. As example, these are the matlab lines I used to compute the global 
+mean:
+
+input_nc = netcdf('tas_Amon_CanESM2_historical_r1i1p1_185001-200512.nc');
+tas          = input_nc{'tas'}(:) ;
+tas          = squeeze(tas(1,:,:));
+mean2(tas)
+
+ans =
+
+  275.1371
+ 
+
+Do anyone could explain me why I get this difference in the mean values?
+
+Thanks into advance for help
+Markus   
+
+</pre>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00604" href="msg00604.html">[ferret_users] Different results between ferret and other softwares</a></strong>
+<ul><li><em>From:</em> markus.mingel@xxxxxxxxx</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00604.html">[ferret_users] Different results between ferret and other softwares</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00607.html">RE: [ferret_users] Different results between ferret and other softwares</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00604.html">Thread Prev</a>][<a href="msg00607.html">Thread Next</a>][<A HREF="threads.html#00606">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

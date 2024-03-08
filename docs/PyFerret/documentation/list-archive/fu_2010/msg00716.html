@@ -1,0 +1,253 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] @sum bug ? -->
+<!--X-From-R13: [nepb Egrvanpure <fgrvanpureNpyvzngr.havor.pu> -->
+<!--X-Date: Wed, 24 Nov 2010 02:37:43 &#45;0800 -->
+<!--X-Message-Id: 4CECEAEE.2040901@climate.unibe.ch -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4CEC5647.5090207@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] @sum bug ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00712.html">Thread Prev</a>][<a href="msg00724.html">Thread Next</a>][<A HREF="threads.html#00716">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] @sum bug ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] @sum bug ?</strong></li>
+<li><strong>From</strong>: <strong>Marco Steinacher &lt;<a href="mailto:steinacher@DOMAIN.HIDDEN">steinacher@xxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 24 Nov 2010 11:37:34 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4CEC5647.5090207@DOMAIN.HIDDEN">4CEC5647.5090207@xxxxxx</a>&gt;</li>
+<li>Openpgp: id=62937F7F;	url=http://www.websource.ch/pgp/msteinacher.asc</li>
+<li>References: &lt;<a href="mailto:4CEC5647.5090207@DOMAIN.HIDDEN">4CEC5647.5090207@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.24 (X11/20100317)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I can confirm this with your and also with independent data (see below
+for details). The conclusion is:
+
+(1) Only FERRET v6.401 (and older versions) with xsequence() gives the
+correct result (I checked  it with NCL's sum()).
+
+(2) FERRET v6.401 without xsequence(), i.e. TAS[i=@sum,j=@sum], gives a
+wrong result.
+
+(3) FERRET v6.6 and v6.62 give wrong results that are slightly different
+than the wrong result of (2). These results are independent of using
+xsequence() or not.
+
+
+One thing that I noticed is that the compiler changed from g77 to
+gfortran between v6.401 and v6.6, but I don't know if that is of
+importance in this case.
+
+In any case this looks rather scary...
+
+Marco
+
+
+-----------------------------------------------------
+
+FERRET v6.401
+Linux(g77) 2.4.21-57.ELsmp - 12/09/09
+
+list/p=10 tas[i=@sum,j=@sum] ; \
+let a=xsequence(tas) ; \
+list/p=10 a[i=@sum]
+          2526427.250
+          2526434.500
+
+list/p=20 s[i=@sum,j=@sum,l=1,k=1] ; \
+let a = xsequence(s[l=1,k=1]) ; \
+list/p=20 a[i=@sum]
+          283937.1875000000
+          283936.0937500000
+
+-----------------------------------------------------
+
+FERRET v6.6
+Linux rh5 (gfortran) 2.6.18-164.11.1.el5 - 04/06/10
+
+list/p=10 tas[i=@sum,j=@sum] ; \
+let a=xsequence(tas) ; \
+list/p=10 a[i=@sum]
+          2526427.750
+          2526427.750
+
+list/p=20 s[i=@sum,j=@sum,l=1,k=1] ; \
+let a = xsequence(s[l=1,k=1]) ; \
+list/p=20 a[i=@sum]
+          283937.2500000000
+          283937.2500000000
+
+-----------------------------------------------------
+
+FERRET v6.62
+Linux rh5 (gfortran) 2.6.18-164.11.1.el5 - 06/11/10
+
+list/p=10 tas[i=@sum,j=@sum] ; \
+let a=xsequence(tas) ; \
+list/p=10 a[i=@sum]
+          2526427.750
+          2526427.750
+
+list/p=20 s[i=@sum,j=@sum,l=1,k=1] ; \
+let a = xsequence(s[l=1,k=1]) ; \
+list/p=20 a[i=@sum]
+          283937.2500000000
+          283937.2500000000
+
+----------------------------------------------------
+
+NCAR Command Language Version 5.2.0
+
+ncl 10&gt; print(sprintf(&quot;%.8f&quot;,sum(f1-&gt;TAS)))
+(0)	2526434.50000000
+
+ncl 11&gt; print(sprintf(&quot;%.8f&quot;,sum(f2-&gt;S(0,0,:,:))))
+(0)	283936.09375000
+
+----------------------------------------------------
+
+
+Brockmann Patrick wrote:
+&gt; Hi all,
+&gt; 
+&gt; I am just discovering that the @sum operator gives different results
+&gt; from 6.61 and next release 6.62, 6.64.
+&gt; I haven't any new about this serious bug in release notes.
+&gt; 
+&gt; My test are available from:
+&gt; <a  rel="nofollow" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err661_sum.jnl">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err661_sum.jnl</a>
+&gt; <a  rel="nofollow" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err661_sum_file.nc">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err661_sum_file.nc</a>
+&gt; 
+&gt; And gives:
+&gt; ######################################&quot;
+&gt; $ ferret -script err661_sum.jnl
+&gt; use err661_sum_file.nc
+&gt; list/p=10 tas[i=@sum,j=@sum]
+&gt;             VARIABLE : TAS
+&gt;             FILENAME : err661_sum_file.nc
+&gt;             X        : 0.5 to 96.5 (summed)
+&gt;             Y        : 0.5 to 96.5 (summed)
+&gt;          2526427.750
+&gt; let a=xsequence(tas)
+&gt; list/p=10 a[i=@sum]
+&gt;             VARIABLE : XSEQUENCE(TAS)
+&gt;             FILENAME : err661_sum_file.nc
+&gt;             X        : 0.5 to 9216.5 (summed)
+&gt;          2526427.750
+&gt; 
+&gt; And with 6.62 and 6.64
+&gt; ######################################&quot;
+&gt; use err661_sum_file.nc
+&gt; list/p=10 tas[i=@sum,j=@sum]
+&gt;             VARIABLE : TAS
+&gt;             FILENAME : err661_sum_file.nc
+&gt;             X        : 0.5 to 96.5 (summed)
+&gt;             Y        : 0.5 to 96.5 (summed)
+&gt;          2526427.250
+&gt; let a=xsequence(tas)
+&gt; list/p=10 a[i=@sum]
+&gt;             VARIABLE : XSEQUENCE(TAS)
+&gt;             FILENAME : err661_sum_file.nc
+&gt;             X        : 0.5 to 9216.5 (summed)
+&gt;          2526434.500
+&gt; 
+&gt; ######################################&quot;
+&gt; From python/netCDF4/numpy
+&gt; I know that the sum is really 2526434.500
+&gt; 
+&gt; 
+&gt; Other question related: why tas[i=@sum,j=@sum]
+&gt; and xsequence then i=@sum gives different results.
+&gt; Both should give 2526434.500
+&gt; 
+&gt; Hope it a bad dream...
+&gt; Let me know if you can confirm this.
+&gt; 
+&gt; Patrick
+
+
+-- 
+***************************************
+Marco Steinacher
+
+Climate and Environmental Physics
+Physics Institute, University of Bern
+Sidlerstrasse 5, CH-3012 Bern
+
+Phone ++41 (0)31 631 34 02
+Fax   ++41 (0)31 631 87 42
+steinacher@xxxxxxxxxxxxxxxx
+<a  rel="nofollow" href="http://www.climate.unibe.ch/~steinach">http://www.climate.unibe.ch/~steinach</a>
+OpenPGP Key ID: 0x62937F7F
+***************************************
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00712" href="msg00712.html">[ferret_users] @sum bug ?</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00712.html">[ferret_users] @sum bug ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00724.html">Re: [ferret_users] @sum bug ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00712.html">Thread Prev</a>][<a href="msg00724.html">Thread Next</a>][<A HREF="threads.html#00716">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

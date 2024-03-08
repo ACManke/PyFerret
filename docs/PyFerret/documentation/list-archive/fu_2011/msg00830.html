@@ -1,0 +1,231 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] How to pass the value from a ferret script to a c shell file ? -->
+<!--X-From-R13: Dlb Thehr <shehrNunjnvv.rqh> -->
+<!--X-Date: Mon, 31 Oct 2011 19:40:24 &#45;0700 -->
+<!--X-Message-Id: 20111031.164015.335020905.furue@hawaii.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20111027.165007.380987380.furue@hawaii.edu -->
+<!--X-Reference: 4EAEDA88.9070208@noaa.gov -->
+<!--X-Reference: f24eb2f96e668f9b5db630bf3d3240df@ufl.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00828.html">Thread Prev</a>][<a href="msg00832.html">Thread Next</a>][<A HREF="threads.html#00830">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:wenchin@DOMAIN.HIDDEN">wenchin@xxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</strong></li>
+<li><strong>From</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 31 Oct 2011 16:40:15 -1000 (HST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:f24eb2f96e668f9b5db630bf3d3240df@DOMAIN.HIDDEN">f24eb2f96e668f9b5db630bf3d3240df@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20111027.165007.380987380.furue@DOMAIN.HIDDEN">20111027.165007.380987380.furue@xxxxxxxxxx</a>&gt; &lt;<a href="mailto:4EAEDA88.9070208@DOMAIN.HIDDEN">4EAEDA88.9070208@xxxxxxxx</a>&gt; &lt;<a href="mailto:f24eb2f96e668f9b5db630bf3d3240df@DOMAIN.HIDDEN">f24eb2f96e668f9b5db630bf3d3240df@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Wen Chin and Ansley,
+
+First of all, there is a confusion about the &quot;piping issue&quot;.
+Yes, there is a problem when Ferret reads commands, because
+it can't read long lines from the standard input.  If your
+script contain long lines, you have to use a script as
+
+  ferret -script yourscriptfile.jnl
+
+instead of
+
+  ferret &lt; yourscriptfile.jnl
+
+or of
+
+  ferret &lt;&lt;EOF
+  . . . contents of your script . . .
+  EOF
+
+On the other hand, there is no such problem in outputs from Ferret.
+My solution simply processes outputs from Ferret.  I mentioned
+the input piping issue just as a caveat because your original script
+used the pipe &quot;&lt;&lt;EOF&quot;.
+
+| 2)For Ryo, strangely I couldn't find your reply. I found your reply
+| embedded in Ansley's reply.
+
+Your mailserver bounced my message because it thought my message
+contained an unsafe attachment.  I just attached a shell script.
+Well, a shell script IS an executable in a sense and could delete
+all your files, set up a trojan horse, or something like that, yes.
+So, I don't blame your mailserver :-)
+
+This time, I'm just copying and pasting my original message
+and the script below.
+
+| In addition, when you mentioned
+| &quot;command_to_process_ferrets_output&quot;, could you give me an example?
+| I assume the demonstration is
+| an example written inside a shell script right?
+
+Yes.  The &quot;command&quot; reads text lines and do whatever
+you like with them.  And yes, you can define a &quot;command&quot;
+within a shell script as well as call another script
+if you prefer doing so.  What I don't know is how to
+define a command in the C-Shell language.
+
+Regards,
+Ryo
+----------------------------------------------------------
+Hi,
+
+| I do not know how to save the value
+| of a variable in ferret script and pass that value to another
+| variable in my c shell file.
+
+Does anybody know how to suppress messages from Ferret other than
+using the -script flag?  Without the &quot;-script&quot; flag, we have
+startup messages like
+
+	NOAA/PMEL TMAP
+ 	FERRET v6.61  
+        . . .
+
+and &quot;yes?&quot; prompts.
+
+For now, I use the &quot;-script&quot; flag, which complicates my solution
+shown below.
+
+In principle, you can &quot;print&quot; the value using the SAY
+command of Ferret and capture it from your shell script.
+It's the standard way of communication between processes
+within a shell script.
+
+I'm attaching a small demonstration. I use the Bourne Shell
+because I don't know the C Shell well enough.
+
+The basic idea is
+
+  ferret &lt;&lt;STOP  | command_to_process_ferrets_output
+  let a = 3.14
+  say `a`
+  quit
+  STOP
+
+where you read lines from Ferret in
+command_to_process_ferrets_output .
+
+But, if you do this, you end up seeing extra information printed
+out by Ferret as I mentioned above.  So, in my demonstration,
+I use the &quot;-script&quot; flag and a named pipe for the script.
+Since it's a demonstration, I omitted error handling.
+
+As an aside, a named pipe is necessary when your lines are long.
+As far as I know, the maximum length of a line is a lot smaller
+when reading the standard input than when reading a script file.
+
+Regards,
+Ryo
+-----------------------
+#/bin/sh
+# This is just a demonstration or a template.
+
+process_ferrets_output()
+{
+    while read line; do
+	echo ferret said &quot;$line&quot;
+    done
+}
+
+mypipe=tmp-pipe.jnl
+
+mkfifo $mypipe
+sleep 999999999 &gt; $mypipe &amp;  ## keeps the pipe from closing.
+sleep_pid=$!
+
+ferret -noverify -script $mypipe | process_ferrets_output &amp;
+
+cat &lt;&lt;'EOF' &gt; $mypipe
+let a = 3.14
+let b = &quot;hello&quot;
+say `a`
+say `b`
+quit
+EOF
+
+kill $sleep_pid
+rm $mypipe
+
+wait
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00832" href="msg00832.html">Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00814" href="msg00814.html">Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00823" href="msg00823.html">Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00826" href="msg00826.html">Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</a></strong>
+<ul><li><em>From:</em> Hsu,Wen Chin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00828.html">Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00832.html">Re: [ferret_users] How to pass the value from a ferret script to a c shell file ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00828.html">Thread Prev</a>][<a href="msg00832.html">Thread Next</a>][<A HREF="threads.html#00830">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

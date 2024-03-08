@@ -1,0 +1,285 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] float to double conversion, axis -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 11 Jan 2010 11:08:51 &#45;0800 -->
+<!--X-Message-Id: 4B4B7744.2060403@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4B4B47EF.7060500@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] float to double conversion, axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00023.html">Thread Prev</a>][<a href="msg00026.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] float to double conversion, axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] float to double conversion, axis</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 11 Jan 2010 11:08:52 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4B4B47EF.7060500@DOMAIN.HIDDEN">4B4B47EF.7060500@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4B4B47EF.7060500@DOMAIN.HIDDEN">4B4B47EF.7060500@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Patrick,<br>
+I can reproduce what you're describing, with this sequence,<br>
+<br>
+- Define the axis in Ferret&nbsp;&nbsp; <br>
+<blockquote><tt>yes? define axis/y=-90:90/npoints=72 yreg</tt><br>
+  <tt>yes? list/j=1:5/prec=7 y[gy=yreg]</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : Y</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis YREG</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 5 points (Y)</tt><br>
+  <tt>&nbsp;-90&nbsp;&nbsp; / 1: -90.00000</tt><br>
+  <tt>&nbsp;-87.5 / 2: -87.46479</tt><br>
+  <tt>&nbsp;-84.9 / 3: -84.92958</tt><br>
+  <tt>&nbsp;-82.4 / 4: -82.39436</tt><br>
+  <tt>&nbsp;-79.9 / 5: -79.85915</tt><br>
+</blockquote>
+which matches what you are seeing with ncdump in single precision.&nbsp; Now
+save some variable on this axis to a netCDF file; which saves the axis
+in double precision.<br>
+<blockquote><tt>yes? let aa = y[gy=yreg]<br>
+  </tt><tt>yes? save/clobber/file=yreg.nc aa</tt><br>
+</blockquote>
+And the coordinate values match what you show. Ferret saves the axis
+with an attribute <br>
+<blockquote><tt>&nbsp;YREG:point_spacing = "even" ;</tt><br>
+</blockquote>
+which applications can use to know that the axis should be treated as
+equally-spaced.&nbsp; When Ferret reads the file it uses this to avoid
+having to check all the coordinates to see if they are equally spaced.
+And it seems that the application you are testing doesn't use that
+attribute.<br>
+<br>
+Even if I remove this attribute from the file, Ferret still detects
+this particular axis as regularly-spaced; we test for equal-spacing
+using a tolerance of slightly less than full double precision 15- or
+16-digits for precisely this reason.&nbsp; Software that is writing out
+these axes may be up-converting from single precision, or may vary in
+the last digit or two depending on how they were produced.&nbsp; In this
+example the double precision coordinates have the same delta-y to 14
+digits.<br>
+<br>
+We could change Ferret to try to do a better job of writing
+equally-spaced double precision coordinates when the axis is evenly
+spaced. This cannot be perfect, as the numbers are always represented
+as machine values.<br>
+<br>
+We could also think of allowing users to request that the coordinates
+be saved as single-precision values (or to keep the precision that the
+the input axis had).<br>
+<br>
+And although it wouldn't help with your other software, we have on the
+table an idea to allow users to force any axis to be treated as regular
+- similar to the current syntax for T axis<br>
+<blockquote><tt>yes? use/regulart mydata.nc</tt><br>
+</blockquote>
+so the new syntax might be something like<tt><br>
+</tt>
+<blockquote><tt>yes? use mydata.nc</tt><br>
+  <tt>yes? set axis/regular yyaxis&nbsp; ! OR,</tt><br>
+  <tt>yes? set axis/regular `var,return=yaxis`</tt><br>
+</blockquote>
+I've put these ideas in our bug-tracker and we'll think about what's a
+good solution.<br>
+<br>
+Ansley<br>
+<br>
+<br>
+<tt><br>
+</tt>Brockmann Patrick wrote:
+<blockquote cite="" type="cite">Hi all,
+  <br>
+  <br>
+I have detected a problem when you have a regular spaced axis
+  <br>
+defined as float then saved with ferret. The axis becomes irregular
+spaced
+  <br>
+because convertion to double brings numerical noice.
+  <br>
+  <br>
+Note that this not detected by ferret, which still considers the saved
+axis as regular
+  <br>
+but by other software such as paraview 3.6 that I am currently testing
+(netCDF reader in particular).
+  <br>
+  <br>
+A simple ncdump shows the problem too.
+  <br>
+  <br>
+Initial axis
+  <br>
+#########################################
+  <br>
+lat = 90, 87.46479, 84.92958, 82.39436, 79.85915, 77.32394, 74.78873,
+  <br>
+&nbsp;&nbsp; 72.25352, 69.71831, 67.1831, 64.64789, 62.11267, 59.57747, 57.04226,
+  <br>
+&nbsp;&nbsp; 54.50704, 51.97183, 49.43662, 46.90141, 44.3662, 41.83099, 39.29578,
+  <br>
+&nbsp;&nbsp; 36.76056, 34.22535, 31.69014, 29.15493, 26.61972, 24.08451, 21.5493,
+  <br>
+&nbsp;&nbsp; 19.01408, 16.47887, 13.94366, 11.40845, 8.87324, 6.338028, 3.802817,
+  <br>
+&nbsp;&nbsp; 1.267606, -1.267606, -3.802817, -6.338028, -8.87324, -11.40845,
+  <br>
+&nbsp;&nbsp; -13.94366, -16.47887, -19.01408, -21.5493, -24.08451, -26.61972,
+  <br>
+&nbsp;&nbsp; -29.15493, -31.69014, -34.22535, -36.76056, -39.29578, -41.83099,
+  <br>
+&nbsp;&nbsp; -44.3662, -46.90141, -49.43662, -51.97183, -54.50704, -57.04226,
+  <br>
+&nbsp;&nbsp; -59.57747, -62.11267, -64.64789, -67.1831, -69.71831, -72.25352,
+  <br>
+&nbsp;&nbsp; -74.78873, -77.32394, -79.85915, -82.39436, -84.92958, -87.46479,
+-90 ;
+  <br>
+  <br>
+Saved axis:
+  <br>
+#########################################
+  <br>
+lat = -90, -87.4647887323944, -84.9295774647887, -82.3943661971831,
+  <br>
+&nbsp;&nbsp; -79.8591549295775, -77.3239436619718, -74.7887323943662,
+  <br>
+&nbsp;&nbsp; -72.2535211267606, -69.7183098591549, -67.1830985915493,
+  <br>
+&nbsp;&nbsp; -64.6478873239437, -62.112676056338, -59.5774647887324,
+  <br>
+&nbsp;&nbsp; -57.0422535211268, -54.5070422535211, -51.9718309859155,
+  <br>
+&nbsp;&nbsp; -49.4366197183099, -46.9014084507042, -44.3661971830986,
+  <br>
+&nbsp;&nbsp; -41.830985915493, -39.2957746478873, -36.7605633802817,
+-34.225352112676,
+  <br>
+&nbsp;&nbsp; -31.6901408450704, -29.1549295774648, -26.6197183098592,
+  <br>
+&nbsp;&nbsp; -24.0845070422535, -21.5492957746479, -19.0140845070422,
+  <br>
+&nbsp;&nbsp; -16.4788732394366, -13.943661971831, -11.4084507042253,
+  <br>
+&nbsp;&nbsp; -8.87323943661971, -6.33802816901408, -3.80281690140844,
+  <br>
+&nbsp;&nbsp; -1.26760563380281, 1.26760563380282, 3.80281690140846,
+6.33802816901409,
+  <br>
+&nbsp;&nbsp; 8.87323943661973, 11.4084507042254, 13.943661971831,
+16.4788732394366,
+  <br>
+&nbsp;&nbsp; 19.0140845070423, 21.5492957746479, 24.0845070422535,
+26.6197183098592,
+  <br>
+&nbsp;&nbsp; 29.1549295774648, 31.6901408450704, 34.2253521126761,
+36.7605633802817,
+  <br>
+&nbsp;&nbsp; 39.2957746478873, 41.830985915493, 44.3661971830986,
+46.9014084507042,
+  <br>
+&nbsp;&nbsp; 49.4366197183099, 51.9718309859155, 54.5070422535211,
+57.0422535211268,
+  <br>
+&nbsp;&nbsp; 59.5774647887324, 62.112676056338, 64.6478873239437,
+67.1830985915493,
+  <br>
+&nbsp;&nbsp; 69.7183098591549, 72.2535211267606, 74.7887323943662,
+77.3239436619718,
+  <br>
+&nbsp;&nbsp; 79.8591549295775, 82.3943661971831, 84.9295774647887,
+87.4647887323944, 90 ;
+  <br>
+  <br>
+The problem does not occur if axis is initially defined with double
+precision.
+  <br>
+  <br>
+Let me know if this problem can be confirmed, referenced and corrected
+in a next release.
+  <br>
+  <br>
+bug reference available at:
+  <br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err6.401_axis_float_doudle.jnl">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/err6.401_axis_float_doudle.jnl</a>
+  <br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/axis_lat.nc">http://dods.ipsl.jussieu.fr/brocksce/ferret_bugs/axis_lat.nc</a>
+  <br>
+  <br>
+Patrick
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00023" href="msg00023.html">[ferret_users] float to double conversion, axis</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00023.html">[ferret_users] float to double conversion, axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00026.html">[ferret_users] Calculation of Meridional Overturning Circulation</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00023.html">Thread Prev</a>][<a href="msg00026.html">Thread Next</a>][<A HREF="threads.html#00024">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] shifted longitude problem with scat2gridgauss_xy -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 14 Jan 2009 13:29:16 &#45;0800 -->
+<!--X-Message-Id: 496E592C.7050006@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: Pine.SGI.4.64.0901132200380.768054@whirlwind.atmosp.physics.utoronto.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] shifted longitude problem with scat2gridgauss_xy</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00019.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00020">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shifted longitude problem with scat2gridgauss_xy</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Lev Tarasov &lt;<a href="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shifted longitude problem with scat2gridgauss_xy</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 14 Jan 2009 13:29:16 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to:  &lt;<a href="mailto:Pine.SGI.4.64.0901132200380.768054@DOMAIN.HIDDEN">Pine.SGI.4.64.0901132200380.768054@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References:  &lt;<a href="mailto:Pine.SGI.4.64.0901132200380.768054@DOMAIN.HIDDEN">Pine.SGI.4.64.0901132200380.768054@xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.19 (Windows/20081209)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Lev,<br>
+The SCAT2GRID functions don't apply modulo shifting to the scattered X
+location data.&nbsp; The note in the SCAT2GRIDGAUSS_XY documentation in the
+Users Guide is<br>
+<b><br>
+If the output X axis is a modulo longitude axis, then the scattered X
+values should lie within the range of the actual coordinates of the
+axis. That is, if the scattered X values are xpts={355, 358, 2, 1, 352,
+12} and the coordinates of the X axis you wish to grid to are
+longitudes of x=20,23,25,...,379 then you should apply a shift to your
+scattered points ...<br>
+</b>&nbsp;<br>
+This means that, for instance, if your variable xln cpntains values
+such as x= {-2, -3, 0.4, 1., 19}<br>
+<br>
+and if you define an axis, <br>
+<br>
+DEFINE AXIS/X=4.75W:119.25E:0.5/UNIT=DEGREE xlone5fb
+<br>
+<br>
+The values on the X axis are used in the function as 355.25, 355.75, ...<br>
+<blockquote><tt>yes? set list/prec=6<br>
+yes? list x[gx=xlone5fb]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : X<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis XLONE5FB<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 249 points (LONGITUDE)<br>
+&nbsp;4.75W&nbsp;&nbsp;&nbsp; /&nbsp;&nbsp; 1:&nbsp; 355.250<br>
+&nbsp;4.25W&nbsp;&nbsp;&nbsp; /&nbsp;&nbsp; 2:&nbsp; 355.750<br>
+&nbsp;3.75W&nbsp;&nbsp;&nbsp; /&nbsp;&nbsp; 3:&nbsp; 356.250<br>
+&nbsp;3.25W&nbsp;&nbsp;&nbsp; /&nbsp;&nbsp; 4:&nbsp; 356.750<br>
+&nbsp;2.75W&nbsp;&nbsp;&nbsp; /&nbsp;&nbsp; 5:&nbsp; 357.250<br>
+  <br>
+  </tt></blockquote>
+And so you would need to add 360 to xln before calling the function.
+Or, you could define your axis starting with x= -4.75E&nbsp; as follows to
+perhaps match the modulo branch that the scattered x values lie in:<br>
+<br>
+<blockquote><tt>yes? DEFINE AXIS/X=-4.75E:119.25E:0.5/UNIT=DEGREE
+xlone5fb
+  <br>
+yes? list x[gx=xlone5fb]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : X<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis XLONE5FB<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 249 points (LONGITUDE)<br>
+&nbsp;4.75W&nbsp;&nbsp; /&nbsp;&nbsp; 1:&nbsp;&nbsp; -4.750<br>
+&nbsp;4.25W&nbsp;&nbsp; /&nbsp;&nbsp; 2:&nbsp;&nbsp; -4.250<br>
+&nbsp;3.75W&nbsp;&nbsp; /&nbsp;&nbsp; 3:&nbsp;&nbsp; -3.750<br>
+&nbsp;3.25W&nbsp;&nbsp; /&nbsp;&nbsp; 4:&nbsp;&nbsp; -3.250<br>
+&nbsp;2.75W&nbsp;&nbsp; /&nbsp;&nbsp; 5:&nbsp;&nbsp; -2.750</tt><br>
+</blockquote>
+Is this the kind of thing that you're seeing??<br>
+<br>
+Ansley<br>
+<br>
+Lev Tarasov wrote:
+<blockquote
+ cite=""
+ type="cite">Hi;
+  <br>
+  <br>
+Given
+  <br>
+  <br>
+DEFINE AXIS/X=1:2000:1 xin
+  <br>
+DEFINE GRID/X=xin&nbsp; gin
+  <br>
+FILE/SKIP=1/VAR="cn,ylt,xln,bedRfr,tillcode" /GRID=gin
+NOR_2212DriftThickKleman.dat
+  <br>
+  <br>
+DEFINE AXIS/X=0.25E:119.25E:0.5/UNIT=DEGREE xlone5fb
+  <br>
+works for
+  <br>
+LET bedR1 = scat2gridgauss_xy (xln,ylt, bedRfr[d=1], x[gx=xlone5fb],
+y[gy=ylate25f], 0.5,0.5, 0.9,0)
+  <br>
+  <br>
+but
+  <br>
+DEFINE AXIS/X=4.75W:119.25E:0.5/UNIT=DEGREE xlone5fb
+  <br>
+shifts the data eastward about 10 degrees.
+  <br>
+  <br>
+And I need to grid to a Longitude grid that crosses 0 Longitude.
+  <br>
+  <br>
+I'm using&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FERRET v5.81,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Linux(g77) 2.4.21-32 - 07/14/05
+  <br>
+  <br>
+How do I fix this? It's a problem I've run into the past as well, and
+  <br>
+have crudely just shifted the input longitudes in scat2gridgauss_xy but
+  <br>
+I'm hoping a better fix is available.
+  <br>
+  <br>
+thanks,
+  <br>
+  <br>
+Lev
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00019" href="msg00019.html">[ferret_users] shifted longitude problem with scat2gridgauss_xy</a></strong>
+<ul><li><em>From:</em> Lev Tarasov</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00019.html">[ferret_users] shifted longitude problem with scat2gridgauss_xy</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00021.html">[ferret_users] about v5d</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00019.html">Thread Prev</a>][<a href="msg00021.html">Thread Next</a>][<A HREF="threads.html#00020">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

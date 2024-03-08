@@ -1,0 +1,175 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Mass transport normal to a vertical section along a track -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Tue, 4 May 2010 13:39:47 &#45;0700 -->
+<!--X-Message-Id: 0323DA64&#45;ED01&#45;4146&#45;B95F&#45;4B062E6684DF@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20100504134019.4781458cdjak2se8@webmail.ualberta.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Mass transport normal to a vertical section along a track</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00275.html">Thread Prev</a>][<a href="msg00277.html">Thread Next</a>][<A HREF="threads.html#00276">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Mass transport normal to a vertical section along a track</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Praveen V K &lt;<a href="mailto:veluthed@DOMAIN.HIDDEN">veluthed@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Mass transport normal to a vertical section along a track</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 04 May 2010 13:39:41 -0700</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:20100504134019.4781458cdjak2se8@DOMAIN.HIDDEN">20100504134019.4781458cdjak2se8@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:20100504134019.4781458cdjak2se8@DOMAIN.HIDDEN">20100504134019.4781458cdjak2se8@xxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+
+I think this will work, but ....
+
+</pre><tt>1) What samplexy will do in this situation is to bilinearly  
+</tt><tt>interpolate the velocities to the chosen points. It looks like your  
+</tt><tt>points are very close together. How many gridboxes do they span? (If  
+</tt><tt>less than 1, it seems unlikely that the result will be meaningful.)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>2) You can check the result by choosing a line that begins and ends at  
+</tt><tt>existing gridpoints. Then do the calculation along the two x and y  
+</tt><tt>lines that complete the triangle. Is mass conserved in the triangle?  
+</tt><tt>(Or is it conserved when any sea level variation is taken into account?)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>3) A similar check is to do the calculation along latitude-longitude  
+</tt><tt>steps that are along gridboxes.
+</tt><pre style="margin: 0em;">
+
+A possibly better way would be the following:
+</pre><tt>* define your section line as a succession of, say y(x), points,  
+</tt><tt>namely the latitudes of the line as it crosses each gridpoint longitude
+</tt><tt>* interpolate to find the velocity perpendicular to the section line  
+</tt><tt>in each gridbox
+</tt><tt>* multiply that perpendicular component by the distance spanned within  
+</tt><tt>each gridbox to get the perpendicular transport (also multiply by z)
+</tt><pre style="margin: 0em;">
+* sum those along the line
+</pre><tt>=&gt; again a check is to do the same thing using switched components  
+</tt><tt>(i.e. find the line as a series of x(y) points)
+</tt><pre style="margin: 0em;">
+
+Billy K
+
+On 04 May 2010, at 12:40 PM, Praveen V K wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi All,
+
+I am wondering whether ferret can do this.
+
+I have a 3D-regular grid data of 240 X 240 X 24 (x,y,z) dimension.
+</pre><tt>Can we calculate the Mass transport normal to a Section line which  
+</tt><tt>is not parallel to Longitude or Latitude in ferret?
+</tt><pre style="margin: 0em;">
+
+I tried the following method.
+
+use uv.nc
+let vtrans = v*xbox*zbox
+let utrans = u*ybox*zbox
+
+! Transport Section line (approximately diagonal to lat-lon grid)
+let xpoints = {-42.2090,-41.7973,-41.3856}
+let ypoints = {62.3584, 62.1288,61.8992}
+
+let utrans_sec = samplexy(utrans,xpoints,ypoints)
+let vtrans_sec = samplexy(vtrans,xpoints,ypoints)
+let trans_mag  = (utrans_sec^2+vtrans_sec^2)^0.5
+</pre><tt>    let trans = trans_mag*vtrans_sec/abs(vtrans_sec) ! This is to  
+</tt><tt>get the direction, since I know they are going south.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I am not sure whether I am getting the transport normal to the  
+</tt><tt>section or not!
+</tt><pre style="margin: 0em;">
+If not, can we get normal transport for such sections in ferret.
+
+Thanks
+
+Praveen
+
+</pre></blockquote><pre style="margin: 0em;">
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+William S. Kessler
+NOAA / Pacific Marine Environmental Laboratory
+7600 Sand Point Way NE
+Seattle WA 98115 USA
+
+william.s.kessler@xxxxxxxx
+Tel: 206-526-6221
+Fax: 206-526-6744
+Web: <a  rel="nofollow" href="http://www.pmel.noaa.gov/people/kessler">http://www.pmel.noaa.gov/people/kessler</a>
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00275" href="msg00275.html">[ferret_users] Mass transport normal to a vertical section along a track</a></strong>
+<ul><li><em>From:</em> Praveen V K</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00275.html">[ferret_users] Mass transport normal to a vertical section along a track</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00277.html">[ferret_users] percentile</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00275.html">Thread Prev</a>][<a href="msg00277.html">Thread Next</a>][<A HREF="threads.html#00276">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

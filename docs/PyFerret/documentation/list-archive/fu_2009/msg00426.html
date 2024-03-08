@@ -1,0 +1,328 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] EOF function -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 10 Jul 2009 09:48:42 &#45;0700 -->
+<!--X-Message-Id: 4A5770E7.90405@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 42DE582CF96A4FB6B51B45C69B8C9BAF@xiacsPC -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] EOF function</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00425.html">Thread Prev</a>][<a href="msg00436.html">Thread Next</a>][<A HREF="threads.html#00426">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] EOF function</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Changshui Xia &lt;<a href="mailto:xiacs@DOMAIN.HIDDEN">xiacs@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] EOF function</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 10 Jul 2009 09:48:39 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:42DE582CF96A4FB6B51B45C69B8C9BAF@DOMAIN.HIDDEN"><a href="msg00425.html">42DE582CF96A4FB6B51B45C69B8C9BAF@xiacsPC</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:42DE582CF96A4FB6B51B45C69B8C9BAF@DOMAIN.HIDDEN"><a href="msg00425.html">42DE582CF96A4FB6B51B45C69B8C9BAF@xiacsPC</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.22 (Windows/20090605)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+<font face="Times New Roman, Times, serif">Hi Xia,<br>
+The script ef_eof_demo.jnl is contained in the fer_environment.tar file
+from the Ferret downloads pages, so if you have installed Ferret it
+should be available in your scripts directory.&nbsp; I will copy it below
+for you as well.&nbsp; We also have an html version of this demo, which can
+be found under the "<a rel="nofollow"
+ href="http://ferret.pmel.noaa.gov/Ferret/documentation/ferret-tutorials">tutorials</a>"
+link on the Ferret documentation page.<br>
+<br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/FERRET_17sep07/Demos/ef_eof_demo/ef_eof_demo.html">http://ferret.pmel.noaa.gov/FERRET_17sep07/Demos/ef_eof_demo/ef_eof_demo.html</a><br>
+</font><br>
+<br>
+<br>
+\SET MODE VERIFY<br>
+! ef_eof_demo.jnl ( acm&nbsp; 9/2000)<br>
+<br>
+! Description: Demonstration of computing EOFs using the<br>
+! External Functions EOF_SPACE, EOF_TFUNC, EOF_STAT<br>
+<br>
+! The functions implements Chelton's '82 method for finding EOFs of
+gappy<br>
+! time series. All the functions perform the same computation but return<br>
+! different portions of the results.<br>
+<br>
+!&nbsp;&nbsp; * EOF_SPACE returns EOF eigenvectors: spatial EOF in x and y with
+the<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; same units as the incoming data<br>
+!&nbsp;&nbsp; * EOF_TFUNC returns EOF time amplitude functions; dimensionless<br>
+!&nbsp;&nbsp; * EOF_STAT returns statistics on the EOF computation: number of EOFs<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; scaled and returned; Percent variance explained by each EOF; and
+the<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; eigenvalues.<br>
+!<br>
+! For all functions the arguments are as follows:<br>
+!<br>
+!&nbsp;&nbsp; * 1st argument: Input data field, a function of x, y, and time; may
+be a<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; function of z<br>
+!&nbsp;&nbsp; * 2nd argument: The minimum percent variance explained by the EOF's
+that<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; are computed and scaled, e.g. to return EOFs that explain at
+least 2%<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; variance, use 2.0<br>
+!&nbsp;&nbsp; * 3nd argument: The fraction of each time series that must be
+present to<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; include it in the calculations, e.g. to use all time series that
+have<br>
+!&nbsp;&nbsp;&nbsp;&nbsp; at least half the data present, use 0.5<br>
+!<br>
+!<br>
+! EOF functions Example 1: define a function of x,y,time using trig<br>
+! functions.&nbsp; Decompose into spatial and time EOF's and display
+statistics.<br>
+!<br>
+PAUSE<br>
+LET time = t[t=1-jan-1990:10-jan-1990:24]&nbsp;&nbsp; ! 24 hour resolution time
+axis<br>
+<br>
+DEFINE AXIS/x=0:10:0.5 x10<br>
+DEFINE AXIS/y=0:10:0.5 y10<br>
+DEFINE GRID/x=x10/y=y10/t=time g10x10<br>
+SET GRID g10x10<br>
+<br>
+LET fcn1 = 15.* sin(omega1*t)*cos(r)/(r+1)<br>
+LET fcn2 = 20.* sin(omega2*t)*(sin(s)-.2*sin(q))/(s+1)<br>
+<br>
+LET r = ((6.*(xpts-x0)^2 + 7.*(ypts-y0)^2)^0.5)<br>
+LET s = (((xpts-x1)^2 + 2*(ypts-y1)^2)^0.5)<br>
+LET q = ((3*(xpts-x0)^2 + (ypts-y1)^2)^0.5)<br>
+<br>
+LET x0 = 2<br>
+LET y0 = 4<br>
+LET x1 = 5<br>
+LET y1 = 7<br>
+<br>
+LET omega1 = 1/10*2*3.14159<br>
+LET omega2 = 2 * omega1<br>
+<br>
+LET sample_function = fcn1 + fcn2<br>
+LET xpts = x<br>
+LET ypts = y<br>
+<br>
+!&nbsp; Compute the statistics on the EOF solution.&nbsp; EOF_STAT returns:<br>
+!&nbsp; for J=1&nbsp; the number of EOFs returned<br>
+!&nbsp; for J=2&nbsp; the percent variance explained by each EOF<br>
+!&nbsp; for J=3&nbsp; the eigenvalue for each EOF<br>
+<br>
+LET estat = eof_stat(sample_function, 0.1)<br>
+<br>
+LIST/I=1/J=1 estat<br>
+<br>
+LIST/I=1:4/J=2 estat<br>
+<br>
+LIST/I=1:4/J=3 estat<br>
+<br>
+<br>
+!&nbsp; Plot the original function (averaged over time) and its spatial<br>
+!&nbsp; decomposition by EOF_SPACE<br>
+<br>
+PAUSE<br>
+<br>
+DEFINE VIEW/xlim=0.,.33/ylim=.6,1./text=0.2 vul<br>
+DEFINE VIEW/xlim=.33,.66/ylim=.6,1./text=0.2 vuc<br>
+DEFINE VIEW/xlim=.66,1./ylim=.6,1./text=0.2 vur<br>
+<br>
+DEFINE VIEW/xlim=0.,.33/ylim=.1,.5/text=0.2 vll<br>
+DEFINE VIEW/xlim=.33,.66/ylim=.1,.5/text=0.2 vlc<br>
+DEFINE VIEW/xlim=.66,1./ylim=.1,.5/text=0.2 vlr<br>
+<br>
+SET VIEW vul; CONTOUR/TITLE="FCN1" fcn1[l=1:10@ave]<br>
+SET VIEW vuc; CONTOUR/TITLE="FCN2" fcn2[l=1:10@ave]<br>
+SET VIEW vur; CONTOUR/TITLE="FCN1 + FCN2" sample_function[l=1:10@ave]<br>
+<br>
+<br>
+LET exy = eof_space(sample_function, 0.1)<br>
+<br>
+SET VIEW vll; CONTOUR/L=1/TITLE="EOF 1" exy<br>
+SET VIEW vlc; CONTOUR/L=2/TITLE="EOF 2" exy<br>
+<br>
+PAUSE<br>
+CANCEL VIEW<br>
+<br>
+! Now plot the time amplitude functions.<br>
+<br>
+LET etim = eof_tfunc(sample_function, 0.1)<br>
+<br>
+SET VIEW ul<br>
+PLOT/I=1/TITLE=taf1 etim<br>
+<br>
+SET VIEW ur<br>
+PLOT/I=2/TITLE=taf2 etim<br>
+<br>
+! should be all bad flags...<br>
+SET VIEW ll<br>
+PLOT/I=3/TITLE=taf3 etim<br>
+<br>
+PAUSE<br>
+CANCEL DATA/ALL<br>
+CANCEL VARIABLE/ALL<br>
+CANCEL REGION<br>
+CANCEL VIEW<br>
+<br>
+!&nbsp; A second example, using the COADS climatology data.<br>
+!<br>
+<br>
+USE coads_climatology<br>
+SET REGION/X=67w:1w/Y=11S:11N<br>
+<br>
+!&nbsp; Compute and save the spatial EOF functions.&nbsp; These have the same
+units<br>
+!&nbsp; as the data.<br>
+<br>
+LET eof_xyfcn = eof_space(sst, 0.5)<br>
+SAVE/CLOBBER/FILE=sst_clim_eof_space.cdf eof_xyfcn<br>
+<br>
+<br>
+CANCEL DATA/ALL<br>
+CANCEL VARIABLE/ALL<br>
+CANCEL REGION<br>
+<br>
+USE sst_clim_eof_space.cdf<br>
+SET VIEW ul; fill/l=1/TITLE="eof 1" eof_xyfcn; go land<br>
+SET VIEW ur; fill/l=2/TITLE="eof 2" eof_xyfcn; go land<br>
+SET VIEW ll; fill/l=3/TITLE="eof 3" eof_xyfcn; go land<br>
+<br>
+PAUSE<br>
+CANCEL DATA/ALL<br>
+CANCEL VARIABLE/ALL<br>
+CANCEL REGION<br>
+<br>
+!&nbsp; Compute the statistics on the EOFs: number of EOFs scaled<br>
+!&nbsp; and returned; Percent variance explained by each EOF; and the<br>
+!&nbsp; eigenvalues.<br>
+<br>
+<br>
+USE coads_climatology<br>
+SET REGION/X=67w:1w/Y=11S:11N<br>
+LET eofstat = eof_stat(sst[X=67w:1w,Y=11S:11N], 0.5)<br>
+<br>
+LET nout = eofstat[i=1,j=1]<br>
+LET pcts = eofstat[i=1:`nout`,j=2]<br>
+<br>
+LET eigenv = eofstat[i=1:`nout`,j=3]<br>
+<br>
+LIST nout<br>
+LIST/I=1:6 pcts<br>
+LIST/I=1:6 eigenv<br>
+<br>
+PAUSE<br>
+<br>
+!&nbsp; Compute and save time amplitude functions: Note they are
+dimensionless.<br>
+<br>
+USE coads_climatology<br>
+LET eoftime = eof_tfunc(sst[X=67w:1w,Y=11S:11N], 0.5)<br>
+<br>
+SAVE/CLOBBER/FILE=sst_clim_eof_tfunc.cdf eoftime[i=1:`nout`]<br>
+<br>
+CANCEL VIEW<br>
+CANCEL VARIABLE/ALL<br>
+USE sst_clim_eof_tfunc.cdf<br>
+<br>
+SET VIEW ul<br>
+PLOT/I=1/TITLE="time function 1"/VLIMITS=-2:2:0.5 eoftime<br>
+SET VIEW ur<br>
+PLOT/I=2/TITLE="time function 2"/VLIMITS=-2:2:0.5 eoftime<br>
+SET VIEW ll<br>
+PLOT/I=3/TITLE="time function 3"/VLIMITS=-2:2:0.5 eoftime<br>
+<br>
+\SET MODE/LAST VERIFY<br>
+<br>
+<br>
+Changshui Xia wrote:
+<blockquote cite=""
+ type="cite">
+  
+  
+  
+  <div><font size="2">Dear all,</font></div>
+  <div><font size="2">&nbsp;I have a model monthly mean SSHA from
+1980-2007,How to use the Ferret EOF function to find the first 3 mode?
+The file ef_eof_demo.jnl can not be obtained.</font></div>
+  <div>&nbsp;</div>
+  <div><font size="2">Thank you.</font></div>
+  <div>&nbsp;</div>
+  <div><font size="2">Xia</font></div>
+  <div>&nbsp;</div>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00436" href="msg00436.html">Re: [ferret_users] EOF function</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00425" href="msg00425.html">[ferret_users] EOF function</a></strong>
+<ul><li><em>From:</em> Changshui Xia</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00425.html">[ferret_users] EOF function</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00436.html">Re: [ferret_users] EOF function</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00425.html">Thread Prev</a>][<a href="msg00436.html">Thread Next</a>][<A HREF="threads.html#00426">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

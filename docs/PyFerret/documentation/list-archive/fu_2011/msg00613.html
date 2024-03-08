@@ -1,0 +1,218 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean -->
+<!--X-From-R13: Pebpxznaa Bngevpx <Bngevpx.PebpxznaaNprn.se> -->
+<!--X-Date: Thu, 28 Jul 2011 14:54:54 &#45;0700 -->
+<!--X-Message-Id: 4E31DA8A.4090103@cea.fr -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 1311817551.4557.51.camel@fulcrum.soest.hawaii.edu -->
+<!--X-Reference: 4E318E90.9020307@noaa.gov -->
+<!--X-Reference: 1311888688.4557.56.camel@fulcrum.soest.hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00612.html">Thread Prev</a>][<a href="msg00614.html">Thread Next</a>][<A HREF="threads.html#00613">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:jianma@DOMAIN.HIDDEN">jianma@xxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</strong></li>
+<li><strong>From</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 28 Jul 2011 23:54:18 +0200</li>
+<li>Cc: Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:1311888688.4557.56.camel@DOMAIN.HIDDEN">1311888688.4557.56.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1311817551.4557.51.camel@DOMAIN.HIDDEN">1311817551.4557.51.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4E318E90.9020307@DOMAIN.HIDDEN">4E318E90.9020307@xxxxxxxx</a>&gt; &lt;<a href="mailto:1311888688.4557.56.camel@DOMAIN.HIDDEN">1311888688.4557.56.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.17 (X11/20080926)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Jian Ma a &#xE9;crit :
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ansley,
+
+Thanks.
+
+Maybe I did not state clear my purpose. It is a multi-year daily data
+and I want to make a multi-year monthly mean, not climatology. Then how
+can I define the days count for Noleap calendar?
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+Hi,
+
+Have a look to the attached script. I think that it will do what you want.
+
+yes? go def_monthaxis_days.jnl NOLEAP 2002 2005 mytaxis
+yes? show axis/t mytaxis
+
+Patrick
+
+--
+LSCE/IPSL, Laboratoire CEA-CNRS-UVSQ
+Data Analysis and Visualization Engineer
+ICMC - IPSL Climate Modelling Centre
+--
+
+</pre><pre>\cancel mode verify
+
+!**************************************************************
+! Description: Define a time axis in days in specific calendar 
+!              Each month begins at first of the month
+!
+! Usage: go def_monthaxis_days.jnl calendar year_start year_end [axis_name] [year_ref]
+!
+! Arguments:
+! 		calendar =	STANDARD or GREGORIAN
+!				JULIAN
+!				NOLEAP or 365_DAY
+!				ALL_LEAP or 366_DAY
+!				360_DAY
+!
+!		year_ref =     if not specify, equals to year_start
+! 
+! Examples:
+!            go def_monthaxis_days.jnl NOLEAP 2002 2005 mytaxis 
+!            go def_monthaxis_days.jnl ALL_LEAP 2002 2005 mytaxis
+!            go def_monthaxis_days.jnl 360_DAY 2002 2005 mytaxis 
+!
+! Notes:
+!
+! Calls:
+!
+! Author: Patrick Brockmann
+! Contact: Patrick.Brockmann@xxxxxx
+! $Date: $
+! $Name: $
+! $Revision: $
+! History:
+! Modification:
+!
+!**************************************************************
+
+!=====================================================
+let calendar=UPCASE(&quot;($01)&quot;)
+let year_start=($02)
+let year_end=($03)
+def sym axisname=($04%monthaxis%)
+let year_ref=($05%($02)%)
+
+let nbyears=year_end-year_start+1
+
+!=====================================================
+IF `(calendar EQ &quot;STANDARD&quot;) OR (calendar EQ &quot;GREGORIAN&quot;)` THEN
+	let indices = L[L=1:`1+nbyears*12`]
+	let month = MOD(indices-1,12)+1
+	let year = year_start + INT((indices-1)/12)
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;GREGORIAN&quot; ($axisname) = DAYS1900(year,month,1)-DAYS1900(`year_ref`,1,1)
+
+!=====================================================
+!ELIF `(calendar EQ &quot;JULIAN&quot;)` THEN
+!	let indices = L[L=1:`1+nbyears*12`]
+!	let month = MOD(indices-1,12)+1
+!	let year = year_start + INT((indices-1)/12)
+!	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;JULIAN&quot; ($axisname) = DAYS1900(year,month,1)-DAYS1900(`year_ref`,1,1)
+
+!=====================================================
+ELIF `(calendar EQ &quot;NOLEAP&quot;) OR (calendar EQ &quot;365_DAY&quot;)` THEN
+	let nbdays={31,28,31,30,31,30,31,31,30,31,30,31}
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;NOLEAP&quot; ($axisname) = `(year_start-year_ref)*365`+xcat(0,xsequence(365*(j[j=1:`nbyears`]-1)+nbdays[i=@rsum]))
+
+!=====================================================
+ELIF `(calendar EQ &quot;ALL_LEAP&quot;) OR (calendar EQ &quot;366_DAY&quot;)` THEN
+	let nbdays={31,29,31,30,31,30,31,31,30,31,30,31}
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;ALL_LEAP&quot; ($axisname) = `(year_start-year_ref)*366`+xcat(0,xsequence(366*(j[j=1:`nbyears`]-1)+nbdays[i=@rsum]))
+
+!=====================================================
+ELIF `calendar EQ &quot;360_DAY&quot;` THEN
+	define axis/units=&quot;days&quot;/T0=&quot;01-JAN-`year_ref`&quot;/edges/cal=&quot;360_DAY&quot;/t=&quot;01-JAN-`year_start`&quot;:&quot;30-DEC-`year_end`&quot;:30 ($axisname)
+
+!=====================================================
+ELSE
+ 	say &quot;`calendar` not known&quot;
+ 	!say &quot;Possible calendars are : STANDARD (or GREGORIAN), JULIAN, NOLEAP (or 365_DAY), ALL_LEAP (or 366_DAY), 360_DAY&quot;
+ 	say &quot;Possible calendars are : STANDARD (or GREGORIAN), NOLEAP (or 365_DAY), ALL_LEAP (or 366_DAY), 360_DAY&quot;
+	exit
+
+!=====================================================
+ENDIF
+
+show axis ($axisname)
+
+!**************************************************************
+set mode/last verify
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00616" href="msg00616.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+<li><strong><a name="00614" href="msg00614.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00602" href="msg00602.html">[ferret_users] [ferret] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+<li><strong><a name="00608" href="msg00608.html">Re: [ferret_users] [ferret] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00612" href="msg00612.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+<ul><li><em>From:</em> Jian Ma</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00612.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00614.html">Re: [ferret_users] Calculating monthly mean from NOLEAP daily mean</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00612.html">Thread Prev</a>][<a href="msg00614.html">Thread Next</a>][<A HREF="threads.html#00613">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Memory question -->
+<!--X-From-R13: Xbanguna Ivagre <wjvagreN[WF.SRG> -->
+<!--X-Date: Fri, 19 Mar 2010 10:46:07 &#45;0700 -->
+<!--X-Message-Id: D26F6D3D&#45;ADF2&#45;42DD&#45;AB0F&#45;A2DE054BBDB9@mit.edu -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 931521BA&#45;6CB3&#45;4C20&#45;AAD8&#45;F7B53FCB1287@mit.edu -->
+<!--X-Reference: 1A344486&#45;A074&#45;4EFE&#45;B31F&#45;DAD6859D90FC@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Memory question</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00201.html">Thread Prev</a>][<a href="msg00205.html">Thread Next</a>][<A HREF="threads.html#00202">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Memory question</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Paul Young &lt;<a href="mailto:Paul.J.Young@DOMAIN.HIDDEN">Paul.J.Young@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Memory question</strong></li>
+<li><strong>From</strong>: <strong>Jonathan Winter &lt;<a href="mailto:jwinter@DOMAIN.HIDDEN">jwinter@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 19 Mar 2010 13:46:03 -0400</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:1A344486-A074-4EFE-B31F-DAD6859D90FC@DOMAIN.HIDDEN">1A344486-A074-4EFE-B31F-DAD6859D90FC@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:931521BA-6CB3-4C20-AAD8-F7B53FCB1287@DOMAIN.HIDDEN">931521BA-6CB3-4C20-AAD8-F7B53FCB1287@xxxxxxx</a>&gt; &lt;<a href="mailto:1A344486-A074-4EFE-B31F-DAD6859D90FC@DOMAIN.HIDDEN">1A344486-A074-4EFE-B31F-DAD6859D90FC@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Paul, Billy, and Marco,
+
+</pre><tt>Thank you for the suggestions.  Looks like it's working.  The final  
+</tt><tt>commands are:
+</tt><pre style="margin: 0em;">
+
+use 030410_init_wsoi.nc
+use vegtype_5min.nc
+show grid vegtype[d=2]
+show grid wsoi_lay[d=1]
+define grid/X=GJR1/Y=GJR1/Z=GOL1/L=GOL1 veg_grid
+let wsoi =  wsoi_lay[d=1,G=veg_grid]
+set variable/title=&quot;Soil Moisture&quot; wsoi
+set memory/size=200
+save/l=1/file=wsoi.nc wsoi
+save/l=2/file=wsoi.nc/append wsoi
+etc...
+
+Best,
+
+Jonathan
+
+On Mar 19, 2010, at 1:15 PM, Paul Young wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Jonathan,
+
+Check out Jaison Kurian's email on &quot;memory tricks&quot; in the archives:
+
+</pre><tt><a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2007/</a> 
+</tt><tt>msg00489.html
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Basically you loop over an axis and keep appending data to the  
+</tt><tt>file, rather than ask ferret to write out the all the grid in one go.
+</tt><pre style="margin: 0em;">
+
+Good luck!
+
+Paul
+
+
+On Mar 19, 2010, at 10:11 AM, Jonathan Winter wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+
+</pre><tt>I am trying to regrid a 0.5 deg dataset to 5-min and then write it  
+</tt><tt>out as a NetCDF file.  I use the following commands:
+</tt><pre style="margin: 0em;">
+
+use 030410_init_wsoi.nc
+use vegtype_5min.nc
+show grid vegtype[d=2]
+show grid wsoi_lay[d=1]
+define grid/X=GJR1/Y=GJR1/Z=GOL1/L=GOL1 veg_grid
+let wsoi =  wsoi_lay[d=1,G=veg_grid]
+set variable/title=&quot;Soil Moisture&quot; wsoi
+set region/X=-179.96:179.96/Y=-89.958:89.958N/Z=0.1:4/T=6941:7275
+save/file=wsoi.nc wsoi
+
+At that point I get:
+**ERROR: insufficient memory: 18662400 words were requested.
+*** NOTE: You can use SET MEMORY/SIZE=xxx to increase memory.
+</pre><tt>*** NOTE: The &quot;Memory use&quot; section of the FERRET Users Guide has  
+</tt><tt>further tips.
+</tt><pre style="margin: 0em;">
+
+So I:
+set memory/size=20000000
+
+And I get:
+</pre><tt>*** NOTE: internal overflow expressing =20000000 Mwords as words.  
+</tt><tt>Restoring previous memory size.
+</tt><pre style="margin: 0em;">
+Cached data cleared from memory
+
+</pre><tt>If I try to set memory/size=1000000000 FERRET says it has done it,  
+</tt><tt>but then I run out of memory again if I try to write out:
+</tt><pre style="margin: 0em;">
+**ERROR: insufficient memory: 671846400 words were requested.
+*** NOTE: You can use SET MEMORY/SIZE=xxx to increase memory.
+</pre><tt>*** NOTE: The &quot;Memory use&quot; section of the FERRET Users Guide has  
+</tt><tt>further tips
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Any thoughts on what is going on or how I may be able to do this?   
+</tt><tt>Thank you in advance for the assistance.
+</tt><pre style="margin: 0em;">
+
+Best,
+
+Jonathan
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00197" href="msg00197.html">[ferret_users] Memory question</a></strong>
+<ul><li><em>From:</em> Jonathan Winter</li></ul></li>
+<li><strong><a name="00201" href="msg00201.html">Re: [ferret_users] Memory question</a></strong>
+<ul><li><em>From:</em> Paul Young</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00201.html">Re: [ferret_users] Memory question</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00205.html">[ferret_users] confidence intervals</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00201.html">Thread Prev</a>][<a href="msg00205.html">Thread Next</a>][<A HREF="threads.html#00202">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] plotting and interpolating data given on curvilinear grids -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Fri, 18 Feb 2011 08:42:29 &#45;0800 -->
+<!--X-Message-Id: 4D5EA165.6050501@io&#45;warnemuende.de -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 4D558413.7080709@noaa.gov -->
+<!--X-Reference: 4D592AE2.4070100@io&#45;warnemuende.de -->
+<!--X-Reference: 4D596F7A.2070609@noaa.gov -->
+<!--X-Derived: giflpZmCF091H.gif -->
+<!--X-Derived: gif5HxGZHDcZ2.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] plotting and interpolating data given on curvilinear grids</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00113.html">Thread Prev</a>][<a href="msg00120.html">Thread Next</a>][<A HREF="threads.html#00119">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] plotting and interpolating data given on curvilinear grids</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] plotting and interpolating data given on curvilinear grids</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Feb 2011 17:42:13 +0100</li>
+<li>In-reply-to: &lt;<a href="mailto:4D596F7A.2070609@DOMAIN.HIDDEN">4D596F7A.2070609@xxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:4D558413.7080709@DOMAIN.HIDDEN">4D558413.7080709@xxxxxxxx</a>&gt; &lt;<a href="mailto:4D592AE2.4070100@DOMAIN.HIDDEN">4D592AE2.4070100@xxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4D596F7A.2070609@DOMAIN.HIDDEN">4D596F7A.2070609@xxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.9.1.11) Gecko/20100701 SeaMonkey/2.0.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ferreters,
+
+I am trying to use ASCAT data downloaded from
+
+<a  rel="nofollow" href="ftp://podaac.jpl.nasa.gov/pub/ocean_wind/ascat/preview/L2/12km/">ftp://podaac.jpl.nasa.gov/pub/ocean_wind/ascat/preview/L2/12km/</a>
+
+</pre><tt>The files are netcdf files in curvilinear form, lat, lon and data are 
+</tt><tt>defined on a common abstract (x,y) grid.
+</tt><pre style="margin: 0em;">
+It does not have a geophysical meaning.
+
+Ferret should be able to deal with such data. Indeed
+
+use ascat_20100111_005400_metopa_16755_eps_o_125_1018_ovw.l2.nc
+shade/d=1 WIND_SPEED, lon,lat; frame /file=shade.gif
+
+works and gives figure shade.gif.It does not look really bad.
+
+</pre><tt>Now I want to put the data on a regular grid in geographic coordinates. 
+</tt><tt>The GFDL routine curv_to_rect_map
+</tt><pre style="margin: 0em;">
+should be fine.
+yes? define axis/x=0:360:1/modulo/units=degrees xax
+yes? def axis/y=-85:85:1/units=degrees yax
+yes? let lonlatout = y[gy=yax] + x[gx=xax]
+yes? let lonin = lon[d=1]
+yes? let latin = lat[d=1]
+yes? let map = curv_to_rect_map ( lonin,latin,lonlatout,1)
+yes? save/clobber/file=curv_map.nc  map
+(1 degree resolution)
+
+After some coffee:
+
+yes? cancel var/all
+yes? use curv_map.nc
+yes? let wo=curv_to_rect(wind_SPEED[d=1], map[d=2])
+yes? shade wo; frame /file=curv_to_rect.gif
+
+</pre><tt>Both figures are in the attachment. The results have something to do 
+</tt><tt>with each other but they are also pretty different.
+</tt><pre style="margin: 0em;">
+
+So my question:
+</pre><tt>I do not really believe in the figure shade.gif. The reason is, that I 
+</tt><tt>may plot (lon,lat) pairs into
+</tt><tt>the figure (plot/vs/ov lon,lat. In shade.gif there remain broad bands of 
+</tt><tt>coloured areas, in curv_to_rect.gif most data are covered by the symbols.
+</tt><tt>So I guess, that the shade command implies some inappropriate 
+</tt><tt>interpolation.
+</tt><tt>Does anyone have experience with plotting and processing such curviliear 
+</tt><tt>data?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>It is great to have the interpolation tool curv_to_rect. But is there a 
+</tt><tt>chance to optimize the code
+</tt><tt>for a speed up of the curv_to_rect_map routine? I would like to process 
+</tt><tt>years of data on a finer grid and it is very slow with 1 degree resolution.
+</tt><pre style="margin: 0em;">
+Unfortunately the weights are changing for every file.
+
+Is there another and faster way to do this with ferret?
+
+Greetings,
+Martin Schmidt
+
+
+</pre><p><strong>Attachment:
+<a href="giflpZmCF091H.gif" ><tt>curv_to_rect.gif</tt></a></strong><br>
+<em>Description:</em> GIF image</p>
+<p><strong>Attachment:
+<a href="gif5HxGZHDcZ2.gif" ><tt>shade.gif</tt></a></strong><br>
+<em>Description:</em> GIF image</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00120" href="msg00120.html">Re: [ferret_users] plotting and interpolating data given on curvilinear grids</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00096" href="msg00096.html">[ferret_users] Announcing Ferret v6.6.7, a bug-fix release</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00097" href="msg00097.html">Re: [ferret_users] Announcing Ferret v6.6.7, a bug-fix release</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+<li><strong><a name="00098" href="msg00098.html">Re: [ferret_users] Announcing Ferret v6.6.7, a bug-fix release</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00113.html">Re: [ferret_users] Announcing Ferret v6.6.7, a bug-fix release</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00120.html">Re: [ferret_users] plotting and interpolating data given on curvilinear grids</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00113.html">Thread Prev</a>][<a href="msg00120.html">Thread Next</a>][<A HREF="threads.html#00119">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

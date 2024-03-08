@@ -1,0 +1,226 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Interpolation 2D issue -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Wed, 9 Mar 2011 07:16:20 &#45;0800 -->
+<!--X-Message-Id: 4D7799B2.1080607@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: AANLkTikhKS6nWJjTF9_JP4ssAbGnTwMpnfJUfmxF+igF@mail.gmail.com -->
+<!--X-Reference: 4D772AA8.2060906@io&#45;warnemuende.de -->
+<!--X-Reference: AANLkTikNM_U1XrgAj2V+6KUa_VDrztAg2cHX0YZ8aHrr@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Interpolation 2D issue</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00155.html">Thread Prev</a>][<a href="msg00160.html">Thread Next</a>][<A HREF="threads.html#00156">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Interpolation 2D issue</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Szymon Roziewski &lt;<a href="mailto:szymon.roziewski@DOMAIN.HIDDEN">szymon.roziewski@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Interpolation 2D issue</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 09 Mar 2011 16:16:02 +0100</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:AANLkTikNM_U1XrgAj2V%2B6KUa_VDrztAg2cHX0YZ8aHrr@DOMAIN.HIDDEN">AANLkTikNM_U1XrgAj2V+6KUa_VDrztAg2cHX0YZ8aHrr@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:AANLkTikhKS6nWJjTF9_JP4ssAbGnTwMpnfJUfmxF%2BigF@DOMAIN.HIDDEN">AANLkTikhKS6nWJjTF9_JP4ssAbGnTwMpnfJUfmxF+igF@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4D772AA8.2060906@DOMAIN.HIDDEN">4D772AA8.2060906@xxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:AANLkTikNM_U1XrgAj2V%2B6KUa_VDrztAg2cHX0YZ8aHrr@DOMAIN.HIDDEN">AANLkTikNM_U1XrgAj2V+6KUa_VDrztAg2cHX0YZ8aHrr@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.9.1.11) Gecko/20100701 SeaMonkey/2.0.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+</pre><tt>you are right, the documentation did not find its way into the manual. 
+</tt><tt>It is easy anyway. The mask needs to be
+</tt><pre style="margin: 0em;">
+1 where filling is allowed and zero otherwise. Please try the following
+
+yes? use coads_climatology
+yes? let mask=missing(sst/sst,1)
+yes? shade/l=1 mask
+yes? shade/l=1 fill_xy(sst,mask,5)
+Filling is allowed
+
+!Now missings at land
+yes? let mask=sst/sst
+yes? shade/l=1 mask
+yes? shade/l=1 fill_xy(sst,mask,5)
+Nothing is filled.
+
+And now:
+yes? let mask= if y[gy=sst] gt 0 then missing(sst/sst,1) else sst/sst
+yes? shade/l=1 fill_xy(sst,mask,5)
+
+Now filling happens in the northern hemisphere.
+
+Hope this helps,
+Martin
+
+Szymon Roziewski wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Martin / Ferreters,
+</pre><tt>I have problem with using fill_xy function. I saw some examples and 
+</tt><tt>read sth in the ferret archives but I still stuck.
+</tt><pre style="margin: 0em;">
+I try to explain my issue.
+</pre><tt>This is reading an ice field and putting into a lndseaf. I also quote 
+</tt><tt>the grid definition.
+</tt><pre style="margin: 0em;">
+
+DEFINE AXIS/X=-5.666666667:5.25:0.083333333/unit=degree xlon
+DEFINE AXIS/Y=-2.0:10.0:0.083333333/unit=degree ylat
+DEFINE GRID/x=xlon/y=ylat grid_xlon_xlat
+</pre><tt>file/skip=1/format=(80f1.0/52f1.0)/columns=132/grid=grid_xlon_xlat/var=lndseaf 
+</tt><tt>ICE.DAT
+</tt><pre style="margin: 0em;">
+
+Then I interpolate the lndseaf onto a fine grid.
+
+DEFINE AXIS/X=-5.666666667:5.25:0.010416667/unit=degree xfine
+DEFINE AXIS/Y=-2.0:10.0:0.010416667/unit=degree yfine !1/8
+DEFINE GRID/x=xfine/y=yfine grid_xfine_yfine
+let ice_regridded lndseaf[gxy=grid_xfine_yfine]
+
+What I did next was make the mask.
+
+let mask = ice_regridded/ice_regridded
+
+And I used the mask with fill_xy as the following
+
+let ice_ext = fill_xy(ice_regridded,mask,5)
+
+</pre><tt>But It didn't change anything. I tried out using different values of 
+</tt><tt>third argument of fill_xy. However, I didn't improve at all.
+</tt><pre style="margin: 0em;">
+So, I think either I was using fill_xy badly or I misunderstood something.
+
+I also tried out FLN function as follows
+
+let ext = ice_regridded[x=@FLN:50,y=@FLN:50]
+
+But this resulted with no changes to the ice_regridded as well.
+I attach ICE.DAT to make it more real.
+
+Kind regards,
+Szymon Roziewski
+
+
+
+</pre><tt>2011/3/9 Martin Schmidt &lt;martin.schmidt@xxxxxxxxxxxxxxxxx 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:martin.schmidt@xxxxxxxxxxxxxxxxx">mailto:martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;&gt;
+</tt><pre style="margin: 0em;">
+
+    Dear Szymon,
+
+    you may use fill_xy(data, mask, 2) before you filter data. This
+    extrapolates the data smoothly into land by two points and the
+    filter @SBX and @SHN
+    can do something reasonable near land too. Applying your land mask
+    later removes remaining extrapolated points.
+
+    Greetings,
+    Martin
+
+    Szymon Roziewski wrote:
+
+        Dear Ferreters,
+
+        I have an ice field that is a matrix filled by 0 or 1. Because
+        of weak resolution I need it to be interpolated on a finer grid.
+        I tried out two approaches.
+        The first, I interpolated with using @SBX and @SHN functions.
+        Basically, I got neat result except to the boundary where I
+        got a lack of data. Because this functions don't have data to
+        interpolate and ending up with 0 value.
+        As the second I used scat2gridgauss_xy function which gave me
+        smoother result but near the boundary I got the ice that
+        should not to be. I think that this function is do smooth the
+        data sometimes to much.
+
+        Have any of you had something similar with it?
+        Maybe there are some good ferret functions to interpolate ice
+        field which is 0 or 1.
+
+        I attach two graphics for better explanation.
+
+        Kind regards,
+        Szymon Roziewski
+
+
+
+
+
+--
+Z wyrazami szacunku,
+Szymon Roziewski
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00149" href="msg00149.html">[ferret_users] Interpolation 2D issue</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+<li><strong><a name="00152" href="msg00152.html">Re: [ferret_users] Interpolation 2D issue</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+<li><strong><a name="00155" href="msg00155.html">Re: [ferret_users] Interpolation 2D issue</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00155.html">Re: [ferret_users] Interpolation 2D issue</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00160.html">Re: [ferret_users] Interpolation 2D issue</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00155.html">Thread Prev</a>][<a href="msg00160.html">Thread Next</a>][<A HREF="threads.html#00156">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

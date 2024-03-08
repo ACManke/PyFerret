@@ -1,0 +1,190 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] a hint for reading integer data in fortran format -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 29 Dec 2009 11:31:42 &#45;0800 -->
+<!--X-Message-Id: 4B3A591F.9020303@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 826C4655&#45;A6C4&#45;4864&#45;B847&#45;8399269730F8@noaa.gov -->
+<!--X-Reference: 20091221.105505.17985827.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] a hint for reading integer data in fortran format</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00834.html">Thread Prev</a>][<a href="msg00835.html">Thread Next</a>][<A HREF="threads.html#00843">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] a hint for reading integer data in fortran format</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] a hint for reading integer data in fortran format</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 29 Dec 2009 11:31:43 -0800</li>
+<li>Cc: ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:20091221.105505.17985827.furue@DOMAIN.HIDDEN">20091221.105505.17985827.furue@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:826C4655-A6C4-4864-B847-8399269730F8@DOMAIN.HIDDEN">826C4655-A6C4-4864-B847-8399269730F8@xxxxxxxx</a>&gt; &lt;<a href="mailto:20091221.105505.17985827.furue@DOMAIN.HIDDEN">20091221.105505.17985827.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi,<br>
+Thanks for the note, Billy. We'll add to the documentation.<br>
+<br>
+&nbsp;This particular file could also be read using the "delimited" option,
+which lets you set data types of "date" and <br>
+(<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/SET#_VPINDEXENTRY_1616">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/SET#_VPINDEXENTRY_1616</a>)<br>
+<br>
+Something along the lines of <br>
+<br>
+set data/form=delim/delim="
+"/type="numeric,date,numeric,..."/var="id,date,time..."
+&nbsp; file.dat<br>
+&nbsp; &nbsp;
+<br>
+<br>
+<br>
+Ryo, you are correct.&nbsp; Ferret does nothing but pass the format
+statement on to Fortran to be used by in reading the data.&nbsp; An integer
+format such as I5 don't trigger a Ferret error, but because the format
+is just used as given, the field is read incorrectly.&nbsp; So if the file
+contains:<br>
+<br>
+<tt>&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp; 3.00<br>
+&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp; 5.00<br>
+&nbsp;&nbsp;&nbsp; 3&nbsp;&nbsp; 7.00<br>
+&nbsp;&nbsp;&nbsp; 4&nbsp;&nbsp; 8.00<br>
+&nbsp;&nbsp;&nbsp; 5&nbsp;&nbsp; 9.00</tt><br>
+<br>
+and if an I format is used, the file data is read into the floating
+point Ferret variable incorrectly:<br>
+<blockquote><tt>yes? file/var=v1,v2/format=(i5,f8.2) a.dat<br>
+yes? list v1,v2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DATA SET: ./a.dat<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X: 0.5 to 15.5<br>
+&nbsp;Column&nbsp; 1: V1<br>
+&nbsp;Column&nbsp; 2: V2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V1&nbsp;&nbsp;&nbsp; V2<br>
+1&nbsp;&nbsp;&nbsp; /&nbsp; 1:&nbsp; 1.401E-45&nbsp; 3.000<br>
+2&nbsp;&nbsp;&nbsp; /&nbsp; 2:&nbsp; 2.803E-45&nbsp; 5.000<br>
+3&nbsp;&nbsp;&nbsp; /&nbsp; 3:&nbsp; 4.204E-45&nbsp; 7.000<br>
+4&nbsp;&nbsp;&nbsp; /&nbsp; 4:&nbsp; 5.605E-45&nbsp; 8.000<br>
+5&nbsp;&nbsp;&nbsp; /&nbsp; 5:&nbsp; 7.006E-45&nbsp; 9.000</tt><br>
+</blockquote>
+But with an F5.0 format it's ok<br>
+<blockquote><tt>yes? file/var=v1,v2/format=(f8.0,f8.2) a.dat<br>
+yes? list v1,v2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DATA SET: ./a.dat<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X: 0.5 to 5.5<br>
+&nbsp;Column&nbsp; 1: V1<br>
+&nbsp;Column&nbsp; 2: V2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; V1&nbsp;&nbsp;&nbsp; V2<br>
+1&nbsp;&nbsp;&nbsp; /&nbsp; 1:&nbsp;&nbsp; 1.00&nbsp; 3.000<br>
+2&nbsp;&nbsp;&nbsp; /&nbsp; 2:&nbsp;&nbsp; 2.00&nbsp; 5.000<br>
+3&nbsp;&nbsp;&nbsp; /&nbsp; 3:&nbsp;&nbsp; 3.00&nbsp; 7.000<br>
+4&nbsp;&nbsp;&nbsp; /&nbsp; 4:&nbsp;&nbsp; 4.00&nbsp; 8.000<br>
+5&nbsp;&nbsp;&nbsp; /&nbsp; 5:&nbsp;&nbsp; 5.00&nbsp; 9.000</tt><br>
+</blockquote>
+<br>
+<br>
+Ryo Furue wrote:
+<blockquote cite=""
+ type="cite">
+  <pre wrap="">Hi Billy,
+
+| It is not obvious how to read ASCII integer data into Ferret using
+| FILE/FORMAT, since the only permitted formats are floating point (as
+| far as I know). However, Ferret is willing to be fooled into reading
+| integer data anyway, simply by referring to an value of N places
+| (e.g. fortran format i8) as a floating point value with the same
+| number of places (e.g. f8.0).
+
+It seems that that is what the Fortran standard says.
+(Since it's very hard to decipher the standardspeak of the standard
+ document itself, let me cite the trusty Metcalf and Reid (1999).)
+On input, the Fortran language is rather dangerously permissible.
+With "F8.2", for example, an input string "314" is read as 3.14 .
+That is, the fraction part ".2" in "F8.2" is honored even without
+a decimal point in the input.  Likewise, the same string is read
+as 314.0 with "F8.0".
+
+In short, you can read an integer input with "F8.0" and the like.
+(Of course, the destination must be a floating point variable.)
+I guess Ferret can do it, too, because it's implemented in Fortran
+(correct?).
+
+Regards,
+Ryo
+--------
+Metcalf &amp; Reid. 1999. Fortran 90/95 Explained, 2nd Ed.
+  Oxford University Press.
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00833" href="msg00833.html">[ferret_users] a hint for reading integer data in fortran format</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+<li><strong><a name="00834" href="msg00834.html">Re: [ferret_users] a hint for reading integer data in fortran format</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00834.html">Re: [ferret_users] a hint for reading integer data in fortran format</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00835.html">[ferret_users] symbols shown as a legend</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00834.html">Thread Prev</a>][<a href="msg00835.html">Thread Next</a>][<A HREF="threads.html#00843">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

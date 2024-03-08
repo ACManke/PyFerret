@@ -1,0 +1,183 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] ffta of a filtered signal in ferret -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 8 Apr 2010 09:51:05 &#45;0700 -->
+<!--X-Message-Id: 4BBE0978.4020203@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: k2qa903a9721004080539u4b3ada1du69fe09e6951a6218@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] ffta of a filtered signal in ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00245.html">Thread Prev</a>][<a href="msg00247.html">Thread Next</a>][<A HREF="threads.html#00246">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ffta of a filtered signal in ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Sudheer Joseph &lt;<a href="mailto:sjo.india@DOMAIN.HIDDEN">sjo.india@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ffta of a filtered signal in ferret</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 08 Apr 2010 09:51:04 -0700</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:k2qa903a9721004080539u4b3ada1du69fe09e6951a6218@DOMAIN.HIDDEN">k2qa903a9721004080539u4b3ada1du69fe09e6951a6218@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:k2qa903a9721004080539u4b3ada1du69fe09e6951a6218@DOMAIN.HIDDEN">k2qa903a9721004080539u4b3ada1du69fe09e6951a6218@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.24 (Windows/20100228)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Sudheer ,<br>
+You're right that the context [L=6:127] is applied to the filtered data
+when you specify it in the FFTA call.&nbsp; Writing out the intermediate
+result is always one solution, and can often be a quick and easy way to
+get around this kind of thing.<br>
+<br>
+Another way would be to define a new time axis with just the points
+that are valid in the filtered variable<br>
+<blockquote>let nogap = compressl(nts)<br>
+  <br>
+let L1 = t[gt=nts,L=6]<br>
+let L2 =&nbsp; t[gt=nts,L=127]<br>
+  <br>
+define
+axis/t=`L1`:`L2`/units="`nts,return=tunits`"/npoints=`(127-6+1)`/t0="`nts,return=t0`"
+tshort<br>
+&nbsp;!-&gt; define
+axis/t=21250.5:109641/units="hour"/npoints=122/t0="14-JAN-1980
+14:00:00" tshort<br>
+  <br>
+plot ffta(nts_for_ffta)<br>
+</blockquote>
+To make a really general script, you could use transformations to
+define the first and last index to use, instead of 6 and 127, so that
+it'd work for other data.<br>
+<br>
+Sudheer Joseph wrote:
+<blockquote
+ cite=""
+ type="cite">Dear Users,<br>
+&nbsp;I wanted to do the below steps in ferret but as the ffta gives out an
+error though I specify only portion of the time axis where there is
+data after the removal during filtration, May this be due to the fact
+that the computation for filter and ffta are taking place
+simultaniously and there fore the end points available to ffta do not
+have datat there?<br>
+  <br>
+is there a way to do this computation other than listing the results to
+a file and reading that again to a new time axis?<br>
+  <br>
+use monthly_navy_winds<br>
+let aa = uwnd[i=50,j=20]<br>
+let az = aa - aa[t=@ave]<br>
+plot az<br>
+plot/over lanczos(az, 0.05, 0.1, 11)<br>
+plot/over lanczos(az, 0.1, 0.2, 11)<br>
+let nts=lanczos(az, 0.1, 0.2, 11)<br>
+% both ends of the timeseries are lost due to filter.<br>
+plot ffta(nts[l=6:127])<br>
+  <br>
+Bailing out of external function "ffta":<br>
+&nbsp;&nbsp;&nbsp; FFTA encountered missing data at (i,j,k,l)&nbsp;&nbsp; 50&nbsp;&nbsp; 20 -999&nbsp;&nbsp;&nbsp; 1<br>
+&nbsp;**ERROR: error in external function<br>
+plot ffta(nts[l=6:127])<br>
+  <br clear="all">
+  <br>
+-- <br>
+with best regards<br>
+  <br>
+Sudheer <br>
+  <br>
+**********************************************************************************<br>
+Sudheer Joseph &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>
+Scientist &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+Indian National Centre for Ocean Information Services (INCOIS) &nbsp; &nbsp; <br>
+Ocean Valley, Post Box No# 21,<br>
+IDA Jeedimetla P.O. &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <br>
+Hyderabad, Ranga Reddy District - 500 055<br>
+Andhra Pradesh, India.<br>
+TEl:+91-40-23044600(R),Tel:+91-9440832534(Mobile)<br>
+Tel:+91-40-23886047(O),Fax:+91-40-23892910(O)<br>
+  <a rel="nofollow" moz-do-not-send="true" href="mailto:E-mail%3Asjo@xxxxxxxxxxxxxx">E-mail:sjo@xxxxxxxxxxxxxx</a>;
+  <a rel="nofollow" moz-do-not-send="true" href="mailto:sudheer.joseph@xxxxxxxxx">sudheer.joseph@xxxxxxxxx</a>;
+&nbsp;<a rel="nofollow" moz-do-not-send="true" href="mailto:sjo@xxxxxxxxxxxxx">sjo@xxxxxxxxxxxxx</a>.<br>
+Web- <a rel="nofollow" moz-do-not-send="true" href="http://oppamthadathil.tripod.com">http://oppamthadathil.tripod.com</a><br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; --------------* ---------------<br>
+"The ultimate measure of a man is<br>
+not where he stands in moments of<br>
+comfort and convenience, but where<br>
+he stands at times of challenge and<br>
+controversy."<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Martin Luther King, Jr.<br>
+"What we have done for ourselves alone dies with us. <br>
+What we have done for others and the world remains and is immortal." <br>
+- Albert Pines<br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00245" href="msg00245.html">[ferret_users] ffta of a filtered signal in ferret</a></strong>
+<ul><li><em>From:</em> Sudheer Joseph</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00245.html">[ferret_users] ffta of a filtered signal in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00247.html">[ferret_users] Vector EOF</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00245.html">Thread Prev</a>][<a href="msg00247.html">Thread Next</a>][<A HREF="threads.html#00246">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

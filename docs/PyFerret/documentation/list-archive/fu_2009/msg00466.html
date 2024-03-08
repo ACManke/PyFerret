@@ -1,0 +1,218 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Question about Reading ASCII Files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 5 Aug 2009 09:42:24 &#45;0700 -->
+<!--X-Message-Id: 4A79B66F.1040905@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: a0350d590908041451o571ee3b7td3ec7ca3dd93b9eb@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Question about Reading ASCII Files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00464.html">Thread Prev</a>][<a href="msg00470.html">Thread Next</a>][<A HREF="threads.html#00466">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Question about Reading ASCII Files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ag &lt;<a href="mailto:agdc2005@DOMAIN.HIDDEN">agdc2005@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Question about Reading ASCII Files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 05 Aug 2009 09:42:23 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:a0350d590908041451o571ee3b7td3ec7ca3dd93b9eb@DOMAIN.HIDDEN">a0350d590908041451o571ee3b7td3ec7ca3dd93b9eb@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:a0350d590908041451o571ee3b7td3ec7ca3dd93b9eb@DOMAIN.HIDDEN">a0350d590908041451o571ee3b7td3ec7ca3dd93b9eb@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.22 (Windows/20090605)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ag,<br>
+To just give a few more details to what Peter said -- you would do this
+in two separate read statements.&nbsp; The first would give you the number
+of records to be read and the second would read in the variables
+(although if it's always just one batch of actual data, Ferret can just
+read to the end of the file.)<br>
+<br>
+&nbsp;&nbsp; FILE/SKIP=2/VAR=nn&nbsp; mydat.dat<br>
+<br>
+&nbsp; ! We will cancel the dataset to read the next block, so save the
+value just read:<br>
+&nbsp; LET npts = `nn`&nbsp; <br>
+<br>
+&nbsp; ! Now read the variables<br>
+&nbsp; CANCEL DATA mydat.dat<br>
+&nbsp;
+FILE/FORM=delim/SKIP=4/DELIM="\b"/TYPE="text,date,time,text,numeric"/VAR="fname,ddate,ttime,dlab,val"
+mydat.dat<br>
+<br>
+Notice I didn't use npts.&nbsp; If there were several blocks of data you
+would DEFINE AXIS&nbsp; and DEFINE&nbsp; GRID, and use FILE/GRID=&nbsp; to read a
+specific number of points from each block.<br>
+<br>
+If you need to create a time axis from the date and time variables,
+there is a similar example in this FAQ - <b><a rel="nofollow"
+ href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/axes_and_data/time_axis_from_variables.html">How
+can I create a time axis from variables containing year, month, day,
+etc?</a></b><br>
+&nbsp;<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/axes_and_data/time_axis_from_variables.html">http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/axes_and_data/time_axis_from_variables.html</a><br>
+<br>
+Although your case here is simpler than what's in the FAQ -- you
+already have ddate which is in units days from 1-jan-1900, and ttime
+which is in units of hours and fraction of hours.<br>
+<br>
+Ansley<br>
+<br>
+ag wrote:
+<blockquote
+ cite=""
+ type="cite">Dear Ferret Users:<br>
+  <br>
+Am looking for some suggestions on how to read an ASCII file (example
+below) using Ferret. I would like to be able to skip the first two
+records and then read the third as an integer (69 in this case), skip
+the fourth record and&nbsp; then read the "integer" number of records of
+input with each record having 5 columns.<br>
+  <br>
+The reason I need to do this is sometimes, there are more a few files
+of the format below concatenated and the number of records of each file
+is specified always as below in separate blocks.<br>
+  <br>
+Thanks in Advance<br>
+agdc2005<br>
+  <br>
+--------------------File---------------<br>
+GISS<br>
+Image_Optical_Depth_Land_And_Ocean/MOD04_L2<br>
+69<br>
+filename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; begindatetime&nbsp;&nbsp; location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mean<br>
+MOD04_L2.A2007001.1500.005.2007003093108.hdf&nbsp;&nbsp;&nbsp; 2007-01-01 15:00:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007001.1635.005.2007003093604.hdf&nbsp;&nbsp;&nbsp; 2007-01-01 16:35:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007002.1540.005.2007004182338.hdf&nbsp;&nbsp;&nbsp; 2007-01-02 15:40:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.081<br>
+MOD04_L2.A2007003.1625.005.2007005151340.hdf&nbsp;&nbsp;&nbsp; 2007-01-03 16:25:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.027<br>
+MOD04_L2.A2007004.1530.005.2007007055054.hdf&nbsp;&nbsp;&nbsp; 2007-01-04 15:30:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007005.1615.005.2007008173325.hdf&nbsp;&nbsp;&nbsp; 2007-01-05 16:15:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007006.1520.005.2007010020024.hdf&nbsp;&nbsp;&nbsp; 2007-01-06 15:20:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007007.1600.005.2007012202039.hdf&nbsp;&nbsp;&nbsp; 2007-01-07 16:00:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.167<br>
+MOD04_L2.A2007008.1505.005.2007012223915.hdf&nbsp;&nbsp;&nbsp; 2007-01-08 15:05:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007008.1645.005.2007012225717.hdf&nbsp;&nbsp;&nbsp; 2007-01-08 16:45:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007009.1550.005.2007013005323.hdf&nbsp;&nbsp;&nbsp; 2007-01-09 15:50:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007010.1630.005.2007013053221.hdf&nbsp;&nbsp;&nbsp; 2007-01-10 16:30:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.039<br>
+MOD04_L2.A2007011.1535.005.2007014063943.hdf&nbsp;&nbsp;&nbsp; 2007-01-11 15:35:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.113<br>
+MOD04_L2.A2007012.1620.005.2007014045513.hdf&nbsp;&nbsp;&nbsp; 2007-01-12 16:20:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007013.1525.005.2007015044928.hdf&nbsp;&nbsp;&nbsp; 2007-01-13 15:25:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007014.1605.005.2007017161152.hdf&nbsp;&nbsp;&nbsp; 2007-01-14 16:05:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007015.1510.005.2007017183912.hdf&nbsp;&nbsp;&nbsp; 2007-01-15 15:10:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007016.1555.005.2007018180305.hdf&nbsp;&nbsp;&nbsp; 2007-01-16 15:55:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007017.1500.005.2007019123555.hdf&nbsp;&nbsp;&nbsp; 2007-01-17 15:00:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.000<br>
+MOD04_L2.A2007017.1635.005.2007019125327.hdf&nbsp;&nbsp;&nbsp; 2007-01-17 16:35:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.028<br>
+MOD04_L2.A2007018.1540.005.2007020111006.hdf&nbsp;&nbsp;&nbsp; 2007-01-18 15:40:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.126<br>
+MOD04_L2.A2007018.1545.005.2007020105940.hdf&nbsp;&nbsp;&nbsp; 2007-01-18 15:45:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007019.1625.005.2007023060629.hdf&nbsp;&nbsp;&nbsp; 2007-01-19 16:25:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007020.1530.005.2007023002013.hdf&nbsp;&nbsp;&nbsp; 2007-01-20 15:30:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007021.1615.005.2007023181352.hdf&nbsp;&nbsp;&nbsp; 2007-01-21 16:15:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007022.1520.005.2007024120208.hdf&nbsp;&nbsp;&nbsp; 2007-01-22 15:20:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS<br>
+MOD04_L2.A2007023.1600.005.2007024194356.hdf&nbsp;&nbsp;&nbsp; 2007-01-23 16:00:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.136<br>
+MOD04_L2.A2007024.1505.005.2007027011552.hdf&nbsp;&nbsp;&nbsp; 2007-01-24 15:05:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.095<br>
+MOD04_L2.A2007024.1645.005.2007027010315.hdf&nbsp;&nbsp;&nbsp; 2007-01-24 16:45:00&nbsp;&nbsp;&nbsp;&nbsp;
+GISS&nbsp;&nbsp;&nbsp; 0.086<br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00470" href="msg00470.html">Re: [ferret_users] Question about Reading ASCII Files</a></strong>
+<ul><li><em>From:</em> ag</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00462" href="msg00462.html">[ferret_users] Question about Reading ASCII Files</a></strong>
+<ul><li><em>From:</em> ag</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00464.html">Re: [ferret_users] Question about Reading ASCII Files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00470.html">Re: [ferret_users] Question about Reading ASCII Files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00464.html">Thread Prev</a>][<a href="msg00470.html">Thread Next</a>][<A HREF="threads.html#00466">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

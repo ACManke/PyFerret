@@ -1,0 +1,229 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] ppl aline or plot/nouser -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 19 Aug 2009 10:05:24 &#45;0700 -->
+<!--X-Message-Id: 4A8C30D4.5090905@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4A898FA0.7020205@cea.fr -->
+<!--X-Reference: 4A8AF897.1000504@noaa.gov -->
+<!--X-Reference: 4A8BFDBD.2020004@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] ppl aline or plot/nouser</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00515.html">Thread Prev</a>][<a href="msg00520.html">Thread Next</a>][<A HREF="threads.html#00519">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ppl aline or plot/nouser</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ppl aline or plot/nouser</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 19 Aug 2009 10:05:24 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4A8BFDBD.2020004@DOMAIN.HIDDEN">4A8BFDBD.2020004@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4A898FA0.7020205@DOMAIN.HIDDEN">4A898FA0.7020205@xxxxxx</a>&gt; &lt;<a href="mailto:4A8AF897.1000504@DOMAIN.HIDDEN">4A8AF897.1000504@xxxxxxxx</a>&gt; &lt;<a href="mailto:4A8BFDBD.2020004@DOMAIN.HIDDEN">4A8BFDBD.2020004@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.22 (Windows/20090605)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Patrick,<br>
+Yes, I understand this is a frustrating thing. Would putting the legend
+in viewport be another solution to your question? You could then draw
+lines in xy coordinates.<br>
+<br>
+For drawing lines on plots, I have two suggestions.&nbsp; The first is not
+applicable to what you're doing, but it's worth mentioning because it's
+one reason people want to put a line on a plot.<br>
+<br>
+Often one wants a line across the plot at zero.&nbsp; For that, you can make
+the setting PPL CROSS:<tt><br>
+</tt>
+<blockquote><tt>yes? use monthly_navy_winds</tt><br>
+  <tt>yes? ppl cross 1</tt><br>
+  <tt>yes? plot/x=180/y=0 uwnd<br>
+yes? ppl cross 0&nbsp; ! this turns off the line<br>
+  </tt></blockquote>
+If you want to draw lines between the corners of the plot, you can get
+the plot coordinates that are used, by looking at the value of some of
+the symbols that are automatically defined when you make a plot.&nbsp; Try
+this example, which you could generalize to drawing other lines by
+computing values based on the ones here.<br>
+<blockquote><tt><br>
+yes? ! Make some data with different time ranges<br>
+  <br>
+yes? use monthly_navy_winds<br>
+yes? save/file=a1.nc/clobber uwnd[L=1:50]<br>
+yes? save/file=a2.nc/clobber uwnd[L=60:100]<br>
+  <br>
+yes? can data/all; can var/all<br>
+yes? use a1<br>
+yes? use a2<br>
+yes? plot/x=180/y=0 uwnd[d=1], uwnd[d=2]<br>
+  <br>
+yes? show symbol *axis*<br>
+XAXIS_MIN = "17598.000"<br>
+XAXIS_MAX = "89917.50"<br>
+YAXIS_MIN = "-7.000000"<br>
+YAXIS_MAX = "4.000000"</tt><br>
+</blockquote>
+These symbols are the minimum and maximum values in the units of the
+plot axes, for the horizontal and vertical axes. The names are perhaps
+a bit confusing, since the horizontal axis is really a time
+axis.Continuing the script:<br>
+<blockquote><tt>&nbsp;&nbsp; ! Draw lines from corner to corner<br>
+yes? plot/nolab/vs/over/line \<br>
+&nbsp; {($xaxis_min),($xaxis_max)}, {($yaxis_min),($yaxis_max)}<br>
+  <br>
+yes? plot/nolab/vs/over/line \<br>
+&nbsp; {($xaxis_min),($xaxis_max)}, {($yaxis_max),($yaxis_min)}<br>
+  </tt></blockquote>
+Looking at the results of SHOW SYMBOL after making the line plot might
+suggest other ideas.<br>
+<br>
+Ansley<br>
+<br>
+Brockmann Patrick wrote:
+<blockquote cite="" type="cite">Ansley Manke
+a &eacute;crit :
+  <br>
+  <blockquote type="cite">Hi Patrick,
+    <br>
+Yes, this kind of behavior is well known. ALINE is not reliable
+particularly when used with a plot involving a time axis. Though it's
+not as simple, it will always work to use the local coordinates.&nbsp;
+Please see the notes in the documentation under the ALINE command:
+    <br>
+    <br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://porter.pmel.noaa.gov/Ferret/home/documentation/users-guide/appendix-c-ferret-specific-pplus-enhancements/ENHANCED-COMMANDS-DESCRIPTION%20#_VPID_756">http://porter.pmel.noaa.gov/Ferret/home/documentation/users-guide/appendix-c-ferret-specific-pplus-enhancements/ENHANCED-COMMANDS-DESCRIPTION%20#_VPID_756</a>
+    <br>
+    <br>
+This FAQ about putting symbols on a time-axis plot will be helpful in
+constructing the coordinates you need for putting lines on top of a
+time plot.
+    <br>
+How can I overlay symbols on a plot with a time axis?
+<a rel="nofollow" class="moz-txt-link-rfc2396E" href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/custom_plots/time_series_symbol_overlay.html">&lt;http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/custom_plots/time_series_symbol_overlay.html&gt;</a>
+    <br>
+  </blockquote>
+Hi Ansley,
+  <br>
+Thanks for your answer and redirections on documentation and the FAQ.
+  <br>
+But I already knew the FAQ answer and I have based my script on what is
+proposed there.
+  <br>
+The problem comes when you plot 2 or more variables
+  <br>
+yes? plot/nolab a, b
+  <br>
+  <br>
+a, b variables do not always share the same time axis limits.
+  <br>
+Image you have a going from 1860 to 2000 and b going from 2000 to 2100.
+  <br>
+You can plot them together with plot a,b
+  <br>
+but in this case what time axis do I have to use ?
+  <br>
+  <br>
+See use of from the FAQ
+  <br>
+let tt = T[gt=sst]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! tt is the coordinates along the T axis
+  <br>
+  <br>
+Do you have a proposition on this ?
+  <br>
+Of course I could regrid on a common time axis, but you will agree that
+it is not simple
+  <br>
+(the number of variable plot depends from a user choice).
+  <br>
+  <br>
+I think that the fact that ferret does not have the possibility to draw
+lines
+  <br>
+in an absolute coordinate is very annoying.
+  <br>
+  <br>
+My underline purpose is to propose a text_legend_put script usable
+whatever the
+  <br>
+kind of plot. See
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://forge.ipsl.jussieu.fr/cgi-bin/viewvc.cgi/fast/text_legend_put.jnl?view=markup&revision=1.1.1.27&root=ioipsl">http://forge.ipsl.jussieu.fr/cgi-bin/viewvc.cgi/fast/text_legend_put.jnl?view=markup&amp;revision=1.1.1.27&amp;root=ioipsl</a>
+  <br>
+  <br>
+Patrick
+  <br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00509" href="msg00509.html">[ferret_users] ppl aline or plot/nouser</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00515" href="msg00515.html">Re: [ferret_users] ppl aline or plot/nouser</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00515.html">Re: [ferret_users] ppl aline or plot/nouser</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00520.html">Re: [ferret_users] ppl aline or plot/nouser</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00515.html">Thread Prev</a>][<a href="msg00520.html">Thread Next</a>][<A HREF="threads.html#00519">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

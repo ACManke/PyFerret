@@ -1,0 +1,183 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] holes in data from time axis regridding -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Wed, 11 Feb 2009 11:39:25 &#45;0800 -->
+<!--X-Message-Id: 49932953.1030206@io&#45;warnemuende.de -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 47612CBB.8060201@reading.ac.uk -->
+<!--X-Reference: 20071213.080959.39699539.furue@hawaii.edu -->
+<!--X-Derived: cdfCqbpPj7Eo5.cdf -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] holes in data from time axis regridding</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00063.html">Thread Prev</a>][<a href="msg00074.html">Thread Next</a>][<A HREF="threads.html#00071">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] holes in data from time axis regridding</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] holes in data from time axis regridding</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 11 Feb 2009 20:38:59 +0100</li>
+<li>In-reply-to: &lt;<a href="mailto:20071213.080959.39699539.furue@DOMAIN.HIDDEN">20071213.080959.39699539.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:47612CBB.8060201@DOMAIN.HIDDEN">47612CBB.8060201@xxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:20071213.080959.39699539.furue@DOMAIN.HIDDEN">20071213.080959.39699539.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.7.13.1) Gecko/20070301</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi ferreters,
+
+</pre><tt>I need some help with strange ferret results. I would like to process 
+</tt><tt>some data. My output should be hourly.
+</tt><pre style="margin: 0em;">
+
+I define the new time axis and grid
+
+</pre><tt>yes? define 
+</tt><tt>axis/t=1-dec-1999:31-jan-2000:1/unit=hours/t0=1-jan-1955/cal=julian tax
+</tt><pre style="margin: 0em;">
+yes? define grid/t=tax tgrid
+
+</pre><tt>! Open the file with cloud data (a reduced version is attached) for 
+</tt><tt>interpolation onto the new time axis
+</tt><pre style="margin: 0em;">
+yes? use clouds.nc
+
+! Define a new hourly variable
+
+yes? let c=clour[gt=tgrid@lin]
+
+! list example points
+
+yes? list/x=2/y=57/prec=5 c[l=9:14]
+
+I get
+
+01-DEC-1999 08:00 / 9: 0.7163
+01-DEC-1999 09:00 / 10: 0.9058
+01-DEC-1999 10:00 / 11: 0.9979
+01-DEC-1999 11:00 / 12: 0.9987
+01-DEC-1999 12:00 / 13: 0.9996
+01-DEC-1999 13:00 / 14: 1.0000
+
+looks nice.
+But now:
+
+yes? shade c[l=13]
+
+no valid data
+
+yes? list/x=2/y=57 c[l=13]
+VARIABLE : CLOUR[GT=TGRID@LIN]
+FILENAME : clouds.nc
+LONGITUDE: 2E
+LATITUDE : 57N
+TIME : 01-DEC-1999 12:00 JULIAN
+....
+Nanu? For l=13 I hit exactly a time of the input data.
+
+yes? list/x=2/y=57/prec=5 c[l=12]
+VARIABLE : CLOUR[GT=TGRID@LIN]
+FILENAME : clouds.nc
+LONGITUDE: 2E
+LATITUDE : 57N
+TIME : 01-DEC-1999 11:00 JULIAN
+0.99873
+OK But for l=13 the result is still missing.
+
+And now:
+yes? shade c[l=12:13@ave]
+
+gives a figure.
+
+yes? list/x=2/y=57/prec=5 c[l=13]
+VARIABLE : CLOUR[GT=TGRID@LIN]
+FILENAME : clouds.nc
+LONGITUDE: 2E
+LATITUDE : 57N
+TIME : 01-DEC-1999 12:00 JULIAN
+0.99958
+
+</pre><tt>(From the cash). This is a strange finding. The final data are too large 
+</tt><tt>to be written in one step. I have to do this with a loop over l. Doing 
+</tt><tt>so I get
+</tt><pre style="margin: 0em;">
+gaps in the data set, in the way as shown above.
+
+</pre><tt>Are there any errors in my commands or is this a bug? I am using 6.1, 
+</tt><tt>but an old 5.41 for AIX shows the same behaviour.
+</tt><pre style="margin: 0em;">
+
+Regards,
+Martin Schmidt
+
+
+</pre><p><strong>Attachment:
+<a href="cdfCqbpPj7Eo5.cdf" ><tt>clouds.nc</tt></a></strong><br>
+<em>Description:</em> Cdf file</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00074" href="msg00074.html">Re: [ferret_users] holes in data from time axis regridding</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00063.html">[ferret_users] Regression in t for each month</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00074.html">Re: [ferret_users] holes in data from time axis regridding</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00063.html">Thread Prev</a>][<a href="msg00074.html">Thread Next</a>][<A HREF="threads.html#00071">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] FERRET erroneously reports '0' for values of field -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 22 Apr 2011 12:49:19 &#45;0700 -->
+<!--X-Message-Id: 4DB1DBDF.8030008@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 296CDE2E&#45;A4DC&#45;4BDD&#45;80BF&#45;591067A5B9B2@ucar.edu -->
+<!--X-Reference: alpine.LRH.2.00.1104221250130.30369@flywheel.cgd.ucar.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] FERRET erroneously reports '0' for values of field</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00300.html">Thread Prev</a>][<a href="msg00303.html">Thread Next</a>][<A HREF="threads.html#00301">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] FERRET erroneously reports '0' for values of field</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Keith Lindsay &lt;<a href="mailto:klindsay@DOMAIN.HIDDEN">klindsay@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] FERRET erroneously reports '0' for values of field</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 22 Apr 2011 12:49:51 -0700</li>
+<li>Cc: Gary Strand &lt;<a href="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</a>&gt;, <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:alpine.LRH.2.00.1104221250130.30369@DOMAIN.HIDDEN">alpine.LRH.2.00.1104221250130.30369@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:296CDE2E-A4DC-4BDD-80BF-591067A5B9B2@DOMAIN.HIDDEN">296CDE2E-A4DC-4BDD-80BF-591067A5B9B2@xxxxxxxx</a>&gt; &lt;<a href="mailto:alpine.LRH.2.00.1104221250130.30369@DOMAIN.HIDDEN">alpine.LRH.2.00.1104221250130.30369@xxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.15) Gecko/20110303 Thunderbird/3.1.9</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+</pre><tt>Yes, exactly.  Ferret simply doesn't handle a 5-dimensional grid. It 
+</tt><tt>attempts to assign directions to the coordinate variables, and then 
+</tt><tt>create grids for the variables from those, but at the point of issuing 
+</tt><tt>calls to the netcdf library, it is never sending any more than 4 
+</tt><tt>dimensions, and so the result will not be correct.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>(we have a project underway to add more dimensions to Ferret but that's 
+</tt><tt>a ways off.)
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 4/22/2011 12:06 PM, Keith Lindsay wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Gary,
+
+</pre><tt>The MOC variable in CESM output is five dimensional. The MOC metadata 
+</tt><tt>from an ncdump on a file of mine is:
+</tt><pre style="margin: 0em;">
+
+        float MOC(time, transport_reg, moc_comp, moc_z, lat_aux_grid) ;
+                MOC:long_name = &quot;Meridional Overturning Circulation&quot; ;
+                MOC:units = &quot;Sverdrups&quot; ;
+</pre><tt>                MOC:coordinates = &quot;lat_aux_grid moc_z moc_components 
+</tt><tt>transport_region time&quot; ;
+</tt><pre style="margin: 0em;">
+                MOC:_FillValue = 9.96921e+36f ;
+                MOC:missing_value = 9.96921e+36f ;
+
+From right to left, the dimensions are:
+
+latitude
+depth
+component of velocity used in MOC computation
+   Eulerian Mean
+   Eddy-Induced (bolus)
+   Submeso
+spatial region used in MOC computation
+   Global Ocean - Marginal Seas
+</pre><tt>   Atlantic Ocean + Mediterranean Sea + Labrador Sea + GIN Sea + 
+</tt><tt>Arctic Ocean + Hudson Bay time
+</tt><pre style="margin: 0em;">
+
+
+</pre><tt>I do not know what ferret does under the covers for a five dimensional 
+</tt><tt>variable, but I suspect that this is the root of the problem. Perhaps 
+</tt><tt>there is a nf_get_vara call inside ferret that isn't specifying what 
+</tt><tt>to do with the unexpected additional dimensions.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>When I have used ferret to examine MOC in the past, I have first used 
+</tt><tt>NCO to extract along the component and region dimensions, as well as 
+</tt><tt>remove the resulting singleton dimensions.
+</tt><pre style="margin: 0em;">
+
+For instance,
+
+ncwa -a moc_comp,transport_reg \
+     -d moc_comp,0 -d transport_reg,1 \
+     -v MOC infile.nc outfile.nc
+
+</pre><tt>will extract the Eulerian Mean MOC for the Atlantic etc. region. 
+</tt><tt>Because MOC in the resulting file is now three dimensional, in COARDS 
+</tt><tt>order, ferret can handle it without any problem.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Using ncwa is rather heavy handed. I wouldn't be surprised if there is 
+</tt><tt>a different more elegant work around.
+</tt><pre style="margin: 0em;">
+
+Keith
+
+******************************************************************
+Keith Lindsay                <a  rel="nofollow" href="http://www.cgd.ucar.edu/oce/klindsay/">http://www.cgd.ucar.edu/oce/klindsay/</a>
+email: klindsay@xxxxxxxx   phone: 303-497-1722   fax: 303-497-1700
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00298" href="msg00298.html">[ferret_users] FERRET erroneously reports '0' for values of field</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+<li><strong><a name="00300" href="msg00300.html">Re: [ferret_users] FERRET erroneously reports '0' for values of field</a></strong>
+<ul><li><em>From:</em> Keith Lindsay</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00300.html">Re: [ferret_users] FERRET erroneously reports '0' for values of field</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00303.html">[ferret_users] define/axis/like</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00300.html">Thread Prev</a>][<a href="msg00303.html">Thread Next</a>][<A HREF="threads.html#00301">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Script crashed &#45;&#45; scat2gridgauss_xy -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 28 Jan 2011 19:05:46 &#45;0800 -->
+<!--X-Message-Id: 4D43840A.103@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: AANLkTikzr=saN7vT=nbKZWR7CLhknMwOj=P3tcdAfxYT@mail.gmail.com -->
+<!--X-Reference: 4D4300BE.1070208@noaa.gov -->
+<!--X-Reference: AANLkTimwMukLk8owf7dY81FAUN04AyykYLt+DY1r_v2+@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Script crashed -- scat2gridgauss_xy</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00052.html">Thread Prev</a>][<a href="msg00060.html">Thread Next</a>][<A HREF="threads.html#00054">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Script crashed -- scat2gridgauss_xy</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Szymon Roziewski &lt;<a href="mailto:szymon.roziewski@DOMAIN.HIDDEN">szymon.roziewski@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Script crashed -- scat2gridgauss_xy</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 28 Jan 2011 19:05:46 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:AANLkTimwMukLk8owf7dY81FAUN04AyykYLt%2BDY1r_v2%2B@DOMAIN.HIDDEN">AANLkTimwMukLk8owf7dY81FAUN04AyykYLt+DY1r_v2+@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:AANLkTikzr%3DsaN7vT%3DnbKZWR7CLhknMwOj%3DP3tcdAfxYT@DOMAIN.HIDDEN">AANLkTikzr=saN7vT=nbKZWR7CLhknMwOj=P3tcdAfxYT@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4D4300BE.1070208@DOMAIN.HIDDEN">4D4300BE.1070208@xxxxxxxx</a>&gt; &lt;<a href="mailto:AANLkTimwMukLk8owf7dY81FAUN04AyykYLt%2BDY1r_v2%2B@DOMAIN.HIDDEN">AANLkTimwMukLk8owf7dY81FAUN04AyykYLt+DY1r_v2+@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.13) Gecko/20101207 Thunderbird/3.1.7</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi -<br>
+    The scat2grid functions assume that the x and y locations of the
+    scattered points contain no missing data. It's the data field, not
+    the locations that are missing, after all. We'll fix the function so
+    it'll detect any missing values among xpts, and ypts, and just skip
+    over those in the calculation as it does for missing values in
+    argument 3, the data values.&nbsp; But in the meantime you can work
+    around this by defining your xpts and ypts without multiplying the
+    locations by 0*swh_grid:<br>
+    <br>
+    let xpts = xsequence(x[g=swh_grid] + 0*y[g=swh_grid])<br>
+    let ypts = xsequence(x[g=swh_grid] + y[g=swh_grid])<br>
+    let datapts = xsequence(swh_grid)<br>
+    let xscale=0.1<br>
+    let yscale=0.1<br>
+    let cutoff=2<br>
+    let swh_smooth =
+scat2gridgauss_xy(xpts,ypts,datapts,x[g=fine_grid],y[g=fine_grid],xscale,yscale,cutoff,0)<br>
+    <br>
+    The other cases you did which worked fine must somehow not quite
+    have the same kinds of definitions.&nbsp; It's not the fact that it's
+    from a netCDF dataset, but some variation in the definitions of the
+    variables.<br>
+    <br>
+    Ansley<br>
+    <br>
+    <br>
+    <br>
+    On 1/28/2011 4:27 PM, Szymon Roziewski wrote:
+    <blockquote
+      cite=""
+      type="cite">I have to use this or similar function because I get
+      horrible result. I
+      discussed that problem with Dr. Hein and he advised me to use
+      scat2gridgauss_xy. Then I had cdf data and all worked properly.
+      But now
+      when I try to reuse it it doesn't work. The script looks like
+      being
+      hanged.<br>
+      I give the link to what Dr. Hein said.<br>
+      <a rel="nofollow" moz-do-not-send="true"
+href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2010/msg00803.html"
+        target="_blank">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2010/msg00803.html</a><br>
+      <br>
+      Kind regards,<br>
+      Szymon Roziewski<br>
+      <br>
+      <div class="gmail_quote">2011/1/28 Ansley Manke <span dir="ltr">&lt;<a rel="nofollow"
+            moz-do-not-send="true" href="mailto:Ansley.B.Manke@xxxxxxxx">Ansley.B.Manke@xxxxxxxx</a>&gt;</span><br>
+        <blockquote class="gmail_quote" style="border-left: 1px solid
+          rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left:
+          1ex;">
+          Hi -<br>
+          Is Ferret crashing, or the script exiting? &nbsp;Or does it just
+          take a very long time? Why are you using the scat2grid
+          function? &nbsp;It seems that you're starting with gridded data and
+          regridding it to this very fine grid. The Ferret regridding
+          transformations would do this directly.<br>
+          <br>
+          Once you have read in your data, and defined the fine grid,<br>
+          <br>
+          &nbsp; yes? let swh_smooth = swh_grid[gx=xfine,gy=yfine]<br>
+          &nbsp; yes? fill swh_smooth<br>
+          <br>
+          This regrids almost at once. There are several regridding
+          transformations to choose from; run the Ferret command SHOW
+          TRANSFORMS command for a list of them.<br>
+          <font color="#888888">
+            <br>
+            Ansley</font>
+          <div>
+            <div class="h5"><br>
+              <br>
+              On 1/28/2011 4:44 AM, Szymon Roziewski wrote:<br>
+              <blockquote class="gmail_quote" style="border-left: 1px
+                solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex;
+                padding-left: 1ex;">
+                Dear Ferreters,<br>
+                I have such a script:<br>
+                set win/size=6.0/aspect=`1.1`<br>
+                SET VIEWPORT FULL<br>
+                CANCEL MODE LOGO<br>
+                DEFINE AXIS/X=-5.666666667:5.25:0.083333333/unit=degree
+                xlon<br>
+                DEFINE AXIS/Y=-2.0:10.0:0.083333333/unit=degree ylat<br>
+                DEFINE GRID/x=xlon/y=ylat grid_xlon_xlat<br>
+                FILE/VARIABLES=swh_grid/COLUMNS=132/GRID=grid_xlon_xlat
+                swh20101018090000.txt<br>
+                set var/bad=-1 swh_grid<br>
+                set var/units=meters swh_grid<br>
+                set var/title="Significant Wave Height" swh_grid<br>
+                DEFINE AXIS/X=-5.666666667:5.25:0.010416667/unit=degree
+                xfine<br>
+                DEFINE AXIS/Y=-2.0:10.0:0.010416667/unit=degree yfine<br>
+                DEFINE GRID/x=xfine/y=yfine fine_grid<br>
+                let xpts = xsequence(0*swh_grid+x[g=swh_grid])<br>
+                let ypts = xsequence(0*swh_grid+y[g=swh_grid])<br>
+                let datapts = xsequence(swh_grid)<br>
+                let xscale=0.1<br>
+                let yscale=0.1<br>
+                let cutoff=2<br>
+                let swh_smooth =
+scat2gridgauss_xy(xpts,ypts,datapts,x[g=fine_grid],y[g=fine_grid],xscale,yscale,cutoff,0)<br>
+                list swh_smooth<br>
+                <br>
+                wchich should do interpolation data, but it doesn't. The
+                script follows up to the line with list swh_smooth and
+                as reached as is iddle.<br>
+                I think the line with scat2gridgauss_xy function failed.
+                But I don't know the reason.<br>
+                Why is that I don't know. I have very similar script
+                which copes with cdf data and do it well.<br>
+                But in this case previous approach failed. (When I try
+                using txt data with flag bad=-1.)<br>
+                I attach the data file.<br>
+                <br>
+                <br>
+                Kind regards,<br>
+                Szymon Roziewski<br>
+              </blockquote>
+            </div>
+          </div>
+        </blockquote>
+      </div>
+      <br>
+      <br clear="all">
+      <br>
+      -- <br>
+      Z wyrazami szacunku,<br>
+      Szymon Roziewski<br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00060" href="msg00060.html">Re: [ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00050" href="msg00050.html">[ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+<li><strong><a name="00051" href="msg00051.html">Re: [ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00052" href="msg00052.html">Re: [ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00052.html">Re: [ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00060.html">Re: [ferret_users] Script crashed -- scat2gridgauss_xy</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00052.html">Thread Prev</a>][<a href="msg00060.html">Thread Next</a>][<A HREF="threads.html#00054">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

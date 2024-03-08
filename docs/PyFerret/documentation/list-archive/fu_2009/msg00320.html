@@ -1,0 +1,178 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Wed, 27 May 2009 13:49:21 &#45;0700 -->
+<!--X-Message-Id: 4A1DA793.20505@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 4A1C81AA.4090708@noaa.gov -->
+<!--X-Reference: 4A1D8E5E.3090801@noaa.gov -->
+<!--X-Derived: jpgcsXhclPrvT.jpg -->
+<!--X-Derived: binZL1rpRDdcy.bin -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00319.html">Thread Prev</a>][<a href="msg00321.html">Thread Next</a>][<A HREF="threads.html#00320">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:Ansley.B.Manke@DOMAIN.HIDDEN">Ansley.B.Manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 27 May 2009 13:50:27 -0700</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4A1D8E5E.3090801@DOMAIN.HIDDEN">4A1D8E5E.3090801@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4A1C81AA.4090708@DOMAIN.HIDDEN">4A1C81AA.4090708@xxxxxxxx</a>&gt; &lt;<a href="mailto:4A1D8E5E.3090801@DOMAIN.HIDDEN">4A1D8E5E.3090801@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Macintosh/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ansley,
+
+</pre><tt>   Thanks for catching my omission of the shell script get_vertices in 
+</tt><tt>my original email.  Since some of my applications use polydef.jnl in 
+</tt><tt>situations where I don't need or want to close the polygon, I chose 
+</tt><tt>instead to make a variants polydef_close.jnl and get_vertices_close that 
+</tt><tt>do the closing. Either choice would work with InsidePolygon.jnl . Also 
+</tt><tt>the lengthy email may have masked the role of x0,y0.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>   So another demo and graphic are attached to clarify how the scheme 
+</tt><tt>works; it selects cells in the underlying grid whose centers fall within 
+</tt><tt>the user-prescribed polygon.  The variables x0,y0 identify the x and 
+</tt><tt>y-axes of the grid.
+</tt><pre style="margin: 0em;">
+
+! shade a coarsely gridded field and mark cell centers
+shade/i=1:10/j=1:8 i+j
+let x0=x[x=1:10] ; let y0=y[y=1:8]
+</pre><tt>plot/o/vs/nolab/sym=17/i=1:10/j=1:8/set x0+0*y0,y0+0*x0 ; ppl pen,1,7 ; 
+</tt><tt>ppl plot/over
+</tt><pre style="margin: 0em;">
+
+! select polygon vertices (closed) and plot boundary
+go polydef_close
+poly/o/nolab/line=2 vx,vy
+
+</pre><tt>! alternately a vertex file for the closed polygon might be otherwise 
+</tt><tt>available, in which case
+</tt><pre style="margin: 0em;">
+! file/form=free/var=vx,vy/g=gz vx,vy
+</pre><tt>! where &quot;gz&quot; is a 1-D z-axis grid for the vertex coords, could 
+</tt><tt>substitute for &quot;go polydef...&quot;
+</tt><pre style="margin: 0em;">
+
+! identify and highlight the cells whose centers fall inside the polygon
+go InsidePolygon
+shade/o/nolab/pal=red/pat=dark_vertical inside
+
+</pre><tt>NOTE in the demo plot that cells are treated as inside or outside which 
+</tt><tt>has an implication for area averages or integrals that might result from 
+</tt><tt>using the &quot;inside&quot; variable as a mask.  If the cells adjacent to the 
+</tt><tt>boundary are too many, it might be a good idea to regrid the data to be 
+</tt><tt>masked to a finer grid to reduce the raggedness of the polygon edges.
+</tt><tt>   Another thing to note is that the polygon vertex file &quot;vertices.xy&quot; 
+</tt><tt>is read in along the z-axis.  If one were using the scheme for a 
+</tt><tt>vertical section, a variant employing another axis might be appropriate.
+</tt><pre style="margin: 0em;">
+
+Mick
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+------------------------------------------------------------------------
+</pre></blockquote></blockquote><p><a href="jpgcsXhclPrvT.jpg" ><img src="jpgcsXhclPrvT.jpg" alt="JPEG image"></a></p>
+<p><strong>Attachment:
+<a href="binZL1rpRDdcy.bin" ><tt>get_vertices_close</tt></a></strong><br>
+<em>Description:</em> video/flv</p>
+<pre>! polydef_close : use mouse click to define polygon vertices;
+!                 the shell script get_vertices_close will 
+!                 close the polygon
+can mode verify
+let done=0 ; sp rm -f vertices.xy
+
+say &quot;****************************************************&quot;
+say &quot;*                                                  *&quot;
+say &quot;* Add polygon vertices by mouse clicks.  Terminate *&quot;
+say &quot;*     by clicking to the left of the plot area.    *&quot;
+say &quot;*                                                  *&quot;
+say &quot;****************************************************&quot;
+
+! add new vertices to the file vertices.xy
+repeat/range=1:1000 go add_vertex
+
+! then read in the resulting file 
+sp get_vertices_close ; go get_vertices
+
+set mode verify
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00321" href="msg00321.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00317" href="msg00317.html">[ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+<ul><li><em>From:</em> mick spillane</li></ul></li>
+<li><strong><a name="00319" href="msg00319.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00319.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00321.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00319.html">Thread Prev</a>][<a href="msg00321.html">Thread Next</a>][<A HREF="threads.html#00320">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

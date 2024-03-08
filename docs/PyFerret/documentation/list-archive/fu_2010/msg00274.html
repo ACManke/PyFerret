@@ -1,0 +1,280 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] regriding problem -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 4 May 2010 09:41:28 &#45;0700 -->
+<!--X-Message-Id: 4BE04E35.7050400@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: w2w71cc5ca21004300409z1e4bf87ax11819d95dd89c647@mail.gmail.com -->
+<!--X-Reference: 4BDB0074.3000405@noaa.gov -->
+<!--X-Reference: u2j71cc5ca21005032358of6d34ebaq2619a5ab8c5ae7bd@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] regriding problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00273.html">Thread Prev</a>][<a href="msg00272.html">Thread Next</a>][<A HREF="threads.html#00274">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] regriding problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Yogesh Tiwari &lt;<a href="mailto:yogesh.mpi@DOMAIN.HIDDEN">yogesh.mpi@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] regriding problem</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 04 May 2010 09:41:25 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:u2j71cc5ca21005032358of6d34ebaq2619a5ab8c5ae7bd@DOMAIN.HIDDEN">u2j71cc5ca21005032358of6d34ebaq2619a5ab8c5ae7bd@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:w2w71cc5ca21004300409z1e4bf87ax11819d95dd89c647@DOMAIN.HIDDEN">w2w71cc5ca21004300409z1e4bf87ax11819d95dd89c647@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4BDB0074.3000405@DOMAIN.HIDDEN">4BDB0074.3000405@xxxxxxxx</a>&gt; &lt;<a href="mailto:u2j71cc5ca21005032358of6d34ebaq2619a5ab8c5ae7bd@DOMAIN.HIDDEN">u2j71cc5ca21005032358of6d34ebaq2619a5ab8c5ae7bd@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.24 (Windows/20100228)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Yogesh,<br>
+If the data is already regridded to a 1x1 degree grid, then you do not
+need to do anything else but redefine the X and Y axes of the first
+dataset to have units of degrees longitude and latitude. But what you
+sent looks as if the FGCO2 variable and the LON and LAT coordinate
+variables in the second dastaset form a variable on a curvilinear
+grid.&nbsp; So&nbsp; you might want to ask more about this.<br>
+<br>
+<br>
+First, in your call to curv_to_rect_map, the longitude and latitude
+curvilinear coordinates are in the second dataset. <br>
+<br>
+&nbsp;&nbsp; yes? let lonin = lon[d=2]<br>
+&nbsp;&nbsp; yes? let latin = lat[d=2]<br>
+&nbsp;&nbsp; yes? &nbsp;let map = curv_to_rect_map ( lonin,latin,lonlatout,0.5)<br>
+<br>
+<br>
+One can use the SCAT2GRID functions to regrid data of this kind onto a
+rectilinear grid. This treats all the points as if they are just
+scattered locations and doesn't take into account that they are on a
+grid.&nbsp; But it will work.<br>
+<br>
+The first 3 arguments sent to SCAT2GRIDGAUSS_XY are XPTS, YPTS, F&nbsp;
+where XPTS and YPTS are 1-D lists of points and F has as its X
+dimension a list of points in the horizontal direction and can be a
+function of Z and/or T.<br>
+<br>
+So you would set&nbsp; up variables that unravel the xy dimensions of
+lon[d=2], lat[d=2], and fgco2[d=1] into 1D lists in the x direction,
+and use those in the regridding.&nbsp; The x dimension is length 182 and y
+dimension is 149 so this new 1D list is 182*149.<br>
+<br>
+yes? let nxy = 182*149<br>
+yes? define axis/x=1:`nxy`:1 xaxis<br>
+yes? let xx = x[gx=xaxis]<br>
+<br>
+yes? let xpts = RESHAPE(lon2[d=2], xx)<br>
+yes? let ypts = RESHAPE(lat[d=2], xx)<br>
+<br>
+! Define a variable that&nbsp; is a 1D list the length of xy&nbsp; and the same
+as FGCO2 in t<br>
+yes? let xtvar = x[gx=xaxis]&nbsp; +&nbsp; t[gt=fgco2]&nbsp; <br>
+yes? let fpts&nbsp; = RESHAPE(fgco2[d=1], xtvar)<br>
+<br>
+... define the axes for the destination grid<br>
+yes? let regridded_fgco2 = SCAT2GRIDGAUSS_XY(xpts, ypts, fpts, ...<br>
+<br>
+<br>
+<br>
+Yogesh Tiwari wrote:
+<blockquote
+ cite=""
+ type="cite">Hi Ansley,<br>
+Thanks, <br>
+I think the data is not on a curvilinear grid because the person who
+sent me the data<br>
+mentioned that he has regridded the data onto a 1x1 degree grid with
+the Ferret function<br>
+SCAT2GRIDGAUSS_XY(). Please let me know how I to use this?<br>
+  <br>
+Also, when I tried the CURV_TO_RECT_MAP, this is what I get.<br>
+  <br>
+currently SET data sets:<br>
+&nbsp; &nbsp;1&gt; ./IPSL_HIST_A2_fgCO2_1980_
+  <div id=":9l" class="ii gt">2009_2D.nc &nbsp;(default)<br>
+&nbsp;name &nbsp; &nbsp; title &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; I &nbsp; &nbsp; &nbsp; &nbsp; J &nbsp; &nbsp; &nbsp; &nbsp; K &nbsp; &nbsp; &nbsp;
+&nbsp; L<br>
+&nbsp;FGCO2 &nbsp; &nbsp;air-to-sea CO2 flux &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;1:182 &nbsp; &nbsp; 1:149 &nbsp; &nbsp; ... &nbsp; &nbsp;
+&nbsp; 1:360<br>
+  <br>
+yes? define axis/x=40:110:1/modulo/units=degrees xax<br>
+yes? define axis/y=0:30:1/modulo/units=degrees yax<br>
+yes? let lonlatout = y[gy=yax] + x[gx=xax]<br>
+yes? let lonin = lon_fgco2[d=1]<br>
+yes? let latin = lat_fgco2[d=1]<br>
+yes? &nbsp;let map = curv_to_rect_map ( lonin,latin,lonlatout,0.5)<br>
+yes? save/clobber/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://io_map.nc/" target="_blank">io_map.nc</a> map<br>
+&nbsp;**ERROR: variable unknown or not in data set: LAT_FGCO2[D=1]<br>
+  <br>
+Thanks,<br>
+Aparna<br>
+  <div class="im"><br>
+  </div>
+  </div>
+  <br>
+  <br>
+  <div class="gmail_quote">On Fri, Apr 30, 2010 at 9:38 PM, Ansley
+Manke <span dir="ltr">&lt;<a rel="nofollow" moz-do-not-send="true"
+ href="mailto:Ansley.B.Manke@xxxxxxxx">Ansley.B.Manke@xxxxxxxx</a>&gt;</span>
+wrote:<br>
+  <blockquote class="gmail_quote"
+ style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+    <div bgcolor="#ffffff" text="#000000">
+Hi Yogesh,<br>
+If I understand correctly, the model data is on the curvilinear grid
+defined by the second dataset you open in your example . Is that
+correct? To work with data on a curvilinear grid you can either regrid
+it to a rectilinear grid using the CURV_TO_RECT_MAP and CURV_TO_RECT
+functions; or to find the index ranges corresponding to
+longitude/latitude regions, use the methods in this FAQ. <b><a rel="nofollow"
+ moz-do-not-send="true"
+ href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/custom_plots/subsetting_curvi_data.html"
+ target="_blank"><b>How
+can I plot a subset of my curvilinear data?</b></a> </b><br>
+at<b> </b><a rel="nofollow" moz-do-not-send="true"
+ href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/custom_plots/subsetting_curvi_data.html"
+ target="_blank">http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/custom_plots/subsetting_curvi_data.html</a><br>
+    <br>
+Looking back, the curvilinear regridding functions became available in
+Ferret v5.8, so you will have these; however there have been some more
+recent improvements such as the /MODULO qualifier on the SHADE and FILL
+commands so you might do well to upgrade to a more recent version of
+Ferret.<br>
+    <font color="#888888"><br>
+Ansley</font>
+    <div>
+    <div class="h5"><br>
+&nbsp;<br>
+Yogesh Tiwari wrote:
+    <blockquote type="cite">Hello Ferret Users,<br>
+I am using Ferret 5.81 on RedHat Linux<br>
+      <br clear="all">
+      <font face="Arial, Helvetica">I am trying to get output data from
+a
+model where the results are in an irregular grid. <br>
+After following the method explained below, when I try to get the
+dataset for my region of <br>
+interest (40E:110E/0-30N) ferret keeps looking for data in the
+irregular grid. I want to <br>
+plot the time series, climatology etc for the dataset in the regular
+grid <br>
+      <br>
+use "<a rel="nofollow" moz-do-not-send="true"
+ href="http://dods.extra.cea.fr/cgi-bin/nph" target="_blank">http://dods.extra.cea.fr/cgi-bin/nph</a>-
+      <br>
+dods/data/p48bopp/CARBOOCEAN/IPSL/HIST_A2/fgCO2/IPSL_HIST_A2_fgCO2_1980_2009_2D.nc"
+      <br>
+show data <br>
+fill fgCO2[x=1:182,y=1:149,l=1] <br>
+use "<a rel="nofollow" moz-do-not-send="true"
+ href="http://dods.extra.cea.fr/cgi-bin/nph-dods/data/p48bopp/CARBOOCEAN/GRID/IPSL_grid.nc"
+ target="_blank">http://dods.extra.cea.fr/cgi-bin/nph-dods/data/p48bopp/CARBOOCEAN/GRID/IPSL_grid.nc</a>"
+      <br>
+let lon2 = if lon gt 360 then (lon-360.) else lon <br>
+shade/key/hlim=40E:100E/vlim=0:30N
+fgco2[x=1:182,y=1:149,l=1,d=1],lon2[d=2],lat[d=2] <br>
+      <br>
+So after this how do I <br>
+1. list the basin averaged values for certain time period of the data
+in the regular grid? <br>
+2. get time-series/climatology for particular region and time period of
+the data in the <br>
+regular grid? <br>
+      <br>
+Thanks for the help, <br>
+Yogesh</font><br>
+    </blockquote>
+    </div>
+    </div>
+    </div>
+  </blockquote>
+  </div>
+  <br>
+  <br clear="all">
+  <br>
+-- <br>
+Yogesh K. Tiwari (Dr.rer.nat), <br>
+Scientist,<br>
+Indian Institute of Tropical Meteorology, <br>
+Homi Bhabha Road,<br>
+Pashan,<br>
+Pune-411008<br>
+INDIA<br>
+  <br>
+Phone: 0091-99 2273 9513 (Cell) <br>
+&nbsp; &nbsp; &nbsp; &nbsp; : 0091-20-25904350 (O)<br>
+Fax &nbsp; &nbsp;: 0091-20-258 93 825<br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00270" href="msg00270.html">[ferret_users] regriding problem</a></strong>
+<ul><li><em>From:</em> Yogesh Tiwari</li></ul></li>
+<li><strong><a name="00271" href="msg00271.html">Re: [ferret_users] regriding problem</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00273" href="msg00273.html">Re: [ferret_users] regriding problem</a></strong>
+<ul><li><em>From:</em> Yogesh Tiwari</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00273.html">Re: [ferret_users] regriding problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00272.html">[ferret_users] Time offset in fill plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00273.html">Thread Prev</a>][<a href="msg00272.html">Thread Next</a>][<A HREF="threads.html#00274">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

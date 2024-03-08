@@ -1,0 +1,206 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users]: time interpolation from files with different time	axes fails -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Thu, 9 Jul 2009 04:29:46 &#45;0700 -->
+<!--X-Message-Id: 4A55D4A1.9010805@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 41921F8F.3070500@ifm.zmaw.de -->
+<!--X-Reference: 41928FD9.4050808@noaa.gov -->
+<!--X-Reference: 4A549D1E.7040104@io&#45;warnemuende.de -->
+<!--X-Reference: 4A54C6BA.4040908@ec.gc.ca -->
+<!--X-Reference: 6501ecd10907081013k15ce0ctecabcaec4ef7b264@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users]: time interpolation from files with different time	axes fails</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00422.html">Thread Prev</a>][<a href="msg00425.html">Thread Next</a>][<A HREF="threads.html#00424">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users]: time interpolation from files with different time	axes fails</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Jaison Kurian &lt;<a href="mailto:jaison@DOMAIN.HIDDEN">jaison@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users]: time interpolation from files with different time	axes fails</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 09 Jul 2009 13:29:37 +0200</li>
+<li>Cc: Fabian Lienert &lt;<a href="mailto:cccma-student-003@DOMAIN.HIDDEN">cccma-student-003@xxxxxxxx</a>&gt;,        ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:6501ecd10907081013k15ce0ctecabcaec4ef7b264@DOMAIN.HIDDEN">6501ecd10907081013k15ce0ctecabcaec4ef7b264@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:41921F8F.3070500@DOMAIN.HIDDEN">41921F8F.3070500@xxxxxxxxxxx</a>&gt; &lt;<a href="mailto:41928FD9.4050808@DOMAIN.HIDDEN">41928FD9.4050808@xxxxxxxx</a>&gt; &lt;<a href="mailto:4A549D1E.7040104@DOMAIN.HIDDEN">4A549D1E.7040104@xxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4A54C6BA.4040908@DOMAIN.HIDDEN">4A54C6BA.4040908@xxxxxxxx</a>&gt; &lt;<a href="mailto:6501ecd10907081013k15ce0ctecabcaec4ef7b264@DOMAIN.HIDDEN">6501ecd10907081013k15ce0ctecabcaec4ef7b264@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.8.1.22) Gecko/20090609 SeaMonkey/1.1.17</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi all,
+Fabian and Jaison, thanks for your help.
+
+First: my output quantity has a correct time axis.
+
+But let me try to simplify the problem.
+
+Generate a testfile:
+
+use coads_climatology
+set region/x=-20:20/y=-30:10
+</pre><tt>define 
+</tt><tt>axis/t=1-dec-1999:31-jan-2000:6/unit=hours/t0=1-jan-1955/cal=julian time_6
+</tt><pre style="margin: 0em;">
+define grid/x=sst/y=sst/t=time_6 xytgrid
+
+let ta=t[gt=xytgrid]+0*(x[gx=xytgrid]+y[gy=xytgrid])
+save/clobber/file=ta.nc ta
+quit
+
+Start ferret again
+use ta.nc
+let tair_hour = ta[gt=tdummy@lin]-273.15
+</pre><tt>define 
+</tt><tt>axis/t=1-dec-1999:31-jan-2000:1/unit=hours/t0=1-jan-1955/cal=julian 
+</tt><tt>time_hourly
+</tt><pre style="margin: 0em;">
+define grid/t=time_hourly tgrid
+let tdummy=0*t[gt=tgrid]
+
+</pre><tt>Now I can display or save tair_hour (all time steps together) and 
+</tt><tt>everything looks fine.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>But I wanted to have a gregorian calendar and change the calendar 
+</tt><tt>attribute.
+</tt><pre style="margin: 0em;">
+DEFINE ATTRIBUTE (`tair_hour[l=1],return=TAXIS`).calendar = &quot;GREGORIAN&quot;
+
+Displaying i.e. shade/i=10 tair_hour looks still fine.
+
+let lmax=500
+sp rm tair_h_by_step_greg.nc
+DEFINE ATTRIBUTE (`tair_hour[l=1],return=TAXIS`).calendar = &quot;GREGORIAN&quot;
+repeat/l=1:`lmax` save/append/file=tair_h_by_step_greg.nc tair_hour
+quit
+
+</pre><tt>Now one may load tair_h_by_step_greg.nc and finds (time) gaps in the 
+</tt><tt>output data. Please note,
+</tt><tt>the gaps appear only if no output operation of tair_hour is done before 
+</tt><tt>the data are saved to file.
+</tt><pre style="margin: 0em;">
+Otherwise correct data are in the memory cache.
+
+To summarise and to resolve the confusion:
+</pre><tt>- the error persists, if the calendar is set to gregorian in the time 
+</tt><tt>axis definition:
+</tt><pre style="margin: 0em;">
+use ta.nc
+let tair_hour = ta[gt=tdummy@lin]-273.15
+</pre><tt>define 
+</tt><tt>axis/t=1-dec-1999:31-jan-2000:1/unit=hours/t0=1-jan-1955/cal=gregorian 
+</tt><tt>time_hourly
+</tt><pre style="margin: 0em;">
+define grid/t=time_hourly tgrid
+let tdummy=0*t[gt=tgrid]
+let lmax=500
+sp rm tair_h_by_step_greg.nc
+repeat/l=1:`lmax` save/append/file=tair_h_by_step_greg.nc tair_hour
+
+generates a wrong data set.
+
+</pre><tt>Using a julian calendar or saving all time steps together gives a 
+</tt><tt>correct data set.
+</tt><pre style="margin: 0em;">
+use ta.nc
+let tair_hour = ta[gt=tdummy@lin]-273.15
+</pre><tt>define 
+</tt><tt>axis/t=1-dec-1999:31-jan-2000:1/unit=hours/t0=1-jan-1955/cal=julian 
+</tt><tt>time_hourly
+</tt><pre style="margin: 0em;">
+define grid/t=time_hourly tgrid
+let tdummy=0*t[gt=tgrid]
+let lmax=500
+sp rm tair_h_by_step_greg.nc
+repeat/l=1:`lmax` save/append/file=tair_h_by_step_julian.nc tair_hour
+
+</pre><tt>Another error is, that for the gregorian case the calendar attribute is 
+</tt><tt>missing in the
+</tt><tt>time axis definition. This is required for example by mom4 and 
+</tt><tt>additional file
+</tt><pre style="margin: 0em;">
+processing is needed.
+
+</pre><tt>Hence, the switch between calendar types during interpolation on 
+</tt><tt>different time axes is not recommended.
+</tt><pre style="margin: 0em;">
+I my happen that errors are introduced.
+
+Best,
+Martin
+
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00419" href="msg00419.html">[ferret_users]: time interpolation from files with different time axes fails</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+<li><strong><a name="00420" href="msg00420.html">Re: [ferret_users]: time interpolation from files with different time axes fails</a></strong>
+<ul><li><em>From:</em> Fabian Lienert</li></ul></li>
+<li><strong><a name="00422" href="msg00422.html">Re: [ferret_users]: time interpolation from files with different time	axes fails</a></strong>
+<ul><li><em>From:</em> Jaison Kurian</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00422.html">Re: [ferret_users]: time interpolation from files with different time	axes fails</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00425.html">[ferret_users] EOF function</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00422.html">Thread Prev</a>][<a href="msg00425.html">Thread Next</a>][<A HREF="threads.html#00424">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

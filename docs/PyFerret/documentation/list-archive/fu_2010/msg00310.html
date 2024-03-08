@@ -1,0 +1,112 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] netcdf file with irregular axis -->
+<!--X-From-R13: Brgre Emnob <fmnocrg83Ntznvy.pbz> -->
+<!--X-Date: Mon, 17 May 2010 02:58:48 &#45;0700 -->
+<!--X-Message-Id: AANLkTinNDLhRhHRX1bWARbBwuliVuKDiOVlvz3NaSMoX@mail.gmail.com -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 1273815186.575.6.camel@prs&#45;nuncio.ncaor.org -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] netcdf file with irregular axis</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00306.html">Thread Prev</a>][<a href="msg00302.html">Thread Next</a>][<A HREF="threads.html#00310">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] netcdf file with irregular axis</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:nuncio@DOMAIN.HIDDEN">nuncio@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] netcdf file with irregular axis</strong></li>
+<li><strong>From</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 17 May 2010 11:56:44 +0200</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=relaxed/relaxed;        d=gmail.com; s=gamma; h=domainkey-signature:mime-version:received:received:in-reply-to :references:date:message-id:subject:from:to:cc:content-type; bh=iwzf+RjOiCH4r1OszzdcjGGAFRdZkzxw1elWFntLuDU=; b=SyUc9YPaA0fhYQu/BJccuHmQ2daTGgFtu5xmu4IjFZF2RO9UyIswxdxzSz7X+0SlNh jka2gOeqk+oIFrRs08iDM+qnFQEULGJeB784xxEL+Z/ziKjiKjJOzT2Qwv6RWJB3+8hB R1yi8ko8oP6hTkAxIZQ+gPrlCKufGUOMw8NLs=</li>
+<li>Domainkey-signature: a=rsa-sha1; c=nofws;        d=gmail.com; s=gamma; h=mime-version:in-reply-to:references:date:message-id:subject:from:to :cc:content-type; b=AbEEc2D5SPfXIF1LmkPuNsDpNo1b3frPAsJlq5nnkpxO0f7BHJeFpQI9TRWxQL6BO8 B/0ma+JpV7+xd3uJb+oLnpz8dc3rwJZp8PRSFBwHhX0wYaLkdzot73qgRfGSS1ohx/Jk pHiwnFvmLIewULhQpDfMI83bzwgeNrTbrbgOk=</li>
+<li>In-reply-to: &lt;<a href="mailto:1273815186.575.6.camel@DOMAIN.HIDDEN">1273815186.575.6.camel@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1273815186.575.6.camel@DOMAIN.HIDDEN">1273815186.575.6.camel@xxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<div>Hello Nuncio,</div><div><br></div><div>as J&#xFA;nior wrote, solving the problem needs ASCII files (and a bit more info about your data might help). Suppose you have two separate ASCII files containing data (Ishow you my solution for a problem with Lambertian grid as I could not make ferret to read GRIB files so I needed to create ASCII from them first).<br>
+</div><div><br></div><div>!You need to define an axis with lon-lat coordinates (which are in a file), BUT you should know their limits.</div><div>def axis/x=11.78:25.22/np=97 xx<br>def axis/y=44.63:50.20/np=61 yy<br></div>
+<div>def grid/x=xx/y=yy latlon<br></div><div>!Read now the coordinate-file:</div><div>set data/ez/var=&quot;lon   lat&quot;/grid=latlon &quot;ASCII_latlon&quot;<br></div><div><br></div><div>!Add a time axis if there is any.</div>
+<div>def axis/t=1:30:1/units=years time<br></div><div>def grid/t=time/x=lon[d=1]/y=lat[d=1] gridxyt<br></div><div>!Read in now the lambertian gridded file.</div>set data/ez/var=&quot;gustx&quot;/grid=gridxyt &quot;ASCII_gust6190_lambert&quot;<br>
+<div><br></div><div>!With scat2gridgauss_xy function you can have the irregularly spaced data on a lat-lon grid. Read more about that function in ferret documentation.</div><div>let xx1d = xsequence(lon[d=1])<br>let yy1d = xsequence(lat[d=1])<br>
+</div><div><br></div><div>def axis/x=11.78:25.22:0.14 xax<br>def axis/y=44.63:50.20:0.092833 yax<br><br>let gust=scat2gridgauss_xy(xx1d,yy1d,gustx[d=2],x[gx=xax],y[gy=yax],0.14,0.092833,2,0)<br></div><div>!In case you were out of memory: &quot;set memory/size=123&quot;.<br>
+</div><div><br></div><div>!Save it to a file for further operations and functions:</div>repeat/l=1:30 (save/file=&quot;<a rel="nofollow" href="http://AA.gust.6190.nc" target="_blank">latlon_gust6190.nc</a>&quot;/llimits=1:30/l=`l`/append/clobber gust)<br>
+<div><br></div><div>That is how I solved my problem similar to yours. Hope this helps. Regards,</div><div><br></div><div>Peter Szabo</div><div><br></div><div class="gmail_quote">On Fri, May 14, 2010 at 7:33 AM, nuncio murukesh <span dir="ltr">&lt;<a rel="nofollow" href="mailto:nuncio@xxxxxxxxx" target="_blank">nuncio@xxxxxxxxx</a>&gt;</span> wrote:<br>
+
+<blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">Hello users,<br>
+ &#xA0; &#xA0; &#xA0; &#xA0;I have a netcdf file of seaice in polar stereographic grid along<br>
+with the lat long coordinate files (two seperate nc files). &#xA0;Is it<br>
+possible in FERRET to use the lat long coordinate files to convert the<br>
+polar stereographic coordinates of the seaice files to xy coordinates.<br>
+The latitude and Longitude values are irregularly spaced.<br>
+Thanks<br>
+nuncio<br>
+<font color="#888888">--<br>
+Polar Remote Sensing Division<br>
+NCAOR<br>
+<br>
+</font></blockquote></div><br>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00301" href="msg00301.html">[ferret_users] netcdf file with irregular axis</a></strong>
+<ul><li><em>From:</em> nuncio murukesh</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00306.html">Re: [ferret_users] netcdf file with irregular axis</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00302.html">[ferret_users] Save a netcdf file with average parameter in a time	series</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00306.html">Thread Prev</a>][<a href="msg00302.html">Thread Next</a>][<A HREF="threads.html#00310">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

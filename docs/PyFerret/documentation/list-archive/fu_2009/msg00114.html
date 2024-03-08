@@ -1,0 +1,256 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Composite using separate date files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 2 Mar 2009 12:04:45 &#45;0800 -->
+<!--X-Message-Id: 49AC3BDF.2020708@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 000001c99949$d4660d50$7d3227f0$@unimelb.edu.au -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Composite using separate date files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00112.html">Thread Prev</a>][<a href="msg00115.html">Thread Next</a>][<A HREF="threads.html#00114">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Composite using separate date files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Savin &lt;<a href="mailto:schand@DOMAIN.HIDDEN">schand@xxxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Composite using separate date files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 02 Mar 2009 12:04:47 -0800</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:000001c99949%24d4660d50%247d3227f0%24@DOMAIN.HIDDEN"><a href="msg00112.html">000001c99949$d4660d50$7d3227f0$@unimelb.edu.au</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:000001c99949%24d4660d50%247d3227f0%24@DOMAIN.HIDDEN"><a href="msg00112.html">000001c99949$d4660d50$7d3227f0$@unimelb.edu.au</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.19 (Windows/20081209)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Savin,<br>
+Are you saying you have a set of dates in an ascii file that look for
+instance like this:<br>
+<br>
+19940315<br>
+19940415<br>
+19940515<br>
+19940615<br>
+19940715<br>
+...<br>
+<br>
+and you want to get that set of dates into Ferret and use them in a
+computation with a dataset that has a time axis?&nbsp; The dates might or
+might not be regularly-spaced, or match dates from the ncep data set -
+Ferret can handle that.<br>
+<br>
+You can read in separate variables representing the year, month, day as
+follows:<br>
+<blockquote><tt>yes? file/var="yr,mo,da"/format=(f4.0,f2.0,f2.0)
+dates.txt<br>
+yes? list yr, mo, da<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DATA SET: ./dates.txt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; X: 0.5 to 9.5<br>
+&nbsp;Column&nbsp; 1: YR<br>
+&nbsp;Column&nbsp; 2: MO<br>
+&nbsp;Column&nbsp; 3: DA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; YR&nbsp;&nbsp;&nbsp; MO&nbsp;&nbsp;&nbsp;&nbsp; DA<br>
+1&nbsp;&nbsp; / 1:&nbsp; 1994.&nbsp;&nbsp; 3.00&nbsp; 15.00<br>
+2&nbsp;&nbsp; / 2:&nbsp; 1994.&nbsp;&nbsp; 4.00&nbsp; 15.00<br>
+3&nbsp;&nbsp; / 3:&nbsp; 1994.&nbsp;&nbsp; 5.00&nbsp; 15.00<br>
+4&nbsp;&nbsp; / 4:&nbsp; 1994.&nbsp;&nbsp; 6.00&nbsp; 15.00<br>
+...<br>
+  </tt></blockquote>
+Now define a variable representing these times.&nbsp; Ferret has the
+function DAYS1900 to convert year, month, day data into a variable
+representing days since 1-jan-1990.&nbsp; We'll use this and then convert
+these times into the time reference used by the ncep data.<tt><br>
+</tt>
+<blockquote><tt>yes? sh func days1900</tt><br>
+  <tt>DAYS1900(year,month,day)</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; days elapsed since 1-Jan-1900</tt><br>
+  <br>
+  <tt>yes? list&nbsp; days1900(yr, mo, da)</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : DAYS1900(YR, MO, DA)</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : dates.txt</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 9 points (X)</tt><br>
+  <tt>&nbsp;1&nbsp;&nbsp; / 1:&nbsp; 34392.</tt><br>
+  <tt>&nbsp;2&nbsp;&nbsp; / 2:&nbsp; 34423.</tt><br>
+  <tt>&nbsp;3&nbsp;&nbsp; / 3:&nbsp; 34453.</tt><br>
+  <tt>&nbsp;4&nbsp;&nbsp; / 4:&nbsp; 34484.</tt><br>
+  <tt>...</tt><br>
+</blockquote>
+I don't know the details of the ncep reanalysis dataset you're using -
+here's one I have available to me, so for example, here is the data and
+its time origin and time units.<br>
+<blockquote><tt>yes? use ncep_reanalysis_monthly_stress</tt><br>
+  <tt>yes? sh dat</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp;&nbsp; currently SET data sets:</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; 1&gt; /.../ncep_reanalysis_monthly_stress.cdf&nbsp; (default)</tt><br>
+  <tt>&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L</tt><br>
+  <tt>&nbsp;TAUX&nbsp;&nbsp;&nbsp;&nbsp; Zonal Wind Stress&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:160&nbsp;&nbsp;&nbsp;&nbsp; 1:100&nbsp;&nbsp;&nbsp;&nbsp;
+...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:204<br>
+  </tt><tt>&nbsp;TAUY&nbsp;&nbsp;&nbsp;&nbsp; Meridional Wind Stress&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:160&nbsp;&nbsp;&nbsp;&nbsp;
+1:100&nbsp;&nbsp;&nbsp;&nbsp; ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:204<br>
+  </tt></blockquote>
+<blockquote><tt>yes? say `taux[d=1],return=t0`</tt><br>
+  <tt>&nbsp;!-&gt; MESSAGE/CONTINUE 15-JAN-1901 00:00:00</tt><br>
+  <tt>15-JAN-1901 00:00:00</tt><br>
+  <tt>yes? say `taux[d=1],return=tunits`</tt><br>
+  <tt>&nbsp;!-&gt; MESSAGE/CONTINUE HOURS</tt><br>
+  <tt>HOURS<br>
+  </tt></blockquote>
+Define a time axis with the dates from the ascii file. We will use
+regridding to put this data onto the time axis of the ncep data and
+then create a mask that will pick out the times for the computation.&nbsp;
+(You could use a different regridding tranformation in the second line.)<br>
+<blockquote><tt>yes? define axis/t0="1-jan-1900"/units=days my_t_axis =
+days1900(yr, mo, da)<br>
+yes? let tdays = t[gt=my_t_axis]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! a variable on the time axis <br>
+yes? let t_ncep = tdays[gt=taux,d=1]&nbsp;&nbsp; ! that variable, on the NCEP
+time axis</tt><br>
+</blockquote>
+Now the variable we have created from the list of dates in the ascii
+file has units of days and the NCEP time axis is in hours.&nbsp; Also the
+variable we created has a time origin of 1-jan-1900 and NCEP is
+referenced to 15-jan-1900.&nbsp; So, convert our variable to hours since
+15-jan-1900:<br>
+<blockquote><tt>yes? list DAYS1900(1901,1,15)&nbsp; ! The number of days
+between the 2 time origins.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : DAYS1900(1901,1,15)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 379.0<br>
+yes? let compute_times =&nbsp; 24*(t_ncep-379)&nbsp; ! times in NCEP time units<br>
+  <br>
+  </tt></blockquote>
+We are almost done. Create a mask which is 1 at all the times that
+match the input times in the file; or missing otherwise. Multiply this
+by the NCEP variable, and the result is the variable at the selected
+times.<br>
+<blockquote><tt>yes? let mask = if compute_times then 1<br>
+yes? let masked_taux = taux[d=1]*mask</tt><br>
+</blockquote>
+<blockquote><tt>yes? list/t=1-jan-1994:1-jan-1995&nbsp; t[gt=taux,d=1],
+compute_times, mask, taux[d=1,x=180,y=0], masked_taux[x=180,y=0]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DATA SET:
+/home/raid1/data/jaguar_data/ja10/data/f2/data/ncep_reanalysis_monthly_stress.cdf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NCEP Reanalysis Monthly Wind Stress<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TIME: 01-JAN-1994 00:00 to 01-JAN-1995 00:00<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LONGITUDE: ???<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LATITUDE: ???<br>
+&nbsp;Column&nbsp; 1: T is T (axis TAX)<br>
+&nbsp;Column&nbsp; 2: COMPUTE_TIMES is 24*(T_NCEP-379)<br>
+&nbsp;Column&nbsp; 3: MASK is IF COMPUTE_TIMES THEN 1<br>
+&nbsp;Column&nbsp; 4: TAUX is Zonal Wind Stress (dyne/cm**2)<br>
+&nbsp;Column&nbsp; 5: MASKED_TAUX is TAUX[D=ncep_reanalysis_monthly_stress]*MASK<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; T&nbsp; COMPUTE_&nbsp; MASK&nbsp;&nbsp;&nbsp; TAUX&nbsp; MASKED_TAUX<br>
+15-JAN-1994 / 181:&nbsp; 815250.&nbsp;&nbsp;&nbsp;&nbsp; ....&nbsp;&nbsp; .... -0.3323&nbsp;&nbsp;&nbsp; ....<br>
+15-FEB-1994 / 182:&nbsp; 815980.&nbsp;&nbsp;&nbsp;&nbsp; ....&nbsp;&nbsp; .... -0.2561&nbsp;&nbsp;&nbsp; ....<br>
+17-MAR-1994 / 183:&nbsp; 816711.&nbsp; 816711.&nbsp; 1.000 -0.2233 -0.2233<br>
+17-APR-1994 / 184:&nbsp; 817442.&nbsp; 817442.&nbsp; 1.000 -0.1726 -0.1726<br>
+17-MAY-1994 / 185:&nbsp; 818172.&nbsp; 818172.&nbsp; 1.000 -0.1809 -0.1809<br>
+16-JUN-1994 / 186:&nbsp; 818902.&nbsp; 818902.&nbsp; 1.000 -0.1358 -0.1358<br>
+17-JUL-1994 / 187:&nbsp; 819633.&nbsp; 819633.&nbsp; 1.000 -0.1124 -0.1124<br>
+16-AUG-1994 / 188:&nbsp; 820364.&nbsp; 820364.&nbsp; 1.000 -0.0587 -0.0587<br>
+16-SEP-1994 / 189:&nbsp; 821094.&nbsp; 821094.&nbsp; 1.000 -0.1575 -0.1575<br>
+16-OCT-1994 / 190:&nbsp; 821824.&nbsp; 821824.&nbsp; 1.000 -0.0583 -0.0583<br>
+16-NOV-1994 / 191:&nbsp; 822555.&nbsp;&nbsp;&nbsp;&nbsp; ....&nbsp;&nbsp; ....&nbsp; 0.0692&nbsp;&nbsp;&nbsp; ....<br>
+16-DEC-1994 / 192:&nbsp; 823286.&nbsp;&nbsp;&nbsp;&nbsp; ....&nbsp;&nbsp; ....&nbsp; 0.0653&nbsp;&nbsp;&nbsp; ....<br>
+16-JAN-1995 / 193:&nbsp; 824016.&nbsp;&nbsp;&nbsp;&nbsp; ....&nbsp;&nbsp; .... -0.0897&nbsp;&nbsp;&nbsp; ....<br>
+  </tt><tt></tt><br>
+  <br>
+</blockquote>
+Savin wrote:
+<blockquote cite=""
+ type="cite">
+  
+  
+  
+<!----><!---->
+  <div class="Section1">
+  <p class="MsoNormal">Dear ferret users,<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">I have a separate date file (say in the format
+yyyymmdd). I
+want to create a composites (say e.g., relative vorticity from NCEP
+reanalysis
+data) using dates from this file in FERRET.<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">Any suggestions how I can do it.<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">Help will be very much appreciated.<o:p></o:p></p>
+  <p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+  <p class="MsoNormal">Thanks.<o:p></o:p></p>
+  <p class="MsoNormal">Savin<o:p></o:p></p>
+  </div>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00115" href="msg00115.html">RE: [ferret_users] Composite using separate date files</a></strong>
+<ul><li><em>From:</em> Savin</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00112" href="msg00112.html">[ferret_users] Composite using separate date files</a></strong>
+<ul><li><em>From:</em> Savin</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00112.html">[ferret_users] Composite using separate date files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00115.html">RE: [ferret_users] Composite using separate date files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00112.html">Thread Prev</a>][<a href="msg00115.html">Thread Next</a>][<A HREF="threads.html#00114">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

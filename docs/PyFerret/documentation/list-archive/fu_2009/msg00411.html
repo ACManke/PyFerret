@@ -1,0 +1,211 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Conversion of Weekly data to Monthly data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 6 Jul 2009 10:56:06 &#45;0700 -->
+<!--X-Message-Id: 4A523AB7.3030003@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 578310f70907022315h3fafa7e0q2ed7d21e6e9095c3@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Conversion of Weekly data to Monthly data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00409.html">Thread Prev</a>][<a href="msg00410.html">Thread Next</a>][<A HREF="threads.html#00411">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Conversion of Weekly data to Monthly data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>steeven paul yerraguntla &lt;<a href="mailto:steevenpaul@DOMAIN.HIDDEN">steevenpaul@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Conversion of Weekly data to Monthly data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 06 Jul 2009 10:56:07 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:578310f70907022315h3fafa7e0q2ed7d21e6e9095c3@DOMAIN.HIDDEN">578310f70907022315h3fafa7e0q2ed7d21e6e9095c3@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:578310f70907022315h3fafa7e0q2ed7d21e6e9095c3@DOMAIN.HIDDEN">578310f70907022315h3fafa7e0q2ed7d21e6e9095c3@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.22 (Windows/20090605)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Steeven,<br>
+What you did would work fine for creating say, weekly data from daily
+data, because a week is a standard 7 days long. <br>
+<br>
+The general method for putting data onto an axis with a different
+resolution is to define an axis and use a regridding operation to put
+the data onto it.&nbsp; This way the regridding is done correctly and you
+also have a new axis with the correct units, so that plots will be
+correctly labeled and if the data is saved to a file, the axis is
+documented.<br>
+<br>
+So you need to define a monthly axis and use a regidding transformation
+to regrid your data onto that axis. The @AVE transformation uses
+weighted averages so that the correct part of each weekly grid cell
+contributes to each monthly average. <br>
+<br>
+To define a true monthly axis, follow the directions found in the Users
+Guide Index under "<a rel="nofollow"
+ href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/DEFINE#_VPINDEXENTRY_1312">axis,
+monthly, defining</a>". This method correctly takes into account the
+different lengths of the months, and leap year days if needed.<br>
+<br>
+So for instance, if your data is for the single year 2000:<br>
+<br>
+<tt>! Define a 1-year monthly axis starting in Jan 2000<br>
+yes? LET start_year = 2000<br>
+yes? LET nyears = 1<br>
+yes? LET indices = L[L=1:`nyears*12 + 1`]<br>
+&nbsp;!-&gt; DEFINE VARIABLE indices = L[L=1:13]<br>
+yes? LET month = MOD(indices-1,12)+1<br>
+yes? LET year = start_year + INT((indices-1)/12)<br>
+yes? DEFINE AXIS/UNITS=days/T0=1-jan-1900/EDGES truemonth =
+DAYS1900(year,month,1)<br>
+&nbsp;<br>
+yes? SHOW AXIS/t=1-jan-2000:31-dec-2000 truemonth<br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; axis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # pts&nbsp;&nbsp; start&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end<br>
+&nbsp;TRUEMONTH TIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12 i&nbsp;&nbsp; 16-JAN-2000 12:00&nbsp;&nbsp;&nbsp; 16-DEC-2000
+12:00<br>
+T0 = 1-JAN-1900<br>
+&nbsp;&nbsp; Axis span (to cell edges) = 366<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L&nbsp;&nbsp;&nbsp;&nbsp; T&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TBOX&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TBOXLO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TSTEP
+(DAYS)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&gt;&nbsp; 16-JAN-2000 12:00:00&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-JAN-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36539.5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2&gt;&nbsp; 15-FEB-2000 12:00:00&nbsp; 29&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-FEB-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36569.5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3&gt;&nbsp; 16-MAR-2000 12:00:00&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-MAR-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36599.5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4&gt;&nbsp; 16-APR-2000 00:00:00&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-APR-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36630<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5&gt;&nbsp; 16-MAY-2000 12:00:00&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-MAY-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36660.5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6&gt;&nbsp; 16-JUN-2000 00:00:00&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-JUN-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36691<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 7&gt;&nbsp; 16-JUL-2000 12:00:00&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-JUL-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36721.5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8&gt;&nbsp; 16-AUG-2000 12:00:00&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-AUG-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36752.5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9&gt;&nbsp; 16-SEP-2000 00:00:00&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-SEP-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36783<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&gt;&nbsp; 16-OCT-2000 12:00:00&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-OCT-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36813.5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11&gt;&nbsp; 16-NOV-2000 00:00:00&nbsp; 30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-NOV-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36844<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12&gt;&nbsp; 16-DEC-2000 12:00:00&nbsp; 31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 01-DEC-2000 00:00:00&nbsp;&nbsp;&nbsp;
+36874.5<br>
+<br>
+! Regrid your weekly data to this axis. If your variable is called var,<br>
+<br>
+yes? let var2 = var[gt=</tt><tt>truemonth@AVE]</tt><br>
+<br>
+<br>
+steeven paul yerraguntla wrote:
+<blockquote
+ cite=""
+ type="cite"><span class="gI"></span>Dear ferreters, <br>
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I have weekly data netcdf files and i want them convert to
+monthly data. I have used the operand @ave to convert weekly data to
+monthly, such that l=1:52:4@ave. But&nbsp; some months are having 5 weeks
+and some are having 4 weeks data then how to average the 5 weeks of
+particular month?.&nbsp; Kindly let me know if there is&nbsp; any generalised way
+to&nbsp; convert&nbsp; weekly data to monthly data. The following lines shows the
+example of non uniformity in number of weeks for different months.<br>
+  
+  
+  
+  
+  
+  
+  
+  
+  <p style="margin-bottom: 0in;"><br>
+  <u>01-NOV-2000 00 / 44: 33.47<br>
+08-NOV-2000 00 / 45: 33.45<br>
+15-NOV-2000 00 / 46: 33.45<br>
+22-NOV-2000 00 / 47: 33.47<br>
+29-NOV-2000 00 / 48: 33.48</u><br>
+06-DEC-2000 00 / 49: 33.04<br>
+13-DEC-2000 00 / 50: 33.04<br>
+20-DEC-2000 00 / 51: 33.04<br>
+27-DEC-2000 00 / 52: 33.04<br clear="all">
+  </p>
+  <br>
+Solution for the above problem will be highly appreciated.<br>
+  <br>
+regards,<br>
+-- <br>
+Steeven Paul Y<br>
+Research Fellow<br>
+NIO RC Vizag<br>
+176 Lawsons Bay Colony<br>
+Visakhapatnam - 530017<br>
+7<br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00409" href="msg00409.html">[ferret_users] Conversion of Weekly data to Monthly data</a></strong>
+<ul><li><em>From:</em> steeven paul yerraguntla</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00409.html">[ferret_users] Conversion of Weekly data to Monthly data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00410.html">[ferret_users] Extracting data/value from grided data in rotated Mercator projection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00409.html">Thread Prev</a>][<a href="msg00410.html">Thread Next</a>][<A HREF="threads.html#00411">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] format number and text with LIST/FORMAT -->
+<!--X-From-R13: Xnzrf Aee <Xnzrf.AeeNyfpr.vcfy.se> -->
+<!--X-Date: Mon, 19 Jul 2010 07:53:45 &#45;0700 -->
+<!--X-Message-Id: alpine.LFD.2.00.1007191638430.13903@lsce3235.extra.cea.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4C442723.8090401@cea.fr -->
+<!--X-Reference: 1279543809.3078.624.camel@eo -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] format number and text with LIST/FORMAT</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00411.html">Thread Prev</a>][<a href="msg00413.html">Thread Next</a>][<A HREF="threads.html#00412">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] format number and text with LIST/FORMAT</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] format number and text with LIST/FORMAT</strong></li>
+<li><strong>From</strong>: <strong>James Orr &lt;<a href="mailto:James.Orr@DOMAIN.HIDDEN">James.Orr@xxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 19 Jul 2010 16:53:35 +0200 (CEST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:1279543809.3078.624.camel@DOMAIN.HIDDEN"><a href="msg00411.html">1279543809.3078.624.camel@eo</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:4C442723.8090401@DOMAIN.HIDDEN">4C442723.8090401@xxxxxx</a>&gt; &lt;<a href="mailto:1279543809.3078.624.camel@DOMAIN.HIDDEN"><a href="msg00411.html">1279543809.3078.624.camel@eo</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Alpine 2.00 (LFD 1167 2008-08-23)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Patrick,
+
+</pre><tt>Unlike fortran, I don't think the /FORMAT option in Ferret works 
+</tt><tt>correctly for the A field specifier (for character strings).  But 
+</tt><tt>there is a convoluted work-around using the REPEAT function:
+</tt><pre style="margin: 0em;">
+
+ use monthly_navy_winds.cdf
+ let VAR1 = UWND[I=23,J=73]
+ let v1end = `var1, return=LEND`
+ set list/file=test.txt ; sp rm test.txt
+ repeat/range=1:`v1end`:1/name=s  (                             ; \
+   def sym alpha TAX_DATESTRING(T[GT=VAR1,l=`s`],VAR1, &quot;month&quot;) ; \
+   list/nohead/file/append/format=(&quot;`($alpha)`&quot;, F10.3) VAR1      )
+
+</pre><tt>The previous proposed solution does not work because you want to work 
+</tt><tt>with a character array.
+</tt><pre style="margin: 0em;">
+
+Cheers,
+
+Jim
+
+
+On Mon, 19 Jul 2010, Paulo B. Oliveira wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Patrick,
+
+I guess you can use:
+
+list/nohead/format=(&quot;`TAX_DATESTRING(T[GT=VAR],VAR1,
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+&quot;month&quot;)` &quot;, F10.3) VAR1
+</pre></blockquote><pre style="margin: 0em;">
+
+Paulo
+--------------------------
+On Mon, 2010-07-19 at 12:21 +0200, Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+
+Is there a way to format numbers and text together
+when the list command and the format FORTRAN qualifier are used ?
+
+Here is an example and the error
+
+yes? use monthly_navy_winds.cdf
+yes? let VAR1 = UWND[I=23,J=73]
+yes? list/nohead/format=(A30,' ',F10.3) TAX_DATESTRING(T[GT=VAR],VAR1,
+&quot;month&quot;), VAR1
+ **ERROR: invalid command: format disallowed for multiple variables w/
+strings
+
+Patrick
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+LSCE/IPSL, Laboratoire des Sciences du Climat et de l'Environnement
+CEA-CNRS-UVSQ
+
+LSCE/IPSL, CEA Saclay           <a  rel="nofollow" href="http://www.ipsl.jussieu.fr/~jomce">http://www.ipsl.jussieu.fr/~jomce</a>
+Bat. 712 - Orme                 mailto:  James.Orr@xxxxxxxxxxxx
+Point courrier 132
+F-91191 Gif-sur-Yvette Cedex    Phone:   (33) (0)1 69 08 39 73
+FRANCE                          Fax:     (33) (0)1 69 08 30 73
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00413" href="msg00413.html">Re: [ferret_users] format number and text with LIST/FORMAT</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00410" href="msg00410.html">[ferret_users] format number and text with LIST/FORMAT</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+<li><strong><a name="00411" href="msg00411.html">Re: [ferret_users] format number and text with LIST/FORMAT</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00411.html">Re: [ferret_users] format number and text with LIST/FORMAT</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00413.html">Re: [ferret_users] format number and text with LIST/FORMAT</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00411.html">Thread Prev</a>][<a href="msg00413.html">Thread Next</a>][<A HREF="threads.html#00412">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

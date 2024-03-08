@@ -1,0 +1,193 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] regriding area larger than grid size -->
+<!--X-From-R13: RSZQZOGJ Tenapbvf <qrypynhkNzfrz.havi&#45;zbagc2.se> -->
+<!--X-Date: Sun, 11 Oct 2009 23:45:28 &#45;0700 -->
+<!--X-Message-Id: 4AD2EC9B.8040604@msem.univ&#45;montp2.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] regriding area larger than grid size</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00673.html">Thread Prev</a>][<a href="msg00679.html">Thread Next</a>][<A HREF="threads.html#00675">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] regriding area larger than grid size</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] regriding area larger than grid size</strong></li>
+<li><strong>From</strong>: <strong>DELCLAUX Francois &lt;<a href="mailto:delclaux@DOMAIN.HIDDEN">delclaux@xxxxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 12 Oct 2009 10:45:15 +0200</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ferret users,
+
+</pre><tt>I would like to regrid a GCM output precipitation on a lower  resolution 
+</tt><tt>grid defined with another netcdf file. The selected regriding operation 
+</tt><tt>is the simplest one, linear interpolation (@lin).
+</tt><pre style="margin: 0em;">
+
+Step one : I read the GCM precip data:
+yes? use pr_pmip2_0k.nc  ! d=1
+
+</pre><tt>Precip variable name is median and the corresponding grid is GLM1, whose 
+</tt><tt>caracteristics are (resol=1&#xB0;):
+</tt><pre style="margin: 0em;">
+yes? sh g glm1
+    GRID GLM1
+ name       axis              # pts   start                end
+ XPROJ     LONGITUDE           51mr   20W(-20)             30E
+ YPROJ     LATITUDE            41 r   10S                  30N
+ normal    Z
+ TCYS      T                   12 r   1                    12
+
+
+Step 2 : I read the other netcdf file
+yes? use evap_chad.nc         ! d=2
+
+</pre><tt>Precip variable name is evap and the corresponding grid is GQW1, 
+</tt><tt>(resol=0.5&#xB0;):
+</tt><pre style="margin: 0em;">
+yes? sh g gqw1
+    GRID GQW1
+ name       axis              # pts   start                end
+ LONGITUDE LONGITUDE           37mr   7.25E                25.25E
+ LATITUDE  LATITUDE            37 r   5.25N                23.25N
+ LEVEL     Z (level: &quot;uni       1 r   1                    1
+</pre><tt> TIME      TIME               708 r   01-JAN-1937 00:00    09-DEC-1938 
+</tt><tt>00:00
+</tt><pre style="margin: 0em;">
+
+step 3: I regrid median on evap grid  GQW1:
+yes? let p0 = median[d=1, gx=gqw1@lin, gy=gqw1@lin]
+
+step 4 : I store p0 in a cdf file and get a look with ncdump :
+yes? save/file=es.nc   p0 ; spa ncdump -c es.nc
+
+Result  of dump:
+LISTing to file es.nc
+netcdf es {
+dimensions:
+    LONGITUDE0_38 = 39 ;
+    LATITUDE = 37 ;
+    TCYS = UNLIMITED ; // (12 currently)
+variables:
+    double LONGITUDE0_38(LONGITUDE0_38) ;
+        LONGITUDE0_38:units = &quot;degrees_east&quot; ;
+        LONGITUDE0_38:modulo = 360. ;
+        LONGITUDE0_38:point_spacing = &quot;even&quot; ;
+        LONGITUDE0_38:axis = &quot;X&quot; ;
+    double LATITUDE(LATITUDE) ;
+        LATITUDE:units = &quot;degrees_north&quot; ;
+        LATITUDE:point_spacing = &quot;even&quot; ;
+        LATITUDE:axis = &quot;Y&quot; ;
+    double TCYS(TCYS) ;
+        TCYS:axis = &quot;T&quot; ;
+    float P0(TCYS, LATITUDE, LONGITUDE0_38) ;
+        P0:missing_value = -1.e+34f ;
+        P0:_FillValue = -1.e+34f ;
+        P0:long_name = &quot;MEDIAN[D=1, GX=GQW1@LIN, GY=GQW1@LIN]&quot; ;
+
+// global attributes:
+        :history = &quot;FERRET V6.2    8-Oct-09&quot; ;
+        :Conventions = &quot;CF-1.0&quot; ;
+data:
+
+</pre><tt> LONGITUDE0_38 = -163.75, 7.25, 7.75, 8.25, 8.75, 9.25, 9.75, 10.25, 
+</tt><tt>10.75,
+</tt><pre style="margin: 0em;">
+    11.25, 11.75, 12.25, 12.75, 13.25, 13.75, 14.25, 14.75, 15.25, 15.75,
+    16.25, 16.75, 17.25, 17.75, 18.25, 18.75, 19.25, 19.75, 20.25, 20.75,
+    21.25, 21.75, 22.25, 22.75, 23.25, 23.75, 24.25, 24.75, 25.25, 196.25 ;
+
+ LATITUDE = 5.25, 5.75, 6.25, 6.75, 7.25, 7.75, 8.25, 8.75, 9.25, 9.75,
+    10.25, 10.75, 11.25, 11.75, 12.25, 12.75, 13.25, 13.75, 14.25, 14.75,
+    15.25, 15.75, 16.25, 16.75, 17.25, 17.75, 18.25, 18.75, 19.25, 19.75,
+    20.25, 20.75, 21.25, 21.75, 22.25, 22.75, 23.25 ;
+
+ TCYS = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ;
+}
+
+</pre><tt>My problem is that regriding on a 37x37 cell grid (GQW1) creates a 39x37 
+</tt><tt>file , adding for the longitude 2 aditional points on the x-grid 
+</tt><tt>longitude : -163.75 and  196.25.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I don't undestand what occurs and how to prevent it.  If someone could 
+</tt><tt>help me ...
+</tt><pre style="margin: 0em;">
+
+--
+Francois DELCLAUX
+------------------------------------------------------------
+UMR HydroSciences Montpellier
+Universite Montpellier II - Place Eugene Bataillon
+Case courrier MSE
+34095  Montpellier Cedex 5      FRANCE
+<a  rel="nofollow" href="http://www.hydrosciences.fr/">http://www.hydrosciences.fr/</a>
+mailto: delclaux@xxxxxxxxxxxxxxxxxxx
+Tel : (33) (0)4 67 14 90 11      Fax : (33) (0)4 67 14 47 74
+------------------------------------------------------------
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00673.html">[ferret_users] Locating a label based on the date on a time axis plot.</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00679.html">Re: [ferret_users] regriding area larger than grid size</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00673.html">Thread Prev</a>][<a href="msg00679.html">Thread Next</a>][<A HREF="threads.html#00675">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

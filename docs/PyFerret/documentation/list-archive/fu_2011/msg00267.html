@@ -1,0 +1,265 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] daily climatology &#45; problem of February 29 -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Fri, 15 Apr 2011 10:53:14 &#45;0700 -->
+<!--X-Message-Id: 4DA88630.9070009@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: BANLkTimvjm5WLeR0=W8ReWOou22238m6&#45;w@mail.gmail.com -->
+<!--X-Reference: BANLkTim5uaZqqKxZi1yNvdA+Qw3Kr4shqA@mail.gmail.com -->
+<!--X-Derived: pngsphPnEp3GY.png -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] daily climatology - problem of February 29</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00266.html">Thread Prev</a>][<a href="msg00320.html">Thread Next</a>][<A HREF="threads.html#00267">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] daily climatology - problem of February 29</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Peter Szabo &lt;<a href="mailto:szabpet83@DOMAIN.HIDDEN">szabpet83@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] daily climatology - problem of February 29</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 15 Apr 2011 10:53:52 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:BANLkTim5uaZqqKxZi1yNvdA%2BQw3Kr4shqA@DOMAIN.HIDDEN">BANLkTim5uaZqqKxZi1yNvdA+Qw3Kr4shqA@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:BANLkTimvjm5WLeR0%3DW8ReWOou22238m6-w@DOMAIN.HIDDEN">BANLkTimvjm5WLeR0=W8ReWOou22238m6-w@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:BANLkTim5uaZqqKxZi1yNvdA%2BQw3Kr4shqA@DOMAIN.HIDDEN">BANLkTim5uaZqqKxZi1yNvdA+Qw3Kr4shqA@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.15) Gecko/20110303 Thunderbird/3.1.9</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi Peter,<br>
+    <br>
+    To get your calculation to complete without error you need only
+    regrid your 1 year (365.2425 day long) climatology back onto the
+    Gregorian calendar.&nbsp; Simply replace the definition <br>
+    &nbsp;&nbsp;&nbsp; let t2m_anom=t2m-t2m_clim<br>
+    with<br>
+    &nbsp;&nbsp;&nbsp; <b>let t2m_anom=t2m-t2m_clim[gt=tm2@LIN]</b> <br>
+    Note that @LIN is the default ... shown here just to emphasize that
+    linear interpolation is used.<br>
+    <br>
+    Here's the background.&nbsp; A daily climatology is not a clean problem
+    no matter how you slice it.&nbsp; I suppose your intent for a "daily
+    climatology of 366 days" might be that the final result contains a
+    Feb. 29 date, which is computed from 1/4 as many input points as all
+    other days. &nbsp; Ferret will not readily calculate things this way
+    (though I imagine it could be forced to do so with sufficient
+    torture applied&nbsp;<span class="moz-smiley-s3"><span> ;-) </span></span>).&nbsp;&nbsp;
+    For better or worse, Ferret's regridding algorithm between calendar
+    types doesn't regard the proclamations of Pope Gregory as
+    scientifically based.&nbsp; (The logic being that in a leap year the
+    earth does not actually take an additional day to revolve around the
+    sun.) &nbsp; Instead they regard <u>each individual year (1961, 1962,
+      ...) as representing the same time interval, regardless of how the
+      calendar may divide it into days</u>.&nbsp;&nbsp; I offer this just as
+    background.&nbsp;&nbsp; (It can play havoc with daily (24 hour)
+    climatologies!)<br>
+    <br>
+    Here is a script to illustrate.&nbsp; (Note:&nbsp; For this email list it is
+    helpful to pose questions and solutions that do not depend on access
+    to particular files.)<br>
+    <blockquote><tt>define axis/t=1-jan-1961:31-dec-1990:1/unit=days
+        tlong<br>
+        let myvar = RANDU(T[gt=tlong])&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! a dummy data variable<br>
+        def
+        axis/t=0:365.2425/edges/npoints=365/t0=1-JAN-0001/units=days/modulo
+        daily1<br>
+        let myvar_clim=myvar[gt=daily1@mod]<br>
+        let myvar_anom=myvar-myvar_clim[gt=tlong]</tt><br>
+      <br>
+      <tt>set region/t=1-jan-1980:31-dec-1980<br>
+        set view upper<br>
+        plot myvar, myvar_clim<br>
+        set view lower<br>
+        plot myvar_anom</tt><br>
+    </blockquote>
+    <img src="pngsphPnEp3GY.png" alt=""><br>
+    <br>
+    On 4/15/2011 3:07 AM, Peter Szabo wrote:
+    <blockquote
+      cite=""
+      type="cite">
+      <div>Hey,</div>
+      <div><br>
+      </div>
+      <div>I would like to get daily climatology for 366 days (including
+        Feb 29), then final goal is getting daily anomalies through
+        multiple years (also containing Feb 29s). It works for 365-day
+        climatology.</div>
+      Sorry for the re-post.
+      <div><br>
+      </div>
+      <div>Thanks for the help, Peter<br>
+        <div><br>
+          <br>
+          <div class="gmail_quote">On Wed, Apr 13, 2011 at 10:56 AM,
+            Peter Szabo <span dir="ltr">&lt;<a rel="nofollow" moz-do-not-send="true"
+                href="mailto:szabpet83@xxxxxxxxx">szabpet83@xxxxxxxxx</a>&gt;</span>
+            wrote:<br>
+            <blockquote class="gmail_quote" style="margin: 0pt 0pt 0pt
+              0.8ex; border-left: 1px solid rgb(204, 204, 204);
+              padding-left: 1ex;">Dear Users,
+              <div><br>
+              </div>
+              <div>I try to count anomaly from daily climatology through
+                multiple years.</div>
+              <div>It is a 30-year data set with a normal Gregorian
+                calendar axis:</div>
+              <div><br>
+              </div>
+              <div>
+                <div>yes? sh axis treal</div>
+                <div>&nbsp;name &nbsp; &nbsp; &nbsp; axis &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;# pts &nbsp; start &nbsp; &nbsp; &nbsp; &nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;end</div>
+                <div>&nbsp;TREAL &nbsp; &nbsp; TIME &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 10957 r &nbsp; 01-JAN-1961
+                  12:00 &nbsp; &nbsp;31-DEC-1990 12:00</div>
+                <div>T0 = 01-JAN-1961 00:00:00</div>
+              </div>
+              <div><br>
+              </div>
+              <div>
+                I define the modulo time axis, then I count daily
+                climatology, finally I extract it from my time series:</div>
+              <div><br>
+              </div>
+              <div>def
+                axis/t=0:365.2425/edges/npoints=365/t0=1-JAN-0001/units=days/modulo
+                daily1</div>
+              <div>let t2m_clim=t2m[gt=daily1@mod]</div>
+              <div>let t2m_anom=t2m-t2m_clim</div>
+              <div><br>
+              </div>
+              <div>The problem is that it does not take into account
+                February 29s, and thus it gives an error:</div>
+              <div>
+                <div>&nbsp;**ERROR: inconsistent sizes of data regions: T
+                  axis</div>
+                <div>
+                  &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;T2M61A has 10950 points (L=00001:10950)</div>
+                <div>&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;_expression_ has 10957 points
+                  (L=00001:10957)</div>
+              </div>
+              <div><br>
+              </div>
+              <div>If I reduce my t2m to 10950 days (in order to
+                simulate "skipping" february 29s), It does the
+                extraction, though, some tiny bias might occur as a
+                consequent of this.</div>
+              <div>It raises some further questions:</div>
+              <div><br>
+              </div>
+              <div>Why do not the following two take feb 29s into
+                account? The daily2 is almost the same as daily1.
+                Furthermore, the daily3 axis is giving a totally
+                different result.</div>
+              <div>def
+                axis/t=0:365.2425/edges/npoints=366/t0=1-JAN-0001/units=days/modulo
+                daily2</div>
+              <div>
+                <div>def
+                  axis/t=0:365.2425:1/edges/t0=1-JAN-0001/units=days/modulo
+                  daily3</div>
+                <div><br>
+                </div>
+                <div>If I define my modulo axis to skip feb 29, it gives
+                  obviously bad results.</div>
+                <div>def
+                  axis/t=0:365/edges/npoints=365/t0=1-JAN-0001/units=days/modulo
+                  daily4</div>
+              </div>
+              <div><br>
+              </div>
+              <div>I enclose a plot with the 4 daily climatological
+                axes.</div>
+              <div>Which one is correct? Why is there huge difference
+                between the axes? How can I make a daily climatology
+                which takes into account February 29?</div>
+              <div><br>
+              </div>
+              <div>Thanks in advance,</div>
+              <div><br>
+              </div>
+              <font color="#888888">
+                <div>Peter Szabo</div>
+              </font></blockquote>
+          </div>
+          <br>
+        </div>
+      </div>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00320" href="msg00320.html">Re: [ferret_users] daily climatology - problem of February 29</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00263" href="msg00263.html">[ferret_users] daily climatology - problem of February 29</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+<li><strong><a name="00266" href="msg00266.html">Re: [ferret_users] daily climatology - problem of February 29</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00266.html">Re: [ferret_users] daily climatology - problem of February 29</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00320.html">Re: [ferret_users] daily climatology - problem of February 29</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00266.html">Thread Prev</a>][<a href="msg00320.html">Thread Next</a>][<A HREF="threads.html#00267">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

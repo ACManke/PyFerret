@@ -1,0 +1,290 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] grid problem y axis (latitude) -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 25 Oct 2010 13:34:23 &#45;0700 -->
+<!--X-Message-Id: 4CC5E9CE.8070908@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4CC0463B.90909@mpic.de -->
+<!--X-Reference: 213d52a5&#45;b0c9&#45;4406&#45;926f&#45;572e6bacea8d@blur -->
+<!--X-Reference: 4CC5866D.1060502@mpic.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] grid problem y axis (latitude)</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00653.html">Thread Prev</a>][<a href="msg00658.html">Thread Next</a>][<A HREF="threads.html#00654">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] grid problem y axis (latitude)</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hella Riede &lt;<a href="mailto:hella.riede@DOMAIN.HIDDEN">hella.riede@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] grid problem y axis (latitude)</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 25 Oct 2010 13:34:22 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4CC5866D.1060502@DOMAIN.HIDDEN">4CC5866D.1060502@xxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4CC0463B.90909@DOMAIN.HIDDEN">4CC0463B.90909@xxxxxxx</a>&gt; &lt;<a href="mailto:213d52a5-b0c9-4406-926f-572e6bacea8d@DOMAIN.HIDDEN"><a href="msg00650.html">213d52a5-b0c9-4406-926f-572e6bacea8d@blur</a></a>&gt; &lt;<a href="mailto:4CC5866D.1060502@DOMAIN.HIDDEN">4CC5866D.1060502@xxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.9) Gecko/20100915 Thunderbird/3.1.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi Helle,<br>
+    Now that I see the sequence of commands you used, I see more about
+    what's happening.&#xA0; When Ferret detects an axis with reversed
+    coordinates, it checks to see if they're regularly spaced, and if so
+    reverses them. At this point it sets an internal flag marking the
+    axis as a reversed axis, and data from the netCDF file is read with
+    the reversal taken into account. This is described in the
+    documentation:&#xA0; Chapter 2, sec 2.5:<br>
+    <blockquote>Files with reverse-ordered axes
+      <p class="indented">If the coordinates of an axis are
+        monotonically decreasing, instead of increasing, Ferret will
+        transparently reverse both the axis coordinates and the
+        dependent variables that are defined upon that axis. Note that
+        if Ferret writes a reverse-ordered variable to a new netCDF file
+        (with the SAVE command), the coordinates and data in the output
+        file will be in monotonically increasing coordinate order&#x2014;<span
+          class="highlightedSearchTerm">reversed</span> from the input
+        file.</p>
+      <p class="indented">If the values of a dependent variable are <span
+          class="highlightedSearchTerm">reversed</span>, but there is no
+        associated coordinate axis then use attach a minus sign to the
+        corresponding axis orientation in the USE/ORDER= qualifier to
+        designate that the variable(s) should be <span
+          class="highlightedSearchTerm">reversed</span> along the
+        corresponding axis.</p>
+    </blockquote>
+    (What is meant in the last paragraph, is that if the data values are
+    reversed but the coordinate axis is not reversed, or if the axis is
+    not in world-coordinate units, then use USE/ORDER= to tell Ferret to
+    reverse the data when it is read.)<br>
+    <br>
+    <br>
+    Copying the commands that you showed in your PDF file here,<tt><br>
+    </tt>
+    <blockquote><tt>&gt; cp orig.nc test.nc<br>
+      </tt><tt>&gt; ferret&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; <br>
+        &#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; NOAA/PMEL TMAP<br>
+        &#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; FERRET v6.64&#xA0; <br>
+        &#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; Linux(gfortran) 2.6.9-89.0.20.ELsmp - 09/20/10<br>
+        &#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 25-Oct-10 12:27&#xA0;&#xA0;&#xA0;&#xA0; <br>
+        <br>
+        yes? use test.nc (i,j,k,l; including specific humidity q)<br>
+        yes? let testvar = q[l=1:2]<br>
+        yes? save/append/file="test.nc" testvar<br>
+        =&gt; ferret writes whole file again, including variable
+        &#x201C;testvar&#x201D;<br>
+        yes?&#xA0; quit<br>
+        <br>
+        &gt; ferret<br>
+        yes? use test.nc<br>
+        yes? shade/i=1/l=1 q<br>
+        yes? use orig.nc<br>
+        yes? set win 2<br>
+        yes? shade/i=1/l=1 q</tt><br>
+    </blockquote>
+    Now we have both the y axis which Ferret has reversed (internal to
+    Ferret), and the original axis (in test.nc or orig.nc). <br>
+    <br>
+    NOTE that when I try to create an example where I append to the
+    input file which has a reversed axis, I get an error message and
+    cannot do the append.<br>
+    <br>
+    I *think*&#xA0; that if you had done everything by saving to a new file,
+    then the data is always written using the reversed axis<br>
+    <blockquote><tt>yes? use test.nc&#xA0; <br>
+      </tt><tt>yes? save/file=new.nc q[L=1:3]<br>
+      </tt><tt>yes? let testvar = q[L=1:2]<br>
+      </tt><tt>yes? save/append/file=new.nc testvar</tt><br>
+    </blockquote>
+    And the two variables q and testvar in this new file would both be
+    correct.&#xA0; Is that the case??<br>
+    <br>
+    <br>
+    Another note: when you save testvar = q[L=1:2], &#xA0; it'll save the
+    full time range of data, because the variable has the same grid as
+    the original data. But only timesteps 1 and 2 will have valid data.<br>
+    <br>
+    Ansley<br>
+    <br>
+    <br>
+    On 10/25/2010 6:30 AM, Hella Riede wrote:
+    <blockquote cite="" type="cite">Hi
+      Ansley,
+      <br>
+      <br>
+      <blockquote type="cite">Hi helle,I'm working off-line and can't
+        see your image, but I know the issue. What are the units of the
+        latitude axis?
+        <br>
+      </blockquote>
+      <br>
+      Units of latitude axis from ncdump (original file):
+      <br>
+      float lat(lat) ;
+      <br>
+      &#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; lat:long_name = "latitude" ;
+      <br>
+      &#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; lat:units = "degrees_north" ;
+      <br>
+      <br>
+      <blockquote type="cite">What is the range of the y coordinate
+        values?
+        <br>
+      </blockquote>
+      <br>
+      From "show grid" (original file):
+      <br>
+      LAT&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; LATITUDE&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 64 i&#xA0;&#xA0; 87.863S&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; 87.863N
+      <br>
+      <br>
+      As mentioned in my first email, this is already strange as the
+      values inside start start +87.863 (which should be north) and end
+      at -87.863 (which should be south). Here are the start and end
+      values of an "ncdump -v lat":
+      <br>
+      <br>
+      lat = 87.8638, 85.09653, 82.31291, 79.5256, 76.7369,...
+      <br>
+      &#xA0;&#xA0;&#xA0; -76.7369, -79.5256, -82.31291, -85.09653, -87.8638 ;
+      <br>
+      <br>
+      <blockquote type="cite">Is this a netCDF file?&#xA0; If so then looking
+        at the y-axis information from a ncdump -c. would tell us if
+        there's more that ferret could do to issue a note or something.
+        <br>
+      </blockquote>
+      <br>
+      Yes, it is a netCDF file and the header information and values of
+      "lat" are already provided above. Is there anything else you need
+      from the "ncdump -c"?
+      <br>
+      <br>
+      Kind regards,
+      <br>
+      Hella
+      <br>
+      <br>
+      <br>
+      <blockquote type="cite">To use the dataset with reversed
+        coordinates, the USE/ORDER qualifier let's you tell ferret to
+        reverse the Y axis.
+        <br>
+        Ansley
+        <br>
+        <br>
+        -----Original message-----
+        <br>
+        From: Hella Riede <a rel="nofollow" class="moz-txt-link-rfc2396E" href="mailto:hella.riede@xxxxxxx">&lt;hella.riede@xxxxxxx&gt;</a>
+        <br>
+        To: ferret <a rel="nofollow" class="moz-txt-link-rfc2396E" href="mailto:oar.pmel.ferret_users@xxxxxxxx">&lt;oar.pmel.ferret_users@xxxxxxxx&gt;</a>
+        <br>
+        Sent: Thu, Oct 21, 2010 14:47:37 GMT+00:00
+        <br>
+        Subject: [ferret_users] grid problem y axis (latitude)
+        <br>
+        <br>
+        Dear ferreters,
+        <br>
+        <br>
+        in our default model output, the y axis (latitude) is
+        unconventionallydefined from north to south. Working with the
+        unchanged file in ferretseems to work fine. But since ferret
+        does not recognize thisunconventional axis/grid correctly, it
+        produces a mirror image of thedata with respect to latitude when
+        for example appending a variable tothe file. This "mirroring"
+        happens without error notice or warning,which can of course lead
+        to misunderstandings interpreting the data.
+        <br>
+        <br>
+        I prepared an example, see attachment.
+        <br>
+        <br>
+        Thank you in advance for taking notice.
+        <br>
+        <br>
+        Best wishes,
+        <br>
+        Hella
+        <br>
+        <br>
+        <br>
+      </blockquote>
+      <br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00658" href="msg00658.html">Re: [ferret_users] grid problem y axis (latitude)</a></strong>
+<ul><li><em>From:</em> Hella Riede</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00640" href="msg00640.html">[ferret_users] grid problem y axis (latitude)</a></strong>
+<ul><li><em>From:</em> Hella Riede</li></ul></li>
+<li><strong><a name="00650" href="msg00650.html">Re: [ferret_users] grid problem y axis (latitude)</a></strong>
+<ul><li><em>From:</em> Ansley manke</li></ul></li>
+<li><strong><a name="00653" href="msg00653.html">Re: [ferret_users] grid problem y axis (latitude)</a></strong>
+<ul><li><em>From:</em> Hella Riede</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00653.html">Re: [ferret_users] grid problem y axis (latitude)</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00658.html">Re: [ferret_users] grid problem y axis (latitude)</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00653.html">Thread Prev</a>][<a href="msg00658.html">Thread Next</a>][<A HREF="threads.html#00654">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

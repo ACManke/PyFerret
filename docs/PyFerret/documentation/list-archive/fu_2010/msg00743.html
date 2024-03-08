@@ -1,0 +1,220 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] defining common time axis for 2 datasets with different origin/end -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 6 Dec 2010 11:15:04 &#45;0800 -->
+<!--X-Message-Id: 4CFD3637.8040402@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4CF60938.4080303@msem.univ&#45;montp2.fr -->
+<!--X-Reference: D7383CD4D59FEA4DA879EF5096A5A8CB153A5C29B9@exvic&#45;mbx03.nexus.csiro.au -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] defining common time axis for 2 datasets with different origin/end</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00738.html">Thread Prev</a>][<a href="msg00739.html">Thread Next</a>][<A HREF="threads.html#00743">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] defining common time axis for 2 datasets with different origin/end</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:Xuebin.Zhang@DOMAIN.HIDDEN">Xuebin.Zhang@xxxxxxxx</a>, <a href="mailto:delclaux@DOMAIN.HIDDEN">delclaux@xxxxxxxxxxxxxxxxxxx</a>,        <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] defining common time axis for 2 datasets with different origin/end</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 06 Dec 2010 11:15:03 -0800</li>
+<li>In-reply-to:  &lt;<a href="mailto:D7383CD4D59FEA4DA879EF5096A5A8CB153A5C29B9@DOMAIN.HIDDEN">D7383CD4D59FEA4DA879EF5096A5A8CB153A5C29B9@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4CF60938.4080303@DOMAIN.HIDDEN">4CF60938.4080303@xxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:D7383CD4D59FEA4DA879EF5096A5A8CB153A5C29B9@DOMAIN.HIDDEN">D7383CD4D59FEA4DA879EF5096A5A8CB153A5C29B9@xxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.12) Gecko/20101027 Thunderbird/3.1.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+  
+  
+    Hi Francois, <br>
+    I think that Xeuben captured the issue when he noticed that one of
+    your original monthly time axes is defined with coordinates at the
+    edges of the months, and the other at mid-month. Your output time
+    axis has values near the edges of months. Regridding is done based
+    on the grid cells of the axes, not on the location of the
+    coordinates (which generally lie in the center of each grid cell).<br>
+    <br>
+    When you define this output axis, <br>
+    <blockquote><tt> define
+        axis/t="1-jan-1951":"31-dec-2006":30.436875/units=day axd</tt><br>
+    </blockquote>
+    the first grid cell starts in mid-December 1950 and ends in
+    mid-January 1951. If the first point of the axis in dataset D2 were
+    within the time range, you would get a result from your original
+    regridding request. I am guessing that the first coordinate of that
+    axis falls just after the end of that grid cell, (for instance maybe
+    the output grid cell ends at 16-JAN-1951:00:00 and the coordinate of
+    D2 is at 16-JAN-1951 12:00)<tt> </tt>and so its value contributes
+    to the next month's value in the interpolation onto the new time
+    axis. <br>
+    <br>
+    The default method of regridding is linear interpolation.&nbsp; See
+    <a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/Grids-Regions/GRIDS#Chapter4-Regridding">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/Grids-Regions/GRIDS#Chapter4-Regridding</a>.
+    Also have a look at this FAQ, which talks about regridding by
+    averaging: <a rel="nofollow"
+href="http://ferret.pmel.noaa.gov/FERRET_17sep07/FAQ/analysis/regridding_with_ave.html"><b>How
+        can I determine the averaging weights when regridding with @AVE?</b></a><br>
+    <br>
+    Regridding by interpolation does not put a result into an output
+    time axis where the coordinate value of the input time axis lies
+    outside the output-axis grid box.&nbsp; Interpolation by averaging does,
+    however. If you try your original command but with <br>
+    <blockquote>let p1 = pm[d=D1, gt=gtd@AVE]<br>
+      let p2 = pm[d=D2, gt=gtd@AVE]<br>
+    </blockquote>
+    <pre wrap=""></pre>
+    I think you will see a result at that first time step<br>
+    <br>
+    So, you need to decide what the output time axis should look like,
+    and choose a regridding method that seems correct for what you know
+    about how the input monthly axes were computed, and how you think
+    the result is best computed.<br>
+    <br>
+    Ansley<br>
+    <br>
+    <br>
+    On 12/1/2010 2:56 PM, <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:Xuebin.Zhang@xxxxxxxx">Xuebin.Zhang@xxxxxxxx</a> wrote:
+    <blockquote
+cite=""
+      type="cite">
+      <pre wrap="">Francois, 
+
+   The second dataset starts at 16-Jan-1951, but the starting point of the new time axis "gtd" is 1-jan-1951, so the first data point should be "missing" after regridding (let p2 = pm[d=D2, gt=gtd]). The reason is that FERRET doesn't know how to extrapolate.   
+
+   One simple solution is that you can just regrid dataset 1 onto dataset 2, i.e., 
+   Let p1= pm[d=D1, gt=pm[d=2]]
+   
+   One more thing is that, data points are located in the beginning of each month for the first dataset, while in the middle for the second dataset. Since they are all monthly datasets, you may want to align them to the middle of month. For this purpose, you may use the "@asn" transformation. Basically, you have to get a subset of first dataset for the period 1951-2006, then associate this subset to a common grid with @asn transformation (without interpolation). 
+   For your reference.
+   
+Xuebin
+
+-----Original Message-----
+From: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:owner-ferret_users@xxxxxxxx">owner-ferret_users@xxxxxxxx</a> [<a rel="nofollow" class="moz-txt-link-freetext" href="mailto:owner-ferret_users@xxxxxxxx">mailto:owner-ferret_users@xxxxxxxx</a>] On Behalf Of DELCLAUX Francois
+Sent: Wednesday, 1 December 2010 7:37 PM
+To: <a rel="nofollow" class="moz-txt-link-abbreviated" href="mailto:ferret_users@xxxxxxxx">ferret_users@xxxxxxxx</a>
+Subject: [ferret_users] defining common time axis for 2 datasets with different origin/end
+
+Hi Ferret users,
+
+I would like to compare (bias and correlation maps) 2 monthly 
+precipitation datasets.
+
+The first one, D1, starts on 1rst january 1901 and ends on 1rst december 
+2006, so 106 years and 1272 months: L varies from 1 to 1272
+  01-JAN-1901 /    1:    60.
+  31-JAN-1901 /    2:    10.
+  03-MAR-1901 /    3:    31.
+....
+  01-OCT-2006 / 1270:    88.
+  01-NOV-2006 / 1271:     9.
+  01-DEC-2006 / 1272:    16.
+
+
+The second one, D2, starts at 16 jan 1951 and ends at 16 december 2007, 
+so 57 years and 684 values: L varies from 1 to 684
+  16-JAN-1951 /   1:   21.4
+  15-FEB-1951 /   2:    3.3
+  18-MAR-1951 /   3:    7.0
+...
+  16-OCT-2007 / 682:   42.4
+  16-NOV-2007 / 683:    2.3
+  16-DEC-2007 / 684:    0.0
+
+In order to compare D1 and D2 over the same period, I defined a common 
+time axis/grid over 1951-2006 period such as :
+define axis/t="1-jan-1951":"31-dec-2006":30.436875/units=day axd ; 
+define grid/t=axd gtd
+and regrid the two datasets on this axis.
+
+let p1 = pm[d=D1, gt=gtd]
+let p2 = pm[d=D2, gt=gtd]
+
+But when I list these new variables on one point new datasets, I have 
+the following output:
+                      P1     P2
+01-JAN-1951 /   1:    4.0   ....
+31-JAN-1951 /   2:   36.5   12.3
+02-MAR-1951 /   3:   33.2    5.1
+...
+31-OCT-2006 / 671:   11.2   11.3
+01-DEC-2006 / 672:   16.8    9.1
+31-DEC-2006 / 673:   ....    8.7
+
+Consequently, it's impossible to compare these 2 regridded datasets.
+Then, how can I define the correct time axis (i.e. identical L values)  
+wich will give consistent regrided datasets ?
+
+Thanks in advance.
+
+</pre>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00737" href="msg00737.html">[ferret_users] defining common time axis for 2 datasets with different origin/end</a></strong>
+<ul><li><em>From:</em> DELCLAUX Francois</li></ul></li>
+<li><strong><a name="00738" href="msg00738.html">RE: [ferret_users] defining common time axis for 2 datasets with different origin/end</a></strong>
+<ul><li><em>From:</em> Xuebin . Zhang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00738.html">RE: [ferret_users] defining common time axis for 2 datasets with different origin/end</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00739.html">[ferret_users] Visit my Netlog profile</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00738.html">Thread Prev</a>][<a href="msg00739.html">Thread Next</a>][<A HREF="threads.html#00743">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

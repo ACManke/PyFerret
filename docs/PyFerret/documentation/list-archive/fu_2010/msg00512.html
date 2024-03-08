@@ -1,0 +1,174 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Problem with masking -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 8 Sep 2010 08:16:03 &#45;0700 -->
+<!--X-Message-Id: 4C87A8DF.8030203@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4C860CEA.3060500@mercator&#45;ocean.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Problem with masking</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00509.html">Thread Prev</a>][<a href="msg00514.html">Thread Next</a>][<A HREF="threads.html#00512">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Problem with masking</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Bruno Levier &lt;<a href="mailto:bruno.levier@DOMAIN.HIDDEN">bruno.levier@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Problem with masking</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 08 Sep 2010 08:16:47 -0700</li>
+<li>Cc: Ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4C860CEA.3060500@DOMAIN.HIDDEN">4C860CEA.3060500@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4C860CEA.3060500@DOMAIN.HIDDEN">4C860CEA.3060500@xxxxxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.8) Gecko/20100802 Thunderbird/3.1.2</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+ Hi -
+The IF statements used to define masks are logically True/False statements, but the mask variable is a numeric variable consisting of 0's and 1's, with 0 equivalent to false and 1 equivalent to true.
+
+See the documentation for IF,
+<a  rel="nofollow" href="http://porter.pmel.noaa.gov/Ferret/home/documentation/users-guide/commands-reference/IF">http://porter.pmel.noaa.gov/Ferret/home/documentation/users-guide/commands-reference/IF</a>, and continue to scroll down for section Ref Sec 14.2, &quot;IF-THEN-ELSE logic for masking&quot;
+
+You could use this expression for the mask, and I think it will give the result you want:
+
+   yes? let mask = if (sossheig or sossheig eq 0) then sossheig
+
+-Ansley
+
+On 9/7/2010 2:59 AM, Bruno Levier wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ferreters
+
+I'm trying to mask a 2D field from a NetCDF file. The first example works fine :
+
+
+     NOAA/PMEL TMAP
+     FERRET v6.2
+     Linux(g77) 2.6.9-22. - 05/19/09
+      7-Sep-10 11:05
+
+yes? use PSY2V4_2D.nc
+yes? let mask = if sossheig LT 0.01 then sossheig
+yes? list /j=120 /i=24:26 sossheig, mask
+             DATA SET: ./PSY2V4_2D.nc
+             X: 23.5 to 26.5
+             Y: 120
+             TIME: 01-MAY-2009 00:00
+ Column  1: SOSSHEIG is Sea Surface Height (m)
+ Column  2: MASK is IF SOSSHEIG LT 0.01 THEN SOSSHEIG
+          SOSSHEIG    MASK
+24   / 24: -0.01500 -0.01500
+25   / 25:  0.00000  0.00000
+26   / 26:  0.01400     ....
+
+
+But not the second one:
+
+
+yes? let mask = if sossheig then sossheig
+yes? list /j=120 /i=24:26 sossheig, mask
+             DATA SET: ./PSY2V4_2D.nc
+             X: 23.5 to 26.5
+             Y: 120
+             TIME: 01-MAY-2009 00:00
+ Column  1: SOSSHEIG is Sea Surface Height (m)
+ Column  2: MASK is IF SOSSHEIG THEN SOSSHEIG
+          SOSSHEIG    MASK
+24   / 24: -0.01500 -0.01500
+25   / 25:  0.00000     ....
+26   / 26:  0.01400  0.01400
+
+
+Why is the &quot;0&quot; value masked in this case ?
+
+Here's a ncdump of the file :
+
+    short sossheig(time_counter, y, x) ;
+        sossheig:units = &quot;m&quot; ;
+        sossheig:missing_value = 32767.f ;
+        sossheig:valid_min = -9999s ;
+        sossheig:valid_max = 9999s ;
+        sossheig:add_offset = 0.f ;
+        sossheig:scale_factor = 0.001f ;
+        sossheig:long_name = &quot;Sea Surface Height&quot; ;
+        sossheig:standard_name = &quot;sea_surface_height_above_geoid&quot; ;
+        sossheig:short_name = &quot;sossheig&quot; ;
+        sossheig:online_operation = &quot;N/A&quot; ;
+        sossheig:axis = &quot;TYX&quot; ;
+        sossheig:interval_operation = 86400 ;
+        sossheig:interval_write = 86400 ;
+        sossheig:associate = &quot;time_counter nav_lat nav_lon&quot; ;
+
+
+Thanks in advance,
+
+Bruno Levier
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00509" href="msg00509.html">[ferret_users] Problem with masking</a></strong>
+<ul><li><em>From:</em> Bruno Levier</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00509.html">[ferret_users] Problem with masking</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00514.html">[ferret_users] possible bug with axlabp / multi_view??</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00509.html">Thread Prev</a>][<a href="msg00514.html">Thread Next</a>][<A HREF="threads.html#00512">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

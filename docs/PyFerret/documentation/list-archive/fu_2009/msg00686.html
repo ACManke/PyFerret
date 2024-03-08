@@ -1,0 +1,197 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Looping over arrays -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 15 Oct 2009 09:42:50 &#45;0700 -->
+<!--X-Message-Id: 4AD75109.7010700@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 1603854798.2188141255617388810.JavaMail.root@neo&#45;mail&#45;3 -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Looping over arrays</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00681.html">Thread Prev</a>][<a href="msg00682.html">Thread Next</a>][<A HREF="threads.html#00686">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Looping over arrays</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Looping over arrays</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 15 Oct 2009 09:42:49 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1603854798.2188141255617388810.JavaMail.root@DOMAIN.HIDDEN">1603854798.2188141255617388810.JavaMail.root@neo-mail-3</a>&gt;</li>
+<li>References: &lt;<a href="mailto:1603854798.2188141255617388810.JavaMail.root@DOMAIN.HIDDEN">1603854798.2188141255617388810.JavaMail.root@neo-mail-3</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Karthik,<br>
+To read in the data, here's what the commands look like.&#xA0; Say the file
+is called points.dat, and that the sst data is in some dataset (a
+netcdf dataset?)&#xA0; called sst_data.nc<tt><br>
+</tt>
+<blockquote>
+  <pre><tt>FILE/VAR="xloc,yloc,tloc" points.dat
+USE sst_data.nc</tt></pre>
+</blockquote>
+<tt>For more about reading in data from ASCII files, see "ASCII data"
+in the Users Guide -- particularly the entry under "reading, examples".<br>
+<br>
+<br>
+Now, in Ferret you do not need to write loops yourself.&#xA0; You define
+expressions and Ferret will loop over the entire grid, or over any part
+of the grid that you specify. This is explained in&#xA0; the Users Guide
+introduction. It will help you to read this section; it is not long:
+<a rel="nofollow" class="moz-txt-link-freetext"
+ href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/introduction/GETTING-STARTED">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/introduction/GETTING-STARTED</a><br>
+<br>
+<br>
+So after the above two commands to open the datasets, your script would
+continue, defining a variable that contains a list of sst at the
+locations, and then another variable with the difference of the data at
+index (n+1) - (n)</tt><br>
+<blockquote>
+  <pre><tt>LET sst_at_loc = SAMPLEXYT(sst[d=2], xloc[d=1], yloc[d=1], tloc[d=1]) 
+LET sst_change = sst_at_loc[i=@SHF:1] - sst_at_loc </tt></pre>
+</blockquote>
+When you PLOT or LIST the data, Ferret will do the computations over
+the whole list.<br>
+<blockquote><tt>LIST sst_at_loc ! this will list the sampled data at
+i=1:n<br>
+LIST sst_change ! will list out the differences</tt><br>
+</blockquote>
+To save to a file, LIST/FILE=filename.dat will write out the data to an
+ascii file. See LIST in the documentation for various options.<br>
+<br>
+<br>
+Balaguru, Karthik wrote:
+<blockquote
+ cite=""
+ type="cite">
+  <pre wrap="">  Hi Ansley,
+
+     Thank you so much for your reply. Yes, you are right. The three 1-dimensional variables, which are x, y, and t values, are locations in the the grid of an XYT variable sst. The values of time are index values. The problem I have is that I have the (x,y,t) locations as three columns in a text file. I need to load that into ferret and run a loop such that for i=1:n (n = number of points), something like
+
+   for i=1:n
+   sst_at_loc = SAMPLEXYT(sst, xloc, yloc, tloc)
+   sst_change(i) = sst_at_loc[i=@SHF:1] - sst_at_loc
+   end
+
+    It'll be great to know how this can be done. Thanks a lot!
+
+   Karthik.
+
+
+
+
+
+
+
+
+
+
+----- Original Message -----
+From: "Ansley Manke" <a rel="nofollow" class="moz-txt-link-rfc2396E"
+ href="mailto:Ansley.B.Manke@xxxxxxxx">&lt;Ansley.B.Manke@xxxxxxxx&gt;</a>
+To: "Karthik Balaguru" <a rel="nofollow" class="moz-txt-link-rfc2396E"
+ href="mailto:karthiknaidu@xxxxxxxxxxxx">&lt;karthiknaidu@xxxxxxxxxxxx&gt;</a>
+Cc: "oar pmel ferret users" <a rel="nofollow" class="moz-txt-link-rfc2396E"
+ href="mailto:oar.pmel.ferret_users@xxxxxxxx">&lt;oar.pmel.ferret_users@xxxxxxxx&gt;</a>
+Sent: Wednesday, October 14, 2009 5:47:08 PM GMT -06:00 US/Canada Central
+Subject: Re: [ferret_users] Looping over arrays
+
+Hi Karthik, 
+I think I understand what you want to do. You have three 1-dimensional variables, which are x, y, and t values that are locations in the the grid of an XYT variable sst. Is that correct? Are the values in the time array times, or index values? That is, do they have units of days, or hours, or other time-units since the start? Or are they index values 1, 2, ... NT? 
+
+Assuming that the data in l(i) are in the same units of time as the time axis of sst, then you can use the SAMPLEXYT function to get the values of variable sst at each of your scattered xyt locations. 
+
+Say the 1-dimensional variables are called xloc, yloc, tloc. 
+
+
+yes? let sst_at_loc = SAMPLEXYT(sst, xloc, yloc, tloc) 
+When this is evaluated, it will be a 1-dimensional variable, sst at each of the scattered locations. Then to subtract the value of sst at ( xloc(i+1), yloc(i+1), tloc(i+1) ) minus sst at ( xloc(i), yloc(i), tloc(i) ), the _expression_ is 
+
+
+yes? let sst_change = sst_at_loc[i=@SHF:1] - sst_at_loc 
+yes? list sst_at_loc, sst_change 
+
+Ansley 
+
+Balaguru, Karthik wrote: 
+
+Hi all,
+
+      I have a problem with arrays in ferret. I have an array with three colums [x(i) y(i) l(i)], which are lat, lon and time respectively. The problem is they are not continuous, i.e; for each i, x,y and l are random. I have the corresponding sst data.
+Now for i=1:n I want to read in the array data and then calculate the sst change, like 
+
+ sst_change(i) = sst(x(i),y(i),l(i) + 1) - sst(x(i),y(i),l(i) + 1)
+
+      It'll be great if somebody can help me out with this. Thanks!
+
+
+   Truly,
+   Karthik. 
+  </pre>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00681.html">Re: [ferret_users] Looping over arrays</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00682.html">[ferret_users] Y-axis plot problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00681.html">Thread Prev</a>][<a href="msg00682.html">Thread Next</a>][<A HREF="threads.html#00686">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

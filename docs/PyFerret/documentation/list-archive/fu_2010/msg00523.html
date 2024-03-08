@@ -1,0 +1,156 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] @FLN along a time axis with unit=seconds returns *nan* -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 16 Sep 2010 09:19:39 &#45;0700 -->
+<!--X-Message-Id: 4C92439A.8080309@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1284643329.4262.240.camel@eo -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] @FLN along a time axis with unit=seconds returns *nan*</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00521.html">Thread Prev</a>][<a href="msg00527.html">Thread Next</a>][<A HREF="threads.html#00523">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] @FLN along a time axis with unit=seconds returns *nan*</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] @FLN along a time axis with unit=seconds returns *nan*</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 16 Sep 2010 09:19:38 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:1284643329.4262.240.camel@DOMAIN.HIDDEN"><a href="msg00521.html">1284643329.4262.240.camel@eo</a></a>&gt;</li>
+<li>References: &lt;<a href="mailto:1284643329.4262.240.camel@DOMAIN.HIDDEN"><a href="msg00521.html">1284643329.4262.240.camel@eo</a></a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.9) Gecko/20100825 Thunderbird/3.1.3</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+ Hi Paulo,
+Thank you for the report, and the example. There is enough precision to store the time coordinates in seconds, even starting with year 0, using the double-precision storage Ferret uses for coordinate data.  But single precision is used for other storage including variables. It should be possible to fix this, and not need a warning or bad-value.
+
+Ansley
+
+On 9/16/2010 6:22 AM, Paulo B. Oliveira wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+I realized that @FLN returns a *nan* when interpolating along a time
+axis with units of seconds. It seems an issue related with the huge
+numbers involved when T0 is very far from the actual axis dates. I
+suggest that ferret issue a warning and set the output to the usual BAD
+value instead of *nan*. A jnl to show this is attached:
+
+yes? go fln_tsec
+  ! NOAA/PMEL TMAP
+  ! FERRET v6.5
+  ! Linux(g77) 2.4.21-57.ELsmp - 04/01/10
+  ! 16-Sep-10 13:41
+
+def ax/t=&quot;16-sep-2010 13:00&quot;:&quot;16-sep-2010 13:02&quot;:15/unit=sec t15s
+  let v1 = if l[gt=t15s] lt 5 then 1
+  let v2 = if l[gt=t15s] gt 5 then 2
+  let v1_2 = if v1 then v1 else v2
+list v1_2,v1_2[t=@fln]
+              TIME: 16-SEP-2010 12:59 to 16-SEP-2010 13:02
+  Column  1: V1_2 is IF V1 THEN V1 ELSE V2
+  Column  2: V1_2[T=@FLN:1] is IF V1 THEN V1 ELSE V2 (linear-filled by 1
+pts on T)
+                            V1_2   V1_2
+16-SEP-2010 13:00:00 / 1:  1.000  1.000
+16-SEP-2010 13:00:15 / 2:  1.000  1.000
+16-SEP-2010 13:00:30 / 3:  1.000  1.000
+16-SEP-2010 13:00:45 / 4:  1.000  1.000
+16-SEP-2010 13:01:00 / 5:   ....    nan
+16-SEP-2010 13:01:15 / 6:  2.000  2.000
+16-SEP-2010 13:01:30 / 7:  2.000  2.000
+16-SEP-2010 13:01:45 / 8:  2.000  2.000
+16-SEP-2010 13:02:00 / 9:  2.000  2.000
+
+def ax/t=&quot;16-sep-2010 13:00&quot;:&quot;16-sep-2010
+13:02&quot;:15/unit=sec/t0=&quot;16-sep-2010 12:59&quot; t15s
+Replacing definition of axis T15S
+  let v1 = if l[gt=t15s] lt 5 then 1
+  let v2 = if l[gt=t15s] gt 5 then 2
+  let v1_2 = if v1 then v1 else v2
+list v1_2,v1_2[t=@fln]
+              TIME: 16-SEP-2010 12:59 to 16-SEP-2010 13:02
+  Column  1: V1_2 is IF V1 THEN V1 ELSE V2
+  Column  2: V1_2[T=@FLN:1] is IF V1 THEN V1 ELSE V2 (linear-filled by 1
+pts on T)
+                            V1_2   V1_2
+16-SEP-2010 13:00:00 / 1:  1.000  1.000
+16-SEP-2010 13:00:15 / 2:  1.000  1.000
+16-SEP-2010 13:00:30 / 3:  1.000  1.000
+16-SEP-2010 13:00:45 / 4:  1.000  1.000
+16-SEP-2010 13:01:00 / 5:   ....  1.500
+16-SEP-2010 13:01:15 / 6:  2.000  2.000
+16-SEP-2010 13:01:30 / 7:  2.000  2.000
+16-SEP-2010 13:01:45 / 8:  2.000  2.000
+16-SEP-2010 13:02:00 / 9:  2.000  2.000
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00521" href="msg00521.html">[ferret_users] @FLN along a time axis with unit=seconds returns *nan*</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00521.html">[ferret_users] @FLN along a time axis with unit=seconds returns *nan*</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00527.html">[ferret_users] fill between</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00521.html">Thread Prev</a>][<a href="msg00527.html">Thread Next</a>][<A HREF="threads.html#00523">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] More specific question on time series overlay wrt Grid Transformation	and Definition -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 2 Oct 2009 10:09:27 &#45;0700 -->
+<!--X-Message-Id: 4AC633C1.2080207@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: a0350d590909300913j46913701yee17e8774dff11e4@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] More specific question on time series overlay wrt Grid Transformation	and Definition</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00635.html">Thread Prev</a>][<a href="msg00639.html">Thread Next</a>][<A HREF="threads.html#00642">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] More specific question on time series overlay wrt Grid Transformation	and Definition</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ag &lt;<a href="mailto:agdc2005@DOMAIN.HIDDEN">agdc2005@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] More specific question on time series overlay wrt Grid Transformation	and Definition</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 02 Oct 2009 10:09:21 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:a0350d590909300913j46913701yee17e8774dff11e4@DOMAIN.HIDDEN">a0350d590909300913j46913701yee17e8774dff11e4@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:a0350d590909300913j46913701yee17e8774dff11e4@DOMAIN.HIDDEN">a0350d590909300913j46913701yee17e8774dff11e4@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi Ag,<br>
+You can overlay time series plots even if the time axes are not the
+same. For instance, try this quick script.&nbsp; monthly_navy_winds is one
+of the datasets that comes with the Ferret distribution. The time axis
+of variable uwnd from monthly_navy_winds has units of days, and a time
+origin of 14-Jan-1980; the time axis I define has units of months and a
+time origin of 15-jan-1901.<tt><br>
+</tt>
+<blockquote><tt>yes? use monthly_navy_winds<br>
+  </tt><tt>yes? let var1 = uwnd[x=300,y=1]<br>
+  <br>
+  </tt><tt>yes? define axis/t=1-jan-1982:1-jan-1991:1/units=months
+tmonth</tt><br>
+  <tt>&nbsp;*** NOTE: /UNIT=MONTHS is ambiguous ... using 1/12 of 365.2425
+days<br>
+  <br>
+  </tt><tt>yes? let var2 = 2*cos(t[gt=tmonth])<br>
+  <br>
+  </tt><tt>yes? plot var1,var2</tt><br>
+</blockquote>
+For your script, I would suggest you plot each of your time series
+separately. Define each variable, don't regrid to the same time axis,
+but just create each on the time axis that makes sense for it.&nbsp; Then
+look at the individual plots and see if they look correct.&nbsp; Are the
+commands to read from your ascii file really skipping the first block
+and reading the second set of data? You could do this:<br>
+<br>
+SET VIEW UPPER<br>
+PLOT new_var_11<br>
+SET VIEW LOWER<br>
+new_var_21<br>
+<br>
+ag wrote:
+<blockquote
+ cite=""
+ type="cite">Dear Ferret User Group:<br>
+  <br>
+OK ...after a more thorough search....I understand that in order to
+place (overlay) a second time series, I need to re-grid the second
+variable to the time grid that is specified by the first time
+axis...here are the commands I am using to do so and I am still getting
+only one plot in the figure. Any pointers are greatly appreciated.<br>
+  <br>
+!For first data block&nbsp; in ASCII file...($3 is the variable I want to
+plot specified by Column name)<br>
+  <br>
+DEFINE axis/T/T0=1-jan-2001/UNIT=DAYS
+ttaxis_days_1=tstep_1[L=1:`nntime_1`]&nbsp;&nbsp;&nbsp; !nntime_1 is read from file<br>
+LET dummy_1&nbsp;&nbsp; = t[GT=ttaxis_days_1]<br>
+LET new_var_1 = RESHAPE($3,dummy_1)<br>
+  <br>
+list new_var_1&nbsp; ! Prints out the correct values<br>
+  <br>
+DEFINE GRID/T=ttaxis_days_1 gttaxis_1<br>
+LET dummy_11&nbsp; = t[GT=gttaxis_1]<br>
+LET new_var_11 = RESHAPE($3,dummy_11)<br>
+  <br>
+! For Second Data Block in ASCII file<br>
+! Read File for Station = S2 and DataProduct/Dataset =D1<br>
+! Move Back to beginning of ASCII File<br>
+  <br>
+CANCEL DATA "$1" <br>
+  <br>
+!...SKIP the first data block and read second one etc!<br>
+  <br>
+DEFINE axis/T/T0=1-jan-2001/UNIT=DAYS
+ttaxis_days_2=tstep_2[L=1:`nntime_2`]&nbsp; !nntime_2 is also read from file
+and is NE nntime_1<br>
+LET dummy_2&nbsp;&nbsp; = t[GT=ttaxis_days_2]<br>
+LET new_var_2 = RESHAPE($3,dummy_2)<br>
+  <br>
+! Now re-gridding second Time Series Variable new_var_2 to time axis
+ttaxis_days_1 (defined above)<br>
+  <br>
+DEFINE GRID/T=ttaxis_days_1 gttaxis_2<br>
+LET dummy_21&nbsp; = t[G=gttaxis_2]<br>
+LET new_var_21 = RESHAPE($3,dummy_21)<br>
+  <br>
+list new_var_11, new_var_21 <br>
+  <br>
+! Unfortunately, the above diagnostic shows identical values for
+new_var_11 and new_var_21...this is should not be the case<br>
+  <br>
+! Make the Time Series Plots as unconnected symbols with different
+colors<br>
+  <br>
+PLOT /NOLAB/THICKNESS=3/SIZE=0.2/SET new_var_11,
+new_var_21[g=gttaxis_1, gt=@asn]<br>
+!PPL TXLINT,1,0<br>
+PPL pen 1,2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! set pen 1 color to 2 (red)<br>
+PPL line 1,19,3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! set line 1 to symbol #19, unconnected<br>
+PPL pen 2,3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! set pen 2 color to 3 (green)<br>
+PPL line 2,17,3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ! set line 2 to symbol #17, unconnected<br>
+PPL PLOT<br>
+  <br>
+! creat gif file<br>
+! Create a GIF file in local directory<br>
+FRAME/FILE="$2"<br>
+SPAWN chmod ugo+rw "$2"<br>
+  <br>
+quit<br>
+  <br>
+Thanks to any insights.<br>
+agdc2005<br>
+  <br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00635" href="msg00635.html">[ferret_users] More specific question on time series overlay wrt Grid Transformation	and Definition</a></strong>
+<ul><li><em>From:</em> ag</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00635.html">[ferret_users] More specific question on time series overlay wrt Grid Transformation	and Definition</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00639.html">[ferret_users] how to calculate confidence level in fft</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00635.html">Thread Prev</a>][<a href="msg00639.html">Thread Next</a>][<A HREF="threads.html#00642">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] potential vorticity from OGCM -->
+<!--X-From-R13: "Ivyyvnz E. Yrffyre" <jvyyvnz.f.xrffyreNabnn.tbi> -->
+<!--X-Date: Wed, 29 Jul 2009 06:57:07 &#45;0700 -->
+<!--X-Message-Id: 0C6547F7&#45;1D5B&#45;4087&#45;8546&#45;0626E5681748@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 71cc5ca20907222324h695f064ah5fbf3ac7129b449f@mail.gmail.com -->
+<!--X-Reference: 4A69F574.8060302@noaa.gov -->
+<!--X-Reference: 1248783380.25921.24.camel@prescy.ees.hokudai.ac.jp -->
+<!--X-Reference: 20090728.220432.190528678.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] potential vorticity from OGCM</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00458.html">Thread Prev</a>][<a href="msg00460.html">Thread Next</a>][<A HREF="threads.html#00459">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] potential vorticity from OGCM</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] potential vorticity from OGCM</strong></li>
+<li><strong>From</strong>: <strong>&quot;William S. Kessler&quot; &lt;<a href="mailto:william.s.kessler@DOMAIN.HIDDEN">william.s.kessler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 29 Jul 2009 06:57:04 -0700</li>
+<li>Cc: <a href="mailto:prescy@DOMAIN.HIDDEN">prescy@xxxxxxxxxxxxxxxxx</a>, Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:20090728.220432.190528678.furue@DOMAIN.HIDDEN">20090728.220432.190528678.furue@xxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:71cc5ca20907222324h695f064ah5fbf3ac7129b449f@DOMAIN.HIDDEN">71cc5ca20907222324h695f064ah5fbf3ac7129b449f@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4A69F574.8060302@DOMAIN.HIDDEN">4A69F574.8060302@xxxxxxxx</a>&gt; &lt;<a href="mailto:1248783380.25921.24.camel@DOMAIN.HIDDEN">1248783380.25921.24.camel@xxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:20090728.220432.190528678.furue@DOMAIN.HIDDEN">20090728.220432.190528678.furue@xxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+What Ryo said, exactly.
+
+</pre><tt>But if you still think you're not getting the right answer, look at  
+</tt><tt>the pieces before assembling them:
+</tt><tt>Is the relative vorticity reasonable? (shade it and overlay velocity  
+</tt><tt>vectors to check)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>One thing that worries me a little is the use of SET REGION,  
+</tt><tt>including for K. Is that causing a problem when you are taking a  
+</tt><tt>vertical derivative? Are the vertical grids the same for all quantities?
+</tt><tt>If the other pieces look right, then try removing SET REGION/K=10,  
+</tt><tt>defining the vertical derivative manually ((density[k=9]-density 
+</tt><tt>[k=11])/2*&lt;your interval&gt;), and specifying zeta[k=10].
+</tt><pre style="margin: 0em;">
+
+</pre><tt>And you omitted the most important thing when using SET REGION in a  
+</tt><tt>script:
+</tt><pre style="margin: 0em;">
+
+The final line: CAN REG/ALL
+
+</pre><tt>It is far too easy to get an incorrect result when leftover REGIONS  
+</tt><tt>are defined and you have forgotten that they remain. For example, if  
+</tt><tt>K=10 remained specfied and you later did a vertical integral of  
+</tt><tt>something else, you would get the wrong answer and not know it. I  
+</tt><tt>never use SET REGION! It is straightforward to make the specification  
+</tt><tt>within the calculation, or within the definition of variables. A  
+</tt><tt>further reason to do this is that the JNL files are easier to  
+</tt><tt>understand later if the region specifications are done in the  
+</tt><tt>calculation, rather than somewhere far above it the listing.
+</tt><pre style="margin: 0em;">
+
+One man's opinion.
+
+Billy K
+
+
+On 29 Jul 09, at 1:04 AM, Ryo Furue wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Prescilla,
+
+| The code I prepared is as below
+|
+| use 2014_hori_U_AM500_AH250.nc
+| use 2014_hori_V_AM500_AH250.nc
+| set region/X=78E:94E/Y=6N:23N/L=8/K=10
+| use density.nc
+| LET zeta=(VVEL[d=2,x=@ddc])-(UVEL[d=1,y=@ddc])  ! relative vorticity
+| let deg2rad=(2*3.14)/360
+| let omega = 7.292e-5
+| let f=2*omega*sin(deg2rad*Y[g=UVEL[d=1]]) !planetary V
+| let rho_zero=1026 ! referece density
+| let grad=DENSITY[z=@ddc] ! density gradient
+| fill (grad*(zeta+f))/rho_zero
+
+Looks good to me, if DENSITY, VVEL, and UVEL are in MKS units.
+A potential (minor) problem is that if DENSITY, VVEL, and UVEL
+are defined on different grids, then it's better to map them on
+to a common grid before the final multiplication; for example
+
+  let pv = grad[g=zeta] * (zeta + f) / rho_zero
+
+Density should be a potential density but I don't think
+that matters much for the upper ocean.
+
+By the way, I have a very minor piece of advice, which isn't
+related to the cause of your problem.  I think it's better
+not to throw away precision gratuitously: I would write
+something along the lines of
+
+  let pi = 4*atan(1.0)  !! or acos(-1.0)
+  let deg2rad = pi/180
+  let omega = 2*pi/(24*60*60)
+
+Regards,
+Ryo
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00460" href="msg00460.html">Re: [ferret_users] potential vorticity from OGCM</a></strong>
+<ul><li><em>From:</em> prescilla kurien</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00450" href="msg00450.html">[ferret_users] how to calculate growth rate of a variable</a></strong>
+<ul><li><em>From:</em> Yogesh Tiwari</li></ul></li>
+<li><strong><a name="00452" href="msg00452.html">Re: [ferret_users] how to calculate growth rate of a variable</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+<li><strong><a name="00453" href="msg00453.html">[ferret_users] potential vorticity from OGCM</a></strong>
+<ul><li><em>From:</em> prescilla kurien</li></ul></li>
+<li><strong><a name="00458" href="msg00458.html">Re: [ferret_users] potential vorticity from OGCM</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00458.html">Re: [ferret_users] potential vorticity from OGCM</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00460.html">Re: [ferret_users] potential vorticity from OGCM</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00458.html">Thread Prev</a>][<a href="msg00460.html">Thread Next</a>][<A HREF="threads.html#00459">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

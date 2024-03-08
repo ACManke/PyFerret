@@ -1,0 +1,187 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] filter -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 7 May 2009 11:07:59 &#45;0700 -->
+<!--X-Message-Id: 4A03237C.3070708@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: b4114cae0905062107l223d9954s8eb716aa90a553ef@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] filter</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00264.html">Thread Prev</a>][<a href="msg00265.html">Thread Next</a>][<A HREF="threads.html#00267">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] filter</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>jaya kumar A &lt;<a href="mailto:jayamet@DOMAIN.HIDDEN">jayamet@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] filter</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 07 May 2009 11:07:56 -0700</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:b4114cae0905062107l223d9954s8eb716aa90a553ef@DOMAIN.HIDDEN">b4114cae0905062107l223d9954s8eb716aa90a553ef@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:b4114cae0905062107l223d9954s8eb716aa90a553ef@DOMAIN.HIDDEN">b4114cae0905062107l223d9954s8eb716aa90a553ef@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Windows/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#ffffff" style="background-color: #ffffff; color: #000000; "><font color="#000000">
+
+
+
+Hi -<br>
+For the LSL_LOWPASS function, I believe you are mis-interpreting the
+arguments to the function. <br>
+<blockquote><tt>yes? show function lsl_lowpass</tt><br>
+  <tt>LSL_LOWPASS(A,cutoff_period,filter_span)</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; Returns Least Squares Lanzcos filter of equally-spaced time
+series</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; A: data to be filtered</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; cutoff_period: period at which filter attains 1/2 amplitude.
+&lt;=N</tt><br>
+  <tt>&nbsp;&nbsp;&nbsp; filter_span: number of input data points used in each
+filtered output point</tt><br>
+</blockquote>
+So it looks to me as if you may have reversed the second and third
+arguments. You want:<br>
+<blockquote><tt>let LP_u10 = LSL_LOWPASS(u10,366,30)</tt><br>
+</blockquote>
+To compare results, try this, using the monthly_navy_winds data that's
+distributed with Ferret: <br>
+<blockquote>yes? use monthly_navy_winds<br>
+yes? let uvar = uwnd[x=115,y=20]<br>
+yes? let u_lowpass = LSL_LOWPASS(uvar,132,31) <br>
+yes? let u_parzen = uvar[L=@spz:31]<br>
+  <br>
+yes? plot uvar,u_lowpass,u_parzen<br>
+</blockquote>
+To save filtered data, I'm not sure quite what you're asking. Whether
+you've used a function like LSL_LOWPASS or a transformation such as
+@SPZ, just specify the variable.<br>
+<blockquote><tt>! This saves data on the same time axis as the original
+data, each point </tt><br>
+  <tt>! being smoothed with the filter<br>
+  </tt><tt>save/file=<a rel="nofollow" moz-do-not-send="true"
+ href="http://runningmean_u10.nc">runningmean_u10.nc</a>&nbsp; rm_u10 </tt><br>
+  <tt> </tt><br>
+  <tt>!Or you could save one point per month. Here I've started </tt><br>
+  <tt>! with the 16th value, but you could start at any index.</tt><br>
+  <tt>let nt = `rm_u10,RETURN=Lsize`</tt><br>
+  <tt>save/file=month_u10.nc rm_u10[L=15:`nt`:31] </tt><br>
+</blockquote>
+(Or try LIST commands to see what' you're doing).<br>
+<br>
+As to the definitions of the filters and functions, I need to refer you
+to the sources listed in the documentation for LSL_LOWPASS, and the
+transformations in Ferret are based on what is in Numerical Recipes.<br>
+<br>
+Ansley<br>
+<br>
+jaya kumar A wrote:
+<blockquote
+ cite=""
+ type="cite">dear ferret users,<br>
+  <br>
+I have a doubt regarding low pass filter and running mean.<br>
+  <br>
+my data is like this <br>
+  <br>
+&nbsp;&nbsp;&nbsp;&nbsp; currently SET data sets:<br>
+&nbsp;&nbsp;&nbsp; 1&gt; ./<a rel="nofollow" moz-do-not-send="true" href="http://u_10.1996.nc">u_10.1996.nc</a>&nbsp;
+(default)<br>
+&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp; title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp;&nbsp; I&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; J&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L<br>
+&nbsp;U_10_MOD U_10_MOD1[GT=TIME@ASN]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:360&nbsp;&nbsp;&nbsp;&nbsp; 1:177&nbsp;&nbsp;&nbsp;&nbsp;
+...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:366<br>
+  <br>
+1) I want to 30 days low pass filter on above data and save that output
+data. i tried this way <br>
+let u10 = U_10_MOD[I=1:360,J=1:177,L=1:366]<br>
+let LP_u10 = LSL_LOWPASS(u10,30,366)<br>
+save/file=<a rel="nofollow" moz-do-not-send="true" href="http://lowpass_u_10.nc">lowpass_u_10.nc</a>&nbsp;
+LP_u10<br>
+  <br>
+!!!!!!!!!!but this is not working !!!!!!!!!!!!!!<br>
+  <br>
+2) i want to have 31 days running mean in above data <br>
+&nbsp;let rm_u10= u10[l=@spz:31]<br>
+!!!!!!!!normally plotting 31 days running mean we use plot/x=60/y=-20
+u10[l=@spz:31]<br>
+save/file=<a rel="nofollow" moz-do-not-send="true" href="http://runningmean_u10.nc">runningmean_u10.nc</a>&nbsp;
+rm_u10<br>
+!!!! but if i want to save 31 days running mean how i will do it<br>
+!!!!!!!!!what is the difference in 2 and 1 in ferret!!!!<br>
+kindly help&nbsp; me in this regards, may be i am wrong in thinking, <br>
+Thanks in advance for all suggestion<br>
+  <br>
+with regards<br>
+  <br>
+- <br>
+JAYAKUMAR A<br>
+Theoretical Studies Division<br>
+IITM, Pune-8<br>
+</blockquote>
+
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00264" href="msg00264.html">[ferret_users] filter</a></strong>
+<ul><li><em>From:</em> jaya kumar A</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00264.html">[ferret_users] filter</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00265.html">[ferret_users] Circle outline on polar stereographic plot?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00264.html">Thread Prev</a>][<a href="msg00265.html">Thread Next</a>][<A HREF="threads.html#00267">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

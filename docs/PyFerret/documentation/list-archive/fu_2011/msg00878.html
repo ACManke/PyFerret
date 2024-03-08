@@ -1,0 +1,154 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] write missing value into output netcdf -->
+<!--X-From-R13: Dhff Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Tue, 29 Nov 2011 20:56:19 &#45;0800 -->
+<!--X-Message-Id: 1322628929.5981.138.camel@russ&#45;hf -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 8be1369e0904221809w5d92a6b5leb0cd95419201a5a@mail.gmail.com -->
+<!--X-Reference: 49F09FBE.60609@noaa.gov -->
+<!--X-Reference: 4ED55525.9050100@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] write missing value into output netcdf</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00880.html">Thread Prev</a>][<a href="msg00879.html">Thread Next</a>][<A HREF="threads.html#00878">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] write missing value into output netcdf</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Haoping Yang &lt;<a href="mailto:Haoping.Yang@DOMAIN.HIDDEN">Haoping.Yang@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] write missing value into output netcdf</strong></li>
+<li><strong>From</strong>: <strong>Russ Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 30 Nov 2011 15:55:29 +1100</li>
+<li>Cc: Ferret Usergroup &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=simple/simple;  d=csiro.au; <a href="mailto:i%3Drussell.fiedler@DOMAIN.HIDDEN">i=russell.fiedler@xxxxxxxx</a>; q=dns/txt;  s=email; t=1322628977; x=1354164977; h=subject:from:to:cc:in-reply-to:references:date: message-id:mime-version:content-transfer-encoding; bh=7bGf2Nt7TmO5qTMVmc9NhTi/+L9Z4MqmEVU9q6CunEI=; b=nQZWDx5ix8FAmHt9muJEw4uP8859O7caW/O6M2FowCaA/c8EglQh+PD2 Blj/bv2o52JwGYAK/hNdo8x7U3ekIfdBmXRGrB8K1/S7IRsYHOrZY4KHN   eosG16JJjMEBybi;</li>
+<li>In-reply-to: &lt;<a href="mailto:4ED55525.9050100@DOMAIN.HIDDEN">4ED55525.9050100@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:8be1369e0904221809w5d92a6b5leb0cd95419201a5a@DOMAIN.HIDDEN">8be1369e0904221809w5d92a6b5leb0cd95419201a5a@xxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:49F09FBE.60609@DOMAIN.HIDDEN">49F09FBE.60609@xxxxxxxx</a>&gt; &lt;<a href="mailto:4ED55525.9050100@DOMAIN.HIDDEN">4ED55525.9050100@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+2^100 is a poor choice for a large floating point number in either
+single or double precision. You can't evaluate it exactly. You are
+relying on the underlying software to make a conversion and will get
+different bit patterns depending on how the expression is evaluated. For
+instance, if the expression 2^100 is evaluated using integer arithmetic
+and then converted to a float then you have a nonsensical intermediate
+result unless 128 bit integers are used. I think this is what is
+happening in the case that writes a bad value of 2.
+
+Try the following Fortran snippet.
+
+program test_power
+xint=2**100    ! calculate using integer arithmetic then convert to real
+xr4=2.0**100   ! all done in real.
+write(*,*) 'Integer',xint,'Real(4)',xr4
+end program test_power
+
+The intel ifort compiler returns 0 for xint.
+ 
+
+If you specify an explicit constant (eg 1E30) then the correct and (more
+importantly) consistent bit pattern according to the floating point
+model will be used.
+
+Russ
+
+
+On Wed, 2011-11-30 at 08:56 +1100, Haoping Yang wrote:
+&gt; Hello,
+&gt; 
+&gt; I have a little trouble when I try to write missing values (2**100) into 
+&gt; an output netcdf file. For example,
+&gt; 
+&gt; yes? use old.nc
+&gt; yes? show data
+&gt; name     title                                I              J         
+&gt;    K         L
+&gt; var1                                       1:2000    1:1000        
+&gt; ...        ...
+&gt; yes? let largenum=2^100
+&gt; yes? list/precision=7 largenum
+&gt;         1.267651E+30
+&gt; yes? set variable/bad=largenum var1      (this attempt failed)
+&gt; yes? set variable/bad=2^100 var1           (this attempt passes but the 
+&gt; missing value is 2 not 2^100)
+&gt; yes? save/file=new.nc var1
+&gt; 
+&gt; Any trick here? I can directly set variable/bad to 1.267651E+30 but 
+&gt; again that's not exactly equal to 2^100.
+&gt; Thanks,
+&gt; Haoping
+&gt; 
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00879" href="msg00879.html">Re: [ferret_users] write missing value into output netcdf</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00875" href="msg00875.html">[ferret_users] write missing value into output netcdf</a></strong>
+<ul><li><em>From:</em> Haoping Yang</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00880.html">Re: [ferret_users] write missing value into output netcdf</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00879.html">Re: [ferret_users] write missing value into output netcdf</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00880.html">Thread Prev</a>][<a href="msg00879.html">Thread Next</a>][<A HREF="threads.html#00878">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

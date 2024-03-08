@@ -1,0 +1,227 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] when a /append causes a "** netCDF error: Variable not found" -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 21 Sep 2009 10:37:01 &#45;0700 -->
+<!--X-Message-Id: 4AB7B9BD.2040603@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4AB54F19.5050906@cea.fr -->
+<!--X-Reference: 200909211746.35297.russell.fiedler@csiro.au -->
+<!--X-Reference: 4AB73A5B.3050002@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00620.html">Thread Prev</a>][<a href="msg00624.html">Thread Next</a>][<A HREF="threads.html#00621">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 21 Sep 2009 10:37:01 -0700</li>
+<li>Cc: ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4AB73A5B.3050002@DOMAIN.HIDDEN">4AB73A5B.3050002@xxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:4AB54F19.5050906@DOMAIN.HIDDEN">4AB54F19.5050906@xxxxxx</a>&gt; &lt;<a href="mailto:200909211746.35297.russell.fiedler@DOMAIN.HIDDEN">200909211746.35297.russell.fiedler@xxxxxxxx</a>&gt; &lt;<a href="mailto:4AB73A5B.3050002@DOMAIN.HIDDEN">4AB73A5B.3050002@xxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.23 (Windows/20090812)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Patrick,
+</pre><tt>When Ferret opens the file err620_append.nc from your website, the time 
+</tt><tt>axis is not detected as a regularly-spaced axis, and neither is the 
+</tt><tt>longer version of file_part2.nc.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Looking at the ncdump output of file_part2.nc with the longer length of 
+</tt><tt>840, the coordinates look like this:
+</tt><pre style="margin: 0em;">
+
+&gt; ncdump -c file_part2.nc
+netcdf file_part2 {
+dimensions:
+   TIME_COUNTER = UNLIMITED ; // (840 currently)
+variables:
+   double TIME_COUNTER(TIME_COUNTER) ;
+   float VAR1(TIME_COUNTER) ;
+
+// global attributes:
+</pre><tt>       :history = &quot;Mon Sep 21 09:32:55 2009: ncks -O -F -d 
+</tt><tt>TIME_COUNTER,1,840 err620_append.nc file_part2.nc&quot; ;
+</tt><pre style="margin: 0em;">
+data:
+
+TIME_COUNTER = 1296000, 3888000, 6480000, 9072000, 11664000, 14256000,
+...
+   2129328000, 2131920000, 2134512000, 2137104000, 2139696000, 2142288000,
+   2144880000, 2147472000, 2150064128, 2152655872, 2155248128, 2157839872,
+   2160432128, 2163023872, 2165616128, 2168207872, 2170800128, 2173391872,
+   2175984128 ;
+
+</pre><tt>You can see that for most of the range, the delta-coordinate is 2592000, 
+</tt><tt>but within the last few time steps this starts to vary.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If you change your script to force the axis to be seen as regular 
+</tt><tt>(USE/REGULART file_part2.nc), or put an attribute in the file 
+</tt><tt>TIME_COUNTER:point_spacing = &quot;even&quot; ;  then the script will work as you 
+</tt><tt>expect. 
+</tt><tt>Ferret should issue an error message to tell us what is the problem is. 
+</tt><tt>What is happening is that the script writes the first part of the data 
+</tt><tt>to the file, with a regularly-spaced time axis, L=1:360.  Then the 
+</tt><tt>second LIST command, with /APPEND/L=361:840, tries to write the 
+</tt><tt>irregularly-spaced axis coordinates with bounds, as it does for all 
+</tt><tt>irregular axes, but it does not find a bounds variable defined for the 
+</tt><tt>axis.  A bounds variable which would have been automatically created if 
+</tt><tt>the first part of the axis were irregular, or if we had put a /BOUNDS 
+</tt><tt>qualifier on the first LIST command.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Notice that this combination works, because the first LIST command has 
+</tt><tt>written an irregular time axis, and so the LIST/APPEND can use the 
+</tt><tt>bounds variable that has already been defined.
+</tt><pre style="margin: 0em;">
+
+  ferret -script err620_append.jnl 840 1000
+
+
+Another way to get the script to work is to force bounds to be written:
+
+</pre><tt> ! for testing, generate a file_part1.nc with ($01) time steps from 
+</tt><tt>err620_append.nc
+</tt><pre style="margin: 0em;">
+ sp ncks -O -F -d TIME_COUNTER,1,($01) err620_append.nc file_part1.nc
+ use &quot;file_part1.nc&quot;
+ let var2=var1
+ save/BOUNDS/file=&quot;fileout.nc&quot;/clobber var2
+
+ !################################################
+</pre><tt> ! for testing, generate a file_part2.nc with ($02) time steps from 
+</tt><tt>err620_append.nc
+</tt><pre style="margin: 0em;">
+ sp ncks -O -F -d TIME_COUNTER,1,($02) err620_append.nc file_part2.nc
+ use &quot;file_part2.nc&quot;
+ let var2=var1
+ save/BOUNDS/file=&quot;fileout.nc&quot;/append/l=`($01)+1`:($02) var2
+
+We will add a proper error message, something like:
+
+</pre><tt>** appending irregular time steps to an axis without bounds: cannot 
+</tt><tt>create bounds variable when appending.
+</tt><pre style="margin: 0em;">
+
+
+
+Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Russell Fiedler a &#xE9;crit :
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Patrick,
+
+</pre><tt>I've figured it out! You're running out of precision and ferret is 
+</tt><tt>getting confused because
+</tt><pre style="margin: 0em;">
+TIME_COUNTER is no longer being treated as a regular axis.
+</pre><tt>If you do a ncdump -c on the longer file you will see that the last 
+</tt><tt>few entries are becoming irregular
+</tt><pre style="margin: 0em;">
+...
+</pre><tt>    2129328000, 2131920000, 2134512000, 2137104000, 2139696000, 
+</tt><tt>2142288000,     2144880000, 2147472000, 2150064128, 2152655872, 
+</tt><tt>2155248128, 2157839872,     2160432128, 2163023872, 2165616128, 
+</tt><tt>2168207872, 2170800128, 2173391872,     2175984128 ;
+</tt><pre style="margin: 0em;">
+
+show axis in ferret says its an irregular axis
+</pre><tt> name       axis                      # pts      
+</tt><tt>start                       end
+</tt><pre style="margin: 0em;">
+ TIME_COUNTER T               840 i   1296000              2.176E+09
+                                                     ^
+</pre><tt>whereas for the shorter axes  TIME_COUNTER1 T              721 r   
+</tt><tt>1296000              1.8675E+09
+</tt><pre style="margin: 0em;">
+                                                       ^
+</pre><tt>  
+</tt></blockquote><pre style="margin: 0em;">
+Hi Russ,
+You are right. Nice to understand why.
+</pre><tt>Now I am wondering why there is this problem since the time axis is 
+</tt><tt>represented
+</tt><pre style="margin: 0em;">
+with a double precision.
+With 240 years of simulation I should be able to save
+a time axis with 360*24*60*60*240 seconds ?
+
+Patrick
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00624" href="msg00624.html">Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable	not found&quot;</a></strong>
+<ul><li><em>From:</em> ag</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00620" href="msg00620.html">[ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00620.html">[ferret_users] when a /append causes a &quot;** netCDF error: Variable not found&quot;</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00624.html">Re: [ferret_users] when a /append causes a &quot;** netCDF error: Variable	not found&quot;</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00620.html">Thread Prev</a>][<a href="msg00624.html">Thread Next</a>][<A HREF="threads.html#00621">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] multiple property&#45;property plots in a single figure -->
+<!--X-From-R13: Dhffryy Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Thu, 1 Sep 2011 17:36:59 &#45;0700 -->
+<!--X-Message-Id: 201109021036.55452.russell.fiedler@csiro.au -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: alpine.LRH.2.00.1109011512220.24251@flywheel.cgd.ucar.edu -->
+<!--X-Reference: 8C106454&#45;4807&#45;4A68&#45;9919&#45;80CF593ABA1C@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] multiple property-property plots in a single figure</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00670.html">Thread Prev</a>][<a href="msg00673.html">Thread Next</a>][<A HREF="threads.html#00672">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] multiple property-property plots in a single figure</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Keith Lindsay &lt;<a href="mailto:klindsay@DOMAIN.HIDDEN">klindsay@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] multiple property-property plots in a single figure</strong></li>
+<li><strong>From</strong>: <strong>Russell Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 02 Sep 2011 10:36:55 +1000</li>
+<li>Cc: Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=simple/simple;  d=csiro.au; <a href="mailto:i%3Drussell.fiedler@DOMAIN.HIDDEN">i=russell.fiedler@xxxxxxxx</a>; q=dns/txt;  s=email; t=1314923818; x=1346459818; h=from:to:subject:date:cc:references:in-reply-to: mime-version:content-transfer-encoding:message-id; bh=/Kir4MASNVNVDGz5tlAqhJTa4YvaYoFL2a1Df0TIz8E=; b=S7EdE2Fb89LxKf6oTr8IJyp8qfkeseAO6EUoVHAfzQAKfk6nDzp0c6V3 pFLBuoePcks6HNtysPC94YvKlp0NKfaQF/OLfcWyla9rUVwPQjmPok6Ey   4TUxSgm/zrFH5o+;</li>
+<li>In-reply-to: &lt;<a href="mailto:8C106454-4807-4A68-9919-80CF593ABA1C@DOMAIN.HIDDEN">8C106454-4807-4A68-9919-80CF593ABA1C@xxxxxxxx</a>&gt;</li>
+<li>Organization: CSIRO</li>
+<li>References: &lt;<a href="mailto:alpine.LRH.2.00.1109011512220.24251@DOMAIN.HIDDEN">alpine.LRH.2.00.1109011512220.24251@xxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:8C106454-4807-4A68-9919-80CF593ABA1C@DOMAIN.HIDDEN">8C106454-4807-4A68-9919-80CF593ABA1C@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: KMail/1.9.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi,
+
+If you want to ensure a little bit of space around the plot  rather than calclulating the various extrema you can let
+ferret do the work for you by making two redundant plots and gettiing information from them
+
+!plot all A values and get horizontal limits 
+PLOT A[d=1], A[d=2],A[d=3]
+
+let xlo=($YAXIS_MIN)
+let xhi=($YAXIS_MAX)
+
+! Similar for B and vertical limits
+PLOT B[d=1], B[d=2],B[d=3]
+
+let ylo=($YAXIS_MIN)
+let yhi=($YAXIS_MAX)
+
+!plot AvB
+
+plot/vs/d=1/hlim=`xlo`:`xhi`/vlim=`ylo`:`yhi` A,B
+plot/vs/d=2/over A, B
+plot/vs/d=3/over A, B
+
+Russ
+
+On Friday 02 September 2011 08:40, William S. Kessler wrote:
+&gt; Hi Keith - It's brute-force, but try the following. BK
+&gt; 
+&gt; plot/vs/ 
+&gt; hli=`min(a[d=3],min(a[d=1],a[d=2]))`:`max(a[d=3],max(a[d=1],a[d=2]))`/ 
+&gt; vli=`min(b[d=3],min(b[d=1],b[d=2]))`:`max(b[d=3],max(b[d=1],b[d=2]))`/ 
+&gt; d=1 a,b
+&gt; plot/vs/d=2/over A, B
+&gt; plot/vs/d=3/over A, B
+&gt; 
+&gt; 
+&gt; 
+&gt; On Sep 1, 2011, at 2:36 PM, Keith Lindsay wrote:
+&gt; 
+&gt; &gt; Hi,
+&gt; &gt;
+&gt; &gt; I'd like to plot multiple property-property plots in a single figure  
+&gt; &gt; and would like to avoid having to manually set axis ranges. I can't  
+&gt; &gt; figure out how to do this.
+&gt; &gt;
+&gt; &gt; For example, suppose A &amp; B are expressions that I'd like to plot  
+&gt; &gt; against each other and I'd like to combine the plots from multiple  
+&gt; &gt; datasets into a single figure.
+&gt; &gt;
+&gt; &gt; plot/vs/d=1 A, B
+&gt; &gt; plot/vs/d=2/over A, B
+&gt; &gt; plot/vs/d=3/over A, B
+&gt; &gt;
+&gt; &gt; A typical situation is that the different datasets are output from  
+&gt; &gt; different model simulations.
+&gt; &gt;
+&gt; &gt; However, if the range of A and/or B in d=2 or d=3 exceeds the range  
+&gt; &gt; in d=1, then I miss out on some points.
+&gt; &gt;
+&gt; &gt; One solution is to hard code axis ranges with known 'reasonable'  
+&gt; &gt; values. I'd like to avoid this because I then need to generate the  
+&gt; &gt; ranges and resulting script is not easily transferable when looking  
+&gt; &gt; at other expressions.
+&gt; &gt;
+&gt; &gt; Another solution is to compute, with ferret, min's and max's of A  
+&gt; &gt; and B over each dataset and take the corresponding min and max over  
+&gt; &gt; the datasets. This leads to rather bulky code.
+&gt; &gt;
+&gt; &gt; I'm wondering if another ferret user has found a simple way to do  
+&gt; &gt; this that I haven't been able to come up with.
+&gt; &gt;
+&gt; &gt; Thanks, Keith
+&gt; &gt;
+&gt; &gt; ******************************************************************
+&gt; &gt; Keith Lindsay                <a  rel="nofollow" href="http://www.cgd.ucar.edu/oce/klindsay/">http://www.cgd.ucar.edu/oce/klindsay/</a>
+&gt; &gt; email: klindsay@xxxxxxxx   phone: 303-497-1722   fax: 303-497-1700
+&gt; 
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00669" href="msg00669.html">[ferret_users] multiple property-property plots in a single figure</a></strong>
+<ul><li><em>From:</em> Keith Lindsay</li></ul></li>
+<li><strong><a name="00670" href="msg00670.html">Re: [ferret_users] multiple property-property plots in a single figure</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00670.html">Re: [ferret_users] multiple property-property plots in a single figure</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00673.html">[ferret_users] Multi model ensemble mean and standard deviation</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00670.html">Thread Prev</a>][<a href="msg00673.html">Thread Next</a>][<A HREF="threads.html#00672">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

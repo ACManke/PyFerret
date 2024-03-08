@@ -1,0 +1,259 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China -->
+<!--X-From-R13: zvpx fcvyynar <zvpx.fcvyynarNabnn.tbi> -->
+<!--X-Date: Tue, 26 May 2009 16:55:25 &#45;0700 -->
+<!--X-Message-Id: 4A1C81AA.4090708@noaa.gov -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Derived: gifg9PiygpZXO.gif -->
+<!--X-Derived: gifl8oxIlRJwB.gif -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00312.html">Thread Prev</a>][<a href="msg00319.html">Thread Next</a>][<A HREF="threads.html#00317">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</strong></li>
+<li><strong>From</strong>: <strong>mick spillane &lt;<a href="mailto:mick.spillane@DOMAIN.HIDDEN">mick.spillane@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 26 May 2009 16:56:26 -0700</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.21 (Macintosh/20090302)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hello All,
+</pre><tt>   A recent question dealt with how to fill (or otherwise analyze) data 
+</tt><tt>from within an irregular region.  It arose in the context of China but 
+</tt><tt>has cropped up several times in the archives and the answer of course is 
+</tt><tt>to define a mask variable to isolate the region in question.  This is 
+</tt><tt>easier said than done, when the boundary of the region is convoluted, 
+</tt><tt>but the attached script may be of some help.  It is based on deciding 
+</tt><tt>which of the deciding which cells of the underlying grid of the field 
+</tt><tt>being analyzed lie within a polygon defining the region 
+</tt><tt>(InsidePolygon.jnl).  Its application is aided by using a Ferret-based 
+</tt><tt>polygon generator (polydef.jnl) using mouse clicks that works on linux 
+</tt><tt>machines.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>   As an illustration consider the question -- &quot;What is the mean 
+</tt><tt>elevation of New Zealand (based on the etopo20 topography file)?&quot; (This 
+</tt><tt>was chosen because it can be verified by a simple calculation not 
+</tt><tt>involving polygons.)
+</tt><pre style="margin: 0em;">
+
+!  average elevation of new zealand using polygon definition
+use etopo20 ; let topo=rose[d=1]
+shade/x=160:180/y=-50:-30/... rose
+</pre><tt>go polydef                                        ! this allows user to 
+</tt><tt>define the polygon by a series of mouse-clicks
+</tt><tt>                                                        ! (see the 
+</tt><tt>little x's in the attached graphic) Because of the two islands
+</tt><tt>                                                        ! a land bridge 
+</tt><tt>was used to have a single polygon circumscribe both.
+</tt><tt>go InsidePolygon                             ! this identifies etopo20 
+</tt><tt>cells that lie within the polygon through a mask
+</tt><tt>                                                        ! variable 
+</tt><tt>&quot;inside&quot; that is 1 for inside cells and missing elsewhere
+</tt><pre style="margin: 0em;">
+The   ! illustrates the cells selected
+let masked_elevation=inside*topo
+</pre><tt>list/nohead masked_elevation[x=@ave,y=@ave]  ! which in this case gives 
+</tt><tt>317.8 meters
+</tt><tt>list/nohead inside[x=@ngd,y=@ngd]                    ! for the 267 cells 
+</tt><tt>inside the polygon
+</tt><pre style="margin: 0em;">
+
+</pre><tt>! check -- &quot;simple method&quot; using the fact that new zealand is surrounded 
+</tt><tt>by water
+</tt><pre style="margin: 0em;">
+let land=if(topo gt 0)then topo
+</pre><tt>list/nohead/x=160:180/y=-50:-30 land[x=@ave,y=@ave] ! this gives 
+</tt><tt>320.5meters based on the 265 land cells.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>! NOTE: elimination of the 2 &quot;land bridge&quot; cells in the the polygon 
+</tt><tt>solution ...
+</tt><pre style="margin: 0em;">
+let onland=if(topo ge 0)then inside
+let land_elevation=onland*topo
+</pre><tt>list/nohead land_elevation[x=@ave,y=@ave]  ! ... gives the same answer 
+</tt><tt>320.5m but this is beside the point.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>   For the real problem of say the average elevation of a land-locked 
+</tt><tt>country (where the &quot;simple method&quot; is not available) one would procede 
+</tt><tt>as follows:
+</tt><tt>1) obtain a file of the political boundaries -- if the country's border 
+</tt><tt>is described by a continuous series of lon,lat values that might be the 
+</tt><tt>polygon to use. however take care that it is not made up of 
+</tt><tt>non-continuous segments, or repeated or too closely spaced points that 
+</tt><tt>might foul up the InsidePolygon calculation.  Note that 
+</tt><tt>InsidePolygon.jnl assumes that &quot;vertices.xy&quot; is the filename of the 
+</tt><tt>polygon and that the polygon is closed by repeating the first point at 
+</tt><tt>the end.
+</tt><tt>2) if the political boundary file is not to be used directly as a 
+</tt><tt>polygon file do an overlay plot showing (in this case) the topography 
+</tt><tt>and the political boundary:
+</tt><pre style="margin: 0em;">
+   shade/x=.../y=... topo
+   file/form=free/var=xx,yy PoliticalBoundary.file
+   plot/o/vs/nolab/line=2 xx,yy
+</pre><tt>3) now use the &quot;polydef.jnl&quot; tool to construct a closed polygon suited 
+</tt><tt>to the topography file; close the polygon by clicking on the initial 
+</tt><tt>point before the final click to the left of the plot area that signifies 
+</tt><tt>the polygon has been completed.  Then, as before,
+</tt><pre style="margin: 0em;">
+   go InsidePolygon
+</pre><tt>   shade/o/nolab/pal=red/pat=dark_vertical inside     ! to verify that 
+</tt><tt>the polygon matches expectation
+</tt><tt>   let masked_elevation=inside*topo                         ! or 
+</tt><tt>whatever masked variable is desired
+</tt><pre style="margin: 0em;">
+   list/nohead masked_elevation[x=@ave,y=@ave]  ! obtain the answer
+
+</pre><tt>The second attached image illustrates the use of InsidePolygon.jnl to 
+</tt><tt>get the average elevation of Switzerland using the smith-sandwell data 
+</tt><tt>(the colored background) and the political boundary provided by Ferret 
+</tt><tt>(go land_detail &quot; &quot; &quot; &quot; 4).  The x's are the points used in digitizing 
+</tt><tt>the border and the red hatching the polygon that results.  The average 
+</tt><tt>elevation of the hatched area is 1278 meters.  I've had a bit of trouble 
+</tt><tt>in finding online a value to check this against.  The min and max of 
+</tt><tt>masked_elevation are 193m and 3797m respectively.  The minimum matches 
+</tt><tt>exactly the online value (Lake Maggiore), but the max is somewhat less 
+</tt><tt>that the 4634m of Mount Monte Rosa - (smith sandwell too coarse).  
+</tt><tt>However the area returned (inside[x=@din,y=@din] = 4.124E+10 m^2 agrees 
+</tt><tt>well with the online value of 41285 km&#xB2;. So all-in-all I think the 
+</tt><tt>validity and reative ease of use of the InsidePolygon method has been 
+</tt><tt>demonstrated.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Hope the scripts prove useful; and the documentation is adequate.  I  
+</tt><tt>would put the scripts in ~/ferret subdirectory or wherever your 
+</tt><tt>my_ferret_paths points to. Unfortunately at the moment for me, &quot;polydef&quot; 
+</tt><tt>only works on Linux, not on Mac Ferret.  If someone sees why this is so 
+</tt><tt>and has a fix for Mac, I'd be delighted to learn.
+</tt><pre style="margin: 0em;">
+
+Good luck,
+   Mick
+</pre><tt>     
+</tt><tt>
+</tt><p><a href="gifg9PiygpZXO.gif" ><img src="gifg9PiygpZXO.gif" alt="GIF image"></a></p>
+<p><a href="gifl8oxIlRJwB.gif" ><img src="gifl8oxIlRJwB.gif" alt="GIF image"></a></p>
+<pre>! InsidePolygon : Tests if a point (X0,Y0) is inside a closed polygon defined
+!                 by a set of vertices (VX,VY),K=1,NV whose last point duplicates
+!                 its first. It is based on the number of intersections
+!                 between the NV-1 edges of the polygon and a line from (X0,Y0)
+!                 to (X0,YTOP) where YTOP is the upper limit of the domain (90
+!                 when X,Y are lon/lat coords).
+!                 The point is INSIDE if the #intersections is ODD.
+
+! Written 26-May-2009 by Mick.Spillane@xxxxxxxx
+
+let YTOP=90 ; let NEDGE=VX[k=@ngd]-1
+
+! An edge is a candidate if X0 lies between VX and VX[k=@shf] ...
+let XWORKS=if((X0-VX)*(X0-VX[k=@shf]) lt 0)then 1
+
+! ... but the Y-value of the edge, at X=X0, must also be between Y0 and YTOP
+let YPRIME=VY+XWORKS*(VY[k=@shf]-VY)*(X0-VX)/(VX[k=@shf]-VX)
+let ITCUTS=if((YPRIME-Y0)*(YPRIME-YTOP) lt 0)then 1
+let INSIDE=if(mod(ITCUTS[K=1:`NEDGE`@ngd],2) eq 1)then 1
+</pre><pre>! polydef : use mouse click to define polygon vertices
+
+can mode verify
+let done=0 ; sp rm -f vertices.xy
+
+say &quot;****************************************************&quot;
+say &quot;*                                                  *&quot;
+say &quot;* Add polygon vertices by mouse clicks.  Terminate *&quot;
+say &quot;*     by clicking to the left of the plot area.    *&quot;
+say &quot;*                                                  *&quot;
+say &quot;****************************************************&quot;
+
+! add new vertices to the file vertices.xy
+repeat/range=1:1000 go add_vertex
+
+! then read in the resulting file 
+sp get_vertices ; go get_vertices
+
+set mode verify
+
+</pre><pre>! add a new vertex to the vertex file while done=0
+
+if `done eq 0` then 
+  where
+  if `($XMOUSE) gt ($XAXIS_MIN)` then
+    list/nohead/app/form=(2f12.6)/file=vertices.xy ($XMOUSE),($YMOUSE)
+! if visible marks at the vertices are not desired drop the next line
+    plot/o/nolab/vs/sym=1 ($XMOUSE),($YMOUSE)
+  else
+    let done=1
+  endif
+endif
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00319" href="msg00319.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00312.html">[ferret_users] ***** Announcing the official release of Ferret version 6.2 *****</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00319.html">Re: [ferret_users] Creating and using an irregular mask, as in the recent question regarding filling data over China</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00312.html">Thread Prev</a>][<a href="msg00319.html">Thread Next</a>][<A HREF="threads.html#00317">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

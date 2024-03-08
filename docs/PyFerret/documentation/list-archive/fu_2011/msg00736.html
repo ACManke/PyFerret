@@ -1,0 +1,145 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Sample variance and computing running variance -->
+<!--X-From-R13: Dhffryy Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Tue, 27 Sep 2011 18:55:40 &#45;0700 -->
+<!--X-Message-Id: 201109281155.34434.russell.fiedler@csiro.au -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1317140170.94488.YahooMailNeo@web31906.mail.mud.yahoo.com -->
+<!--X-Reference: 4E82364C.5010706@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Sample variance and computing running variance</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00734.html">Thread Prev</a>][<a href="msg00737.html">Thread Next</a>][<A HREF="threads.html#00736">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Sample variance and computing running variance</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>users Group Ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Sample variance and computing running variance</strong></li>
+<li><strong>From</strong>: <strong>Russell Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 28 Sep 2011 11:55:34 +1000</li>
+<li>Dkim-signature: v=1; a=rsa-sha256; c=simple/simple;  d=csiro.au; <a href="mailto:i%3Drussell.fiedler@DOMAIN.HIDDEN">i=russell.fiedler@xxxxxxxx</a>; q=dns/txt;  s=email; t=1317174938; x=1348710938; h=from:to:subject:date:references:in-reply-to:mime-version: content-transfer-encoding:message-id; bh=p5xPD/K8dTOT7XQOd0Jbv7fC1L1pW/IrQ1/oJNU2pEw=; b=QMuFqQm/J0iuBjdInwURkvFe+Nr0bRZAp8oXYQ9Bx+6LwkWnAZzhwE6T wxeGuZtj24TA3+RzeEu83CkHpnrSUI8qEG1I1hUqxfpsTpXMKxuGVaekF   gF5gHrULV1tyDbK;</li>
+<li>In-reply-to: &lt;<a href="mailto:4E82364C.5010706@DOMAIN.HIDDEN">4E82364C.5010706@xxxxxxxx</a>&gt;</li>
+<li>Organization: CSIRO</li>
+<li>References: &lt;<a href="mailto:1317140170.94488.YahooMailNeo@DOMAIN.HIDDEN">1317140170.94488.YahooMailNeo@xxxxxxxxxxxxxxxxxxxxxxxxxxx</a>&gt; &lt;<a href="mailto:4E82364C.5010706@DOMAIN.HIDDEN">4E82364C.5010706@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: KMail/1.9.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi,
+
+For a running variance. say we have a simple 1d time series var and we want a window +/-5 wide
+
+let var=sin(l[l=1:100]/10)
+let win=5
+let var2d = xsequence(var)+0*var         !  Reshape var to x axis and make 2d
+let maskedvar=if (  l ge i - win and l le i + win ) then var2d  ! window data
+let runvar=maskedvar[i=1:100@var]            ! take variance in i pseudo direction
+let runmax=maskedvar[i=1:100@max]        ! test with max
+let runmaxferret=var[l=@smx:11]        ! new ferret smoother for comparison should be same as runmax
+plot/l=1:100 var,runvar,runmax,runmaxferret
+
+Russ
+
+
+On Wednesday 28 September 2011 06:47, Ansley Manke wrote:
+&gt; Hi -
+&gt; 1)You make a good point about the variance calculations.  We'll look into this.
+&gt; 
+&gt; 2)For a running variance script, I have one simple idea.  This message,
+&gt; <a  rel="nofollow" href="http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2010/msg00685.html">http://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2010/msg00685.html</a>
+&gt; 
+&gt; talks about computing a running maximum over a time window (in more recent times we have the SMX and SMN transformations for smoothing using min or max. The above message came before those existed).   It just writes each result to a file and then reads that back in.  It's maybe not elegant, but is straitforward.
+&gt; 
+&gt; -Ansley
+&gt; 
+&gt; 
+&gt; On 9/27/2011 9:16 AM, jagadish karmacharya wrote:
+&gt; Dear ferret users,
+&gt; 
+&gt; I have 2  questions regarding computing variance.
+&gt; 
+&gt; 1. sample and population based variance ( equivalently standard deviation):
+&gt; 
+&gt; I have noticed that stat command gives standard deviation based on a sample where as var command gives variance based on a population. My assumption is its customary to calculate sample based variance unless otherwise stated but why does ferret compute variance based on population with var command? I think it is possible to get sample based variance e.g. for my 1-D data with l=140
+&gt; list/precision=6 v1[l=@var]*v1[l=@ngd]/(v1[l=@ngd]-1)      !  = 7005.65 (this is still slightly different from sample based variance computed from other method e.g. excel gave 7002.42 )
+&gt; 
+&gt; Isn't there a way to compute sample based variance in more straight forward manner and why its not the default option (with var)?
+&gt; 
+&gt; 2. Computing running variance:
+&gt; 
+&gt; I am using boxcar smoother transformation (e.g. v1[l=1:140@sbx:31]) to compute running mean but I can't think of a way to compute running variance (standard deviation) in similar manner. My guess is this would involve looping over time but I am not able to work out a way.
+&gt; 
+&gt; Please advice. Thanks in advance.
+&gt; 
+&gt; Best regards,
+&gt; Jagadish
+&gt; 
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00731" href="msg00731.html">[ferret_users] Sample variance and computing running variance</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+<li><strong><a name="00734" href="msg00734.html">Re: [ferret_users] Sample variance and computing running variance</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00734.html">Re: [ferret_users] Sample variance and computing running variance</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00737.html">[ferret_users] Eddy tracking algorithm</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00734.html">Thread Prev</a>][<a href="msg00737.html">Thread Next</a>][<A HREF="threads.html#00736">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

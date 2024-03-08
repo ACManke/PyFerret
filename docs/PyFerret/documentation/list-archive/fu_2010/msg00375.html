@@ -1,0 +1,228 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: [ferret_users] map projection journal files for Lambert Conformal Conic and Azimuthal Equal Area -->
+<!--X-From-R13: Zri Fnenfbi <yriNzha.pn> -->
+<!--X-Date: Fri, 18 Jun 2010 08:37:15 &#45;0700 -->
+<!--X-Message-Id: alpine.LFD.2.00.1006181256360.7042@kelvin.physics.mun.ca -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] map projection journal files for Lambert Conformal Conic and Azimuthal Equal Area</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00374.html">Thread Prev</a>][<a href="msg00378.html">Thread Next</a>][<A HREF="threads.html#00375">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] map projection journal files for Lambert Conformal Conic and Azimuthal Equal Area</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] map projection journal files for Lambert Conformal Conic and Azimuthal Equal Area</strong></li>
+<li><strong>From</strong>: <strong>Lev Tarasov &lt;<a href="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 18 Jun 2010 13:07:12 -0230 (NDT)</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Alpine 2.00 (LFD 1167 2008-08-23)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>Couldn't find any in the user group archives, so made my own (using the 
+</tt><tt>Lambert cylindrical journal file as a template), as attached. Might be
+</tt><tt>worth adding to the next release? (Projections used by the geological 
+</tt><tt>community and USGS and Canadian cartographers..)
+</tt><pre style="margin: 0em;">
+
+Cheers,
+
+Lev
+
+Lev Tarasov -   Dept of Physics and Physical Oceanography,
+		Memorial University of Newfoundland.
+                <a  rel="nofollow" href="http://www.physics.mun.ca/~lev/">http://www.physics.mun.ca/~lev/</a>
+</pre><pre>\ cancel mode verify	
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+! mp_lambert_az.jnl --  Sets up variables for a Lambert Azimuthal equal area
+!                  projection using 'curvilinear coordinates' code in Ferret v4.50
+!		    		
+! Lev Tarasov
+! 6/10
+!uses equations from <a  rel="nofollow" href="http://mathworld.wolfram.com/LambertAzimuthalEqual-AreaProjection.html">http://mathworld.wolfram.com/LambertAzimuthalEqual-AreaProjection.html</a>
+! Description:  Sets up variables for a Lambert Azimuthal Equal Area map of the world
+!
+! Usage:                   arg1               arg2
+!  go mp_lambert_az [central meridian] [standard parallel]
+!
+! arg 1 - longitude used for the center of the projection
+! arg 2 - latitude used for the center of the projection
+
+! Example:
+!  use coads_climatology 
+!  go mp_lambert_az
+!  set grid sst
+!  shade sst[l=1], x_page, y_page
+!
+! Note 1: If you intend to plot an overlay which is a subregion
+!         of the original plot you will need to specify the two
+!         optional arguments as in:
+!
+!  use coads_climatology 
+!  go mp_lambert_az
+!  set grid sst
+!  shade sst[l=1], x_page, y_page
+!  go mp_lambert_az `mp_central_meridian` `mp_standard_parallel`
+!  set region/x=40e:110e/y=60s:20s
+!  shade/over slp[l=1], x_page, y_page
+!
+! Note 2: The x-range for the subregion to be overlayed must
+!         be: ( `mp_cent_mer` - 180 &lt; x &lt; `mp_cent_me`r + 180 )
+
+
+if `$2%0% gt 90` then
+    query/ignore $3&quot;&lt;The standard parallel must be between -90 and 90&quot;
+elif `$2%0% lt (-90)` then
+    query/ignore $3&quot;&lt;The standard parallel must be between -90 and 90&quot;
+endif
+
+let/quiet mp_x = x
+let/quiet mp_central_meridian = $1%(mp_x[i=@max] + mp_x[i=@min])/2%
+let/quiet mp_y = y
+let/quiet mp_standard_parallel = $2%(mp_y[j=@max] + mp_y[j=@min])/2%
+
+let/quiet Pi = 3.14159265
+let/quiet deg2rad = Pi / 180.0
+
+let/quiet Rk = 1. +  sin(mp_phi0)*sin(mp_phi) + cos(mp_phi0)*cos(mp_phi)*cos(mp_lambda-mp_lambda0)
+let/quiet mp_R = EXP( 0.5*LN( 2./Rk ) )
+let/quiet mp_lambda0 = mp_central_meridian * deg2rad
+let/quiet mp_lambda = mp_x * deg2rad
+let/quiet mp_phi = mp_y * deg2rad
+let/quiet mp_phi0 = mp_standard_parallel * deg2rad
+
+let/quiet x_page = mp_R * cos(mp_phi) * sin(mp_lambda-mp_lambda0)                    ! eqn (1)
+let/quiet y_page = mp_R * cos(mp_phi0) * sin(mp_phi) - sin(mp_phi0) * cos(mp_phi) * cos(mp_lambda-mp_lambda0) !eqn 2
+
+let/quiet mp_mask = if Rk gt 0 then 1
+
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+set mode/last verify
+</pre><pre>\ cancel mode verify	
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+! mp_lambert_cc.jnl --  Sets up variables for a Lambert Conformal Conic
+!                  projection using 'curvilinear coordinates' code in Ferret v4.50
+!		    		
+! Lev Tarasov
+! 6/10
+!uses equations from <a  rel="nofollow" href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">http://mathworld.wolfram.com/LambertConformalConicProjection.html</a>
+! Description:  Sets up variables for a Lambert Conformal Conic map of the world
+!
+! Usage:                   arg1               arg2            arg 3      arg 4
+!  go mp_lambert_cc [central meridian] [ref parallel] [standard paralle1 and 2]
+!
+! arg 1 - longitude used for the center of the projection
+! arg 2 - latitude used for the center of the projection
+! arg 3 - standard paralell 1 (latitude)
+! arg 4 - standard paralell 2 (&quot;&quot;)
+
+! NOTE: there is no error checking on the argument bounds. Longitude
+! bounds likely vary with your grid definition (-180 to 180 or
+! 0 to 360), latitude is  -90 to 90
+
+! Example:
+!  use coads_climatology 
+!  go mp_lambert_cc long1 lat0 lat1 lat2
+!  set grid sst
+!  shade sst[l=1], x_page, y_page
+!
+!
+
+!if `$2%0% gt 90` then
+!    query/ignore $3&quot;&lt;The standard parallel must be between -90 and 90&quot;
+!elif `$2%0% lt (-90)` then
+!    query/ignore $3&quot;&lt;The standard parallel must be between -90 and 90&quot;
+!endif
+
+let/quiet mp_x = x
+let/quiet mp_central_meridian = $1
+let/quiet mp_y = y
+let/quiet mp_central_parallel = $2
+let/quiet mp_standard_parallel = $2
+let/quiet mp_standard_parallel1 = $3
+let/quiet mp_standard_parallel2 = $4
+
+let/quiet Pi = 3.14159265
+let/quiet deg2rad = Pi / 180.0
+
+let/quiet mp_lambda0 = mp_central_meridian * deg2rad
+let/quiet mp_lambda = mp_x * deg2rad
+let/quiet mp_phi = mp_y * deg2rad
+let/quiet mp_phi0 = mp_central_parallel * deg2rad
+let/quiet mp_phi1 = mp_standard_parallel1 * deg2rad
+let/quiet mp_phi2 = mp_standard_parallel2 * deg2rad
+
+let/quiet RN =LN(cos(mp_phi1)/cos(mp_phi2)) / LN(tan(0.25*Pi + 0.5*mp_phi2)/tan(0.25*Pi + 0.5*mp_phi1) )   !eq 4
+
+let/quiet mRN = (-1.0)*RN
+let/quiet RF = cos(mp_phi1)*EXP( RN*LN(tan(0.25*Pi + 0.5*mp_phi1) ) ) / RN !eq 3
+
+let/quiet mp_R = RF * EXP( mRN*LN(tan(0.25*Pi + 0.5*mp_phi) ) )   !eq 5
+let/quiet mp_R0 = RF * EXP( mRN*LN(tan(0.25*Pi + 0.5*mp_phi0) ) ) !eq 6
+
+let/quiet x_page = mp_R * sin(RN*(mp_lambda-mp_lambda0))     ! eqn (1)
+let/quiet y_page = mp_R0 - mp_R * cos(RN*(mp_lambda-mp_lambda0)) !eqn 2
+
+let/quiet mp_mask = if mp_R gt 0 then 1
+
+!++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!
+set mode/last verify
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00374.html">[ferret_users] Reveal the values of contour lines</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00378.html">[ferret_users] Change axis in a hovmuller diagram</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00374.html">Thread Prev</a>][<a href="msg00378.html">Thread Next</a>][<A HREF="threads.html#00375">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

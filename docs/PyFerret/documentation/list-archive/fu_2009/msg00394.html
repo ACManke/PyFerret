@@ -1,0 +1,198 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] Axis def from samplel() &#45; too many variables to	store in memory -->
+<!--X-From-R13: "Bnhyb P. Ayvirven" <cobNvcvzne.cg> -->
+<!--X-Date: Tue, 23 Jun 2009 11:30:22 &#45;0700 -->
+<!--X-Message-Id: 1245781482.32492.1080.camel@eo -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1245761291.32492.1070.camel@eo -->
+<!--X-Reference: 4A4106F3.6060001@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Axis def from samplel() - too many variables to	store in memory</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00393.html">Thread Prev</a>][<a href="msg00395.html">Thread Next</a>][<A HREF="threads.html#00394">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Axis def from samplel() - too many variables to	store in memory</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Axis def from samplel() - too many variables to	store in memory</strong></li>
+<li><strong>From</strong>: <strong>&quot;Paulo B. Oliveira&quot; &lt;<a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 23 Jun 2009 19:24:41 +0100</li>
+<li>Cc: ferret &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="mailto:4A4106F3.6060001@DOMAIN.HIDDEN">4A4106F3.6060001@xxxxxxxx</a>&gt;</li>
+<li>Organization: IPIMAR</li>
+<li>References: &lt;<a href="mailto:1245761291.32492.1070.camel@DOMAIN.HIDDEN"><a href="msg00392.html">1245761291.32492.1070.camel@eo</a></a>&gt; &lt;<a href="mailto:4A4106F3.6060001@DOMAIN.HIDDEN">4A4106F3.6060001@xxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:pbo@DOMAIN.HIDDEN">pbo@xxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Ansley,
+
+I've upgraded to version 6.2 (Linux statically linked) and everything is
+working fine now.
+
+Thanks!
+
+Paulo.
+------------------------------------------------------
+On Tue, 2009-06-23 at 09:46 -0700, Ansley Manke wrote:
+&gt; Hi Paulo,
+&gt; Thanks for sending the example script and data file, and the results
+&gt; of your Ferret run. However I cannot replicate this, and I don't see
+&gt; anything wrong with your script, except one thing which I'll show
+&gt; below.  I see you are running Ferret v6.07, but when I try it with
+&gt; that version (and also with older and newer Ferret executables), I
+&gt; don't see the error that you're reporting.
+&gt; 
+&gt; Now, when I run your script I see this:
+&gt;         def ax/t=&quot;15-jul-2005 00:00&quot;:&quot;05-sep-2005 00:00&quot;:10unit=min
+&gt;         t10m
+&gt;          
+&gt;         let tv   = t[gt=t10m]
+&gt;          
+&gt;         def ax/t=1:100:1 tsamp
+&gt;         def gr/t=tsamp gsamp
+&gt;          
+&gt;         file/var=lsamp,-,-,-/grid=gsamp too_many_vars_test.txt
+&gt;          
+&gt;         let tvarsamp = samplel(tv,lsamp)
+&gt;          
+&gt;         def ax/t/from_data/t0=&quot;`tv,ret=t0`&quot;/unit=`tv,ret=tunits`
+&gt;         ax_samp = tvarsamp
+&gt;          !-&gt; def ax/t/from_data/t0=&quot;15-JAN-1901&quot;/unit=HOURS ax_samp =
+&gt;         tvarsamp
+&gt;          *** NOTE: Axis has repeated values -- micro-adjusting ...
+&gt;          **ERROR: improper grid or axis definition: unrepairable
+&gt;         repeated axis coords
+&gt;         def ax/t/from_data/t0=&quot;15-JAN-1901&quot;/unit=HOURS ax_samp =
+&gt;         tvarsamp
+&gt;         Command file, command group, or REPEAT execution aborted
+&gt; Here is what's going on here. The default origin when you do a DEFINE
+&gt; AXIS/T=  is 1-jan-1900, which makes the time coordinates for your axis
+&gt; quite large: minutes since 1-jan-1900. Therefore, the variable tv =
+&gt; t[gt=t10m] has values of around 5.5E+07, with the variation of 10
+&gt; minutes per time step in the last two digits of the numbers. Ferret
+&gt; can handle values with this much precision when they define axes,
+&gt; because coordinate axes are stored in double precision. But as soon as
+&gt; you use them as the values of a variable, in this case the variable
+&gt; tvarsamp, they are converted to single precision and you lose
+&gt; precision in the last few digits.
+&gt; 
+&gt; Since you're defining the time axis in year 2005, you might try your
+&gt; script with a different time origin, such as
+&gt; def ax/t=&quot;15-jul-2005 00:00&quot;:&quot;05-sep-2005 00:00&quot;:10/t0=1-jan-2005/unit=min t10m
+&gt;  
+&gt; The only other thing I can think of is that this is some interaction
+&gt; of Ferret with your environment or perhaps a problem with the way
+&gt; Ferret is installed. You might try upgrading to the latest Ferret
+&gt; release, running the full Ferret install procedure, and see if that
+&gt; helps.
+&gt; 
+&gt; Paulo B. Oliveira wrote: 
+&gt; &gt; Hi, 
+&gt; &gt; 
+&gt; &gt; I'm trying to define a time axis from a set of discrete time steps
+&gt; &gt; (samples) stored on a text file. Everything works fine for a short
+&gt; &gt; (~100) samples but for 150 steps the execution is aborted with the error
+&gt; &gt; message:
+&gt; &gt; **ERROR: too many variables to store in memory
+&gt; &gt; 
+&gt; &gt; Any hints on ways to do this ? 
+&gt; &gt; Thanks,
+&gt; &gt; 
+&gt; &gt; Paulo.
+&gt; &gt; ------------------------------------------------------------------
+&gt; &gt; 
+&gt; &gt; yes? go too_many_vars_test.jnl
+&gt; &gt;  ! NOAA/PMEL TMAP
+&gt; &gt;  ! FERRET v6.07
+&gt; &gt;  ! Linux(g77) 2.4.21-32 - 08/29/07
+&gt; &gt;  !  8-Jun-09 14:01
+&gt; &gt;  
+&gt; &gt; def ax/t=&quot;15-jul-2005 00:00&quot;:&quot;05-sep-2005 00:00&quot;:10/unit=min t10m
+&gt; &gt;  
+&gt; &gt; let tv   = t[gt=t10m]
+&gt; &gt;  
+&gt; &gt; def ax/t=1:150:1 tsamp
+&gt; &gt; Replacing definition of axis TSAMP
+&gt; &gt; def gr/t=tsamp gsamp
+&gt; &gt;  
+&gt; &gt; file/var=lsamp,-,-,-/grid=gsamp too_many_vars_test.txt
+&gt; &gt;  
+&gt; &gt; let tvarsamp = samplel(tv,lsamp)
+&gt; &gt;  
+&gt; &gt; def ax/t/from_data/t0=&quot;`tv,ret=t0`&quot;/unit=`tv,ret=tunits` ax_samp =
+&gt; &gt; tvarsamp
+&gt; &gt;  !-&gt; def ax/t/from_data/t0=&quot;15-JAN-1901&quot;/unit=MIN ax_samp = tvarsamp
+&gt; &gt;  **ERROR: too many variables to store in memory
+&gt; &gt; def ax/t/from_data/t0=&quot;15-JAN-1901&quot;/unit=MIN ax_samp = tvarsamp
+&gt; &gt; Command file, command group, or REPEAT execution aborted
+&gt; &gt; 
+&gt; &gt;   
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00392" href="msg00392.html">[ferret_users] Axis def from samplel() - too many variables to store in memory</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+<li><strong><a name="00393" href="msg00393.html">Re: [ferret_users] Axis def from samplel() - too many variables to store in memory</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00393.html">Re: [ferret_users] Axis def from samplel() - too many variables to store in memory</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00395.html">[ferret_users] Variable name T in WRF NetCDF output</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00393.html">Thread Prev</a>][<a href="msg00395.html">Thread Next</a>][<A HREF="threads.html#00394">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

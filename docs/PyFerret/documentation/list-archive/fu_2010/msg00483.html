@@ -1,0 +1,190 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] libcurl error -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Fri, 20 Aug 2010 09:56:12 &#45;0700 -->
+<!--X-Message-Id: 4C6EB392.2060000@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: AANLkTin2_UDUXQEH&#45;c6XbwWovQ45zvqD9&#45;OMMYCU9S1f@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] libcurl error</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00482.html">Thread Prev</a>][<a href="msg00491.html">Thread Next</a>][<A HREF="threads.html#00483">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] libcurl error</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:felipepimenta@DOMAIN.HIDDEN">felipepimenta@xxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] libcurl error</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 20 Aug 2010 18:55:46 +0200</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:AANLkTin2_UDUXQEH-c6XbwWovQ45zvqD9-OMMYCU9S1f@DOMAIN.HIDDEN">AANLkTin2_UDUXQEH-c6XbwWovQ45zvqD9-OMMYCU9S1f@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Organization: IOW</li>
+<li>References: &lt;<a href="mailto:AANLkTin2_UDUXQEH-c6XbwWovQ45zvqD9-OMMYCU9S1f@DOMAIN.HIDDEN">AANLkTin2_UDUXQEH-c6XbwWovQ45zvqD9-OMMYCU9S1f@xxxxxxxxxxxxxx</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.9.1.11) Gecko/20100701 SeaMonkey/2.0.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>Hi Felipe, this is simple and is not. It depends on the rule, how your 
+</tt><tt>system is managed.
+</tt><pre style="margin: 0em;">
+
+First make sure you are running a 32-bit system. Otherwise your libcurl
+is in /usr/lib64
+
+The most simple way (NOT RECOMMENDED) ist to make a link
+
+ln -fs /usr/lib/libcurl.so.4 /usr/lib/libcurl.so.3
+
+I have tested this for SLES11. It seems to work.
+
+However, you may run in difficulties with your rpms and system installation.
+
+</pre><tt>So it is better to make the link to some place outside the system search 
+</tt><tt>path for libs, for example in your $HOME/lib
+</tt><tt>You have to make sure, that ferret finds the lib. Hence, you have to do 
+</tt><tt>something like:
+</tt><pre style="margin: 0em;">
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your_home/lib
+
+before starting ferret.
+
+</pre><tt>This may have some side effects for other binaries, because 
+</tt><tt>LD_LIBRARY_PATH is still changed, when ferret is ready.
+</tt><pre style="margin: 0em;">
+Other users cannot benefit from your installation work.
+
+</pre><tt>So you may write a wrapper script, that opens a new shell, exports the 
+</tt><tt>modified LD_LIBRARY_PATH and calls ferret.
+</tt><tt>This can be organised in such a way, that all users benefit from the 
+</tt><tt>improved skript. The following script works
+</tt><tt>in a heterogenic environment with Suse10 and 11, but with a common 
+</tt><tt>software repository.
+</tt><pre style="margin: 0em;">
+The missing lib is in /sw/compat_10_11/lib64. Please see also,
+how other environment variables can be temporarly modified.
+
+#!/bin/bash
+# start Ferret on different machines
+host=`hostname`
+echo &quot;starting Ferret on &quot;$host
+export FER_IOW=/sw/viz/ferret/ferret_iow
+source /sw/viz/ferret/ferret_64_dynamic_6.62/ferret_paths_bash
+[[ -d $FER_IOW/go ]] &amp;&amp; export FER_GO=&quot;$FER_IOW/go &quot;${FER_GO#.}
+[[ -d $FER_IOW/ppl ]] &amp;&amp; export FER_PALETTE=&quot;$FER_IOW/ppl &quot;${FER_PALETTE#.}
+[[ -d $FER_IOW ]] &amp;&amp; export FER_DATA=&quot;$FER_IOW/dsets &quot;${FER_DATA#.}
+[[ -d $HOME/ferret/go ]] &amp;&amp; export FER_GO=&quot;. $HOME/ferret/go &quot;${FER_GO#.}
+</pre><tt>[[ -d $HOME/ferret/ppl ]] &amp;&amp; export FER_PALETTE=&quot;. $HOME/ferret/ppl 
+</tt><tt>&quot;${FER_PALETTE#.}
+</tt><tt>[[ -d $HOME/ferret/data ]] &amp;&amp; export FER_DATA=&quot;. $HOME/ferret/data 
+</tt><tt>&quot;${FER_DATA#.}
+</tt><tt>[[ -d $HOME/ferret/ext_func/libs ]] &amp;&amp; export FER_EXTERNAL_FUNCTIONS=&quot;. 
+</tt><tt>$HOME/ferret/ext_func/libs_linux &quot;${FER_EXTERNAL_FUNCTIONS#.}
+</tt><pre style="margin: 0em;">
+export FER_GO=&quot;. &quot;${FER_GO#.}
+export FER_PALETTE=&quot;. &quot;${FER_PALETTE#.}
+export FER_DATA=&quot;. &quot;${FER_DATA#.}
+export FER_EXTERNAL_FUNCTIONS=&quot;. &quot;${FER_EXTERNAL_FUNCTIONS#.}
+suse_version=`cat /etc/SuSE-brand | grep VERSION | cut -f3 -d&quot; &quot;`
+if [ $suse_version == '11' ]
+then
+  export LD_LIBRARY_PATH=/sw/compat_10_11/lib64:$LD_LIBRARY_PATH
+fi
+/sw/viz/ferret/ferret_64_dynamic_6.62/bin/ferret $*
+
+Good luck,
+Martin
+Felipe Pimenta wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear all,
+
+I am getting the following error when I try to run ferret:
+
+p01215@crow:~&gt;  ferret
+/home/users/p01215/local/ferret/bin/ferret: error while loading shared
+libraries: libcurl.so.3: cannot open shared object file: No such file
+or directory
+
+I've noticed the machine I am working don't have the libcurl.so.3 file.
+
+Can I tell ferret to use the /usr/lib/libcurl.so.4? How?
+
+Many Thanks,
+
+Felipe
+
+--
+</pre><tt>   
+</tt></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00491" href="msg00491.html">Re: [ferret_users] libcurl error</a></strong>
+<ul><li><em>From:</em> Felipe Pimenta</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00482" href="msg00482.html">[ferret_users] libcurl error</a></strong>
+<ul><li><em>From:</em> Felipe Pimenta</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00482.html">[ferret_users] libcurl error</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00491.html">Re: [ferret_users] libcurl error</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00482.html">Thread Prev</a>][<a href="msg00491.html">Thread Next</a>][<A HREF="threads.html#00483">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<hr>
+<A HREF="ferret_contact_us.html">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> / 
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://tmap.pmel.noaa.gov">TMAP</a>
+</address>
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!-- MHonArc v2.6.16 -->
+<!--X-Subject: Re: [ferret_users] current path length -->
+<!--X-From-R13: Oaqerj Ivggraoret <Oaqerj.IvggraoretNabnn.tbi> -->
+<!--X-Date: Thu, 19 May 2011 16:16:11 &#45;0700 -->
+<!--X-Message-Id: alpine.LRH.2.00.1105191808330.332@atw -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BFAB582F&#45;8F26&#45;4C35&#45;9E1B&#45;B07FCA7CC798@gmail.com -->
+<!--X-Reference: 4DD57742.9090006@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] current path length</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00437.html">Thread Prev</a>][<a href="msg00385.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] current path length</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Leela Frankcombe &lt;<a href="mailto:leela.frankcombe@DOMAIN.HIDDEN">leela.frankcombe@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] current path length</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 19 May 2011 19:16:09 -0400 (EDT)</li>
+<li>Cc: <a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="mailto:4DD57742.9090006@DOMAIN.HIDDEN">4DD57742.9090006@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;<a href="mailto:BFAB582F-8F26-4C35-9E1B-B07FCA7CC798@DOMAIN.HIDDEN">BFAB582F-8F26-4C35-9E1B-B07FCA7CC798@xxxxxxxxx</a>&gt; &lt;<a href="mailto:4DD57742.9090006@DOMAIN.HIDDEN">4DD57742.9090006@xxxxxxxx</a>&gt;</li>
+<li>Reply-to: Andrew Wittenberg &lt;<a href="mailto:Andrew.Wittenberg@DOMAIN.HIDDEN">Andrew.Wittenberg@xxxxxxxx</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Alpine 2.00 (LRH 1167 2008-08-23)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Leela, Mick, et al.,
+
+Towards using @weq to compute the path length of a contour...
+
+</pre><tt>Because @weq only creates interpolation coefficients for the first value 
+</tt><tt>it finds, this will only work if the contour is single-valued in latitude 
+</tt><tt>-- i.e. it wouldn't work for Mick's example near 120W, where the 25C 
+</tt><tt>contour loops back on itself.  But it would work for, say, the segment in 
+</tt><tt>Mick's example between 160E and 140W.  You might be able to handle a 
+</tt><tt>general case by masking out parts of the contour (with IF..THEN, or with 
+</tt><tt>SET REGION), and doing the mostly-horizontal and mostly-vertical segments 
+</tt><tt>separately, with separate integrals along x and y, and then summing up all 
+</tt><tt>the segment lengths.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The following approach could even be used in tandem with Mick's, to permit 
+</tt><tt>analysis of general contour shapes but without having to click quite so 
+</tt><tt>many points.
+</tt><pre style="margin: 0em;">
+
+use levitus_climatology
+set region/x=160:250/y=-30:-10
+let contour_value = 25
+let var = temp[k=1]
+
+let zero_at_value = var - contour_value
+let kernel = zero_at_value[y=@weq] * y[gy=var]
+let y_at_contour = kernel[y=@sum]
+
+let xval = x[gx=var]
+let dx = xval[x=@shf] - xval
+let dy = y_at_contour[x=@shf] - y_at_contour
+let deg2rad = 3.14159 / 180
+let r_earth_m = 6371000
+let dx_m = dx*deg2rad * r_earth_m * cos(y_at_contour*deg2rad)
+let dy_m = dy*deg2rad * r_earth_m
+
+let length_seg = (dx_m^2 + dy_m^2)^.5
+let length = length_seg[x=@sum]
+
+</pre><tt>This was just a quick reply -- I'm probably off by one gridcell at the 
+</tt><tt>end, and there may be other mistakes.  Will leave it to others to work out 
+</tt><tt>the details -- please post any improvements to the list!
+</tt><pre style="margin: 0em;">
+
+Andrew
+
+On Thu, 19 May 2011, mick spillane wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Leela,
+
+   This is not necessarily a better solution to your problem than use of
+transformations like @loc or @weq, but it illustrates how using Ferret as a
+digitizer, coupled with a Great Circle Distance calculator can be useful in a
+variety of situations. Apologies if this is already known to you but it may
+serve a wider audience.
+
+First: Check that Ferret's &quot;where&quot; command is working for you:
+   go ptest
+   where
+When you move the cursor over the plot and click. Ferret should report the
+&quot;mouse&quot; coordinates in user units. This is the key to digitizing and a
+variety of other tasks one could imagine.
+
+Next: Add the attached scripts to your directories (I would typically put the
+.jnl ones in my &quot;ferret&quot; directory and the shell script get_vertices [with
+chmod +x get_vertices] in &quot;bin&quot;)
+
+Demo: Here is an illustration. What is the length of the 25C isotherm of
+Levitus SST between Australia and South America?
+   use levitus_climatology ; let sst=temp[k=1]
+   fill/x=140:310/y=-30:10 sst ; cont/o/lev=(25)/x=140:310/y=-30:10 sst
+   go polydef  ! prompts user to click on desired points, terminating by
+                       ! clicking offchart to the left. When this is done
+the coords of
+                       ! the point are loaded as a file with variables VX,VY
+   sho data
+  2&gt; ./vertices.xy  (default)
+name     title                             I         J         K         L
+VX       VX                               ...       ...       1:76      ...
+VY       VY                               ...       ...       1:76      ...
+! As seen in the attached graphic I took 76 points to delineate the isotherm.
+
+! In this case, where VX,VY are lon,lat values, what is needed is to sum the
+great
+! circle distances along the curve. One way to do this is as follows:
+   go greatcircle  ! definitions for great circle calculations
+   let lon1=vx ; let lat1=vy ; let lon2=vx[k=@shf] ; let lat2=vy[k=@shf]
+   list gckm[k=1:75@sum]  ! sum up the GC contributions, giving the answer
+(in kilometers)
+   18033.
+Note that you sum over one less than the number of vertices so as not to run
+off the end. I did the above twice, because I forgot to save the plot, and
+the first time got 18042. This suggests the method is good enough for a
+certain class of problem. Perhaps a better demo would have been to use the
+hints in &quot;greatcircle.jnl&quot; to plot a portion of a great circle, then digitize
+it and compare the result with the known answer, but this one at least
+illustrates how it can deal with complex paths.
+
+Hope it is of use,
+   Mick
+----------------
+On 5/19/11 11:06 AM, Leela Frankcombe wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Ferreters,
+
+I've come across a question which is simple in theory but in practice I'm
+having a little trouble. So I'm wondering if anyone else has found a
+solution.
+
+What I would like to do is calculate the path length of an ocean current.
+To define the path of the current I pick a particular sea surface height
+contour, now I would like to be able to calculate the length of that
+contour. I've been trying to use @loc or @weq to select the points at which
+SSH reaches the value that I've chosen but they only find the first
+instance along a given latitude or longitude so they miss parts where the
+current meanders (and also sometimes pick up eddies). Is there a way to use
+@loc or @weq to find every instance of a particular value? Or has someone
+got a better solution?
+
+Thanks!
+Leela.
+
+
+-----------------------------------------------------------------------------------
+Leela Frankcombe
+Post-doctoral researcher
+Institute for Marine and Atmospheric research Utrecht
+Utrecht University
+The Netherlands
+www.phys.uu.nl/~frankcmb
+l.m.frankcombe@xxxxx
+
+-----------------------------------------------------------------------------------
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00385" href="msg00385.html">Re: [ferret_users] current path length</a></strong>
+<ul><li><em>From:</em> William S. Kessler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00381" href="msg00381.html">[ferret_users] current path length</a></strong>
+<ul><li><em>From:</em> Leela Frankcombe</li></ul></li>
+<li><strong><a name="00382" href="msg00382.html">Re: [ferret_users] current path length</a></strong>
+<ul><li><em>From:</em> mick spillane</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00437.html">Re: [ferret_users] current path length</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00385.html">Re: [ferret_users] current path length</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00437.html">Thread Prev</a>][<a href="msg00385.html">Thread Next</a>][<A HREF="threads.html#00384">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>
