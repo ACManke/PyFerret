@@ -1,0 +1,210 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] many colors and shaset -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 3 Feb 2012 16:30:06 &#45;0800 -->
+<!--X-Message-Id: 4F2C7C51.1070509@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 4F2BE77E.207@mercator&#45;ocean.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] many colors and shaset</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00010.html">Thread Prev</a>][<a href="msg00011.html">Thread Next</a>][<A HREF="threads.html#00014">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] many colors and shaset</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Bruno Levier &lt;<a href="mailto:bruno.levier@DOMAIN.HIDDEN">bruno.levier@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] many colors and shaset</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 03 Feb 2012 16:31:13 -0800</li>
+<li>Cc: Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00010.html">4F2BE77E.207@mercator-ocean.fr</a>&gt;</li>
+<li>References: &lt;<a href="msg00010.html">4F2BE77E.207@mercator-ocean.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:9.0) Gecko/20111222 Thunderbird/9.0.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    Hi,<br>
+    Thank you for the example script. Let me explain what Ferret is
+    doing with the colors. Ferret keeps is a list of colors-used.&nbsp; Each
+    color graphics command sets part of that list, up to the maximum of
+    256 colors. This is not the colors actually drawn, but those which
+    may be used, as defined by /LEVELS qualifier. /LEVELS=(0,7,1)
+    defines 8 colors, even if the data that is plotted by the command
+    needs only one color. Ferret does not check whether the colors&nbsp; that
+    are defined in the current command are the same as those already
+    defined.&nbsp; Your script defines 8 colors for each polygon call, using
+    8 items in the list for every call to the polygon command. There are
+    12*6 = 70 calls to polygon in each figure, plus the legend.&nbsp; So all
+    of the 256 color indices are used before the end of the repeat
+    loops. <br>
+    <br>
+    PPL SHASET RESET moves the pointer in the color list back to the
+    start, removing any memory of colors already used. Usually we don't
+    want to use this while there are colors on the plot page that we
+    want to keep.&nbsp; But because each set of six polygons uses the same
+    color palette and levels setting, we can issue PPL SHASET RESET at
+    the start of each set of polygons. This keeps the pointer in the
+    color list to a low number so we don't run out of colors. We do not
+    want to issue PPL SHASET RESET before changing palettes and using
+    the white palette for the legend, so put it at the start of each set
+    of polygons that share colors. <br>
+    <br>
+    There is some discussion of this, here, the index entry is "color,
+    PPLUS shading",<br>
+<a rel="nofollow" class="moz-txt-link-freetext" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/customizing-plots/COLOR#_VPINDEXENTRY_828">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/customizing-plots/COLOR#_VPINDEXENTRY_828</a><br>
+    <br>
+    So, your script could be changed as follows:<br>
+    <br>
+    <tt>Set W /Aspect=1.6<br>
+      <br>
+      PPL AXLSZE .18 .18<br>
+      PPL TICS 0.125 0.25 0. 0. 1 1<br>
+      PPL AXLABP -1 0<br>
+      PPL AXLINT 1<br>
+      <br>
+      Define Viewport /X=0.3:1.0 01<br>
+      <br>
+      Def Symb xd001&nbsp;&nbsp; 0 ; Def Symb xu001&nbsp; 20 ; Def Symb xi001 5<br>
+      Def Symb yd001&nbsp;&nbsp; 0 ; Def Symb yu001 310<br>
+      <br>
+      !! Figure 1<br>
+      !! ########<br>
+      <br>
+      Set V 01<br>
+      go margins 0.5 0.5 0.9 0.2<br>
+      <br>
+      Plot /Nolab /I=1:2 /Hlim=($xd001):($xu001):($xi001)
+      /Vlim=($yd001):($yu001) /Vgrat=dash /Set I<br>
+      ppl xfor (F4.0)<br>
+      ppl Plot<br>
+      <br>
+      Def Symb inc0&nbsp; =&nbsp;&nbsp; 4<br>
+      Def Symb inc1&nbsp; =&nbsp;&nbsp; 4<br>
+      Def Symb ordup = `($yu001) - ($inc1)`<br>
+      Def Symb orddo = `($ordup) - ($inc0)`<br>
+      <br>
+      Repeat /Range=1:12 /Name=dd (<b> ppl shaset reset</b>;\<br>
+      Repeat /Range=1:6 /Name=ii ( \<br>
+      &nbsp; Def Symb ii `ii` ;\<br>
+      &nbsp; Polygone /Over /Line /Nolab /Fill /Pal=broad /Lev=(0,7,1)
+      {0,0,`($ii)*3`,`($ii)*3`}, {($orddo),($ordup),($ordup),($orddo)},
+      `($ii)-1` ;\<br>
+      &nbsp; Def Symb ordup =&nbsp; `($orddo)+1` ;\<br>
+      &nbsp; Def Symb orddo = `($ordup)-($inc0)` ;\<br>
+      ) ;\<br>
+      &nbsp; Def Symb ordup = `($ordup)-($inc1)` ;\<br>
+      &nbsp; Def Symb orddo = `($ordup)-($inc0)` ;\<br>
+      )<br>
+      <br>
+      &nbsp;!! Legend<br>
+      Polygone /Over /Line /Nolab /Fill /Pal=white {4,4,18,18},
+      {2,`($ordup)+3`,`($ordup)+3`,2}<br>
+      <br>
+      Repeat /Range=1:6 /Name=ii ( \<br>
+      &nbsp; Def Symb ii `ii` ;\<br>
+      &nbsp; Polygone /Over /Line /Nolab /Fill /Pal=broad /Lev=(0,7,1)
+      {5,5,10,10}, {($orddo),($ordup),($ordup),($orddo)}, `($ii)-1` ;\<br>
+      &nbsp; Def Symb ordup =&nbsp; `($orddo)-3` ;\<br>
+      &nbsp; Def Symb orddo = `($ordup)-($inc0)` ;\<br>
+      )<br>
+      <br>
+      <br>
+      Frame /File=fig01.gif<br>
+      ppl Shaset Reset<br>
+      <br>
+      !! Figure 2<br>
+      !! ########&nbsp; ...</tt><br>
+    <br>
+    <br>
+    <br>
+    On 2/3/2012 5:56 AM, Bruno Levier wrote:
+    <blockquote cite="" type="cite">Hi
+      Ferreters
+      <br>
+      <br>
+      I'm trying to plot many polygones filled with different colors on
+      the same plot. When I use "ferret -gif", the colors are not always
+      those expected (in this case the rectangle of the legend is filled
+      with brown rather than white). I've tried to use some "shaset
+      protect" but with no success. I've attached the script I use. I
+      use Ferret v6.2
+      <br>
+      <br>
+      Thank you for your help,
+      <br>
+      <br>
+      Bruno Levier
+      <br>
+      <br>
+      <br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00010" href="msg00010.html">[ferret_users] many colors and shaset</a></strong>
+<ul><li><em>From:</em> Bruno Levier</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00010.html">[ferret_users] many colors and shaset</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00011.html">[ferret_users] masking using and/or</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00010.html">Thread Prev</a>][<a href="msg00011.html">Thread Next</a>][<A HREF="threads.html#00014">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

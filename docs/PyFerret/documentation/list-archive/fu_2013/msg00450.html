@@ -1,0 +1,170 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] **ERROR Ferret crash; signal = 11 -->
+<!--X-From-R13: Dhff Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Sun, 14 Jul 2013 20:07:18 &#45;0700 -->
+<!--X-Message-Id: 51E3675D.202@csiro.au -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 59191.117.216.230.213.1373846918.squirrel@202.41.64.20 -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] **ERROR Ferret crash; signal = 11</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00452.html">Thread Next</a>][<A HREF="threads.html#00450">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] **ERROR Ferret crash; signal = 11</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] **ERROR Ferret crash; signal = 11</strong></li>
+<li><strong>From</strong>: <strong>Russ Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 15 Jul 2013 13:07:09 +1000</li>
+<li>In-reply-to: &lt;59191.117.216.230.213.1373846918.squirrel@202.41.64.20&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;59191.117.216.230.213.1373846918.squirrel@202.41.64.20&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20130623 Thunderbird/17.0.7</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+
+Hi,
+
+</pre><tt>That's a rather large amount to save in one go.  Over 5e8 values in one 
+</tt><tt>slab or (as ferret uses double precision) 4GB!
+</tt><pre style="margin: 0em;">
+
+I would break up the save as follows
+
+save/l=1:50/clob/file=rain.nc rain
+repeat/range=51:4401/name=ll save/app/file=rain.nc rain[i=`ll`:`ll+49`]
+
+</pre><tt>Also since the input file appears to store rain as a real*4 float you 
+</tt><tt>may want to set the output to be FLOAT
+</tt><pre style="margin: 0em;">
+
+set var/outtype=float rain
+
+before saving.
+
+</pre><tt>You will almost certainly need to change the type of netCDF file that 
+</tt><tt>gets written to 64BIT_OFFSET or netcdf4. Classic format can't store more 
+</tt><tt>than 2GB. The first line above will need to be
+</tt><pre style="margin: 0em;">
+
+save/l=1:50/clob/file=rain.nc/ncformat=64BIT_OFFSET rain
+
+or
+
+save/l=1:50/clob/file=rain.nc/ncformat=netcdf4 rain
+
+
+
+
+
+Cheers,
+Russ
+
+On 15/07/13 10:08, ramesh@xxxxxxxxxxxxxxx wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+   When I try to convert binary to netcdf the ferret crashes with signal=11;
+The machine &amp; the OS is stable. I am using ferret v6.842 in FC 18 on the
+hp z820 workstation. Kindly help me to solve this.
+
+The diagnostic is below:
+
+
+sh grid gfine
+     GRID GFINE
+  name       axis              # pts   start                end
+  XFINE     LONGITUDE          401mr   70E                  110E
+  YFINE     LATITUDE           301 r   5N                   35N
+  normal    Z
+  TFINE     TIME              4450 r   01-MAY-2001 00:00    06-JUL-2013 00:00
+  normal    E
+  normal    F
+set mem/size=1000
+  Cached data cleared from memory
+file/swap/form=stream/TYPE=R4/grid=gfine/var=rain rain.bin
+set var/bad=0.0 rain
+save/clobber/file=rain.nc rain
+  getgrid EX#1     C:  5 dset:   1 I:    1    1  J:    1    1  K:    1    1
+  L:    1    1  M:    1    1  N:    1    1
+  eval    EX#1     C:  4 dset:   1 I:    1  401  J:    1  301  K: -999 -999
+  L:    1 4450  M: -999 -999  N: -999 -999
+**ERROR Ferret crash; signal = 11
+
+With thanks and regards,
+Ramesh
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00449" href="msg00449.html">[ferret_users] **ERROR Ferret crash; signal = 11</a></strong>
+<ul><li><em>From:</em> ramesh</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00449.html">[ferret_users] **ERROR Ferret crash; signal = 11</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00452.html">[ferret_users] Ferret publications</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00449.html">Thread Prev</a>][<a href="msg00452.html">Thread Next</a>][<A HREF="threads.html#00450">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

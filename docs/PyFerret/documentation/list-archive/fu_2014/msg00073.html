@@ -1,0 +1,187 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] ferret inconsistency/errors in masking -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 26 Feb 2014 10:42:53 &#45;0800 -->
+<!--X-Message-Id: 530E3560.9050801@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: alpine.LFD.2.03.1402252254210.4173@mun.ca -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] ferret inconsistency/errors in masking</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00071.html">Thread Prev</a>][<a href="msg00074.html">Thread Next</a>][<A HREF="threads.html#00073">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] ferret inconsistency/errors in masking</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Lev Tarasov &lt;<a href="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxx</a>&gt;, &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;,        Lev Tarasov &lt;<a href="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] ferret inconsistency/errors in masking</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 26 Feb 2014 10:41:36 -0800</li>
+<li>In-reply-to: &lt;<a href="msg00071.html">alpine.LFD.2.03.1402252254210.4173@mun.ca</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00071.html">alpine.LFD.2.03.1402252254210.4173@mun.ca</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:24.0) Gecko/20100101 Thunderbird/24.3.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Lev,
+</pre><tt>It's a bit hard to tell without seeing what the grids of the different 
+</tt><tt>variables are, and so on, but I imagine that this may have to do with 
+</tt><tt>the order of operations as the expression is being evaluated. You have 
+</tt><tt>some regridding operations going on in conjunction with the IF test. In 
+</tt><tt>the incorrect result you show below, is it showing H*(1.-0.91/1.028)?
+</tt><pre style="margin: 0em;">
+
+To test that, try some different ways to make the definitions. Try:
+
+   let hd  = if ifloat[g=h] GT 0.9 THEN H*(1.-0.91/1.028) ELSE HDG-SLEV
+or
+</pre><tt>   let hd  = if ifloat[g=h] GT 0.9 THEN H*(1.-0.91/1.028) ELSE 
+</tt><tt>HDG[g=h]-SLEV[g-h]
+</tt><pre style="margin: 0em;">
+
+Also does &quot;cancel mode interpolate&quot; make a difference?
+
+</pre><tt>Finally, looking at the output when &quot;set mode diagnostic&quot; is turned on 
+</tt><tt>may give us an idea.  It'll show variables being read or loaded into 
+</tt><tt>memory and grids being reconciled with one another as the expression is 
+</tt><tt>evaluated.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 2/25/2014 6:36 PM, Lev Tarasov wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I'm trying to merge some data sets, and get inconsistent
+results:
+
+For instance, variable hd, defined as follows:
+yes?show var hd
+ HD = IF IFLOAT GT 0.9 THEN H*(1.-0.91/1.028) ELSE HDG-SLEV
+should equal hdg-slev for the following region, since ifloat=0:
+
+yes? stats ifloat[g=h]
+             IF H*0.91/1.028 LT SLEV+HP THEN 1 ELSE 0
+             LONGITUDE: 89W (interpolated)
+             LATITUDE: 36.5N (interpolated)
+             Z:  N/A
+             T: -121 to -33
+             E:  N/A
+             F:  N/A
+             DATA SET: ./idHept.nn9894
+
+ Total # of data points: 44 (1*1*1*44*1*1)
+ # flagged as bad  data: 0
+ Minimum value: 0
+ Maximum value: 0
+ Mean    value: 0 (unweighted average)
+ Standard deviation: 0
+
+but it doesn't:
+
+yes? stats hd[g=h]-(hdg[g=h]-slev[g=h])
+
+             HD[G=H]-(HDG[G=H]-SLEV[G=H])
+             LONGITUDE: 89W (interpolated)
+             LATITUDE: 36.5N (interpolated)
+             Z:  N/A
+             T: -121 to -33
+             E:  N/A
+             F:  N/A
+             DATA SET: ./idHept.nn9894
+
+ Total # of data points: 44 (1*1*1*44*1*1)
+ # flagged as bad  data: 0
+ Minimum value: -84.7
+ Maximum value: 92.7
+ Mean    value: -29.884 (unweighted average)
+ Standard deviation: 46.089
+
+     FERRET v6.84
+     Linux 2.6.9-101.ELsmp 64-bit - 07/19/13
+
+How do I fix this or is it a bug?
+
+Cheers,
+
+lev
+
+Lev Tarasov -   Dept of Physics and Physical Oceanography,
+        Memorial University of Newfoundland.
+                email: lev@xxxxxx
+                <a  rel="nofollow" href="http://www.physics.mun.ca/~lev/">http://www.physics.mun.ca/~lev/</a>
+        Tel (709)-864-2675
+        Fax (709)-864-8739
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00071" href="msg00071.html">[ferret_users] ferret inconsistency/errors in masking</a></strong>
+<ul><li><em>From:</em> Lev Tarasov</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00071.html">[ferret_users] ferret inconsistency/errors in masking</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00074.html">[ferret_users] Weekly to yearly average</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00071.html">Thread Prev</a>][<a href="msg00074.html">Thread Next</a>][<A HREF="threads.html#00073">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

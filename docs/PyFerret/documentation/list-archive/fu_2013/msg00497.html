@@ -1,0 +1,170 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] question on yearly average -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 14 Aug 2013 13:06:39 &#45;0700 -->
+<!--X-Message-Id: 520BE34A.4090409@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAPo+=4wf0nACB7k=3Xwjm+86ncxrjxFq7LoD2Tw3a3VbTzChLw@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] question on yearly average</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00495.html">Thread Prev</a>][<a href="msg00498.html">Thread Next</a>][<A HREF="threads.html#00497">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] question on yearly average</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Paul Goddard &lt;<a href="mailto:goddarpb@DOMAIN.HIDDEN">goddarpb@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] question on yearly average</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 14 Aug 2013 13:06:34 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;CAPo+=4wf0nACB7k=3Xwjm+86ncxrjxFq7LoD2Tw3a3VbTzChLw@mail.gmail.com&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;CAPo+=4wf0nACB7k=3Xwjm+86ncxrjxFq7LoD2Tw3a3VbTzChLw@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20130801 Thunderbird/17.0.8</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Paul,
+</pre><tt>What you're computing is the average of each 12 months, centered at 
+</tt><tt>months 1,13,...  The first data returned is at the first L you asked 
+</tt><tt>for, L=1. Then the next value is a 12-month average centered at L=13, 
+</tt><tt>L=25, etc.  You probably wanted to ask for the average of 1993, 1994, 
+</tt><tt>1995, ...  You can verify that with a LIST command.  The data will be 
+</tt><tt>shown as January 1993, Jan 1994, and so on. So what was computed is the 
+</tt><tt>data averaged from July-June of each year.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>In Ferret we always want to be thinking about data defined over grid 
+</tt><tt>cells, and whether commands are directing Ferret to work with the grid 
+</tt><tt>cell coordinates or the grid cell edges. By default Ferret commands 
+</tt><tt>refer to coordinates at the center of the grid cell. Here, you could get 
+</tt><tt>at least much closer to what you intended with this:
+</tt><pre style="margin: 0em;">
+
+   list var[L=6:234:12@ave]
+
+</pre><tt>but because there are an even number of months in the year, there's an 
+</tt><tt>issue with whether you should use L= 6 or 7 to split the year at the end 
+</tt><tt>of June/beginning of July, right?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>To be sure of what you're doing, the best way is to define a time axis 
+</tt><tt>which captures the result you really want and use a regridding 
+</tt><tt>transformation:
+</tt><pre style="margin: 0em;">
+
+   yes? define axis/EDGES/t=1-jan-1993:31-dec-2012:1/unit=year tyear
+   yes? list var[gt=tyear@ave]
+
+There is a good discussion of transformations and regridding, here
+<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/variables-xpressions/XPRESSIONS#GeneralInfo">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/variables-xpressions/XPRESSIONS#GeneralInfo</a>
+
+</pre><tt>and in particular time-averages are discussed here - it shows another 
+</tt><tt>perhaps better way to define the yearly axis:
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/faq/averaging-to-regrid-a-time-series">http://ferret.pmel.noaa.gov/Ferret/faq/averaging-to-regrid-a-time-series</a>
+
+and further good information is here,
+<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/faq/regridding-a-time-series-with-ave">http://ferret.pmel.noaa.gov/Ferret/faq/regridding-a-time-series-with-ave</a>
+
+
+
+
+
+
+On 8/14/2013 9:01 AM, Paul Goddard wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+</pre><tt>I have a basic question but it is made me wonder for quite some time.  
+</tt><tt>Let's say I have 20 years of monthly data, Jan 1993 -Dec 2012, and I 
+</tt><tt>want to list out the yearly average of those months.  I usually compute,
+</tt><pre style="margin: 0em;">
+list = var[L=1:240:12@AVE]
+
+</pre><tt>The output is 20 data points, however, the values are not the same as 
+</tt><tt>if I extract the 1:240 data points into excel and calculate the 
+</tt><tt>average for each year &quot;by hand.&quot;
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Why the discrepancy?  and what should I do if I want to calculate 
+</tt><tt>yearly means.
+</tt><pre style="margin: 0em;">
+
+Thanks in advance,
+
+Paul
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00495" href="msg00495.html">[ferret_users] question on yearly average</a></strong>
+<ul><li><em>From:</em> Paul Goddard</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00495.html">[ferret_users] question on yearly average</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00498.html">[ferret_users] shading statistically significant at the 95% confidence level (p &lt; 0.05) according to the two-tailed Student&#x2019;s t-test</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00495.html">Thread Prev</a>][<a href="msg00498.html">Thread Next</a>][<A HREF="threads.html#00497">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

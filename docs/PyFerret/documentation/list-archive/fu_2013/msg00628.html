@@ -1,0 +1,197 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Making a Z&#45;plot -->
+<!--X-From-R13: Dhff Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Mon, 18 Nov 2013 14:09:24 &#45;0800 -->
+<!--X-Message-Id: 528A8FF9.1030601@csiro.au -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: CAJo_tOJ76YQSaGj7m7aDZKYVibzSL&#45;ao2ZVBk1=gPHuDS0C2CQ@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Making a Z-plot</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00627.html">Thread Prev</a>][<a href="msg00631.html">Thread Next</a>][<A HREF="threads.html#00628">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Making a Z-plot</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Making a Z-plot</strong></li>
+<li><strong>From</strong>: <strong>Russ Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 19 Nov 2013 09:08:57 +1100</li>
+<li>In-reply-to: &lt;CAJo_tOJ76YQSaGj7m7aDZKYVibzSL-ao2ZVBk1=gPHuDS0C2CQ@mail.gmail.com&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;CAJo_tOJ76YQSaGj7m7aDZKYVibzSL-ao2ZVBk1=gPHuDS0C2CQ@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; Linux x86_64; rv:24.0) Gecko/20100101 Thunderbird/24.1.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    <div class="moz-cite-prefix">Hi Luke,<br>
+      You're nearly there. You just need to define a depth axis and then
+      combine the two levels using IF/ELSE masking<br>
+      <br>
+      def axis/z=0:10:10/depth/units="m" myz<br>
+      let dummy2=dummy+z[gz=myz]&nbsp;&nbsp; ! 2D dummy <br>
+      <br>
+      ! If level 1 we want the surface temp level 2 gets the 10m<br>
+      ! adding 0*dummy2 promotes to 2D<br>
+      <br>
+      let var_2d = if k eq 1 then var2 + 0*dummy2 else var1<br>
+      <br>
+      shade var_2d<br>
+      <br>
+      In fact you could create the new variable directly without the
+      intermediates var1,var2<br>
+      <br>
+      let var_2d&nbsp; = if k eq 2 reshape(temp1, dummy) + 0*z[gz=myz] else
+      reshape(temp2, dummy)<br>
+      <br>
+      Cheers,<br>
+      Russ<br>
+      <br>
+      On 19/11/13 06:25, Luke M wrote:<br>
+    </div>
+    <blockquote
+cite=""
+      type="cite">
+      
+      <div dir="ltr">
+        <div>Hi ferret users</div>
+        <div><br>
+        </div>
+        <div>I am trying to make a "z-plot" that looks similar to the
+          one shown in the bottom of Ferret "Tour" page (<a rel="nofollow"
+            moz-do-not-send="true"
+            href="http://ferret.pmel.noaa.gov/Ferret/documentation/levitus-tour">http://ferret.pmel.noaa.gov/Ferret/documentation/levitus-tour</a>)
+          using some ascii data I have.</div>
+        <div><br>
+        </div>
+        <div>I would like to create a plot that shows "time" in the
+          x-axis (instead of latitude), depth on the y-axis, and then
+          plot colors &amp; contour lines using temperature information
+          (just like in the mentioned Ferret Tour example).</div>
+        <div><br>
+        </div>
+        <div>Since the ascii file I have (attached below) has the
+          temperature information at 10 and 0m depths for a particular
+          lat&amp;lon point, is there a way to represent this in
+          "z-form" as a function of time? I guess that I am a bit
+          confused on how to tell Ferret how to interpret the data
+          (since it is different from a regular gridded netcdf file such
+          as COARDS).</div>
+        <div><br>
+        </div>
+        <div><span class="" style="white-space:pre"> </span>L.<br>
+        </div>
+        <div><br>
+        </div>
+        <div>ASCII file contents:<br>
+        </div>
+        <div><br>
+        </div>
+        <div>A10 11/10/2013 18:20:34 20.16 27.19 654</div>
+        <div>A9 11/11/2013 14:30:35 21.34 27.69 564</div>
+        <div>A3 11/12/2013 12:10:37 20.47 27.39 652</div>
+        <div>A13 11/12/2013 14:20:38 20.34 26.69 653</div>
+        <div>A11 11/14/2013 18:30:39 20.12 26.8 653</div>
+        <div><br>
+        </div>
+        <div>The columns above represent:<br>
+        </div>
+        <div>line_#, date, time, temp_at_10m_depth, temp_at_0m_depth,
+          daily_obs_#</div>
+        <div><br>
+        </div>
+        <div><br>
+        </div>
+        <div>set data/format=delimited/delim="
+          "/var="linenum,date,time,temp1,temp2"/type="text,date,time,num,num"/col=6
+          data3.asc<br>
+        </div>
+        <div>let tstep = date + time/24.</div>
+        <div>define axis/T/T0=1-jan-1900/UNIT=days ttaxis=tstep</div>
+        <div>let dummy = t[gt=ttaxis]</div>
+        <div>let var1 = reshape(temp1, dummy)</div>
+        <div>let var2 = reshape(temp2, dummy)</div>
+        <div><br>
+        </div>
+      </div>
+    </blockquote>
+    <br>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00631" href="msg00631.html">Re: [ferret_users] Making a Z-plot</a></strong>
+<ul><li><em>From:</em> Luke M</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00627" href="msg00627.html">[ferret_users] Making a Z-plot</a></strong>
+<ul><li><em>From:</em> Luke M</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00627.html">[ferret_users] Making a Z-plot</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00631.html">Re: [ferret_users] Making a Z-plot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00627.html">Thread Prev</a>][<a href="msg00631.html">Thread Next</a>][<A HREF="threads.html#00628">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

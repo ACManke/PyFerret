@@ -1,0 +1,186 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] EOf of 3d data -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Thu, 3 Jul 2014 10:29:39 &#45;0700 -->
+<!--X-Message-Id: 53B592FE.2020900@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1533320949.2226417.1404364456682.JavaMail.root@nio.org -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] EOf of 3d data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00239.html">Thread Prev</a>][<a href="msg00243.html">Thread Next</a>][<A HREF="threads.html#00242">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] EOf of 3d data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] EOf of 3d data</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 03 Jul 2014 10:29:34 -0700</li>
+<li>In-reply-to: &lt;<a href="msg00239.html">1533320949.2226417.1404364456682.JavaMail.root@nio.org</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00239.html">1533320949.2226417.1404364456682.JavaMail.root@nio.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:24.0) Gecko/20100101 Thunderbird/24.6.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+</pre><tt>Yes, those functions expect the spatial variation to be in XY.   You 
+</tt><tt>could do the calculation by defining a fake XY grid and using RESHAPE to 
+</tt><tt>put your variable onto that grid.  Because Ferret grids are stored with 
+</tt><tt>the data varying fastest in the X and then Y direction this will keep 
+</tt><tt>the data order intact.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>so, the new grid has an x axis the length of your grid's y axis, a y 
+</tt><tt>axis the length of your z axis:
+</tt><pre style="margin: 0em;">
+
+yes? def axis/x=1:`ny`:1 xfake
+yes? def axis/y=1:`nz`:1 yfake
+
+yes? let var_with_grid =  x[gx=xfake] + y[gy=yfake] +t[gt=T_20FLNNEW]
+yes? let var_xyt = RESHAPE (T_20FLNNEW, var_with_grid)
+
+</pre><tt>Then call the EOF functions using var_xyt, and finally put the results 
+</tt><tt>back on the original yz grid with another RESHAPE function.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Please have a look at the EOFSVD functions. They are faster than the EOF 
+</tt><tt>family of functions.  As long as your data does not have gaps they are 
+</tt><tt>the better choice.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 7/2/2014 10:14 PM, Shreya Dhame wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+I want to use the method of Empirical Orthogonal Function (EOF) analysis to decompose the spatiotemporal data in orthogonal modes. My data is in 3d matrix in the form (time(t), lat(y), depth(z)). I tried the eof_space,eof_stat and eof_tfunc given in ef_eof_demo.jnl but did not get valid results.Are these functions only for x.y.t data?
+
+SET MODE VERIFY
+USE merge7y.cdf
+
+LET eofspace = eof_space(T_20FLNNEW, 0.5)
+SAVE/CLOBBER/FILE=merge7y_eof_space.cdf eofspace
+
+can variable/all
+
+use merge7y_eof_space.cdf
+set view ul; fill/l=1/title=&quot;eof 1&quot; eofspace
+set view ur; fill/l=2/title=&quot;eof 2&quot; eofspace
+
+USE merge7y.cdf
+
+LET eofstat = eof_stat(T_20NEW, 0.5)
+let nout =  eofstat[i=1,j=1]
+
+SAVE/CLOBBER/FILE=merge7y_eof_stat.cdf eofstat[i=1:`nout`]
+
+can var/all
+
+use merge7y_eof_stat.cdf
+
+let nout = eofstat[i=1,j=1,d=merge7y_eof_stat]
+let pcts = eofstat[i=1:`nout`,j=2,d=merge7y_eof_stat]
+let eigenv = eofstat[i=1:`nout`,j=3,d=merge7y_eof_stat]
+
+list nout
+list pcts
+list eigenv
+
+USE merge7y.cdf
+LET eoftime = eof_tfunc(T_20NEW, 0.5)
+
+SAVE/CLOBBER/FILE=M1215_eof_tfunc.cdf eoftime[i=1:`nout`]
+
+can var/all
+use merge7y_eof_tfunc.cdf
+can view
+
+set view ul; plot/k=1/title=&quot;time function 1&quot; eoftime
+set view ur; plot/k=2/title=&quot;time function 2&quot; eoftime
+
+set mode/last verify
+
+
+--Thank you
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00243" href="msg00243.html">Re: [ferret_users] EOf of 3d data</a></strong>
+<ul><li><em>From:</em> Shreya Dhame</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00239" href="msg00239.html">[ferret_users] EOf of 3d data</a></strong>
+<ul><li><em>From:</em> Shreya Dhame</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00239.html">[ferret_users] EOf of 3d data</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00243.html">Re: [ferret_users] EOf of 3d data</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00239.html">Thread Prev</a>][<a href="msg00243.html">Thread Next</a>][<A HREF="threads.html#00242">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

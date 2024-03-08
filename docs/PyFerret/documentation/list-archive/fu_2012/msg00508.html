@@ -1,0 +1,228 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] accessing statistics symbols in if/then statements -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 25 Sep 2012 09:38:19 &#45;0700 -->
+<!--X-Message-Id: 5061DDF3.4080405@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 8814A45425BD88409DE071DDD8113E4B028DA8C6CE@exvic&#45;mbx01.nexus.csiro.au -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] accessing statistics symbols in if/then statements</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00503.html">Thread Prev</a>][<a href="msg00511.html">Thread Next</a>][<A HREF="threads.html#00508">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] accessing statistics symbols in if/then statements</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>,        &quot;<a href="mailto:Jennifer.Abernethy@DOMAIN.HIDDEN">Jennifer.Abernethy@xxxxxxxx</a>&quot; &lt;<a href="mailto:Jennifer.Abernethy@DOMAIN.HIDDEN">Jennifer.Abernethy@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] accessing statistics symbols in if/then statements</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 25 Sep 2012 09:38:11 -0700</li>
+<li>In-reply-to: &lt;<a href="msg00502.html">8814A45425BD88409DE071DDD8113E4B028DA8C6CE@exvic-mbx01.nexus.csiro.au</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00502.html">8814A45425BD88409DE071DDD8113E4B028DA8C6CE@exvic-mbx01.nexus.csiro.au</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:15.0) Gecko/20120907 Thunderbird/15.0.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi
+</pre><tt>Russ has a solution if you want the length of the axis.  If you want the 
+</tt><tt>number of valid points in a variable, you could use the @NGD 
+</tt><tt>transformation instead of `return=Lsize`.
+</tt><pre style="margin: 0em;">
+
+  let n_ok = p[x=@ngd,y=@ngd,z=@ngd,t=@ngd]
+
+I'd like to just explain more about what you ran into here:
+
+</pre><tt>The command parser evaluates symbols ($symbol_name) as the command is 
+</tt><tt>read in, and substitutes those symbols. The commands aren't executed at 
+</tt><tt>that time; we are just getting the full command line with any symbols or 
+</tt><tt>grave-accent expressions evaluated. When you put a set of commands 
+</tt><tt>together with the semicolon, they are parsed as a single command, 
+</tt><tt>substituting symbols and grave-accent expressions and then after that, 
+</tt><tt>the long input line broken up into separate commands and then finally 
+</tt><tt>they are executed.  Until the STAT command is executed the value of 
+</tt><tt>STAT_NGOOD doesn't exist.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>A solution for that is to do the IF statements as a block if within your 
+</tt><tt>script.  This should work fine:
+</tt><pre style="margin: 0em;">
+
+let p =  psl[d=1,t=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+if `6 LT 10` then
+  statistics p
+  let pnum = ($stat_ngood))
+endif
+
+
+
+
+
+
+On 9/24/2012 11:29 PM, Jennifer.Abernethy@xxxxxxxx wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+I'm running into a problem accessing the symbol $STAT_NGOOD when I use the statistics command in an if/then statement. It all works great when not used in an if/then statement.
+Can anyone help me make sense of this?
+
+
+This works great:
+
+let p =  psl[d=1,t=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+statistics p
+let pnum = ($stat_ngood)
+
+yes? go try_statstest.jnl
+let p =  psl[d=1,t=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+statistics p
+</pre><tt>  
+</tt><tt>              PSL[D=spsl_soi,T=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+</tt><pre style="margin: 0em;">
+              LONGITUDE: 0E
+              LATITUDE: 0
+              Z:  N/A
+              TIME: 15-JAN-2000 12:00 to 14-JAN-2010 00:00
+              DATA SET: N/A
+</pre><tt>  
+</tt><tt>  Total # of data points: 120 (1*1*1*120)
+</tt><pre style="margin: 0em;">
+  # flagged as bad  data: 0
+  Minimum value: -2.2286
+  Maximum value: 3.9071
+  Mean    value: -0.13333 (unweighted average)
+  Standard deviation: 1.0054
+let pnum = ($stat_ngood)
+  !-&gt; DEFINE VARIABLE pnum = 120
+
+
+
+But then I put it in a if/then statement.  Stat_ngood exists, but I can't save it:
+
+let p =  psl[d=1,t=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+if `6 LT 10` then (statistics p; show sym stat*;  let pnum = ($stat_ngood)) endif
+
+yes? go try_statstest.jnl
+let p =  psl[d=1,t=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+if `6 LT 10` then  (statistics p ; let pnum = ($stat_ngood))  endif
+  !-&gt; if 1 then  (statistics p ; let pnum =  )  endif
+</pre><tt>  
+</tt><tt>              PSL[D=spsl_soi,T=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+</tt><pre style="margin: 0em;">
+              LONGITUDE: 0E
+              LATITUDE: 0
+              Z:  N/A
+              TIME: 15-JAN-2000 12:00 to 14-JAN-2010 00:00
+              DATA SET: N/A
+</pre><tt>  
+</tt><tt>  Total # of data points: 120 (1*1*1*120)
+</tt><pre style="margin: 0em;">
+  # flagged as bad  data: 0
+  Minimum value: -2.2286
+  Maximum value: 3.9071
+  Mean    value: -0.13333 (unweighted average)
+  Standard deviation: 1.0054
+STAT_MIN = &quot;-2.2286&quot;
+STAT_MAX = &quot;3.9071&quot;
+STAT_MEAN = &quot;-0.13333&quot;
+STAT_STD = &quot;1.0054&quot;
+STAT_NGOOD = &quot;120&quot;
+STAT_NBAD = &quot;0&quot;
+  **ERROR: command syntax: PNUM = ???
+DEFINE VARIABLE pnum =
+Command file, command group, or REPEAT execution aborted
+
+
+but it's fine again if I move the statistics command out of the if/then stmt:
+
+!works
+let p =  psl[d=1,t=&quot;16-jan-2000&quot;:&quot;16-jan-2010&quot;]
+statistics p
+if `6 LT 10` then (let pnum = ($stat_ngood)) endif
+
+
+
+I need to have the statistics run in an if/then statement, because my real if test is if the year actually exists in the file (i.e. if it doesn't, can't run stats on it to begin with).
+
+However, the reason I'm using `statistics` is that I need to get the length of p (on the L axis) - any other ways to do this?
+
+Is there also any command that clears all data and symbols, axes, etc in ferret? I see cancel data,symbols etc but it looks like you have to do a bunch of cancel commands, clearing each thing one by one - anything that does it all in one command?
+
+thanks,
+jenny
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00502" href="msg00502.html">[ferret_users] accessing statistics symbols in if/then statements</a></strong>
+<ul><li><em>From:</em> Jennifer.Abernethy</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00503.html">Re: [ExternalEmail] [ferret_users] accessing statistics symbols in if/then statements</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00511.html">[ferret_users] Geographical map with bar chart at each grid box.</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00503.html">Thread Prev</a>][<a href="msg00511.html">Thread Next</a>][<A HREF="threads.html#00508">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

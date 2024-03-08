@@ -1,0 +1,157 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] Memory leak in external function? -->
+<!--X-From-R13: [negva Epuzvqg <znegva.fpuzvqgNvb&#45;jnearzhraqr.qr> -->
+<!--X-Date: Tue, 19 Jun 2012 07:08:52 &#45;0700 -->
+<!--X-Message-Id: 4FE087E6.2080103@io&#45;warnemuende.de -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAOs80Nw6itwgdpPvEejvM06rJhU4TOnC0_8DVq_YcH6keqQpSQ@mail.gmail.com -->
+<!--X-Reference: CAOs80Nwz+XLGmgg_+shLGnN32OPPgpNX_p9oa+8rrw4dQOtjGA@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Memory leak in external function?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00258.html">Thread Prev</a>][<a href="msg00284.html">Thread Next</a>][<A HREF="threads.html#00283">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Memory leak in external function?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Memory leak in external function?</strong></li>
+<li><strong>From</strong>: <strong>Martin Schmidt &lt;<a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 19 Jun 2012 16:08:38 +0200</li>
+<li>In-reply-to: &lt;<a href="msg00257.html">CAOs80Nwz+XLGmgg_+shLGnN32OPPgpNX_p9oa+8rrw4dQOtjGA@mail.gmail.com</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Organization: IOW</li>
+<li>References: &lt;CAOs80Nw6itwgdpPvEejvM06rJhU4TOnC0_8DVq_YcH6keqQpSQ@mail.gmail.com&gt; &lt;<a href="msg00257.html">CAOs80Nwz+XLGmgg_+shLGnN32OPPgpNX_p9oa+8rrw4dQOtjGA@mail.gmail.com</a>&gt;</li>
+<li>Reply-to: <a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; AIX 5.3; en-US; rv:1.9.1.11) Gecko/20100701 SeaMonkey/2.0.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+
+</pre><tt>there is a function fill_xy, originalla an external one, now part of 
+</tt><tt>ferret. It fills smoothly in the xy-plane.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I want to fill land values in a data set with 320 x 280 grid points and 
+</tt><tt>about 1700 time steps. I do this time step wise.
+</tt><pre style="margin: 0em;">
+
+use my_data_set.nc
+define symbol  ls = `windx, return=lstart`
+define symbol  le = `windx, return=lend`
+define symbol  tit = `windx, return=title`
+let mask  = 0*missing(windx,0) + 1   ! 1 everywhere
+
+! define a filled variable
+let/unit=&quot;m/s&quot;/title=&quot;($tit)&quot; windx_f = fill_xy(windx,mask,10)
+
+repeat/l=`($ls)`:`($le)` save/file=windx_2009_f.nc/append windx_f
+
+This works with
+FERRET v6.303
+        AIX 5.3 POWER6 - 10/27/09
+
+and
+
+FERRET v6.67
+        Linux(gfortran) 2.6.18-238.1.1.el5 - 02/11/11
+(this runs on OpenSUSE11 and SLES11)
+
+but fails after about 100 time steps with
+ERROR in external function: Segmentation Violation
+ **ERROR: error in external function
+LIST/FORMAT=CDF/file=windx_2009_f.nc/append windx_f
+Command file, command group, or REPEAT execution aborted
+
+if
+       FERRET v6.72
+        Linux 2.6.32-131.12.1.el6.x86_64 64-bit - 09/13/11
+is used at SLES11 and OpenSUSE11 as well.
+
+SET MEMORY/SIZE=1000 or larger does not really help.
+
+Did anyone see similar problems?
+
+Greetings,
+Martin
+
+
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00284" href="msg00284.html">Re: [ferret_users] Memory leak in external function?</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00257" href="msg00257.html">[ferret_users] Time axis in monthly data using desc files</a></strong>
+<ul><li><em>From:</em> Ge Peng</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00258.html">Re: [ferret_users] Time axis in monthly data using desc files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00284.html">Re: [ferret_users] Memory leak in external function?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00258.html">Thread Prev</a>][<a href="msg00284.html">Thread Next</a>][<A HREF="threads.html#00283">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

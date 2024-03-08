@@ -1,0 +1,180 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] time axis issue / appending netcdf files -->
+<!--X-From-R13: Egrir Vnaxva <fgrira.p.unaxvaNabnn.tbi> -->
+<!--X-Date: Tue, 17 Apr 2012 08:45:04 &#45;0700 -->
+<!--X-Message-Id: 4F8D8FFB.2060009@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: CAP&#45;ffoZB_xTuVtOqFB=4A_QCnr=SnchKWQKOd=dfDmYrfjKbug@mail.gmail.com -->
+<!--X-Derived: pngtpaEMzKzsQ.png -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] time axis issue / appending netcdf files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00148.html">Thread Prev</a>][<a href="msg00150.html">Thread Next</a>][<A HREF="threads.html#00149">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] time axis issue / appending netcdf files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>vincent le fouest &lt;<a href="mailto:mymails.ferret@DOMAIN.HIDDEN">mymails.ferret@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] time axis issue / appending netcdf files</strong></li>
+<li><strong>From</strong>: <strong>Steve Hankin &lt;<a href="mailto:steven.c.hankin@DOMAIN.HIDDEN">steven.c.hankin@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 17 Apr 2012 08:44:59 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to:  &lt;CAP-ffoZB_xTuVtOqFB=4A_QCnr=SnchKWQKOd=dfDmYrfjKbug@mail.gmail.com&gt;</li>
+<li>References: &lt;CAP-ffoZB_xTuVtOqFB=4A_QCnr=SnchKWQKOd=dfDmYrfjKbug@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20120327 Thunderbird/11.0.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    Hi Vincent,<br>
+    <br>
+    You can fix this with a single command.&nbsp; You just need to replace
+    the time axis of the second data set with a new one that encodes
+    time consistently with the first -- with the same time origin.&nbsp;
+    There are a number of details not given in your description, so
+    below is a generic description of the technique.&nbsp; 'varname' is the
+    name of any variable in the dataset.&nbsp; Two possible ways to formulate
+    the new time axis are in bold, below.&nbsp; <br>
+    <blockquote>yes?&nbsp; set data my_1850_2005_dset.nc<br>
+      yes?&nbsp; set data my_2006_2012_dset.nc<br>
+      yes? ... find the name of the time axis of dataset2<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Either manually use SHOW GRID on one of the variables<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Or use `varname[d=2],return=taxis`, which returns the
+      name of the time axis<br>
+      <br>
+      ! if the axis is regularly spaced in time, you can use this<br>
+      yes? <b>DEFINE AXIS/unit=days/t0="1850-01-01
+        00:00:00"/t=start:end `varname[d=2],return=taxis`</b><br>
+      <br>
+      ! if the axis is irregularly spaced something like this<br>
+      let days_offset = DAYS1900(2006,1,1)-DAYS1900(1850,1,1)<br>
+      yes? <b>DEFINE AXIS/unit=days/t0="1850-01-01 00:00:00"
+        `varname[d=2],return=taxis` = T[g=varname[d=2]] + days_offset</b><br>
+      <br>
+    </blockquote>
+    Here's a min-example, where I redefine the monthly climatology time
+    axis of the COADS_CLIMATOLOGY dataset using this technique.&nbsp; The new
+    time axis appears to be 12 days in January of 1900.<br>
+    <blockquote><tt>yes? use coads_climatology<br>
+        yes? say `sst,return=taxis`<br>
+        &nbsp;!-&gt; MESSAGE/CONTINUE TIME<br>
+        TIME<br>
+        yes? <b>define axis/t0="1-jan-1900"/units=days time=L[l=1:12]&nbsp;
+          ! time coordinates 1, 2, 3, ... 12</b><br>
+        Replacing definition of axis TIME<br>
+        &nbsp;*** NOTE: grid&nbsp; used by data set coads_climatology<br>
+        &nbsp;*** NOTE: Redefinition may alter apparent contents of data set<br>
+        yes? plot sst[x=160e:160e@ave,y=5s:5n@ave]</tt><br>
+      <br>
+      <img src="pngtpaEMzKzsQ.png" alt=""></blockquote>
+    <br>
+    <br>
+    On 4/17/2012 2:03 AM, vincent le fouest wrote:
+    <blockquote
+cite=""
+      type="cite">Dear users,<br>
+      <br>
+      I would like to append two netcdf files that follow up on time,
+      but in which t starting index is same:<br>
+      <br>
+      File 1 (1 jan 1850 to 31 dec 2005, monthly) time header is:<br>
+      <br>
+      double TIME(TIME) ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:bounds = "TIME_bnds" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:units = "days since 1850-01-01 00:00:00" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:calendar = "noleap" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:axis = "T" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:long_name = "time" ;<br>
+      &nbsp;&nbsp;&nbsp; double TIME_bnds(TIME, bnds) ;<br>
+      <br>
+      File 2 (1 jan 2006 to 31 dec 2012, monthly) time header is:<br>
+      <br>
+      double TIME(TIME) ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:units = "days since 2006-01-01 00:00:00" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:time_origin = "01-JAN-2006 00:00:00" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:calendar = "NOLEAP" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:axis = "T" ;<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; TIME:bounds = "TIME_bnds" ;<br>
+      &nbsp;&nbsp;&nbsp; double TIME_bnds(TIME, bnds) ;<br>
+      <br>
+      For both files TIME starts at the same t index<br>
+      <br>
+      data:<br>
+      <br>
+      &nbsp;TIME = 15.5, 45, 74.5, etc...<br>
+      <br>
+      I guess this is the reason why the append command does not work
+      on. Would you please have an idea on how I could solve this?<br>
+      <br>
+      Best regards,<br>
+      <br>
+      Vincent<br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00147" href="msg00147.html">[ferret_users] time axis issue / appending netcdf files</a></strong>
+<ul><li><em>From:</em> vincent le fouest</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00148.html">Re: [ferret_users] time axis issue / appending netcdf files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00150.html">[ferret_users] monthly anomalies</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00148.html">Thread Prev</a>][<a href="msg00150.html">Thread Next</a>][<A HREF="threads.html#00149">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

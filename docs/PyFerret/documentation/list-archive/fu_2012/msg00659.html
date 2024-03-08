@@ -1,0 +1,193 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Interpolation problem -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 4 Dec 2012 12:38:14 &#45;0800 -->
+<!--X-Message-Id: 50BE5F32.3040907@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAH1tzCS=Gq+VWtF1RkM=HgUSdjwiUrkXr4dPAWo4vqFm2hVkjw@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Interpolation problem</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00657.html">Thread Prev</a>][<a href="msg00660.html">Thread Next</a>][<A HREF="threads.html#00659">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Interpolation problem</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Akshay Hegde &lt;<a href="mailto:akshay.k.hegde@DOMAIN.HIDDEN">akshay.k.hegde@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Interpolation problem</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 04 Dec 2012 12:38:10 -0800</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;CAH1tzCS=Gq+VWtF1RkM=HgUSdjwiUrkXr4dPAWo4vqFm2hVkjw@mail.gmail.com&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;CAH1tzCS=Gq+VWtF1RkM=HgUSdjwiUrkXr4dPAWo4vqFm2hVkjw@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/17.0 Thunderbird/17.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+</pre><tt>I read your question more closely and my answer was too simplistic. Your 
+</tt><tt>data has a whole batch of data at a single date, lon, lat, time, depth, 
+</tt><tt>then another bath at the same date, lon, lat and a new depth. (It would 
+</tt><tt>be helpful to describe your data in the message in addition to including 
+</tt><tt>it). So I think that's what you are doing with this mask.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Note that the mask you defined has a value of 1 for many repeated values 
+</tt><tt>near the start of the list. If you want to get the locations where depth 
+</tt><tt>changes, just something like this will work:
+</tt><pre style="margin: 0em;">
+
+let mask = if dep[ddf] NE 0 then 1
+
+</pre><tt>but perhaps you have something else in mind. Assuming the mask picks out 
+</tt><tt>non-repeating values of dep, then continuing after the definitions in 
+</tt><tt>your script, I would do this:
+</tt><pre style="margin: 0em;">
+
+let masked_dep = dep*mask
+let masked_tem = tem*mask
+let masked_sa = sa*mask
+
+! Compress gaps out of these variables
+let depths = compressk(masked_dep)
+let temp = compressk(masked_tem)
+let salt = compressk(masked_sa)
+
+! Number of vaid data in the variable
+let nz = `depths[z=@ngd]`
+
+! The data are on the depth axis defined by the depth variable in the data:
+define axis/z/units=meters zaxis_in = depths[k=1:`nz`]
+
+let salt_in = salt[gz=zaxis_in@ASN]
+let temp_in = temp[gz=zaxis_in@ASN]
+
+! now define the axis you want, with increments of 0.5 meters
+</pre><tt>! Instead of zmax as defined, you'll want that value, rounded up to the 
+</tt><tt>next 0.5 meters.
+</tt><pre style="margin: 0em;">
+
+let zmax = `depths[z=@max]`  ! want to round this up to the nearest 0.5
+define axis/z=0:`zmax`:0.5/units=meters z05
+
+! Regrid the input data to that axis.
+</pre><tt>! These commands could have /UNITS= and /TITLE= to define 
+</tt><tt>self-documenting variables.
+</tt><pre style="margin: 0em;">
+! You could choose a different regridding transformation, such as @AVE.
+
+let salinity = salt_in[gz=z05]
+let temperature = temp_in[gz=z05]
+
+On 12/4/2012 2:17 AM, Akshay Hegde wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi ! experts...
+
+I am trying to interpolate my data file....
+
+pls have a look on data file...
+
+
+I need temperature and salinity value with a bin size of 0.5 meter..
+
+
+define axis/z=1:377:1 zax
+define grid/z=zax mygrid
+</pre><tt>columns/skip=1/delim=&quot;\t,\b&quot;/type=&quot;numeric,numeric,numeric,numeric,numeric,numeric,numeric&quot;/grid=mygrid 
+</tt><tt>ctd001_ins1_04-08-07_1100.out
+</tt><pre style="margin: 0em;">
+
+let date =v1
+let time =v2
+let lon =v3
+let lat =v4
+let dep = v5
+let tem = v6
+let sa = v7
+
+let mask = if dep[z=@ddf] eq dep[z=@ddb]  then 1
+list mask, dep,tem,sa
+
+</pre><tt>till here I could able to do...how can I get temp, sal value with bin 
+</tt><tt>size of 0.5
+</tt><pre style="margin: 0em;">
+
+
+Thanks in advance...
+
+
+Akshay
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00656" href="msg00656.html">[ferret_users] Interpolation problem</a></strong>
+<ul><li><em>From:</em> Akshay Hegde</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00657.html">Re: [ferret_users] Interpolation problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00660.html">[ferret_users] Create descriptor file larger than 5000 arguments</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00657.html">Thread Prev</a>][<a href="msg00660.html">Thread Next</a>][<A HREF="threads.html#00659">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

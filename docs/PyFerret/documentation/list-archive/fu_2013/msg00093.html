@@ -1,0 +1,193 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] different results from Ferret and Matlab -->
+<!--X-From-R13: Dhff Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Sun, 3 Feb 2013 21:10:55 &#45;0800 -->
+<!--X-Message-Id: 1359954649.3897.135.camel@russ&#45;hf -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 1359944246.38928.YahooMailClassic@web163502.mail.gq1.yahoo.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] different results from Ferret and Matlab</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00092.html">Thread Prev</a>][<a href="msg00111.html">Thread Next</a>][<A HREF="threads.html#00093">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] different results from Ferret and Matlab</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] different results from Ferret and Matlab</strong></li>
+<li><strong>From</strong>: <strong>Russ Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 04 Feb 2013 16:10:49 +1100</li>
+<li>In-reply-to: &lt;<a href="msg00091.html">1359944246.38928.YahooMailClassic@web163502.mail.gq1.yahoo.com</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00091.html">1359944246.38928.YahooMailClassic@web163502.mail.gq1.yahoo.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+Hi,
+
+Check that the time axis really is regular by checking the grid
+
+SHOW GRID pre
+
+You should get output with a lower case &quot;r&quot; after the number of points
+e.g.
+
+yes? show grid lsp     
+    GRID GEK1
+ name       axis              # pts   start                end
+ XT_OCEAN  LONGITUDE          240mr   0E                   1.5W
+ YT_OCEAN  LATITUDE           103 r   76.5S                76.5N
+ normal    Z
+ TIME      TIME              2920 r   01-JAN-1991 03:00    01-JAN-1992
+00:00
+
+
+If it is an &quot;i&quot; then there is something possibly wrong with the time
+axis.
+
+Another test would be to break up the calculation into the spatial and
+temporal averages.
+
+let pre_xy=pre[x = x1:x2@ave,  y = y1:y2@ave]
+let pre_xyt=pre_xy[l=@ave]
+list pre_xyt
+
+Also it useful if you let people know the version of Ferret that you are
+using. There was an old buggy version from a few years back that
+performed area integrals incorrectly. I doubt if this is the case here
+but it still helps to eliminate the possibility that it's a known (or
+related) bug.
+
+Cheers,
+Russ
+
+
+
+On Mon, 2013-02-04 at 13:17 +1100, FISSEHA G. BERHANE wrote:
+&gt; Dear William thank you a lot for your tips.
+&gt; 
+&gt; 
+&gt; The data I have is daily concatenated precipitation of 1830 days. 
+&gt; 
+&gt; When I use &quot;list pre[x = x1:x2@ave,  y = y1:y2@ave, l=@sum]/1830&quot;
+&gt; gives the same answer with Matlab but when I use &quot;list
+&gt; pre[x=x1:x2@ave,y=y1:y2@ave, l=@ave]&quot; , it gives a much smaller value.
+&gt; Any one who can help with why this is happening would be highly
+&gt; appreciated as it helps me to know which kinds of analyses are handled
+&gt; in what why in ferret.
+&gt; 
+&gt; 
+&gt; Thank you,
+&gt; Fisseha 
+&gt; 
+&gt; 
+&gt; --- On Sun, 2/3/13, William S. Kessler &lt;william.s.kessler@xxxxxxxx&gt;
+&gt; wrote:
+&gt;         
+&gt;         From: William S. Kessler &lt;william.s.kessler@xxxxxxxx&gt;
+&gt;         Subject: Re: [ferret_users] different results from Ferret and
+&gt;         Matlab
+&gt;         To: &quot;FISSEHA G. BERHANE&quot; &lt;fishcivilmu@xxxxxxxxx&gt;
+&gt;         Cc: &quot;Ferret&quot; &lt;ferret_users@xxxxxxxx&gt;
+&gt;         Date: Sunday, February 3, 2013, 1:37 AM
+&gt;         
+&gt;         
+&gt;         On Feb 2, 2013, at 9:23 PM, FISSEHA G. BERHANE wrote:
+&gt;         
+&gt;         &gt; Dear Ferreters,
+&gt;         &gt; 
+&gt;         &gt; I have daily precipitation data over a given geographic
+&gt;         location. I am getting different mean values of the data in
+&gt;         Ferret and in Matlab (5.7mm/day and 7.0 mm/day, respectively).
+&gt;         Which is correct, may some one help me with what is the cause
+&gt;         of the difference?
+&gt;         &gt; 
+&gt;         &gt; Thank you,
+&gt;         &gt; Fisseha 
+&gt;         
+&gt;         Are the timesteps regular? Ferret will recognize if they are
+&gt;         not, and @ave will correctly weight the time ranges.
+&gt;         
+&gt;         Try plotting the time series with each tool (with the same
+&gt;         plot ranges and aspect ratio). Are there differences?
+&gt;         
+&gt;         With a simple time series like this, you could simply list a
+&gt;         small subset of values (say 10). Compute the mean by hand,
+&gt;         then (over the same time range) from Ferret and Matlab. Are
+&gt;         these 3 identical? If not, can you see the problem looking at
+&gt;         a manageable number of points?
+&gt;         
+&gt;         BK
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00091" href="msg00091.html">Re: [ferret_users] different results from Ferret and Matlab</a></strong>
+<ul><li><em>From:</em> FISSEHA G. BERHANE</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00092.html">Re: [ferret_users] different results from Ferret and Matlab</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00111.html">Re: [ferret_users] different results from Ferret and Matlab</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00092.html">Thread Prev</a>][<a href="msg00111.html">Thread Next</a>][<A HREF="threads.html#00093">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

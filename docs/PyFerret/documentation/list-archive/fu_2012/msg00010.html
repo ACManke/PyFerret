@@ -1,0 +1,200 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] many colors and shaset -->
+<!--X-From-R13: Pehab Zrivre <oehab.yrivreNzrepngbe&#45;bprna.se> -->
+<!--X-Date: Fri, 3 Feb 2012 05:55:06 &#45;0800 -->
+<!--X-Message-Id: 4F2BE77E.207@mercator&#45;ocean.fr -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] many colors and shaset</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00009.html">Thread Prev</a>][<a href="msg00014.html">Thread Next</a>][<A HREF="threads.html#00010">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] many colors and shaset</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] many colors and shaset</strong></li>
+<li><strong>From</strong>: <strong>Bruno Levier &lt;<a href="mailto:bruno.levier@DOMAIN.HIDDEN">bruno.levier@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 03 Feb 2012 14:56:14 +0100</li>
+<li>Organization: Mercator Ocean</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9) Gecko/20100330 Fedora/3.0.4-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.4</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ferreters
+
+</pre><tt>I'm trying to plot many polygones filled with different colors on the 
+</tt><tt>same plot. When I use &quot;ferret -gif&quot;, the colors are not always those 
+</tt><tt>expected (in this case the rectangle of the legend is filled with brown 
+</tt><tt>rather than white). I've tried to use some &quot;shaset protect&quot; but with no 
+</tt><tt>success. I've attached the script I use. I use Ferret v6.2
+</tt><pre style="margin: 0em;">
+
+Thank you for your help,
+
+Bruno Levier
+
+
+
+</pre><pre>
+
+Set W /Aspect=1.6
+
+PPL AXLSZE .18 .18
+PPL TICS 0.125 0.25 0. 0. 1 1
+PPL AXLABP -1 0
+PPL AXLINT 1
+
+Define Viewport /X=0.3:1.0 01
+
+Def Symb xd001   0 ; Def Symb xu001  20 ; Def Symb xi001 5
+Def Symb yd001   0 ; Def Symb yu001 310
+
+!! Figure 1
+!! ########
+
+Set V 01
+go margins 0.5 0.5 0.9 0.2
+
+Plot /Nolab /I=1:2 /Hlim=($xd001):($xu001):($xi001) /Vlim=($yd001):($yu001) /Vgrat=dash /Set I
+ppl xfor (F4.0)
+ppl Plot
+
+Def Symb inc0  =   4
+Def Symb inc1  =   4
+Def Symb ordup = `($yu001) - ($inc1)`
+Def Symb orddo = `($ordup) - ($inc0)`
+
+Repeat /Range=1:12 /Name=dd ( \
+Repeat /Range=1:6 /Name=ii ( \
+  Def Symb ii `ii` ;\
+  Polygone /Over /Line /Nolab /Fill /Pal=broad /Lev=(0,7,1) {0,0,`($ii)*3`,`($ii)*3`}, {($orddo),($ordup),($ordup),($orddo)}, `($ii)-1` ;\
+  Def Symb ordup =  `($orddo)+1` ;\
+  Def Symb orddo = `($ordup)-($inc0)` ;\
+) ;\
+  Def Symb ordup = `($ordup)-($inc1)` ;\
+  Def Symb orddo = `($ordup)-($inc0)` ;\
+)
+
+ !! Legend
+
+Polygone /Over /Line /Nolab /Fill /Pal=white {4,4,18,18}, {2,`($ordup)+3`,`($ordup)+3`,2}
+ppl shaset protect
+
+Repeat /Range=1:6 /Name=ii ( \
+  Def Symb ii `ii` ;\
+  Polygone /Over /Line /Nolab /Fill /Pal=broad /Lev=(0,7,1) {5,5,10,10}, {($orddo),($ordup),($ordup),($orddo)}, `($ii)-1` ;\
+  Def Symb ordup =  `($orddo)-3` ;\
+  Def Symb orddo = `($ordup)-($inc0)` ;\
+)
+
+
+Frame /File=fig01.gif
+
+ppl Shaset Reset
+
+!! Figure 2
+!! ########
+
+Set W /Clear
+
+Set V 01
+go margins 0.5 0.5 0.9 0.2
+
+Plot /Nolab /I=1:2 /Hlim=($xd001):($xu001):($xi001) /Vlim=($yd001):($yu001) /Vgrat=dash /Set I
+ppl xfor (F4.0)
+ppl Plot
+
+Def Symb inc0  =   4
+Def Symb inc1  =   4
+Def Symb ordup = `($yu001) - ($inc1)`
+Def Symb orddo = `($ordup) - ($inc0)`
+
+Repeat /Range=1:12 /Name=dd ( \
+Repeat /Range=1:6 /Name=ii ( \
+  Def Symb ii `ii` ;\
+  Polygone /Over /Line /Nolab /Fill /Pal=broad /Lev=(0,7,1) {0,0,`($ii)*3`,`($ii)*3`}, {($orddo),($ordup),($ordup),($orddo)}, `($ii)-1` ;\
+  Def Symb ordup =  `($orddo)+1` ;\
+  Def Symb orddo = `($ordup)-($inc0)` ;\
+) ;\
+  Def Symb ordup = `($ordup)-($inc1)` ;\
+  Def Symb orddo = `($ordup)-($inc0)` ;\
+)
+
+ !! Legend
+
+Polygone /Over /Line /Nolab /Fill /Pal=white {4,4,18,18}, {2,`($ordup)+3`,`($ordup)+3`,2}
+
+Repeat /Range=1:6 /Name=ii ( \
+  Def Symb ii `ii` ;\
+  Polygone /Over /Line /Nolab /Fill /Pal=broad /Lev=(0,7,1) {5,5,10,10}, {($orddo),($ordup),($ordup),($orddo)}, `($ii)-1` ;\
+  Def Symb ordup =  `($orddo)-3` ;\
+  Def Symb orddo = `($ordup)-($inc0)` ;\
+)
+
+Frame /File=fig02.gif
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00014" href="msg00014.html">Re: [ferret_users] many colors and shaset</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00009.html">[ferret_users] plots in grads or ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00014.html">Re: [ferret_users] many colors and shaset</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00009.html">Thread Prev</a>][<a href="msg00014.html">Thread Next</a>][<A HREF="threads.html#00010">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

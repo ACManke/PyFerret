@@ -1,0 +1,157 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] shade/modulo every time -->
+<!--X-From-R13: Pebpxznaa Bngevpx <Bngevpx.PebpxznaaNprn.se> -->
+<!--X-Date: Tue, 6 Mar 2012 09:04:05 &#45;0800 -->
+<!--X-Message-Id: 4F5642B1.1080305@cea.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] shade/modulo every time</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00071.html">Thread Prev</a>][<a href="msg00073.html">Thread Next</a>][<A HREF="threads.html#00072">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] shade/modulo every time</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] shade/modulo every time</strong></li>
+<li><strong>From</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 06 Mar 2012 18:00:33 +0100</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Thunderbird 2.0.0.17 (X11/20080926)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi all,
+
+I am wondering if it could be possible to have the qualifier /modulo
+for the shade command even if I use this command with 1 arg
+(this qualifier is proposed only for the shade 3 args)
+
+</pre><tt>For now, the only way to get a correct plot is to specify var with 
+</tt><tt>var[x=-180:180]
+</tt><pre style="margin: 0em;">
+
+yes? use levitus_climatology
+yes? shade/hlim=-180:180:30 temp[k=1]
+--&gt; missing some part of the plot
+
+You then must do
+yes? shade/hlim=-180:180:30 temp[k=1,x=-180:180]
+
+But I would like to do:
+yes? shade/hlim=-180:180:30/modulo temp[k=1]
+
+</pre><tt>By this way, I can treat in the same way, variables that are with 
+</tt><tt>rectlinear grid
+</tt><pre style="margin: 0em;">
+and the ones that are with curvilinear grids.
+In both case, I will use:
+shade/hlim=-180:180:30/modulo var [,...]
+
+</pre><tt>I can even think to a transparent way to swith between shade1arg and 
+</tt><tt>shade3args.
+</tt><pre style="margin: 0em;">
+Bellow the script that does the switch.
+
+</pre><tt>let me know, if this request can be accpeted or if there is a good 
+</tt><tt>workaround.
+</tt><pre style="margin: 0em;">
+
+Regards
+Patrick
+
+$ cat CMIP5_shade.jnl
+!======================================
+let allnames = ..varnames
+
+def sym isexist_lon=`IS_ELEMENT_OF_STR (allnames, &quot;lon&quot;)`
+def sym isexist_lat=`IS_ELEMENT_OF_STR (allnames, &quot;lat&quot;)`
+
+if `($isexist_lon) AND ($isexist_lat)` then
+       set variable/units=&quot;degrees_east&quot;/title=&quot;Longitude&quot; lon
+       set variable/units=&quot;degrees_north&quot;/title=&quot;Latitude&quot; lat
+       def sym nbpts=`lon,return=isize`
+       set axis/modulo `lon,return=xaxis`
+       ($01)/modulo/i=1:`($nbpts)+1` ($02),lon,lat
+
+else
+       ($01) ($02)
+
+endif
+!======================================
+
+$ ferret
+yes? go CMIP5_shade.jnl shade/lev=20 var2D
+
+
+--
+LSCE/IPSL, Laboratoire CEA-CNRS-UVSQ
+Data Analysis and Visualization Engineer
+ICMC - IPSL Climate Modelling Centre
+--
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00073" href="msg00073.html">Re: [ferret_users] shade/modulo every time</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00071.html">[ferret_users] netcdf longitude module problem</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00073.html">Re: [ferret_users] shade/modulo every time</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00071.html">Thread Prev</a>][<a href="msg00073.html">Thread Next</a>][<A HREF="threads.html#00072">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] india boundary -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 7 Feb 2012 14:42:44 &#45;0800 -->
+<!--X-Message-Id: 4F31A928.70906@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAEenqfLs7N68YYr9NwMNM_LvxspjD=mjxERYAKfYrQrWPmuBKA@mail.gmail.com -->
+<!--X-Reference: 4F317B96.9020908@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] india boundary</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00018.html">Thread Prev</a>][<a href="msg00020.html">Thread Next</a>][<A HREF="threads.html#00019">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] india boundary</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] india boundary</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 07 Feb 2012 14:43:52 -0800</li>
+<li>Cc: nitin patil &lt;<a href="mailto:nitinpatil85@DOMAIN.HIDDEN">nitinpatil85@xxxxxxxxx</a>&gt;, <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00018.html">4F317B96.9020908@cea.fr</a>&gt;</li>
+<li>References:  &lt;CAEenqfLs7N68YYr9NwMNM_LvxspjD=mjxERYAKfYrQrWPmuBKA@mail.gmail.com&gt; &lt;<a href="msg00018.html">4F317B96.9020908@cea.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:9.0) Gecko/20111222 Thunderbird/9.0.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi
+Thank you for that resource, Patrick.
+
+</pre><tt>Once you have the outline and have verified it using PLOT/VS, Patrick's 
+</tt><tt>message shows how to use the POLYGON command to plot the shape.  Another 
+</tt><tt>option is the function pt_in_poly,
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/appendix-a-external-functions/pt_in_poly/">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/appendix-a-external-functions/pt_in_poly/</a>
+
+</pre><tt>which would let you make a mask which is 1 at every grid location inside 
+</tt><tt>the polygon and missing outside it; so you could do calculations or 
+</tt><tt>graphics over only the region inside the border.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 2/7/2012 11:29 AM, Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+nitin patil a &#xE9;crit :
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear ferret users,
+</pre><tt>                            Did any one knows how to give a border to 
+</tt><tt>India country if we have to plot only India.
+</tt><pre style="margin: 0em;">
+if possible can we  border states also?
+</pre></blockquote><pre style="margin: 0em;">
+
+Hi,
+
+I have done this recently using kml files distributed
+by the &quot;Global Administrative Areas&quot; website.
+
+Please follow the different steps:
+
+1) From <a  rel="nofollow" href="http://www.gadm.org">http://www.gadm.org</a>
+Go in the Download section, select the country
+and choose &quot;Google Earth .kmz&quot;
+
+After the download, you can have a look to the kmz file
+with googleearth of course.
+Unzip the kmz file. You should obtain a kml file.
+
+2) Convert the kml file to a text with
+3 columns lon,lat,number (number is the
+index representing the area) with the python
+script attached.
+
+3) Use the ferret plot.jnl script to validate and
+save the polygons as a netcdf file.
+
+Here is an example with India with the first
+2 administratives levels.
+
+$ unzip IND_adm1.kmz
+$ ./convert_kml.py IND_adm1.kml &gt; IND_adm1.dat
+$ ferret
+yes? go plot.jnl IND_adm1.dat IND_adm1.nc
+
+Note: that when I try to do the same with IND_adm0.dat,
+ferret restarts my X11 server !
+The problem occurs at line
+</pre><tt>repeat/name=n/range=1:`numb[i=@max]` ( def sym n=`n` ; let lon1=if 
+</tt><tt>numb eq `n` then lon ; let lat1=if numb eq `n` then lat ; 
+</tt><tt>polygon/line/fill/o/nolab/lev=(1,200,1)/pal=thirty_by_levels.spk 
+</tt><tt>lon1,lat1,`n` ; PPL SHASET RESET )
+</tt><pre style="margin: 0em;">
+
+But the method is still ok, just do not not blindly
+use polygon command but rather plot/vs.
+There may be a problem anyway.
+
+Happy ferreting
+
+Patrick
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00020" href="msg00020.html">Re: [ferret_users] india boundary</a></strong>
+<ul><li><em>From:</em> jagadish karmacharya</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00017" href="msg00017.html">[ferret_users] india boundary</a></strong>
+<ul><li><em>From:</em> nitin patil</li></ul></li>
+<li><strong><a name="00018" href="msg00018.html">Re: [ferret_users] india boundary</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00018.html">Re: [ferret_users] india boundary</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00020.html">Re: [ferret_users] india boundary</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00018.html">Thread Prev</a>][<a href="msg00020.html">Thread Next</a>][<A HREF="threads.html#00019">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

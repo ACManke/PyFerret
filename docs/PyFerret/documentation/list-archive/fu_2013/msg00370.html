@@ -1,0 +1,255 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] SHOW VAR/DATA_SET wrongly counts long name attribute -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Fri, 31 May 2013 11:54:38 &#45;0700 -->
+<!--X-Message-Id: 51A8F1CC.8080303@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: 51A7D9FB.60808@mpic.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] SHOW VAR/DATA_SET wrongly counts long name attribute</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00364.html">Thread Prev</a>][<a href="msg00366.html">Thread Next</a>][<A HREF="threads.html#00370">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] SHOW VAR/DATA_SET wrongly counts long name attribute</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hella Riede &lt;<a href="mailto:hella.riede@DOMAIN.HIDDEN">hella.riede@xxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] SHOW VAR/DATA_SET wrongly counts long name attribute</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 31 May 2013 11:54:04 -0700</li>
+<li>Cc: Ferret users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00364.html">51A7D9FB.60808@mpic.de</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00364.html">51A7D9FB.60808@mpic.de</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20130509 Thunderbird/17.0.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    hi Hella,<br>
+    You've come upon a bit of an untested corner of Ferret commands.
+    With Ferret V6 we added syntax to access information about file
+    attributes and along with that we put in logic to list file
+    variables with the command<br>
+    <br>
+    &#xA0;&#xA0; show var/dset=n&#xA0; varname<br>
+    <br>
+    Previous to that the show var command only applied to user-defined
+    variables. This was not well tested (and currently works only
+    inconsistently).<br>
+    <br>
+    What you are seeing in this output,<br>
+    <blockquote>
+      <tt>yes? sh var/data rh
+      </tt><tt><br>
+      </tt><tt>
+        &#xA0;rh var # 5 of dataset ./ex_traj2.nc
+      </tt><tt><br>
+      </tt><tt>
+        &#xA0;rh var # 6 of dataset
+      </tt><br>
+    </blockquote>
+    is the variable number when coordinate variables are not included,
+    and then the variable number when coordiate variables are included.&#xA0;
+    So if you did a ncdump -h on the file, I think you'd see a
+    coordinate variable, then lon, lat, level, press, rh.<br>
+    <br>
+    I will fix this so that it only lists one line of output.&#xA0; It's
+    useful so that we can do something like this:<tt><br>
+    </tt>
+    <blockquote><tt>yes? use coads_climatology</tt><br>
+      <tt>yes? use levitus_climatology</tt><br>
+      <br>
+      <tt>yes? let/d=2 sst = temp[gxy=sst[d=1],Z=0]</tt><br>
+      <br>
+      <tt>yes? sho var/d=1 sst</tt><br>
+      <tt>&#xA0;SST var # 1 of dataset
+        /home/users/tmap/ferret/linux/fer_dsets/data/coads_climatology.cdf</tt><br>
+      <br>
+      <tt>yes? sho var/d=2 sst</tt><br>
+      <tt>&#xA0;SST[D=levitus_climatology] = TEMP[GXY=SST[D=1],Z=0]</tt><br>
+    </blockquote>
+    <br>
+    I'm not sure the variable number in the file is useful information,
+    so instead perhaps for the file variable we'd list the units and/or
+    title.<br>
+    <br>
+    Ansley<br>
+    <br>
+    <br>
+    <div class="moz-cite-prefix">On 5/30/2013 4:00 PM, Hella Riede
+      wrote:<br>
+    </div>
+    <blockquote cite="" type="cite">Dear
+      ferret list,
+      <br>
+      <br>
+      from the ferret manual: "SHOW VARIABLES/DATA_SET: Lists variables
+      associated with the named dataset by DEFINE VARIABLE/DATA_SET="
+      <br>
+      <br>
+      This works as expected:
+      <br>
+      yes? let/d=4 test = 1
+      <br>
+      yes? sh var/data_set=4
+      <br>
+      &#xA0;&#xA0;&#xA0;&#xA0; TEST[D=ex_traj2] = 1
+      <br>
+      <br>
+      However, when I used it for information about a file variable in
+      the following way, I got strange results:
+      <br>
+      yes? sh var/data rh
+      <br>
+      &#xA0;rh var # 5 of dataset ./ex_traj2.nc
+      <br>
+      &#xA0;rh var # 6 of dataset
+      <br>
+      <br>
+      The first number refers to the position of the queried variable in
+      the file. But the second number additionally sums up "1" for the
+      "long_name" attribute when it first appears.
+      <br>
+      <br>
+      Here is a dump of the file:
+      <br>
+      yes? sh da 4
+      <br>
+      4&gt; ./ex_traj2.nc&#xA0; (default)
+      <br>
+      name&#xA0; title&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; I&#xA0;&#xA0;&#xA0; J&#xA0;&#xA0;&#xA0; K&#xA0;&#xA0;&#xA0; L&#xA0;&#xA0;&#xA0; M&#xA0;&#xA0;&#xA0; N
+      <br>
+      LAT&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; ...&#xA0; ...&#xA0; ...&#xA0; 1:3&#xA0; ...&#xA0; ...
+      <br>
+      LON&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; ...&#xA0; ...&#xA0; ...&#xA0; 1:3&#xA0; ...&#xA0; ...
+      <br>
+      LEVEL&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;&#xA0; ...&#xA0; ...&#xA0; ...&#xA0; 1:3&#xA0; ...&#xA0; ...
+      <br>
+      PRESS&#xA0; pressure&#xA0; ...&#xA0; ...&#xA0; ...&#xA0; 1:3&#xA0; ...&#xA0; ...
+      <br>
+      RH&#xA0;&#xA0;&#xA0;&#xA0; rel hum&#xA0;&#xA0; ...&#xA0; ...&#xA0; ...&#xA0; 1:3&#xA0; ...&#xA0; ...
+      <br>
+      TEMP&#xA0;&#xA0; temperat&#xA0; ...&#xA0; ...&#xA0; ...&#xA0; 1:3&#xA0; ...&#xA0; ...
+      <br>
+      <br>
+      yes? sh var/data lat
+      <br>
+      &#xA0;lat var # 1 of dataset ./ex_traj2.nc
+      <br>
+      &#xA0;lat var # 1 of dataset
+      <br>
+      yes? sh var/data lon
+      <br>
+      &#xA0;lon var # 2 of dataset ./ex_traj2.nc
+      <br>
+      &#xA0;lon var # 2 of dataset
+      <br>
+      yes? sh var/data level
+      <br>
+      &#xA0;level var # 3 of dataset ./ex_traj2.nc
+      <br>
+      &#xA0;level var # 3 of dataset
+      <br>
+      yes? sh var/data press
+      <br>
+      &#xA0;press var # 4 of dataset ./ex_traj2.nc
+      <br>
+      &#xA0;press var # 5 of dataset
+      <br>
+      yes? sh var/data rh
+      <br>
+      &#xA0;rh var # 5 of dataset ./ex_traj2.nc
+      <br>
+      &#xA0;rh var # 6 of dataset
+      <br>
+      yes? sh var/data temp
+      <br>
+      &#xA0;temp var # 6 of dataset ./ex_traj2.nc
+      <br>
+      &#xA0;temp var # 7 of datase
+      <br>
+      <br>
+      I guess this function IS somehow intended as the output is nicely
+      configured, but it's certainly also confusing.
+      <br>
+      <br>
+      Best wishes,
+      <br>
+      Hella
+      <br>
+    </blockquote>
+    <br>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00364" href="msg00364.html">[ferret_users] SHOW VAR/DATA_SET wrongly counts long name attribute</a></strong>
+<ul><li><em>From:</em> Hella Riede</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00364.html">[ferret_users] SHOW VAR/DATA_SET wrongly counts long name attribute</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00366.html">[ferret_users] Reading text file and creating netcdf file by using define axis from variable</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00364.html">Thread Prev</a>][<a href="msg00366.html">Thread Next</a>][<A HREF="threads.html#00370">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

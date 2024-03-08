@@ -1,0 +1,129 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] masking out data but keep default values within -->
+<!--X-From-R13: wntnqvfu xneznpuneln <w_xneznpunelnNlnubb.pbz> -->
+<!--X-Date: Fri, 6 Dec 2013 04:23:29 &#45;0800 -->
+<!--X-Message-Id: 1386332599.91718.YahooMailBasic@web141603.mail.bf1.yahoo.com -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Derived: png0l7hQAtqTs.png -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] masking out data but keep default values within</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00662.html">Thread Prev</a>][<a href="msg00668.html">Thread Next</a>][<A HREF="threads.html#00663">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] masking out data but keep default values within</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] masking out data but keep default values within</strong></li>
+<li><strong>From</strong>: <strong>jagadish karmacharya &lt;<a href="mailto:j_karmacharya@DOMAIN.HIDDEN">j_karmacharya@xxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 6 Dec 2013 04:23:19 -0800 (PST)</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear all,
+
+I want to mask a coarse resolution data (upper left plot) outside a region of interest. I can do that (upper right plot) but the probelm is: because of corase data resolution only portion of desired area is covered (and also some undesired area outside the boundary). I can solved the problem of coverage by first interpolating the coarse resolution data to a high resolution grid (lower left plot) but the problem is: data is now smoothened. 
+
+What I want is: to keep the original magnitude at each location but also be able to mask out data outside region of interest. Someone suggested this could be done by resampling data but I have no idea how to do that. I would appreciate any suggestions.
+
+Below is my script for generating those plots
+
+sh d
+     currently SET data sets:
+    1&gt; GPCPv2.2.precip.JJAS.mean.nc
+ name     title                             I         J         K         L
+ PRECIP   Average Monthly Rate of Precipi  1:144     1:72      ...       1:19
+    2&gt; NPL_adm0_box.nc  (default)
+ name     title                             I         J         K         L
+ MASK     IF PT_IN_POLY(TEMP[L=1,D=3],LON  1:455     1:300     1:1       1:1
+
+! originial data
+set vi ul
+shade/nolab precip[d=1,l=1,x=79:89,y=25:31];go land 1,,1
+
+! mask interpolated to the data grid of 2.5 deg resolution 
+set vi ur
+def grid/x=mask[d=2,gxy=precip[d=1]]/y=mask[d=2,gxy=precip[d=1]] gxy1
+let dummy1=0*x[gx=gxy1]*y[gy=gxy1]
+let N_NoTime1=reshape(mask[d=2,l=1,gxy=gxy1],dummy1); let Nmask1= if N_NoTime1 then 1
+let prm1=precip[d=1]*nmask1
+shade/nolab/lev prm1[l=1,x=79:89,y=25:31];go land 1,,1
+
+! mask and data interpolated to a fine grid of 0.1 deg resolution
+set vi ll
+def axis/x=78E:91E:0.1 xax;  def axis/y=25N:31N:0.1 yax; def grid/x=xax/y=yax gxy2
+let dummy2=0*x[gx=gxy2]*y[gy=gxy2]
+let N_NoTime2=reshape(mask[d=2,l=1,gxy=gxy2],dummy2); let Nmask2= if N_NoTime2 then 1
+let prm2=precip[d=1,gxy=nmask2]*nmask2
+shade/nolab/lev prm2[l=1,x=79:89,y=25:31];go land 1,,1
+
+Best regards,
+
+Jagadish</pre><p><strong>Attachment:
+<a href="png0l7hQAtqTs.png" ><tt>Picture1.png</tt></a></strong><br>
+<em>Description:</em> PNG image</p>
+
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00662.html">[ferret_users] Whether this is bug in Ferret ? or I am doing something wrong ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00668.html">[ferret_users] Ferret Array/variable class detection</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00662.html">Thread Prev</a>][<a href="msg00668.html">Thread Next</a>][<A HREF="threads.html#00663">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

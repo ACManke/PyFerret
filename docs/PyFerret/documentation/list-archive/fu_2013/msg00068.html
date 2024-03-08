@@ -1,0 +1,173 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Picking the time corresponding to maximum value of a variable from an nc file -->
+<!--X-From-R13: Vrva Lryyr <urva.mryyrNozgnetbff.pbz> -->
+<!--X-Date: Wed, 23 Jan 2013 02:32:03 &#45;0800 -->
+<!--X-Message-Id: 20130123103156.GD21590@giotto.bmtargoss.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 986B914C4510AB419FD819E76A73419E0F2101EF117B@WEBMAIL.incois.gov.in -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Picking the time corresponding to maximum value of a variable from an nc file</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00067.html">Thread Prev</a>][<a href="msg00070.html">Thread Next</a>][<A HREF="threads.html#00068">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Picking the time corresponding to maximum value of a variable from an nc file</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Picking the time corresponding to maximum value of a variable from an nc file</strong></li>
+<li><strong>From</strong>: <strong>Hein Zelle &lt;<a href="mailto:hein.zelle@DOMAIN.HIDDEN">hein.zelle@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 23 Jan 2013 11:31:56 +0100</li>
+<li>In-reply-to: &lt;<a href="msg00067.html">986B914C4510AB419FD819E76A73419E0F2101EF117B@WEBMAIL.incois.gov.in</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mail-followup-to: Ferret users mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00067.html">986B914C4510AB419FD819E76A73419E0F2101EF117B@WEBMAIL.incois.gov.in</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mutt/1.5.20 (2009-06-14)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>HI Sandhya,
+
+&gt; yes? list hs[l=1:2919@loc:2.2]                                                           
+&gt;              VARIABLE : TIME of 2.2 in HS_CM/100 (HOURS)
+&gt;              FILENAME : Hs_timeseries.nc
+&gt;              TIME     : 01-JAN-2009 01:27 to 31-DEC-2009 22:27 (location of 2.2)
+&gt;           954690.
+&gt; 
+&gt; yes? list t[gt=hs]
+
+Once you have the index, you can print the time value (or put it in a
+variable) with
+
+let mytimestring = `t[gt=hs,l=954690],return=tstart`
+
+You can't use recursive backticks, so I usually do this in a few
+steps.  I define a new variable which is zero at the maximum so you
+can use a fixed value (0.0) for @loc.
+
+let zero_at_max = myvar[t=@max] - myvar
+let maxtval = zero_at_max[t=@loc:0.0]
+
+! limit to one point only
+set region /i=100/j=50
+
+let dummy = t[gt=myvar,t=`maxtval`]
+let tstring = `dummy,return=tend`
+
+
+Note that my example dataset insists on returning the 't' value with
+@loc, not the 'l' index.  This is why I used t=`maxtval` instead of
+l= .
+
+
+Kind regards,
+     Hein Zelle
+
+
+-- 
+
+Dr. Hein Zelle
+Senior consultant meteorology &amp; oceanography
+
+Tel:        +31 (0)527-242299
+Fax:        +31 (0)527-242016
+E-mail:     hein.zelle@xxxxxxxxxxxxx
+Website:    www.bmtargoss.com
+	    
+BMT ARGOSS b.v.
+
+Voorsterweg 28, 8316 PT Marknesse, the Netherlands
+Postal address: P.O. Box 61, 8325 ZH Vollenhove, the Netherlands
+
+Registered in The Netherlands, Registered no. 39060160.
+
+Unless otherwise agreed by BMT ARGOSS in writing, all work,
+services, goods or products supplied by BMT ARGOSS shall be subject
+to and governed by BMT ARGOSS' own terms and conditions which are
+available for inspection from BMT ARGOSS on request.
+
+----Confidentiality Notice &amp; Disclaimer---- 
+
+The contents of this e-mail and any attachments are intended for the
+use of the mail addressee(s) shown. If you are not that person, you
+are not allowed to read it, to take any action based upon it or to
+copy it, forward, distribute or disclose the contents of it and you
+should please delete it from your system. BMT ARGOSS does not accept
+liability for any errors or omissions in the context of this e-mail or
+its attachments which arise as a result of internet transmission, nor
+accept liability for statements which are those of the author and
+clearly not made on behalf of BMT ARGOSS.
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00070" href="msg00070.html">RE: [ferret_users] Picking the time corresponding to maximum value of a variable from an nc file</a></strong>
+<ul><li><em>From:</em> Sandhya K G</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00067" href="msg00067.html">[ferret_users] Picking the time corresponding to maximum value of a variable from an nc file</a></strong>
+<ul><li><em>From:</em> Sandhya K G</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00067.html">[ferret_users] Picking the time corresponding to maximum value of a variable from an nc file</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00070.html">RE: [ferret_users] Picking the time corresponding to maximum value of a variable from an nc file</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00067.html">Thread Prev</a>][<a href="msg00070.html">Thread Next</a>][<A HREF="threads.html#00068">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

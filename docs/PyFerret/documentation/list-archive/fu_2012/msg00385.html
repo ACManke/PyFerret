@@ -1,0 +1,260 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Problem in preparing monthly climatology using multiple netcdf files -->
+<!--X-From-R13: Dhff Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Wed, 8 Aug 2012 19:18:27 &#45;0700 -->
+<!--X-Message-Id: 1344478691.4541.177.camel@russ&#45;hf -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAB2ugUDPScsJ+eWeSP8QbYE0yQ3TCTBAVuumbdDKU3APF7he8w@mail.gmail.com -->
+<!--X-Reference: 5022FB35.7010101@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Problem in preparing monthly climatology using multiple netcdf files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00384.html">Thread Prev</a>][<a href="msg00381.html">Thread Next</a>][<A HREF="threads.html#00385">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Problem in preparing monthly climatology using multiple netcdf files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Problem in preparing monthly climatology using multiple netcdf files</strong></li>
+<li><strong>From</strong>: <strong>Russ Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 9 Aug 2012 12:18:11 +1000</li>
+<li>Cc: &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00384.html">5022FB35.7010101@noaa.gov</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00380.html">CAB2ugUDPScsJ+eWeSP8QbYE0yQ3TCTBAVuumbdDKU3APF7he8w@mail.gmail.com</a>&gt;	 &lt;<a href="msg00384.html">5022FB35.7010101@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi
+
+The NCO commands ncecat  can do this. 
+
+# Create a file with Time as a degenerate record dimension
+
+ncecat -u Time file_in.nc file_out.nc
+
+
+You probably then need to populate a &quot;Time&quot; variable
+
+You could just make a small template netcdf file with just the
+appropriate time and append in to the file created above using ncks.
+
+ russ-hf% ncdump time.nc
+netcdf time {
+dimensions:
+        Time = UNLIMITED ; // (1 currently)
+variables:
+        double Time(Time) ;
+data:
+
+ Time = 1 ;
+}
+
+
+Create a netcdf file using ncgen.
+
+There are probably plenty of wasys to do this.
+
+Russ
+
+
+
+
+On Thu, 2012-08-09 at 09:50 +1000, Ansley Manke wrote:
+&gt; Hi,
+&gt; For our users who are familiar with NCO, are there tools there that 
+&gt; would let Sreejith add a time dimension to the files and to the grids of 
+&gt; the variables in the files?  If that's possible, then one could use a 
+&gt; descriptor file and bypass the step of putting the data from all the 
+&gt; files into one big monthly dataset and then forming the climatology from 
+&gt; that.
+&gt; 
+&gt; If not, then the thing to do is described under the documentation under 
+&gt; the topic &quot;timestamp&quot;.  You define the final time axis as a monthly axis 
+&gt; with the range of dates for the set of monthly files. Then define a 
+&gt; variable which adds the dataset variable to a variable which is zero at 
+&gt; all timesteps of the long monthly axis.  Write out just the timestep 
+&gt; that corresponds to that file, appending to a monthly data file.
+&gt; 
+&gt; yes? define axis/t=1-jan-1871:31-dec-1881:1/units=months/edges monthtime
+&gt; yes? let timestamp = 0* t[gt=monthtime]
+&gt; 
+&gt; (This makes an evenly-spaced axis - there are other ways to define 
+&gt; monthly time axes. See entries under &quot;axis&quot; in the Ferret Users Guide 
+&gt; index).
+&gt; 
+&gt; Then look at this,
+&gt; <a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/SAVE#timestamp">http://ferret.pmel.noaa.gov/Ferret/documentation/users-guide/commands-reference/SAVE#timestamp</a>
+&gt; 
+&gt; Where we'd open each file, define a variable that adds the file variable 
+&gt; to &quot;timestamp&quot;, and save/append/t= where t= specifies the appropriate 
+&gt; month, to add them all to a file containing all of the months.
+&gt; 
+&gt; Finally, have a look at this FAQ on creating a climatology:
+&gt; <a  rel="nofollow" href="http://ferret.pmel.noaa.gov/Ferret/faq/how-do-i-calculate-climatologies-and-climatological-anomalies">http://ferret.pmel.noaa.gov/Ferret/faq/how-do-i-calculate-climatologies-and-climatological-anomalies</a>
+&gt; 
+&gt; Ansley
+&gt; 
+&gt; On 8/8/2012 12:24 PM, sreejith k.s wrote:
+&gt; &gt; Dear all,
+&gt; &gt; I am facing some problem in preparing monthly climatoloy using around
+&gt; &gt; 120 files covering 10 years.
+&gt; &gt;
+&gt; &gt; 1) Please see the files as shown below.
+&gt; &gt; SODA_2.2.4_187101.cdf
+&gt; &gt; SODA_2.2.4_187102.cdf
+&gt; &gt; SODA_2.2.4_187103.cdf
+&gt; &gt; ..................................................
+&gt; &gt; ..................................................
+&gt; &gt; ..................................................
+&gt; &gt; SODA_2.2.4_188012.cdf
+&gt; &gt;
+&gt; &gt; 2) For example, the &quot;ncdump -h&quot; command for one of these files will
+&gt; &gt; give the following result.
+&gt; &gt;
+&gt; &gt; netcdf SODA_2.2.4_187312 {
+&gt; &gt; dimensions:
+&gt; &gt;          lon = 720 ;
+&gt; &gt;          lat = 330 ;
+&gt; &gt;          depth = 40 ;
+&gt; &gt; variables:
+&gt; &gt;          float temp(depth, lat, lon) ;
+&gt; &gt;                  temp:long_name = &quot;TEMPERATURE&quot; ;
+&gt; &gt;                  temp:units = &quot;deg. C&quot; ;
+&gt; &gt;                  temp:_FillValue = -9.99e+33f ;
+&gt; &gt;          float salt(depth, lat, lon) ;
+&gt; &gt;                  salt:long_name = &quot;SALINITY&quot; ;
+&gt; &gt;                  salt:units = &quot;g/kg&quot; ;
+&gt; &gt;                  salt:_FillValue = -9.99e+33f ;
+&gt; &gt;          float u(depth, lat, lon) ;
+&gt; &gt;                  u:long_name = &quot;ZONAL VELOCITY&quot; ;
+&gt; &gt;                  u:units = &quot;m/sec&quot; ;
+&gt; &gt;                  u:_FillValue = -9.99e+33f ;
+&gt; &gt;          float v(depth, lat, lon) ;
+&gt; &gt;                  v:long_name = &quot;MERIDIONAL VELOCITY&quot; ;
+&gt; &gt;                  v:units = &quot;m/sec&quot; ;
+&gt; &gt;                  v:_FillValue = -9.99e+33f ;
+&gt; &gt;          float w(depth, lat, lon) ;
+&gt; &gt;                  w:long_name = &quot;VERTICAL VELOCITY&quot; ;
+&gt; &gt;                  w:units = &quot;m/sec&quot; ;
+&gt; &gt;                  w:_FillValue = -9.99e+33f ;
+&gt; &gt;          float taulat, lon) ;
+&gt; &gt;                  taux:long_name = &quot;TAUX&quot; ;
+&gt; &gt;                  taux:units = &quot;N/m^2&quot; ;
+&gt; &gt;                  taux:_FillValue = -9.99e+33f ;
+&gt; &gt;          float tauy(lat, lon) ;
+&gt; &gt;                  tauy:long_name = &quot;TAUY&quot; ;
+&gt; &gt;                  tauy:units = &quot;N/m^2&quot; ;
+&gt; &gt;                  tauy:_FillValue = -9.99e+33f ;
+&gt; &gt;          float ssh(lat, lon) ;
+&gt; &gt;                  ssh:long_name = &quot;SEA SURFACE HEIGHT&quot; ;
+&gt; &gt;                  ssh:units = &quot;m&quot; ;
+&gt; &gt;                  ssh:_FillValue = -9.99e+33f ;
+&gt; &gt;          double lon(lon) ;
+&gt; &gt;                  lon:units = &quot;degrees_east&quot; ;
+&gt; &gt;          double lat(lat) ;
+&gt; &gt;                  lat:units = &quot;degrees_north&quot; ;
+&gt; &gt;          double depth(depth) ;
+&gt; &gt;                  depth:units = &quot;meters&quot; ;
+&gt; &gt;                  depthositive = &quot;down&quot; ;
+&gt; &gt;
+&gt; &gt; // global attributes:
+&gt; &gt;                  :title = &quot;SODA 2.2.4, 1871-2008 Assimilation Run&quot; ;
+&gt; &gt;                  :released = &quot;July 20, 2010&quot; ;
+&gt; &gt;                  ata_timestamp = &quot;12-1873&quot; ;
+&gt; &gt;
+&gt; &gt; The point to be noted here is that there is no time axis in these
+&gt; &gt; files (as it shows only lat,lon and depth). Because of this, merging
+&gt; &gt; these files using &quot;cdo&quot; command - &quot;cdo -r
+&gt; &gt; mergetime&quot; is found to be not working.
+&gt; &gt;
+&gt; &gt; Hence I am interested to know two things.
+&gt; &gt; 1) How to merge/append all these 120 files into a single file and that
+&gt; &gt; should also give the time axis as time = 120
+&gt; &gt; 2) After getting the appended file how to prepare monthly climatology
+&gt; &gt; using the appended file.
+&gt; &gt; 3) Is there any other way of preparing the monthly climatology of
+&gt; &gt; above 120 monthly files without going to the step of &quot;creating an
+&gt; &gt; appended data file&quot;?
+&gt; &gt;
+&gt; &gt; If anybody know a work around, please help me.
+&gt; &gt;
+&gt; &gt; Thanks in advance
+&gt; &gt;
+&gt; &gt; Sreejith.
+&gt; &gt;
+&gt; 
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00380" href="msg00380.html">[ferret_users] Problem in preparing monthly climatology using multiple netcdf files</a></strong>
+<ul><li><em>From:</em> sreejith k.s</li></ul></li>
+<li><strong><a name="00384" href="msg00384.html">Re: [ferret_users] Problem in preparing monthly climatology using multiple netcdf files</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00384.html">Re: [ferret_users] Problem in preparing monthly climatology using multiple netcdf files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00381.html">[ferret_users] Announcing the official release of Ferret version 6.82 and PyFerret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00384.html">Thread Prev</a>][<a href="msg00381.html">Thread Next</a>][<A HREF="threads.html#00385">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

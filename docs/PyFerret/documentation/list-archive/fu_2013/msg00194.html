@@ -1,0 +1,346 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] Re: producing eps and png from postscript -->
+<!--X-From-R13: Vrva Lryyr <urva.mryyrNozgnetbff.pbz> -->
+<!--X-Date: Thu, 14 Mar 2013 00:32:55 &#45;0700 -->
+<!--X-Message-Id: 20130314073249.GA12565@giotto.bmtargoss.org -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: CAGQDuotOs_e&#45;GH0gX4bEgP0Fw=gTZdhohKuvoF_ZUm0i2CLiTg@mail.gmail.com -->
+<!--X-Reference: 513F5DE9.1000809@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Re: producing eps and png from postscript</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00190.html">Thread Prev</a>][<a href="msg00301.html">Thread Next</a>][<A HREF="threads.html#00194">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Re: producing eps and png from postscript</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret users mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Re: producing eps and png from postscript</strong></li>
+<li><strong>From</strong>: <strong>Hein Zelle &lt;<a href="mailto:hein.zelle@DOMAIN.HIDDEN">hein.zelle@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 14 Mar 2013 08:32:50 +0100</li>
+<li>In-reply-to: &lt;<a href="msg00190.html">513F5DE9.1000809@noaa.gov</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mail-followup-to: Ferret users mailing list &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;CAGQDuotOs_e-GH0gX4bEgP0Fw=gTZdhohKuvoF_ZUm0i2CLiTg@mail.gmail.com&gt; &lt;<a href="msg00190.html">513F5DE9.1000809@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mutt/1.5.21 (2010-09-15)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Ferret users,
+
+
+a small update on this thread, with my latest solution (been working
+reliably for years now).  
+
+to generate eps, I generate a ps file with Fprint, then I use 
+
+   cat ferret_file.ps | ps2eps -B  &gt; plot.eps
+
+This converts and crops reliably and generates valid eps files.  The
+tool is available in the ps2eps package (Ubuntu/Debian).
+Alternatively these days I go straight to png via a much faster (all
+in memory) process:
+
+gs -dSAFER -dNOPAUSE -r300  -dDEVICEWIDTHPOINTS=864  \
+   -dDEVICEHEIGHTPOINTS=864 -sDEVICE=ppmraw -q -sOutputFile=- \
+   -f ferret_file.ps -c showpage -c quit \
+   | pnmcrop | convert pnm:- PNG:${tmppng}
+
+where ferret_file.ps is the output of Fprint, and ${tmppng} is a
+temporary png output file. I write the output under /dev/shm to keep
+the file in memory.  I then antialias and scale this (huge) pngfile with
+
+convert -antialias -scale 35% -rotate 270 -type Palette \
+	${tmppng} PNG8:output.png
+
+The above requires ghostscript to be installed (gs) as well as pnmcrop
+which is part of the netpbm package.  Finally it uses convert from
+imagemagick.  
+
+The step with /dev/shm can be avoided by piping the temporary png
+file straight to the last convert command, but I want to create 2
+sizes of png file, so I need the intermediate file. The gs device width
+and height can be increased further if cropping problems with the page
+margins occur.
+
+
+Kind regards,
+     Hein
+
+
+-- 
+
+Dr. Hein Zelle
+Senior consultant meteorology &amp; oceanography
+BMT ARGOSS
+
+Tel:        +31 (0)527-242299
+Fax:        +31 (0)527-242016
+E-mail:     hein.zelle@xxxxxxxxxxxxx
+Website:    www.bmtargoss.com
+	    
+BMT ARGOSS b.v.
+Voorsterweg 28, 8316 PT Marknesse, the Netherlands
+Postal address: P.O. Box 61, 8325 ZH Vollenhove, the Netherlands
+
+Registered in The Netherlands, Registered no. 39060160.
+
+Unless otherwise agreed by BMT ARGOSS in writing, all work,
+services, goods or products supplied by BMT ARGOSS shall be subject
+to and governed by BMT ARGOSS' own terms and conditions which are
+available for inspection from BMT ARGOSS on request.
+
+E-mail confidentiality notice and disclaimer:
+The contents of this e-mail and any attachments are intended for the
+use of the mail addressee(s) shown. If you are not that person, you
+are not allowed to read it, to take any action based upon it or to
+copy it, forward, distribute or disclose the contents of it and you
+should please delete it from your system. BMT ARGOSS does not accept
+liability for any errors or omissions in the context of this e-mail or
+its attachments which arise as a result of internet transmission, nor
+accept liability for statements which are those of the author and
+clearly not made on behalf of BMT ARGOSS.
+</pre><pre>#!/bin/bash
+
+inputfn=&quot;metafile.plt&quot;
+outputfn=&quot;output.ps&quot;
+myname=`basename $0`
+convert=&quot;ps2eps -B&quot;
+# makepng=&quot;convert +antialias -density 300 -rotate 270&quot;
+# makethumb=&quot;convert +antialias -density 37 -rotate 270&quot;
+makesmall=&quot;convert -antialias -scale 35% -rotate 270 -type Palette&quot;
+makethumb=&quot;convert -antialias -scale 12% -rotate 270 -type Palette&quot;
+background=0
+thumbnail=0
+rotate=270
+
+# where to copy the metafile to 
+tmpname=/dev/shm/fprint_metafile_$$.tmp
+tmpps=/dev/shm/ferret-tmp-ps-$$.ps
+tmppng=/dev/shm/ferret-tmp-png-$$.png
+
+# make a subroutine to process a file.
+# this makes it possible to continue in the background and exit the script.
+# the input filename is passed in $1
+process_file()
+{
+    if [ $myname = &quot;bwprint&quot; -o $myname = &quot;rbwprint&quot; ] ; then
+	# echo -n &quot;Fprint -l ps -R -o $outputfn $1 ... &quot;
+	# Fprint -l ps -R -o $tmpps $1
+	echo -n gksm2ps -l ps -R -d cps -a -o $tmpps $1 ...
+	gksm2ps -l ps -R -d cps -a -o $tmpps $1
+    else
+	# echo -n &quot;Fprint -l cps -R -o $outputfn $1 ... &quot;
+	# Fprint -l cps -R -o $tmpps $1
+	echo -n gksm2ps -l cps -R -d cps -a -o $tmpps $1 ...
+	gksm2ps -l cps -R -d cps -a -o $tmpps $1
+    fi
+    echo &quot;done.&quot;
+    rm -v $1
+    
+    # get a basename for the file wether it's called .eps or .png
+    basename=$(basename $(basename $outputfn .eps) .png)
+    pngbase=${basename}.png
+    pngfile=`dirname $outputfn`/${pngbase}
+
+    # Hein Zelle, 27-12-2010
+    # add a fixed papersize of 12&quot;x12&quot;.  This is roughly the long side
+    # of an A4 sheet, squared.  (1 point = 1/72 inch)
+    # this prevents margin problems and legends getting clipped during
+    # the postscript rendering, hopefully.
+
+    echo &quot;trimming postscript, converting to PNG&quot;
+    echo &quot;gs -dSAFER -dNOPAUSE -r300 -dDEVICEWIDTHPOINTS=864 -dDEVICEHEIGHTPOINTS=864 -sDEVICE=ppmraw -q -sOutputFile=- -f $tmpps -c showpage -c quit | pnmcrop | convert pnm:- PNG:${tmppng}&quot;
+    gs -dSAFER -dNOPAUSE -r300  -dDEVICEWIDTHPOINTS=864 -dDEVICEHEIGHTPOINTS=864 -sDEVICE=ppmraw -q -sOutputFile=- -f $tmpps -c showpage -c quit | pnmcrop | convert pnm:- PNG:${tmppng}
+
+    echo &quot;$makesmall $tmppng PNG8:${pngfile}&quot;
+    $makesmall $tmppng PNG8:${pngfile}
+    
+    if [ &quot;$thumbnail&quot; = &quot;1&quot; ] ; then
+	thumbdir=`dirname $outputfn`/thumbnails
+	thumbfile=${thumbdir}/${pngbase}
+	
+        # make thumbnails directory if needed
+	if [ ! -d $thumbdir ] ; then
+	    mkdir $thumbdir
+	fi
+	
+        # make the thumbnail
+	echo &quot;$makethumb $pngfile PNG8:${thumbfile} ... &quot;
+	$makethumb $tmppng PNG8:${thumbfile}
+    fi
+
+    # clean up
+    echo &quot;cleaning up temporary files under /dev/shm&quot;
+    rm -v $tmpps $tmppng
+    
+    echo &quot;processing of $outputfn done.&quot;
+}
+
+# main script starts here
+
+if [ &quot;$1&quot; = &quot;-h&quot; -o &quot;$1&quot; = &quot;--help&quot; ] ; then
+	echo &quot;&quot;
+	echo &quot;Usage: $myname [-t] [-b] [-r angle] [input.plt] &lt;output.png&gt;&quot;
+        echo &quot;    Input is optional, 'metafile.plt' assumed by default.&quot;
+        echo &quot;    If no arguments are given, values are requested interactively.&quot;
+	echo &quot;    -t generates a thumbnail in thumbnails/ directory&quot;
+	echo &quot;    -b runs postscript processing in the background&quot;
+	echo &quot;    -r rotates the final picture by angle degrees (default 270)&quot;
+	echo &quot;&quot;
+        echo &quot;DO NOT CHANGE THE ORDER OF -t, -b, -r !&quot;
+	echo &quot;&quot;
+	echo &quot;Converts a Ferret metafile to PNG with a proper boundingbox.&quot;
+
+	echo $myname | egrep -q &quot;^r&quot;
+	if [ &quot;$?&quot; = &quot;0&quot; ] ; then 
+		echo &quot;Input metafile is removed after processing.&quot;
+	fi
+
+	echo &quot;&quot;
+	exit 0
+fi
+
+# check for --thumbnail or -t option
+# remove the $1 argument (shift) and continue normally
+if [ &quot;$1&quot; = &quot;--thumbnail&quot; -o &quot;$1&quot; = &quot;-t&quot; ] ; then
+    thumbnail=&quot;1&quot;
+    shift 1
+fi
+
+if [ &quot;$1&quot; = &quot;--background&quot; -o &quot;$1&quot; = &quot;-b&quot; ] ; then
+    background=&quot;1&quot;
+    shift 1
+fi
+
+if [ &quot;$1&quot; = &quot;--rotate&quot; -o &quot;$1&quot; = &quot;-r&quot; ] ; then
+    rotate=&quot;$2&quot;
+    shift 2
+fi
+
+if [ &quot;$1&quot; = &quot;&quot; ] ; then
+	# no arguments, ask interactively
+	echo -n &quot;enter input filename [metafile.plt] ? &quot;
+	read tmpin
+	if [ $tmpin != &quot;&quot; ] ; then 
+	    inputfn=$tmpin
+	fi
+
+	echo -n &quot;enter output filename [output.eps] ? &quot;
+	read tmpout
+	if [ $tmpout != &quot;&quot; ] ; then
+	    outputfn=$tmpout
+	fi
+else
+	if [ &quot;$2&quot; = &quot;&quot; ] ; then
+		# one argument
+		outputfn=$1
+	else
+		# two arguments (or more)
+		inputfn=$1
+		outputfn=$2
+	fi
+fi
+
+# run in the background if requested
+# check if inputfn exists before continuing.
+
+if [ ! -f $inputfn ] ; then
+    echo &quot;$0: ${inputfn}: no such metafile found.&quot;
+    exit 1
+fi
+
+if [ &quot;$background&quot; = &quot;1&quot; ] ; then
+    echo &quot;processing $inputfn in the background.&quot;
+    cp $inputfn $tmpname
+    (process_file $tmpname) &amp;
+else
+    echo &quot;processing $inputfn in the foreground.&quot;
+    cp $inputfn $tmpname
+    (process_file $tmpname)
+fi
+
+# remove the original metafile if requested (program name starts with r)
+echo $myname | egrep -q &quot;^r&quot;
+if [ &quot;$?&quot; = &quot;0&quot; ] ; then 
+    rm -v $inputfn
+fi
+
+# done - script exits here
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00301" href="msg00301.html">[ferret_users] How to read ASCII data accurately</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00189" href="msg00189.html">[ferret_users] overlaying patterns on color shade plots</a></strong>
+<ul><li><em>From:</em> Izidine Pinto</li></ul></li>
+<li><strong><a name="00190" href="msg00190.html">Re: [ferret_users] overlaying patterns on color shade plots</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00190.html">Re: [ferret_users] overlaying patterns on color shade plots</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00301.html">[ferret_users] How to read ASCII data accurately</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00190.html">Thread Prev</a>][<a href="msg00301.html">Thread Next</a>][<A HREF="threads.html#00194">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

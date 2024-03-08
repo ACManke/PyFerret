@@ -1,0 +1,182 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Problem with data from ASCII files -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 4 Apr 2012 14:21:47 &#45;0700 -->
+<!--X-Message-Id: 4F7CBB2C.8010006@noaa.gov -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Reference: CAMxxcfa=KYJVA2sujqr8cNkOKjvj=TpuqgFyJvqBABeVzaNxdg@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Problem with data from ASCII files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00128.html">Thread Prev</a>][<a href="msg00143.html">Thread Next</a>][<A HREF="threads.html#00129">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Problem with data from ASCII files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Szymon Roziewski &lt;<a href="mailto:szymon.roziewski@DOMAIN.HIDDEN">szymon.roziewski@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Problem with data from ASCII files</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 04 Apr 2012 14:20:44 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to:  &lt;CAMxxcfa=KYJVA2sujqr8cNkOKjvj=TpuqgFyJvqBABeVzaNxdg@mail.gmail.com&gt;</li>
+<li>References: &lt;CAMxxcfa=KYJVA2sujqr8cNkOKjvj=TpuqgFyJvqBABeVzaNxdg@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko/20120327 Thunderbird/11.0.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td bgcolor="#FFFFFF" style="background-color: #FFFFFF; color: #000000; "><font color="#000000">
+  
+  
+    Hi Szymon,<br>
+    The FILE command (an alias for SET DATA/EZ) only initializes the
+    dataset. It checks that it can open the file, and stores the
+    definitions of the variables and grids that you give in the FILE
+    command.&nbsp; It does not read any data or do anything to see what's in
+    the file.&nbsp; This means that each FILE command is just redefining the
+    contents of the dataset.<br>
+    <br>
+    My suggestion would be to read each variable and save it to a netCDF
+    file.&nbsp; Then you would have them together in a dataset that's easy to
+    work with.&nbsp; You could also use SET VAR commands at that point to add
+    units, title, or bad-data flags for your variables.<br>
+    <blockquote>
+      <tt>file/skip=2/format=(132f12.4)/columns=132/grid=grid_xlon_ylat/var=hs
+        WAM_IOUG_20120114000000.txt<br>
+        set var/bad=-999</tt><tt>&nbsp; hs&nbsp; !&nbsp; and /units/title etc<br>
+        save/clobber/file=filename.nc hs<br>
+        <br>
+        file/skip=14/format=(132f12.4)/columns=132/grid=grid_xlon_ylat/var=mdirx
+        WAM_IOUG_20120114000000.txt<br>
+      </tt><tt>set var/bad=-999</tt><tt> mdirx<br>
+        save/append/file=filename.nc mdirx<br>
+        ...<br>
+        <br>
+        can data/all<br>
+        use filename.nc<br>
+      </tt></blockquote>
+    Or, if there are no header lines between the different blocks of
+    data that represent the variables, you could probably define a grid
+    to contain ALL the data from all three variables, read a single
+    input variable from the ascii file and then define hs, mdirx, mdiry
+    as subsets of that input variable. <br>
+    <br>
+    Ansley<br>
+    <br>
+    On 4/4/2012 9:14 AM, Szymon Roziewski wrote:
+    <blockquote
+cite=""
+      type="cite">Hello,<br>
+      <br>
+      I am trying to read 3 variables from one ASCII file.<br>
+      But I cannot use more than 1 variable.<br>
+      The question is why is that?<br>
+      This is my easy script<br>
+      <br>
+      set windows/size=10/aspect=`0.2`<br>
+      SET VIEWPORT FULL<br>
+      CANCEL MODE LOGO<br>
+      !DEFINE AXIS/X=1:132:1/unit=degree xlon<br>
+      !DEFINE AXIS/Y=1:10:1/unit=degree ylat<br>
+      DEFINE AXIS/X=-5.6666666667:5.25:0.0833333333/unit=degree xlon<br>
+      DEFINE AXIS/Y=-1.916666667:-1.166666667:0.0833333333/unit=degree
+      ylat<br>
+      <br>
+      DEFINE GRID/x=xlon/y=ylat grid_xlon_ylat<br>
+      <br>
+      file/skip=2/format=(132f12.4)/columns=132/grid=grid_xlon_ylat/var=hs
+      WAM_IOUG_20120114000000.txt<br>
+      <br>
+      file/skip=14/format=(132f12.4)/columns=132/grid=grid_xlon_ylat/var=mdirx
+      WAM_IOUG_20120114000000.txt<br>
+      file/skip=26/format=(132f12.4)/columns=132/grid=grid_xlon_ylat/var=mdiry
+      WAM_IOUG_20120114000000.txt<br>
+      <br>
+      set var/bad=-999 hs[d=1]<br>
+      set var/bad=-999 mdirx[d=2]<br>
+      set var/bad=-999 mdiry[d=3]<br>
+      <br>
+      shade/lev=(0.0,5.0,0.25)(7.,10,.5)(inf)/pal=fin_swh/title="Data
+      for x" hs[d=1]<br clear="all">
+      <br>
+      <br>
+      But it can't see the hs, mdirx variables and I come up with error.<br>
+      Please help me.<br>
+      <br>
+      I attach WAM_IOUG_20120114000000.txt<br>
+      <br>
+      Best regards,<br>
+      Szymon Roziewski<br>
+    </blockquote>
+  
+
+</font></td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00144" href="msg00144.html">Re: [ferret_users] Problem with data from ASCII files</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+<li><strong><a name="00143" href="msg00143.html">Re: [ferret_users] Problem with data from ASCII files</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00128" href="msg00128.html">[ferret_users] Problem with data from ASCII files</a></strong>
+<ul><li><em>From:</em> Szymon Roziewski</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00128.html">[ferret_users] Problem with data from ASCII files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00143.html">Re: [ferret_users] Problem with data from ASCII files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00128.html">Thread Prev</a>][<a href="msg00143.html">Thread Next</a>][<A HREF="threads.html#00129">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Counting of ElNino &#38; LaNina Events -->
+<!--X-From-R13: Dhff Tvrqyre <ehffryy.svrqyreNpfveb.nh> -->
+<!--X-Date: Mon, 1 Apr 2013 17:47:44 &#45;0700 -->
+<!--X-Message-Id: 1364863659.3953.1569.camel@russ&#45;hf -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: BAY170&#45;W11615825EBCEABE97AA379AA5DD0@phx.gbl -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Counting of ElNino &amp; LaNina Events</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00228.html">Thread Prev</a>][<a href="msg00234.html">Thread Next</a>][<A HREF="threads.html#00230">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Counting of ElNino &amp; LaNina Events</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Star Physicist &lt;<a href="mailto:couragetoknowgc@DOMAIN.HIDDEN">couragetoknowgc@xxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Counting of ElNino &amp; LaNina Events</strong></li>
+<li><strong>From</strong>: <strong>Russ Fiedler &lt;<a href="mailto:russell.fiedler@DOMAIN.HIDDEN">russell.fiedler@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 02 Apr 2013 11:47:39 +1100</li>
+<li>Cc: &quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00228.html">BAY170-W11615825EBCEABE97AA379AA5DD0@phx.gbl</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00228.html">BAY170-W11615825EBCEABE97AA379AA5DD0@phx.gbl</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I think this can be done using the @EVNT transformation which locates
+when a variable crosses a threshhold. You also need a mask that detects
+when you enter the required period
+
+Here's an example
+
+! sine wave but I'll force value at i=71 below 0.5 to break the 
+! &quot;El Nino&quot;early
+
+let xx = I[I=1:100]
+let index = IF ( xx NE 71 ) THEN SIN((xx-1)/5) ELSE 0.4
+
+! El nino (&gt;0.5)  begining and end detection all values during the same
+! El nino period are the same as are those outside 
+
+let threshold = index[I=1:100@EVNT:0.5]
+
+! Mask for beginning of El Nino
+
+let begintest = IF ( index GE 0.5 AND index[I=@SHF:-1] LT 0.5 ) THEN 1
+
+! Might start in El nino so possibly add index 1 into mask
+
+let begin = if ( xx eq 1 and `index[i=1] GE 0.5` ) then 1 else begintest
+
+! Now check if we have the same value 5 months later.
+! We are only interested at the beginning point of EN so apply a mask
+
+let elnino = IF ( threshold EQ threshold[I=@SHF:6] AND begin ) THEN 1
+
+!we should have values of 1 for the start of any 6 month period
+list index,threshold, begin, elnino
+
+! See that the broken El nino has been omitted
+
+! How many El ninos? Add up the elnino value
+
+list elnino[i=@sum]
+
+             VARIABLE : IF ( THRESHOLD EQ THRESHOLD[I=@SHF:6] AND
+BEGIN ) THEN 1
+             X        : 0.5 to 100.5 (summed)
+          2.000
+
+
+
+
+Cheers,
+Russ
+
+
+
+On Sun, 2013-03-31 at 23:09 +1100, Star Physicist wrote:
+&gt; Dear FERRET users,
+&gt; 
+&gt; I wanted to calculate no of Elnino and LaNina events using SST monthly
+&gt; data. My data ranges from jan1990 to dec1999 (10 years, 120 months). I
+&gt; need go through following steps in FERRET
+&gt; 
+&gt; 1) Calculate spatial averages over the NINO3.4 region of SST
+&gt; 2) Calculate monthly means of Jan, Feb ... Dec.
+&gt; 3) Calculate Anomaly =SST-corresponding monthly means
+&gt; 4 Normalize it by the corresponding Standard deviation (This is my
+&gt; NINO3.4 index)
+&gt; 
+&gt; Now at the end I have to count no of ElNino and LaNina years in this
+&gt; total period (condition is that if continuous 6 months have threshold
+&gt; valuse of NiNo3.4 index greater or equal +0.4; I will count it as
+&gt; ElNino and If its value is less or equal to -0.4; it will be counted
+&gt; as LaNina ).
+&gt; 
+&gt; How can I do this counting over calculated Nino3.4 index
+&gt; 
+&gt; 
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00228" href="msg00228.html">[ferret_users] Counting of ElNino &amp; LaNina Events</a></strong>
+<ul><li><em>From:</em> Star Physicist</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00228.html">[ferret_users] Counting of ElNino &amp; LaNina Events</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00234.html">[ferret_users] How to merge daily and monthly data file in Ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00228.html">Thread Prev</a>][<a href="msg00234.html">Thread Next</a>][<A HREF="threads.html#00230">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

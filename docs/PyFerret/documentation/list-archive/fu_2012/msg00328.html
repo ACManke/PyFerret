@@ -1,0 +1,153 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] Calculating monthly means from twice daily data -->
+<!--X-From-R13: "znychff u.f. (ufz1t11)" <ufz1t11Nfbgba.np.hx> -->
+<!--X-Date: Tue, 10 Jul 2012 03:15:40 &#45;0700 -->
+<!--X-Message-Id: AB301101A75AE84C93A8FAAE81DDCDE105DD6790@AMSPRD0410MB385.eurprd04.prod.outlook.com -->
+<!--X-Content-Type: multipart/alternative -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] Calculating monthly means from twice daily data</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00325.html">Thread Prev</a>][<a href="msg00329.html">Thread Next</a>][<A HREF="threads.html#00328">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] Calculating monthly means from twice daily data</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>&quot;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&quot; &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] Calculating monthly means from twice daily data</strong></li>
+<li><strong>From</strong>: <strong>&quot;malpuss h.s. (hsm1g11)&quot; &lt;<a href="mailto:hsm1g11@DOMAIN.HIDDEN">hsm1g11@xxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 10 Jul 2012 10:15:30 +0000</li>
+<li>Accept-language: en-GB, en-US</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>Thread-index: Ac1egrpP8wG8soi0QVqEnNX+iwavug==</li>
+<li>Thread-topic: Calculating monthly means from twice daily data</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<table width="100%"><tr><td style="">
+
+
+<div style="direction: ltr;font-family: Tahoma;color: #000000;font-size: 10pt;">Hi all,<br>
+<br>
+I'm a Ferret newbie and having trouble seeing where I'm going wrong with this so hoping one of you can help!<br>
+<br>
+I've got twice daily data (at 00:00 and 12:00) between 1st April 2004 and 20th December 2010 from which I'm trying to calculate monthly means.&nbsp; The first day in the time series only has one data point (at 12:00) and so to get around this I'm first calculating
+ daily means, and then using these to calculate the monthly means using the following code.<br>
+<br>
+use moc_transports.nc<br>
+<br>
+! firstly, define daily means (to be sure to avoid problems when there is for example only one data a day instead of two....)<br>
+<br>
+DEFINE AXIS/T=1-apr-2004:20-dec-2010:1/UNITS=days tdays<br>
+LET daily_MOC = MOC_MAR_HC10[gt=tdays@AVE]<br>
+<br>
+! calculate monthly means<br>
+<br>
+LET start_year = 2004<br>
+LET nyears = 7<br>
+LET indices = L[L=1:`nyears*12`]<br>
+LET month = MOD(indices-1,12)&#43;1<br>
+LET year = start_year &#43; INT((indices-1)/12)<br>
+DEFINE AXIS/UNITS=days/T0=1-jan-1900/EDGES truemonth = DAYS1900(year,month,1)<br>
+LET monthly_moc= daily_MOC[gt=truemonth@AVE]<br>
+<br>
+<br>
+However I've checked the few few days (see below) and the daily_moc calculation appears to be averaging the two values for the specific day along with the second value from the previous day which is not what I want, but I can't figure out where I'm going wrong.<br>
+<br>
+yes? list moc_mar_hc10[l=1:11]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : overturning transport (Sv)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : moc_transports.nc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 11 points (TIME)<br>
+&nbsp;01-APR-2004 12:00 /&nbsp; 1:&nbsp;&nbsp; 9.83<br>
+&nbsp;02-APR-2004 00:00 /&nbsp; 2:&nbsp; 10.30<br>
+&nbsp;02-APR-2004 12:00 /&nbsp; 3:&nbsp; 10.73<br>
+&nbsp;03-APR-2004 00:00 /&nbsp; 4:&nbsp; 11.11<br>
+&nbsp;03-APR-2004 12:00 /&nbsp; 5:&nbsp; 11.44<br>
+&nbsp;04-APR-2004 00:00 /&nbsp; 6:&nbsp; 11.70<br>
+&nbsp;04-APR-2004 12:00 /&nbsp; 7:&nbsp; 11.90<br>
+&nbsp;05-APR-2004 00:00 /&nbsp; 8:&nbsp; 12.05<br>
+&nbsp;05-APR-2004 12:00 /&nbsp; 9:&nbsp; 12.16<br>
+&nbsp;06-APR-2004 00:00 / 10:&nbsp; 12.25<br>
+&nbsp;06-APR-2004 12:00 / 11:&nbsp; 12.34<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARIABLE : MOC_MAR_HC10[GT=TDAYS@AVE]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILENAME : moc_transports.nc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBSET&nbsp;&nbsp; : 6 points (TIME)<br>
+&nbsp;01-APR-2004 00 / 1:&nbsp;&nbsp; 9.83<br>
+&nbsp;02-APR-2004 00 / 2:&nbsp; 10.29<br>
+&nbsp;03-APR-2004 00 / 3:&nbsp; 11.10<br>
+&nbsp;04-APR-2004 00 / 4:&nbsp; 11.69<br>
+&nbsp;05-APR-2004 00 / 5:&nbsp; 12.04<br>
+&nbsp;06-APR-2004 00 / 6:&nbsp; 12.25<br>
+<br>
+Any help on this will be greatfully received!<br>
+<br>
+Thanks in advance,<br>
+<br>
+Helen<br>
+</div>
+
+
+</td></tr></table>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00325.html">[ferret_users] Percentile Calculations</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00329.html">[ferret_users] Help needed to write the label inside the subplot</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00325.html">Thread Prev</a>][<a href="msg00329.html">Thread Next</a>][<A HREF="threads.html#00328">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

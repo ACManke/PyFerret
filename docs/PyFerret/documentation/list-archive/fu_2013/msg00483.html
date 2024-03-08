@@ -1,0 +1,141 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] how to control domain of mode INTERP without awkward file writing/reading -->
+<!--X-From-R13: Zri Fnenfbi <yriNzha.pn> -->
+<!--X-Date: Wed, 7 Aug 2013 08:43:06 &#45;0700 -->
+<!--X-Message-Id: alpine.LFD.2.00.1308071146180.2808@kelvin.physics.mun.ca -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] how to control domain of mode INTERP without awkward file writing/reading</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00482.html">Thread Prev</a>][<a href="msg00485.html">Thread Next</a>][<A HREF="threads.html#00483">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] how to control domain of mode INTERP without awkward file writing/reading</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] how to control domain of mode INTERP without awkward file writing/reading</strong></li>
+<li><strong>From</strong>: <strong>Lev Tarasov &lt;<a href="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 7 Aug 2013 13:12:20 -0230 (NDT)</li>
+<li>Cc: Lev Tarasov &lt;<a href="mailto:lev@DOMAIN.HIDDEN">lev@xxxxxx</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Alpine 2.00 (LFD 1167 2008-08-23)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<tt>I have a routine to figure out the time when a location last becomes free 
+</tt><tt>of grounded ice (ie for comparing model results to data for the last 
+</tt><tt>glacial cycle Antarctic ice sheet). To figure out whether the ice is 
+</tt><tt>floating, we need to use mode INTERP. However, this ends up messing up the 
+</tt><tt>@EVNT algorithm for finding out when the last crossing (in this case 
+</tt><tt>ungrounding of ice) occurs., ie: in the below, with mode interp on, 
+</tt><tt>mask_grounded (= if H*rhoI/rhoO gt Hw then 1 else 0) ends up with 
+</tt><tt>fractional values.
+</tt><pre style="margin: 0em;">
+
+set region/x=143.14 /y=-66.48
+! H and Hw are 2D space + 1D time fields
+LET rhoI = 910  ![kg/m3]
+LET rhoO = 1028 ![kg/m3]
+LET mask_grounded = if H*rhoI/rhoO gt Hw then 1 else 0
+LET grounded_event=mask_grounded[T=-120:0@EVNT:1]      ! find all the
+        instances when ice grounded (this starts at -120, incrementing for each event)
+LET last_event = grounded_event[T=@max]                ! find the value of the last event
+LET mask_last = IF grounded_event EQ last_event THEN 1 ! make a mask based on last event value, ie domain with event value = last value
+LET idx= mask_last[T=@LOC:1]                           ! get the index of the first value in the mask \ie the last grounded event
+LET out = idx + 0.05 ! the 0.05 is to adjust the idx to output the time between grounded and floating
+
+</pre><tt>Now we can work around this by setting mode INTERP, saving the timeseries 
+</tt><tt>for each site, CAN DATA/ALL, can var/all, opening the saved timeseries and 
+</tt><tt>then doing the above masking operation. But for our large datasets, this
+</tt><pre style="margin: 0em;">
+becomes awkward/slow. Anyway around this?
+
+</pre><tt>To be concrete, with the above work around for one data site and model, I 
+</tt><tt>get out= -31.75
+</tt><tt>without the work around I get out=-119.9 with CAN MODE 
+</tt><tt>INTERP and -70.57 with SET MODE INTERP
+</tt><pre style="margin: 0em;">
+
+Cheers,
+
+Lev
+
+Lev Tarasov -   Dept of Physics and Physical Oceanography,
+		Memorial University of Newfoundland.
+                email: lev@xxxxxx
+                <a  rel="nofollow" href="http://www.physics.mun.ca/~lev/">http://www.physics.mun.ca/~lev/</a>
+		Sabbatical Tel (519)-821-3555
+		Fax (709)-864-8739
+
+This electronic communication is governed by the terms and conditions at
+<a  rel="nofollow" href="http://www.mun.ca/cc/policies/electronic_communications_disclaimer_2012.php">http://www.mun.ca/cc/policies/electronic_communications_disclaimer_2012.php</a>
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00485" href="msg00485.html">Re: [ferret_users] how to control domain of mode INTERP without awkward file writing/reading</a></strong>
+<ul><li><em>From:</em> Russ Fiedler</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00482.html">[ferret_users] Levels in ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00485.html">Re: [ferret_users] how to control domain of mode INTERP without awkward file writing/reading</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00482.html">Thread Prev</a>][<a href="msg00485.html">Thread Next</a>][<A HREF="threads.html#00483">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

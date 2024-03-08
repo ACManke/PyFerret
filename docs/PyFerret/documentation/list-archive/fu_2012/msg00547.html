@@ -1,0 +1,157 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] quicker detection of dimensions improperly specified -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Wed, 17 Oct 2012 09:36:03 &#45;0700 -->
+<!--X-Message-Id: 507EDE6D.6010902@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 20121016.105531.118661174.furue@hawaii.edu -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] quicker detection of dimensions improperly specified</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00543.html">Thread Prev</a>][<a href="msg00537.html">Thread Next</a>][<A HREF="threads.html#00547">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] quicker detection of dimensions improperly specified</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ryo Furue &lt;<a href="mailto:furue@DOMAIN.HIDDEN">furue@xxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] quicker detection of dimensions improperly specified</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 17 Oct 2012 09:35:57 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00536.html">20121016.105531.118661174.furue@hawaii.edu</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00536.html">20121016.105531.118661174.furue@hawaii.edu</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:16.0) Gecko/20121010 Thunderbird/16.0.1</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ryo,
+</pre><tt>I understand the point, and that would be nice, but it's not simple. As 
+</tt><tt>you know, there are lots of operations that affect the shape of the 
+</tt><tt>result of an expression.  For those who may not have thought about the 
+</tt><tt>issue, you might average over one dimension reducing the number of 
+</tt><tt>dimensions in the result; and many Ferret functions and operations can 
+</tt><tt>alter the dimensions and grid of the arguments of the function. Until 
+</tt><tt>the expression has been loaded into memory, we don't have a good idea of 
+</tt><tt>its true shape. Grid-changing functions, transformations over one or 
+</tt><tt>more dimensions, etc. can all affect the final &quot;shape&quot; of the variable.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>One could imagine a sort of ghost operation that would go through the 
+</tt><tt>command stack and figure out the final shape without loading data, but 
+</tt><tt>there's nothing that actually gives us that.  We'll have to think 
+</tt><tt>whether there's a reasonable way to add such a thing.  The &quot;SHOW GRID&quot; 
+</tt><tt>command gives us the final grid of an expression but just lists the 
+</tt><tt>axes, not the extent that he expression has along those axes.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>As things stand now, you could do something like execute a &quot;stat&quot; 
+</tt><tt>command on the expression, and see what the end shape is, but of course 
+</tt><tt>the point is you'd like to get the information before loading data into 
+</tt><tt>memory.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>There are some points in the code where Ferret checks for an interrupt, 
+</tt><tt>and returns to the command line, so the whole load-a-variable sequence 
+</tt><tt>isn't necessarily processed before a Ctrl-C is acted upon, but something 
+</tt><tt>like a data read is done by a single call to the NetCDF library and that 
+</tt><tt>can't be easily interrupted. You could kill the Ferret process of 
+</tt><tt>course, but you don't necessarily want to do that.
+</tt><pre style="margin: 0em;">
+
+-Ansley
+
+On 10/16/2012 1:55 PM, Ryo Furue wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Ferret users and developers,
+
+I'm wondering if it's possible to detect an improper dimension
+specification, such as
+
+   yes? fill  some_3D_variable
+
+UP FRONT . . .  It sometimes takes quite a bit of time before we
+see the error message
+
+   **ERROR: dimensions improperly specified: must be a 2D region
+
+especially when the dataset is accessed across the network.
+
+I make this mistake very often and then hit Ctrl-C frantically,
+which it still takes Ferret quite a bit of time to respond to.
+
+Regards,
+Ryo
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00536" href="msg00536.html">[ferret_users] quicker detection of dimensions improperly specified</a></strong>
+<ul><li><em>From:</em> Ryo Furue</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00543.html">Re: [ferret_users] quicker detection of dimensions improperly specified</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00537.html">[ferret_users] ferret install problem</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00543.html">Thread Prev</a>][<a href="msg00537.html">Thread Next</a>][<A HREF="threads.html#00547">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

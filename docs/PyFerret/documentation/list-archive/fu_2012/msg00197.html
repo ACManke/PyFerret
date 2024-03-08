@@ -1,0 +1,155 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] corrupted time axis or ferret bug ? -->
+<!--X-From-R13: @vpbynf Breraar <creraarNnpgvzne.se> -->
+<!--X-Date: Fri, 11 May 2012 05:20:20 &#45;0700 -->
+<!--X-Message-Id: a2580403&#45;40cc&#45;4def&#45;9fd6&#45;fad502718776@zimbra.actimar.fr -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4FACF45B.9020602@io&#45;warnemuende.de -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] corrupted time axis or ferret bug ?</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00196.html">Thread Prev</a>][<a href="msg00198.html">Thread Next</a>][<A HREF="threads.html#00197">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] corrupted time axis or ferret bug ?</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:martin.schmidt@DOMAIN.HIDDEN">martin.schmidt@xxxxxxxxxxxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] corrupted time axis or ferret bug ?</strong></li>
+<li><strong>From</strong>: <strong>Nicolas Perenne &lt;<a href="mailto:perenne@DOMAIN.HIDDEN">perenne@xxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 11 May 2012 14:20:06 +0200 (CEST)</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00196.html">4FACF45B.9020602@io-warnemuende.de</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://www.google.com/support/a/noaa.gov/bin/static.py?hl=en_US&page=groups.cs">http://www.google.com/support/a/noaa.gov/bin/static.py?hl=en_US&page=groups.cs</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Thanks a lot indeed Martin: that's what I call a quick fix!
+
+The (main) part I was missing is that Ferret needs to perfom some internal axis computation to 'shade' a variable. Now using your @asn trick I was able to create (on the fly) a nice time axis and recover the perfect 'shade' I needed. Dare say I appreciate it: thanks again.
+
+----- Mail original -----
+De: &quot;Martin Schmidt&quot; &lt;martin.schmidt@xxxxxxxxxxxxxxxxx&gt;
+&#xC0;: &quot;Nicolas Perenne&quot; &lt;perenne@xxxxxxxxxx&gt;
+Cc: &quot;ferret users&quot; &lt;ferret_users@xxxxxxxx&gt;
+Envoy&#xE9;: Vendredi 11 Mai 2012 13:13:31
+Objet: Re: [ferret_users] corrupted time axis or ferret bug ?
+
+Hi Nicolas,
+
+with ncdump you may have a look into your netcdf file. You will find 
+that the time axis has units
+'seconds' but with very large values, because of the choice of the time 
+axis origin.
+
+Ferret does many calculations in real*4, this implies 6 valid digits. I 
+guess, something goes wrong with the axis setup for the second plot
+because of limited accuracy of calculations with small differences of 
+large numbers.
+
+One should generally avoid calculations based on small differences of 
+large numbers not only with ferret.
+
+As a test you may generate a new time axis. This is an example, for 
+correct numbers - you know the details:
+
+define axis/t=1:9:1/unit=days/t0=1-jan-2000 tax
+let temp1=temp[gt=tax@asn]
+! Now the data are at a new time axis with
+set reg/i=4/j=3
+set view upper
+plot/k=30 temp1
+set view lower
+shade temp1
+
+This should be the expected result - except the wrong time axis.
+
+Best,
+Martin
+
+Nicolas Perenne wrote:
+&gt; Hello,
+&gt;
+&gt; I have a strange problem with the attached NetCDF file (generated by a numerical model, but this one is pretty small). Can't figure it out and was unable to find a clue in the mail archive.
+&gt;
+&gt; So this is about 'shade': a vertical slice through the attached NetCDF is fine in y-z but another in t-z doesn't show anything (cf 'pb.jnl' also attached to this mail).
+&gt;
+&gt; 'plot/k=30' is ok though, and moreover this is the first time I have such a problem with a t-z slice (doing quite a lot of it on various other datasets)
+&gt;
+&gt; Currently using Ferret V6.72 but same pb with an old (windows) V5.51.
+&gt;
+&gt; Do you think it could be a ferret bug, or a corruption of the NetCDF file, or a subtle combination of both?
+&gt;
+&gt; Thanks,
+&gt; Nicolas
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00196" href="msg00196.html">Re: [ferret_users] corrupted time axis or ferret bug ?</a></strong>
+<ul><li><em>From:</em> Martin Schmidt</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00196.html">Re: [ferret_users] corrupted time axis or ferret bug ?</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00198.html">Re: [ferret_users] corrupted time axis or ferret bug ?</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00196.html">Thread Prev</a>][<a href="msg00198.html">Thread Next</a>][<A HREF="threads.html#00197">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

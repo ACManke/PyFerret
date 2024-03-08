@@ -1,0 +1,337 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Statistics / student&#45;t distribution -->
+<!--X-From-R13: Oaqerj Ivggraoret <naqerj.jvggraoretNabnn.tbi> -->
+<!--X-Date: Wed, 21 Mar 2012 11:23:29 &#45;0700 -->
+<!--X-Message-Id: CAKoe08R0E3UUc+hoJyMARQgM+WWuw16AucDOoh==U6of05ZTxw@mail.gmail.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: AB21E984&#45;FE3F&#45;4DAF&#45;90E3&#45;F01AF5CCD747@uvic.ca -->
+<!--X-Reference: 20120319080256.GA4873@giotto.bmtargoss.org -->
+<!--X-Reference: 1332343899.8596.214.camel@oo -->
+<!--X-Reference: 4F6A0021.7040705@noaa.gov -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Statistics / student-t distribution</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00108.html">Thread Prev</a>][<a href="msg00110.html">Thread Next</a>][<A HREF="threads.html#00109">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Statistics / student-t distribution</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Statistics / student-t distribution</strong></li>
+<li><strong>From</strong>: <strong>Andrew Wittenberg &lt;<a href="mailto:andrew.wittenberg@DOMAIN.HIDDEN">andrew.wittenberg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Wed, 21 Mar 2012 14:23:27 -0400</li>
+<li>In-reply-to: &lt;<a href="msg00108.html">4F6A0021.7040705@noaa.gov</a>&gt;</li>
+<li>References: &lt;<a href="msg00092.html">AB21E984-FE3F-4DAF-90E3-F01AF5CCD747@uvic.ca</a>&gt; &lt;<a href="msg00097.html">20120319080256.GA4873@giotto.bmtargoss.org</a>&gt; &lt;1332343899.8596.214.camel@oo&gt; &lt;<a href="msg00108.html">4F6A0021.7040705@noaa.gov</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Ansley et al.,
+
+The external function STUDENT_T_CUTOFF could do with more
+documentation.  To clarify, it doesn't return a quantile of the
+t-distribution with nf degrees of freedom.  Instead,
+STUDENT_T_CUTOFF(P,nf) returns the P/100 critical value (upper limit)
+for the two-sided, one-sample t-test that the mean of a sample of nf
+independent normally-distributed observations differs from zero.  Note
+that STUDENT_T_CUTOFF is rather limited: it only accepts P-values of
+90%, 95%, or 99%.
+
+Given a quantile q and degrees of freedom df, the mapping onto
+STUDENT_T_CUTOFF is:
+
+   P = 100*(1-2*(1-q))
+   nf = df+1
+
+and the reverse mapping is
+
+   q = 1-(1-P/100)/2
+   df = nf-1
+
+See e.g. &quot;One-sample t-test&quot; under
+
+   <a  rel="nofollow" href="http://en.wikipedia.org/wiki/Student%27s_t-test">http://en.wikipedia.org/wiki/Student%27s_t-test</a>
+
+To obtain an arbitrary t-quantile, I'd recommend calling R or Python
+(scipy.stats) for now, until PyFerret arrives with its powerful
+statistics functions.  With a slight modification to Paulo's
+suggestion, we can remove the dependence on &quot;littler&quot; (&quot;little R&quot;) and
+just call R directly as a one-liner.  E.g. to compute the 95th
+percentile of the t-distribution with 10 degrees of freedom:
+
+   let qt = STRFLOAT(SPAWN(&quot;echo 'cat(qt(0.95, df=10))' | R --slave --vanilla&quot;))
+
+Andrew
+
+PS. For those interested, here's a comparison of STUDENT_T_CUTOFF with
+the t-quantile (qt) function from R:
+
+        NOAA/PMEL TMAP
+        FERRET v6.72
+        Linux 2.6.18-274.el5PAE 32-bit - 09/13/11
+        21-Mar-12 14:02
+
+yes? let q = .95; let df = 10
+yes? list student_t_cutoff(100*(1-2*(1-q)),df+1), strfloat(spawn(&quot;echo
+'cat(qt(`q`, df=`df`))' | R --slave --vanilla&quot;))
+             X: 1
+ Column  1: STUDENT_T_CUTOFF(100*(1-2*(1-Q)),DF+1)
+ Column  2: STRFLOAT(SPAWN(&quot;echo 'cat(qt(0.95, df=10))' | R --slave --vanilla&quot;))
+       (C001,V00  (C001,V008)
+I / *:      1.812   1.812
+
+On Wed, Mar 21, 2012 at 12:21 PM, Ansley Manke &lt;ansley.b.manke@xxxxxxxx&gt; wrote:
+&gt; Hi all,
+&gt; Ferret does include an external function, student_t_cutoff, which may
+&gt; provide some of what you're looking for:
+&gt;
+&gt; yes? &#xA0;sh func student*
+&gt; STUDENT_T_CUTOFF(P,nf)
+&gt; &#xA0; &#xA0;Return student-t cutoff
+&gt; &#xA0; &#xA0;P: Confidence Limit
+&gt; &#xA0; &#xA0;nf: nf (Number in sample)
+&gt;
+&gt; Other statistics capabilities would be straitforward to write as external
+&gt; functions. &#xA0;Our current development, PyFerret, builds Ferret as a Python
+&gt; module. This will in effectHi Ansley,
+
+The external function STUDENT_T_CUTOFF could use more documentation.
+To clarify, it doesn't return a quantile of the t-distribution with nf
+degrees of freedom.  Instead, STUDENT_T_CUTOFF(P,nf) returns the P/100
+critical value (upper limit) for the two-sided, one-sample t-test that
+the mean of a sample of nf independent normally-distributed
+observations differs from zero.  Note that STUDENT_T_CUTOFF is rather
+limited, as it only accepts P-values of 90, 95, or 99.
+
+Given a quantile q and degrees of freedom df, the mapping onto
+STUDENT_T_CUTOFF is:
+
+   P = 100*(1-2*(1-q))
+   nf = df+1
+
+and the reverse mapping is
+
+   q = 1-(1-P/100)/2
+   df = nf-1
+
+See e.g. &quot;One-sample t-test&quot; under
+
+   <a  rel="nofollow" href="http://en.wikipedia.org/wiki/Student%27s_t-test">http://en.wikipedia.org/wiki/Student%27s_t-test</a>
+
+To obtain a general t-quantile, I'd recommend using Python
+(scipy.stats) or R for now, until PyFerret with its powerful
+statistics functions) becomes available.  With a slight modification
+to Paulo's suggestion, we can elminate the dependence on &quot;littler&quot;
+(&quot;little R&quot;) and just call R directly.  E.g. to compute the 95th
+percentile of the t-distribution with 10 degrees of freedom:
+
+   let qt = STRFLOAT(SPAWN(&quot;echo 'cat(qt(0.95, df=10))' | R --slave --vanilla&quot;))
+
+Andrew
+
+PS. For those who are interested, here's a comparison of
+STUDENT_T_CUTOFF with the t-quantiles:
+
+        NOAA/PMEL TMAP
+        FERRET v6.72
+        Linux 2.6.18-274.el5PAE 32-bit - 09/13/11
+        21-Mar-12 14:02
+
+yes? let q = .95; let df = 10
+yes? list student_t_cutoff(100*(1-2*(1-q)),df+1), strfloat(spawn(&quot;echo
+'cat(qt(`q`, df=`df`))' | R --slave --vanilla&quot;))
+             X: 1
+ Column  1: STUDENT_T_CUTOFF(100*(1-2*(1-Q)),DF+1)
+ Column  2: STRFLOAT(SPAWN(&quot;echo 'cat(qt(0.95, df=10))' | R --slave --vanilla&quot;))
+       (C001,V00  (C001,V008)
+I / *:      1.812   1.812
+
+On Wed, Mar 21, 2012 at 12:21 PM, Ansley Manke &lt;ansley.b.manke@xxxxxxxx&gt; wrote:
+&gt; Hi all,
+&gt; Ferret does include an external function, student_t_cutoff, which may
+&gt; provide some of what you're looking for:
+&gt;
+&gt; yes?  sh func student*
+&gt; STUDENT_T_CUTOFF(P,nf)
+&gt;    Return student-t cutoff
+&gt;    P: Confidence Limit
+&gt;    nf: nf (Number in sample)
+&gt;
+&gt; Other statistics capabilities would be straitforward to write as external
+&gt; functions.  Our current development, PyFerret, builds Ferret as a Python
+&gt; module. This will in effect make mathematical and statistical functions from
+&gt; Python libraries available as Ferret functions.
+&gt;
+&gt; Ansley
+&gt;
+&gt; On 3/21/2012 8:31 AM, Paulo B. Oliveira wrote:
+&gt;&gt;
+&gt;&gt; One way is to use a statistical package to do the job. I ended up
+&gt;&gt; learning some R (<a  rel="nofollow" href="http://www.r-project.org/">http://www.r-project.org/</a>) basics (the choice was
+&gt;&gt; driven by its popularity among my colleagues).
+&gt;&gt; When combined with 'littler' ( <a  rel="nofollow" href="http://code.google.com/p/littler/">http://code.google.com/p/littler/</a> ) you
+&gt;&gt; can use spawn in ferret to get the simple statistics.
+&gt;&gt;
+&gt;&gt; For example, to get student-t 0.95 quantile with df-degrees of freedmon
+&gt;&gt; from ferret:
+&gt;&gt; yes? def sym df 100
+&gt;&gt; yes? let qt95 = `spawn(&quot;r -e 'cat(qt((0.95),df=($df)))'&quot;)`
+&gt;&gt;  !-&gt;  DEFINE VARIABLE qt95 = 1.66023
+&gt;&gt;
+&gt;&gt; If a long data series has to be passed on to R, it will be necessary to
+&gt;&gt; write an R script, eventually using the RNetCDF
+&gt;&gt; ( <a  rel="nofollow" href="http://cran.r-project.org/web/packages/RNetCDF/index.html">http://cran.r-project.org/web/packages/RNetCDF/index.html</a> )
+&gt;&gt;  ncdf ( <a  rel="nofollow" href="http://cran.r-project.org/web/packages/ncdf/index.html">http://cran.r-project.org/web/packages/ncdf/index.html</a> ) or
+&gt;&gt; ncdf4 (<a  rel="nofollow" href="http://cran.r-project.org/web/packages/ncdf4/index.html">http://cran.r-project.org/web/packages/ncdf4/index.html</a> )
+&gt;&gt; packages.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Regards,
+&gt;&gt;
+&gt;&gt; Paulo
+&gt;&gt; ----------------------------------------------------
+&gt;&gt; On Mon, 2012-03-19 at 09:02 +0100, Hein Zelle wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Neil Swart wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I wondering how other Ferreters compute their statistics, and if
+&gt;&gt;&gt;&gt; anyone has a TINV script or similar already written?
+&gt;&gt;&gt;
+&gt;&gt;&gt; I have not done this yet, but for an upcoming job I'll need to
+&gt;&gt;&gt; determine similar bounds (quantiles) from an ensemble distribution.
+&gt;&gt;&gt; I can do this based on the std deviation, assuming a gaussian
+&gt;&gt;&gt; distribution, but that doesn't always hold.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'll be very interested to hear if it's possible to do this using
+&gt;&gt;&gt; external functions or with different tricks.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Kind regards,
+&gt;&gt;&gt;      Hein Zelle
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+
+ make mathematical and statistical functions from
+&gt; Python libraries available as Ferret functions.
+&gt;
+&gt; Ansley
+&gt;
+&gt; On 3/21/2012 8:31 AM, Paulo B. Oliveira wrote:
+&gt;&gt;
+&gt;&gt; One way is to use a statistical package to do the job. I ended up
+&gt;&gt; learning some R (<a  rel="nofollow" href="http://www.r-project.org/">http://www.r-project.org/</a>) basics (the choice was
+&gt;&gt; driven by its popularity among my colleagues).
+&gt;&gt; When combined with 'littler' ( <a  rel="nofollow" href="http://code.google.com/p/littler/">http://code.google.com/p/littler/</a> ) you
+&gt;&gt; can use spawn in ferret to get the simple statistics.
+&gt;&gt;
+&gt;&gt; For example, to get student-t 0.95 quantile with df-degrees of freedmon
+&gt;&gt; from ferret:
+&gt;&gt; yes? def sym df 100
+&gt;&gt; yes? let qt95 = `spawn(&quot;r -e 'cat(qt((0.95),df=($df)))'&quot;)`
+&gt;&gt; &#xA0;!-&gt; &#xA0;DEFINE VARIABLE qt95 = 1.66023
+&gt;&gt;
+&gt;&gt; If a long data series has to be passed on to R, it will be necessary to
+&gt;&gt; write an R script, eventually using the RNetCDF
+&gt;&gt; ( <a  rel="nofollow" href="http://cran.r-project.org/web/packages/RNetCDF/index.html">http://cran.r-project.org/web/packages/RNetCDF/index.html</a> )
+&gt;&gt; &#xA0;ncdf ( <a  rel="nofollow" href="http://cran.r-project.org/web/packages/ncdf/index.html">http://cran.r-project.org/web/packages/ncdf/index.html</a> ) or
+&gt;&gt; ncdf4 (<a  rel="nofollow" href="http://cran.r-project.org/web/packages/ncdf4/index.html">http://cran.r-project.org/web/packages/ncdf4/index.html</a> )
+&gt;&gt; packages.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Regards,
+&gt;&gt;
+&gt;&gt; Paulo
+&gt;&gt; ----------------------------------------------------
+&gt;&gt; On Mon, 2012-03-19 at 09:02 +0100, Hein Zelle wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Neil Swart wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I wondering how other Ferreters compute their statistics, and if
+&gt;&gt;&gt;&gt; anyone has a TINV script or similar already written?
+&gt;&gt;&gt;
+&gt;&gt;&gt; I have not done this yet, but for an upcoming job I'll need to
+&gt;&gt;&gt; determine similar bounds (quantiles) from an ensemble distribution.
+&gt;&gt;&gt; I can do this based on the std deviation, assuming a gaussian
+&gt;&gt;&gt; distribution, but that doesn't always hold.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'll be very interested to hear if it's possible to do this using
+&gt;&gt;&gt; external functions or with different tricks.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Kind regards,
+&gt;&gt;&gt; &#xA0; &#xA0; &#xA0;Hein Zelle
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00092" href="msg00092.html">[ferret_users] Statistics / student-t distribution</a></strong>
+<ul><li><em>From:</em> Neil Swart</li></ul></li>
+<li><strong><a name="00097" href="msg00097.html">Re: [ferret_users] Statistics / student-t distribution</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+<li><strong><a name="00107" href="msg00107.html">Re: [ferret_users] Statistics / student-t distribution</a></strong>
+<ul><li><em>From:</em> Paulo B. Oliveira</li></ul></li>
+<li><strong><a name="00108" href="msg00108.html">Re: [ferret_users] Statistics / student-t distribution</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00108.html">Re: [ferret_users] Statistics / student-t distribution</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00110.html">Re: [ferret_users] stippled to an extended area</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00108.html">Thread Prev</a>][<a href="msg00110.html">Thread Next</a>][<A HREF="threads.html#00109">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

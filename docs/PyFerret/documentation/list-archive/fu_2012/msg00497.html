@@ -1,0 +1,143 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] write to binary -->
+<!--X-From-R13: Ehwngn [naqxr <nzvaNgebczrg.erf.va> -->
+<!--X-Date: Fri, 21 Sep 2012 00:53:27 &#45;0700 -->
+<!--X-Message-Id: 1642167831.50821.1348213373768.JavaMail.root@cluster1.tropmet.res.in -->
+<!--X-Content-Type: text/plain -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] write to binary</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00494.html">Thread Prev</a>][<a href="msg00504.html">Thread Next</a>][<A HREF="threads.html#00497">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] write to binary</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] write to binary</strong></li>
+<li><strong>From</strong>: <strong>Sujata Mandke &lt;<a href="mailto:amin@DOMAIN.HIDDEN">amin@xxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Fri, 21 Sep 2012 13:12:53 +0530 (IST)</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Dear Ferret users,
+
+   I am trying to write daily OLR anomaly to
+  binary(Grads format) file. For the first time
+  I am writting to binary file, in Ferret.
+
+  My script does following :
+
+  Reads daily OLR data (long period) and 
+  daily OLR climatology (365 days)
+  from netcdf files and calculate daily anomaly.
+ Then write daily anomaly to binary file.
+
+
+  I had written following script-'olran-wrtbin.jnl'
+--------------------------------------------------
+ \CANCEL MODE VERIFY
+!--------------------------------------------------------------
+!Opening below Daily OLR data for the period 1Jun1974-31May2012
+use &quot;/gpfs2/home/amin/monsn-2k12/olr-data/olr.day.mean.nc&quot;
+set region/i=1:144/j=1:73/l=1:13880
+define variable olrd=olr[d=1]
+!------------------------------------------------------
+!Opening below daily OLR climatolgy for 365 days
+use &quot;/gpfs2/home/amin/monsn-2k12/olr-data/olr.day.ltm.nc&quot;
+set region/i=1:144/j=1:73/l=1:365
+define variable olrc=olr[d=2]
+!--------------------------------------------------
+!Calculating below olr daily anomaly
+set region/i=1:144/j=1:73/l=1:13880
+define variable olran=olrd[d=1]-olrc[gt=olrd[d=1]] 
+!!--------------------------------------------------------------------------------
+!!!  ! Define  grid
+  DEFINE axis/x=0.0E:2.5W:2.5/unit=deg xax
+  DEFINE axis/y=90.0S:90.0N:2.5/unit=deg yax
+  DEFINE AXIS/t=1:13880:1/unit=days tax  ! or whatever ...
+  DEFINE grid/x=xax/y=yax/t=tax gg
+!------------------------------------------------------
+sp rm -f  olan.bin  ! remove previous versions of binary file if exists
+!
+  SAVE/FILE=olan.bin/form=stream/order=xyt/grid=gg/bad=32766 olran
+!!-----------END of FERRET SCRIPT------------------------
+
+The script ends with following error
+
+**ERROR: unknown command qualifier: grid=gg
+LIST/FORMAT=CDF/FILE=olan.bin/form=stream/order=xyt/grid=gg/bad=32766 olran
+Command file, command group, or REPEAT execution aborted
+------------end of error--------------------------------
+
+I am unable to find out the problem.
+Please help .
+Regards
+Dr. Sujata Mandke
+Indian Institute of Tropical Meteorology
+Pune,INDIA.
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00494.html">[ferret_users] pyferret stats</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00504.html">[ferret_users] write to binary</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00494.html">Thread Prev</a>][<a href="msg00504.html">Thread Next</a>][<A HREF="threads.html#00497">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

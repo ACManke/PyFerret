@@ -1,0 +1,176 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] time axis issue / appending netcdf files -->
+<!--X-From-R13: Vrva Lryyr <urva.mryyrNozgnetbff.pbz> -->
+<!--X-Date: Tue, 17 Apr 2012 02:20:03 &#45;0700 -->
+<!--X-Message-Id: 20120417091951.GH26134@giotto.bmtargoss.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAP&#45;ffoZB_xTuVtOqFB=4A_QCnr=SnchKWQKOd=dfDmYrfjKbug@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] time axis issue / appending netcdf files</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00147.html">Thread Prev</a>][<a href="msg00149.html">Thread Next</a>][<A HREF="threads.html#00148">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] time axis issue / appending netcdf files</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>vincent le fouest &lt;<a href="mailto:mymails.ferret@DOMAIN.HIDDEN">mymails.ferret@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] time axis issue / appending netcdf files</strong></li>
+<li><strong>From</strong>: <strong>Hein Zelle &lt;<a href="mailto:hein.zelle@DOMAIN.HIDDEN">hein.zelle@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 17 Apr 2012 11:19:51 +0200</li>
+<li>Cc: Ferret users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to:  &lt;CAP-ffoZB_xTuVtOqFB=4A_QCnr=SnchKWQKOd=dfDmYrfjKbug@mail.gmail.com&gt;</li>
+<li>Mail-followup-to: vincent le fouest &lt;<a href="mailto:mymails.ferret@DOMAIN.HIDDEN">mymails.ferret@xxxxxxxxx</a>&gt;, Ferret users mailing list &lt;<a href="mailto:oar.pmel.ferret_users@DOMAIN.HIDDEN">oar.pmel.ferret_users@xxxxxxxx</a>&gt;</li>
+<li>References: &lt;CAP-ffoZB_xTuVtOqFB=4A_QCnr=SnchKWQKOd=dfDmYrfjKbug@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mutt/1.5.20 (2009-06-14)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Vincent,
+
+&gt; I would like to append two netcdf files that follow up on time, but in
+&gt; which t starting index is same:
+
+I've had trouble with this as well.  You could try concatenating the
+files with ncrcat, then re-writing the time axis manually with Ferret.
+The following may work directly from Ferret (but I'm afraid it won't):
+
+! N:M should span the whole data range
+define axis /t=N:M  my_new_common_time_axis      
+
+use data1.nc
+! you may have to specify l=N:M   here as well
+! N:M would be just the time range in file 1
+save /file=new.nc myvar[gt=my_new_common_time_axis]
+
+use data2.nc
+! you may have to specify l=N:M   here as well
+! N:M would be just the time range in file 2
+save /append /file=new,nc myvar[gt=my_new_common_time_axis]
+
+
+The alternative is (probably the easiest):
+
+ncrcat file1.nc file2.nc catenated.nc
+
+use catenated.nc     ! will probably complain about invalid time axis
+define axis /t=blabla  my_new_common_time_axis   ! full time range
+save /file=new.nc myvar[gt=my_new_common_time_axis@asn]
+
+
+A final alternative is to try to re-write each file with ferret to a
+common time axis base, then use ncrcat to concatenate them:
+
+
+! repeat for each file
+define axis /t=N:M  /t0=&quot;01-jan-1970&quot;  my_new_common_time_axis
+use file1.nc
+save /file=file1_fixed.nc my_var[gt=my_new_common_time_axis]
+
+! now catenate
+ncrcat file*_fixed.nc  catenated_fixed.nc
+
+
+
+Kind regards,
+
+     Hein Zelle
+
+
+-- 
+
+Dr. Hein Zelle
+Advisor Meteorology &amp; Oceanography
+
+Tel:        +31 (0)527-242299
+Fax:        +31 (0)527-242016
+E-mail:     hein.zelle@xxxxxxxxxxxxx
+Website:    www.bmtargoss.com
+	    
+BMT ARGOSS b.v.
+
+Voorsterweg 28, 8316 PT Marknesse, the Netherlands
+Postal address: P.O. Box 61, 8325 ZH Vollenhove, the Netherlands
+
+Registered in The Netherlands, Registered no. 39060160.
+
+Unless otherwise agreed by BMT ARGOSS in writing, all work,
+services, goods or products supplied by BMT ARGOSS shall be subject
+to and governed by BMT ARGOSS' own terms and conditions which are
+available for inspection from BMT ARGOSS on request.
+
+----Confidentiality Notice &amp; Disclaimer---- 
+
+The contents of this e-mail and any attachments are intended for the
+use of the mail addressee(s) shown. If you are not that person, you
+are not allowed to read it, to take any action based upon it or to
+copy it, forward, distribute or disclose the contents of it and you
+should please delete it from your system. BMT ARGOSS does not accept
+liability for any errors or omissions in the context of this e-mail or
+its attachments which arise as a result of internet transmission, nor
+accept liability for statements which are those of the author and
+clearly not made on behalf of BMT ARGOSS.
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00147" href="msg00147.html">[ferret_users] time axis issue / appending netcdf files</a></strong>
+<ul><li><em>From:</em> vincent le fouest</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00147.html">[ferret_users] time axis issue / appending netcdf files</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00149.html">Re: [ferret_users] time axis issue / appending netcdf files</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00147.html">Thread Prev</a>][<a href="msg00149.html">Thread Next</a>][<A HREF="threads.html#00148">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

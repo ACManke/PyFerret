@@ -1,0 +1,169 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Gridding i/j data on a lat/lon grid -->
+<!--X-From-R13: Vrva Lryyr <urva.mryyrNozgnetbff.pbz> -->
+<!--X-Date: Tue, 6 May 2014 08:30:41 &#45;0700 -->
+<!--X-Message-Id: 20140506152925.GB17828@giotto.bmtargoss.org -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAP&#45;ffoaJ+7MQLjXLKL_gBx9ETmiEa6aN+1Kk9qXXf&#45;vCZzp6PA@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Gridding i/j data on a lat/lon grid</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00169.html">Thread Prev</a>][<a href="msg00171.html">Thread Next</a>][<A HREF="threads.html#00170">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Gridding i/j data on a lat/lon grid</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>vincent le fouest &lt;<a href="mailto:mymails.ferret@DOMAIN.HIDDEN">mymails.ferret@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Gridding i/j data on a lat/lon grid</strong></li>
+<li><strong>From</strong>: <strong>Hein Zelle &lt;<a href="mailto:hein.zelle@DOMAIN.HIDDEN">hein.zelle@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 6 May 2014 17:29:25 +0200</li>
+<li>In-reply-to: &lt;<a href="msg00169.html">CAP-ffoaJ+7MQLjXLKL_gBx9ETmiEa6aN+1Kk9qXXf-vCZzp6PA@mail.gmail.com</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00169.html">CAP-ffoaJ+7MQLjXLKL_gBx9ETmiEa6aN+1Kk9qXXf-vCZzp6PA@mail.gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mutt/1.5.21 (2010-09-15)</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Vincent,
+
+&gt; I have a variable gridded on a i/j grid. In a separate netcdf file, I have
+&gt; the latitudes and longitudes gridded on the same i/j grid as the variable.
+&gt; I am looking for a way of putting my variable on the lat/lon grid and not
+&gt; having it in the i/j grid anymore.
+
+Is your latitude / longitude grid regular?  I.e. do all &quot;rows&quot; of data
+have the same longitude values, and all &quot;columns&quot; have the same
+latitude values?
+
+If this is the case, you can define a new netcdf file which
+contains a properly gridded version of your data.  I would do it using
+python, but ferret can achieve the same.  Something like
+
+
+use datafile
+use gridfile
+
+let londata = longitude[d=gridfile, j=1]        ! one row only
+let latdata = latitude[d=gridfile, i=1]         ! one column only
+define axis /x lon=londata
+define axis /y lat=latdata
+let myvar = datavar[d=datafile, gx=lon@asn, gy=lat@asn]
+
+save /file=newfile.nc myvar
+
+
+If your data is on a curvilinear grid you'll need to interpolate to a
+regular lon/lat grid.  There are different tools for this (matlab,
+python) but usually customized.  You could also do it with ferret, using
+the scat2gridgauss_xy routine.
+
+Pyferret has a new routine CURV2RECT which does this for you.
+
+
+Kind regards,
+     Hein
+
+
+
+-- 
+
+Dr. Hein Zelle
+Senior consultant meteorology &amp; oceanography
+BMT ARGOSS
+
+Tel:        +31 (0)527-242299
+Fax:        +31 (0)527-242016
+E-mail:     hein.zelle@xxxxxxxxxxxxx
+Website:    www.bmtargoss.com
+	    
+BMT ARGOSS b.v.
+Voorsterweg 28, 8316 PT Marknesse, the Netherlands
+Postal address: P.O. Box 61, 8325 ZH Vollenhove, the Netherlands
+
+Registered in The Netherlands, Registered no. 39060160.
+
+Unless otherwise agreed by BMT ARGOSS in writing, all work,
+services, goods or products supplied by BMT ARGOSS shall be subject
+to and governed by BMT ARGOSS' own terms and conditions which are
+available for inspection from BMT ARGOSS on request.
+
+E-mail confidentiality notice and disclaimer:
+The contents of this e-mail and any attachments are intended for the
+use of the mail addressee(s) shown. If you are not that person, you
+are not allowed to read it, to take any action based upon it or to
+copy it, forward, distribute or disclose the contents of it and you
+should please delete it from your system. BMT ARGOSS does not accept
+liability for any errors or omissions in the context of this e-mail or
+its attachments which arise as a result of internet transmission, nor
+accept liability for statements which are those of the author and
+clearly not made on behalf of BMT ARGOSS.
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00169" href="msg00169.html">[ferret_users] Gridding i/j data on a lat/lon grid</a></strong>
+<ul><li><em>From:</em> vincent le fouest</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00169.html">[ferret_users] Gridding i/j data on a lat/lon grid</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00171.html">Re: [ferret_users] Gridding i/j data on a lat/lon grid</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00169.html">Thread Prev</a>][<a href="msg00171.html">Thread Next</a>][<A HREF="threads.html#00170">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

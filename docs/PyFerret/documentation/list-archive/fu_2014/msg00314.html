@@ -1,0 +1,218 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] variable unknown or not in data set: BAD -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 18 Aug 2014 10:14:45 &#45;0700 -->
+<!--X-Message-Id: 53F2347F.9030209@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAMazgKg=xmSJpCh6G=YaBGXwnZP6xMSW8TpjuBevOT_VHQPnEg@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] variable unknown or not in data set: BAD</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00313.html">Thread Prev</a>][<a href="msg00317.html">Thread Next</a>][<A HREF="threads.html#00314">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] variable unknown or not in data set: BAD</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong><a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] variable unknown or not in data set: BAD</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 18 Aug 2014 10:14:39 -0700</li>
+<li>In-reply-to: &lt;CAMazgKg=xmSJpCh6G=YaBGXwnZP6xMSW8TpjuBevOT_VHQPnEg@mail.gmail.com&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;, &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;CAMazgKg=xmSJpCh6G=YaBGXwnZP6xMSW8TpjuBevOT_VHQPnEg@mail.gmail.com&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:24.0) Gecko/20100101 Thunderbird/24.7.0</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Peter,
+</pre><tt>When you evaluate an expression with grave-accents, the grave accents 
+</tt><tt>are evaluated as the command is parsed, filling in the value to make a 
+</tt><tt>new command, so that
+</tt><pre style="margin: 0em;">
+
+   let kbdix=`kbdi`   becomes  DEFINE VARIABLE kbdix=-9.696305
+
+</pre><tt>When the expression in grave accents missing-value flag, it's replaced 
+</tt><tt>by the string BAD, so the result is
+</tt><pre style="margin: 0em;">
+
+   DEFINE VARIABLE kbdix=BAD
+
+</pre><tt>Then the Ferret parser sees that command and says, well BAD is not any 
+</tt><tt>defined variable name, and that's the error message you're getting.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>At the end of REPEAT: L=7, you list dslr,lr,dkbdi_5,dkbdi,kbdi, with the 
+</tt><tt>results:
+</tt><pre style="margin: 0em;">
+
+I / *:     1.000  0.0000  0.0000  .... ....
+
+</pre><tt>because the variable kbdi evaluates to a bad-value, the &quot;let 
+</tt><tt>kbdix=`kbdi`&quot; command in the next iteration results in &quot;let kbdix=bad&quot;.  
+</tt><tt>The loop can't continue.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You could do a &quot;if `kbdi` then 1 else EXIT/LOOP&quot; to gracefully exit out 
+</tt><tt>of the loop if you wish, or to reset kbdi to some desired value and 
+</tt><tt>continue.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 8/18/2014 5:35 AM, Peter Szabo wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Dear Users,
+
+</pre><tt>I would like to find out what causes this error (during calculating 
+</tt><tt>Keetch-Byram index), also, how to fix this simple calculation.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The error message is BAD variable definition. Repetition until L=7 
+</tt><tt>works fine, when an important variable becomes negative (-9), it 
+</tt><tt>defines during a calculation a BAD variable (the changing basic 
+</tt><tt>variable), and the next iteration stops.
+</tt><tt>When I removed the quotes(let kbdix=`kbdi`), naturally came stack 
+</tt><tt>overflow.
+</tt><pre style="margin: 0em;">
+Here is what I used, and the bottom lines are the results of the script.
+
+Thanks for you help and enjoy August wherever you are,
+
+Peter Szabo
+-------
+
+yes? let kbdi=0
+</pre><tt>yes? repeat/l=2:365 (let kbdix=`kbdi`; let 
+</tt><tt>tempy=var15[d=2,l=`l-1`,k=1]-273.15; let lr=if var202[d=1,l=`l`,k=1] 
+</tt><tt>lt 0.05 then 0 else var202[d=1,l=`l`,k=1]; let dkbdi_5=if (dslr[l=`l`] 
+</tt><tt>eq 0) and (lr[l=`l`] ge 5) then (-1*lr[l=`l`]+5) else 0; let dkbdi=if 
+</tt><tt>(dslr[l=`l`] gt 0) then 
+</tt><tt>((kbdix-800)*(-1)*(.968*Exp(.0486*(tempy*9/5+32))-8.3)*.001/(1+10.88*Exp(-.0441*annrf/25.4))*.254) 
+</tt><tt>else dkbdi_5; let kbdi=kbdix+dkbdi; list/nohead 
+</tt><tt>dslr,lr,dkbdi_5,dkbdi,kbdi)
+</tt><pre style="margin: 0em;">
+---
+
+!-&gt; REPEAT: L=7
+ !-&gt; DEFINE VARIABLE kbdix=0
+ !-&gt; DEFINE VARIABLE tempy=var15[d=2,l=6,k=1]-273.15
+</pre><tt> !-&gt; DEFINE VARIABLE lr=if var202[d=1,l=7,k=1] lt 0.05 then 0 else 
+</tt><tt>var202[d=1,l=7,k=1]
+</tt><tt> !-&gt; DEFINE VARIABLE dkbdi_5=if (dslr[l=7] eq 0) and (lr[l=7] ge 5) 
+</tt><tt>then (-1*lr[l=7]+5) else 0
+</tt><tt> !-&gt; DEFINE VARIABLE dkbdi=if (dslr[l=7] gt 0) then 
+</tt><tt>((kbdix-800)*(-1)*(.968*Exp(.0486*(tempy*9/5+32))-8.3)*.001/(1+10.88*Exp(-.0441*annrf/25.4))*.254) 
+</tt><tt>else dkbdi_5
+</tt><pre style="margin: 0em;">
+
+I / *:     0.0000  14.70  -9.696 -9.696 -9.696
+
+!-&gt; REPEAT: L=8
+ !-&gt; DEFINE VARIABLE kbdix=-9.696305
+ !-&gt; DEFINE VARIABLE tempy=var15[d=2,l=7,k=1]-273.15
+</pre><tt> !-&gt; DEFINE VARIABLE lr=if var202[d=1,l=8,k=1] lt 0.05 then 0 else 
+</tt><tt>var202[d=1,l=8,k=1]
+</tt><tt> !-&gt; DEFINE VARIABLE dkbdi_5=if (dslr[l=8] eq 0) and (lr[l=8] ge 5) 
+</tt><tt>then (-1*lr[l=8]+5) else 0
+</tt><tt> !-&gt; DEFINE VARIABLE dkbdi=if (dslr[l=8] gt 0) then 
+</tt><tt>((kbdix-800)*(-1)*(.968*Exp(.0486*(tempy*9/5+32))-8.3)*.001/(1+10.88*Exp(-.0441*annrf/25.4))*.254) 
+</tt><tt>else dkbdi_5
+</tt><pre style="margin: 0em;">
+
+I / *:     1.000  0.0000  0.0000  .... ....
+
+!-&gt; REPEAT: L=9
+ !-&gt; DEFINE VARIABLE kbdix=bad
+ !-&gt; DEFINE VARIABLE tempy=var15[d=2,l=8,k=1]-273.15
+</pre><tt> !-&gt; DEFINE VARIABLE lr=if var202[d=1,l=9,k=1] lt 0.05 then 0 else 
+</tt><tt>var202[d=1,l=9,k=1]
+</tt><tt> !-&gt; DEFINE VARIABLE dkbdi_5=if (dslr[l=9] eq 0) and (lr[l=9] ge 5) 
+</tt><tt>then (-1*lr[l=9]+5) else 0
+</tt><tt> !-&gt; DEFINE VARIABLE dkbdi=if (dslr[l=9] gt 0) then 
+</tt><tt>((kbdix-800)*(-1)*(.968*Exp(.0486*(tempy*9/5+32))-8.3)*.001/(1+10.88*Exp(-.0441*annrf/25.4))*.254) 
+</tt><tt>else dkbdi_5
+</tt><pre style="margin: 0em;">
+
+ **ERROR: variable unknown or not in data set: BAD
+list/nohead dslr,lr,dkbdi_5,dkbdi,kbdi
+Command file, command group, or REPEAT execution aborted
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00317" href="msg00317.html">Re: [ferret_users] variable unknown or not in data set: BAD</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00313" href="msg00313.html">[ferret_users] variable unknown or not in data set: BAD</a></strong>
+<ul><li><em>From:</em> Peter Szabo</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00313.html">[ferret_users] variable unknown or not in data set: BAD</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00317.html">Re: [ferret_users] variable unknown or not in data set: BAD</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00313.html">Thread Prev</a>][<a href="msg00317.html">Thread Next</a>][<A HREF="threads.html#00314">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

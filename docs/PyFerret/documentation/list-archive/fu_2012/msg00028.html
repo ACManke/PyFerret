@@ -1,0 +1,392 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Possible bug in Ferret 6.7 vs 6.64 -->
+<!--X-From-R13: Unel Egenaq <fgenaqjtNhpne.rqh> -->
+<!--X-Date: Thu, 9 Feb 2012 07:35:19 &#45;0800 -->
+<!--X-Message-Id: E4E1C083&#45;C822&#45;414E&#45;862D&#45;F7A706A95F49@ucar.edu -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: E66DD06C&#45;7E64&#45;46A2&#45;A1C8&#45;45514FB79C03@ucar.edu -->
+<!--X-Reference: 20120209080034.GB13114@giotto.bmtargoss.org -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Possible bug in Ferret 6.7 vs 6.64</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00027.html">Thread Prev</a>][<a href="msg00029.html">Thread Next</a>][<A HREF="threads.html#00028">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Possible bug in Ferret 6.7 vs 6.64</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Hein Zelle &lt;<a href="mailto:hein.zelle@DOMAIN.HIDDEN">hein.zelle@xxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Possible bug in Ferret 6.7 vs 6.64</strong></li>
+<li><strong>From</strong>: <strong>Gary Strand &lt;<a href="mailto:strandwg@DOMAIN.HIDDEN">strandwg@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 09 Feb 2012 08:36:30 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00027.html">20120209080034.GB13114@giotto.bmtargoss.org</a>&gt;</li>
+<li>References: &lt;<a href="msg00021.html">E66DD06C-7E64-46A2-A1C8-45514FB79C03@ucar.edu</a>&gt; &lt;<a href="msg00027.html">20120209080034.GB13114@giotto.bmtargoss.org</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>
+On Thu Feb 09, 2012, at 1:00 AM, Hein Zelle wrote:
+
+&gt; Dear Gary Strand,
+&gt;&gt; 
+&gt;&gt; I'm getting an error from Ferret 6.7 that doesn't occur when using
+&gt;&gt; Ferret 6.64. This is a straightforward netCDF file that happens to
+&gt;&gt; have a field defined on a curvilinear grid that meets CMIP5
+&gt;&gt; requirements.
+&gt; 
+&gt; Have you tried ferret 6.7.2?  There were relevant changes in 6.7,
+&gt; 6.7.1: improvements in recognizing axes names and dealing with
+&gt; dimensions.  These changes initially broke some things for us with
+&gt; specific variables in WRF curvilinear files, very similar to what
+&gt; you're seeing.  Since ferret 6.7.2, this works &quot;as expected&quot; for us,
+&gt; again.
+
+I tested 6.72 and got the same result as with 6.7; still wrong compared to 6.64.
+
+&gt; Could you post an ncdump -h of your file?  I'd like to see the
+&gt; attributes of the LEV dimension / variable.
+
+See attached 'ncdump -c':
+
+</pre><pre>netcdf thkcello_fx_CCSM4_lgm_r0i0p0 {
+dimensions:
+	lev = 60 ;
+	j = 384 ;
+	i = 320 ;
+	bnds = 2 ;
+	vertices = 4 ;
+variables:
+	double lev(lev) ;
+		lev:bounds = &quot;lev_bnds&quot; ;
+		lev:units = &quot;m&quot; ;
+		lev:axis = &quot;Z&quot; ;
+		lev:positive = &quot;down&quot; ;
+		lev:long_name = &quot;ocean depth coordinate&quot; ;
+		lev:standard_name = &quot;depth&quot; ;
+	double lev_bnds(lev, bnds) ;
+	int j(j) ;
+		j:units = &quot;1&quot; ;
+		j:long_name = &quot;cell index along second dimension&quot; ;
+	int i(i) ;
+		i:units = &quot;1&quot; ;
+		i:long_name = &quot;cell index along first dimension&quot; ;
+	float lat(j, i) ;
+		lat:standard_name = &quot;latitude&quot; ;
+		lat:long_name = &quot;latitude coordinate&quot; ;
+		lat:units = &quot;degrees_north&quot; ;
+		lat:bounds = &quot;lat_vertices&quot; ;
+	float lon(j, i) ;
+		lon:standard_name = &quot;longitude&quot; ;
+		lon:long_name = &quot;longitude coordinate&quot; ;
+		lon:units = &quot;degrees_east&quot; ;
+		lon:bounds = &quot;lon_vertices&quot; ;
+	float lat_vertices(j, i, vertices) ;
+		lat_vertices:units = &quot;degrees_north&quot; ;
+	float lon_vertices(j, i, vertices) ;
+		lon_vertices:units = &quot;degrees_east&quot; ;
+	float thkcello(lev, j, i) ;
+		thkcello:standard_name = &quot;cell_thickness&quot; ;
+		thkcello:long_name = &quot;Ocean Model Cell Thickness&quot; ;
+		thkcello:units = &quot;m&quot; ;
+		thkcello:original_name = &quot;dz&quot; ;
+		thkcello:comment = &quot;dz at each gridcell&quot; ;
+		thkcello:original_units = &quot;centimeters&quot; ;
+		thkcello:history = &quot;2012-02-08T15:31:08Z altered by CMOR: Converted units from \'centimeters\' to \'m\'. 2012-02-08T15:31:08Z altered by CMOR: replaced missing value flag (9.96921e+36) with standard missing value (1e+20).&quot; ;
+		thkcello:cell_methods = &quot;time: mean&quot; ;
+		thkcello:cell_measures = &quot;area: areacello volume: volcello&quot; ;
+		thkcello:missing_value = 1.e+20f ;
+		thkcello:_FillValue = 1.e+20f ;
+		thkcello:associated_files = &quot;baseURL: <a  rel="nofollow" href="http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation">http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation</a> gridspecFile: gridspec_ocean_fx_CCSM4_lgm_r0i0p0.nc areacello: areacello_fx_CCSM4_lgm_r0i0p0.nc volcello: volcello_fx_CCSM4_lgm_r0i0p0.nc&quot; ;
+		thkcello:coordinates = &quot;lat lon&quot; ;
+
+// global attributes:
+		:institution = &quot;NCAR (National Center for Atmospheric Research) Boulder, CO, USA&quot; ;
+		:institute_id = &quot;NCAR&quot; ;
+		:experiment_id = &quot;lgm&quot; ;
+		:source = &quot;CCSM4&quot; ;
+		:model_id = &quot;CCSM4&quot; ;
+		:forcing = &quot;N/A&quot; ;
+		:parent_experiment_id = &quot;N/A&quot; ;
+		:parent_experiment_rip = &quot;N/A&quot; ;
+		:branch_time = 0. ;
+		:contact = &quot;cesm_data@xxxxxxxx&quot; ;
+		:references = &quot;Gent P. R., et.al. 2011: The Community Climate System Model version 4. J. Climate, doi: 10.1175/2011JCLI4083.1&quot; ;
+		:initialization_method = 0 ;
+		:physics_version = 0 ;
+		:tracking_id = &quot;ed005d17-9873-488f-8905-0ec15255443a&quot; ;
+		:acknowledgements = &quot;The CESM project is supported by the National Science Foundation and the Office of Science (BER) of the U.S. Department of Energy. NCAR is sponsored by the National Science Foundation. Computing resources were provided by the Climate Simulation Laboratory at the NCAR Computational and Information Systems Laboratory (CISL), sponsored by the National Science Foundation and other agencies.This research used resources of the National Energy Research Scientific Computing Center, which is supported by the Office&quot; ;
+		:cesm_casename = &quot;not applicable&quot; ;
+		:cesm_repotag = &quot;not applicable&quot; ;
+		:cesm_compset = &quot;not applicable&quot; ;
+		:resolution = &quot;f09_g16 (0.9x1.25_gx1v6)&quot; ;
+		:forcing_note = &quot;Additional information on the external forcings used in this experiment can be found at <a  rel="nofollow" href="http://www.cesm.ucar.edu/CMIP5/forcing_information&quot">http://www.cesm.ucar.edu/CMIP5/forcing_information&quot</a>; ;
+		:processed_by = &quot;strandwg on mirage2 at 20120208  -083108.331&quot; ;
+		:processing_code_information = &quot;Last Changed Rev: 529 Last Changed Date: 2012-02-08 08:29:51 -0700 (Wed, 08 Feb 2012) Repository UUID: d2181dbe-5796-6825-dc7f-cbd98591f93d&quot; ;
+		:product = &quot;output&quot; ;
+		:experiment = &quot;last glacial maximum&quot; ;
+		:frequency = &quot;fx&quot; ;
+		:creation_date = &quot;2012-02-08T15:31:08Z&quot; ;
+		:history = &quot;2012-02-08T15:31:08Z CMOR rewrote data to comply with CF standards and CMIP5 requirements.&quot; ;
+		:Conventions = &quot;CF-1.4&quot; ;
+		:project_id = &quot;CMIP5&quot; ;
+		:table_id = &quot;Table fx (12 January 2012) 3b84a801563e38720652872982814a17&quot; ;
+		:title = &quot;CCSM4 model output prepared for CMIP5 last glacial maximum&quot; ;
+		:parent_experiment = &quot;N/A&quot; ;
+		:modeling_realm = &quot;ocean&quot; ;
+		:realization = 0 ;
+		:cmor_version = &quot;2.8.1&quot; ;
+data:
+
+ lev = 5, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115, 125, 135, 145, 155, 
+    165.098388671875, 175.47900390625, 186.291305541992, 197.660293579102, 
+    209.711395263672, 222.57829284668, 236.408798217773, 251.370193481445, 
+    267.654205322266, 285.483673095703, 305.119201660156, 326.868011474609, 
+    351.093505859375, 378.227600097656, 408.784606933594, 443.377685546875, 
+    482.736694335938, 527.727966308594, 579.372863769531, 638.862609863281, 
+    707.563293457031, 787.002502441406, 878.8251953125, 984.705932617188, 
+    1106.20397949219, 1244.56701660156, 1400.49694824219, 1573.94592285156, 
+    1764.0029296875, 1968.94396972656, 2186.45703125, 2413.97192382812, 
+    2649.0009765625, 2889.38500976562, 3133.40502929688, 3379.79296875, 
+    3627.669921875, 3876.45190429688, 4125.76806640625, 4375.3916015625, 
+    4625.18994140625, 4875.0830078125, 5125.02783203125, 5375 ;
+
+ j = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+    39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 
+    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 
+    75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
+    93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 
+    109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 
+    123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 
+    137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 
+    151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 
+    165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 
+    179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 
+    193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 
+    207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 
+    221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 
+    235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 
+    249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 
+    263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 
+    277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 
+    291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 
+    305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 
+    319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 
+    333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 
+    347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 
+    361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374, 
+    375, 376, 377, 378, 379, 380, 381, 382, 383, 384 ;
+
+ i = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 
+    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 
+    39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 
+    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 
+    75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 
+    93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 
+    109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 
+    123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 
+    137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 
+    151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 
+    165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 
+    179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 
+    193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 
+    207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 
+    221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 
+    235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 
+    249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 
+    263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 
+    277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 
+    291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 
+    305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 
+    319, 320 ;
+}
+</pre><pre>
+
+&gt; 
+&gt; Kind regards,
+&gt;     Hein Zelle
+&gt; 
+&gt; 
+&gt;&gt; 
+&gt;&gt; Under Ferret 6.64:
+&gt;&gt; 
+&gt;&gt;        NOAA/PMEL TMAP
+&gt;&gt;        FERRET v6.64  
+&gt;&gt;        Linux(gfortran) 2.6.9-89.0.20.ELsmp - 09/16/10
+&gt;&gt;         8-Feb-12 08:48     
+&gt;&gt; 
+&gt;&gt; yes? use thkcello_fx_CCSM4_lgm_r0i0p0.nc 
+&gt;&gt; *** NOTE: Units on axis &quot;j&quot; are not recognized: 1
+&gt;&gt; *** NOTE: They will not be convertible:
+&gt;&gt; *** NOTE: Units on axis &quot;i&quot; are not recognized: 1
+&gt;&gt; *** NOTE: They will not be convertible:
+&gt;&gt; *** NOTE: If no missing_value or _FillValue attribute on variables, will use NaN
+&gt;&gt; yes? show d
+&gt;&gt;     currently SET data sets:
+&gt;&gt;    1&gt; ./thkcello_fx_CCSM4_lgm_r0i0p0.nc  (default)
+&gt;&gt; name     title                             I         J         K         L
+&gt;&gt; LAT      latitude coordinate              1:320     1:384     ...       ...
+&gt;&gt; LON      longitude coordinate             1:320     1:384     ...       ...
+&gt;&gt; LAT_VERTICES
+&gt;&gt;                                           1:4       1:320     1:384     ...
+&gt;&gt; LON_VERTICES
+&gt;&gt;                                           1:4       1:320     1:384     ...
+&gt;&gt; THKCELLO Ocean Model Cell Thickness       1:320     1:384     1:60      ...
+&gt;&gt; 
+&gt;&gt; Under Ferret 6.7:
+&gt;&gt; 
+&gt;&gt;        NOAA/PMEL TMAP
+&gt;&gt;        FERRET v6.7  
+&gt;&gt;        Linux(gfortran) 2.6.32-71.24.1.el6.x86_6 - 05/06/11
+&gt;&gt;         8-Feb-12 08:50     
+&gt;&gt; 
+&gt;&gt; yes? use thkcello_fx_CCSM4_lgm_r0i0p0.nc 
+&gt;&gt; *** NOTE: Units on axis &quot;j&quot; are not recognized: 1
+&gt;&gt; *** NOTE: They will not be convertible:
+&gt;&gt; *** NOTE: Units on axis &quot;i&quot; are not recognized: 1
+&gt;&gt; *** NOTE: They will not be convertible:
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; *** NOTE: Axis LEV marked as UD
+&gt;&gt; *** NOTE: but it has different directions in grids. Axes in grids may be inconsistent.
+&gt;&gt; yes? show d
+&gt;&gt;     currently SET data sets:
+&gt;&gt;    1&gt; ./thkcello_fx_CCSM4_lgm_r0i0p0.nc  (default)
+&gt;&gt; name     title                             I         J         K         L
+&gt;&gt; LAT      latitude coordinate              1:320     ...       1:384     ...
+&gt;&gt; LON      longitude coordinate             1:320     ...       1:384     ...
+&gt;&gt; LAT_VERTICES
+&gt;&gt;                                           1:320     1:4       1:384     1:320
+&gt;&gt; LON_VERTICES
+&gt;&gt;                                           1:320     1:4       1:384     1:320
+&gt;&gt; THKCELLO Ocean Model Cell Thickness       1:320     ...       1:384     1:60
+&gt;&gt; 
+&gt;&gt; Help!
+&gt;&gt; 
+&gt;&gt; The file is available via anonymous ftp at
+&gt;&gt; 
+&gt;&gt; <a  rel="nofollow" href="ftp://ftp.cgd.ucar.edu/pub/strandwg/ferret/thkcello_fx_CCSM4_lgm_r0i0p0.nc">ftp://ftp.cgd.ucar.edu/pub/strandwg/ferret/thkcello_fx_CCSM4_lgm_r0i0p0.nc</a>
+&gt;&gt; 
+&gt;&gt; Gary Strand
+&gt;&gt; strandwg@xxxxxxxx
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; 
+&gt; Dr. Hein Zelle
+&gt; Advisor Meteorology &amp; Oceanography
+&gt; 
+&gt; Tel:    +31 (0)527-242299
+&gt; Fax:    +31 (0)527-242016
+&gt; Email:  hein.zelle@xxxxxxxxxxxxx
+&gt; Web:    www.bmtargoss.com
+&gt; 
+&gt; BMT ARGOSS
+&gt; P.O. Box 61, 8325 ZH Vollenhove
+&gt; Voorsterweg 28, 8316 PT Marknesse
+&gt; The Netherlands
+&gt; 
+&gt; ----Confidentiality Notice &amp; Disclaimer---- 
+&gt; 
+&gt; Unless otherwise agreed by BMT ARGOSS BV in writing, all work,
+&gt; services, goods or products supplied by BMT ARGOSS BV shall be subject
+&gt; to and governed by BMT ARGOSS BV's own terms and conditions which are
+&gt; available for inspection from BMT ARGOSS BV on request.
+&gt; 
+&gt; The contents of this e-mail and any attachments are intended for the
+&gt; use of the mail addressee(s) shown. If you are not that person, you
+&gt; are not allowed to read it, to take any action based upon it or to
+&gt; copy it, forward, distribute or disclose the contents of it and you
+&gt; should please delete it from your system. BMT ARGOSS BV does not accept
+&gt; liability for any errors or omissions in the context of this e-mail or
+&gt; its attachments which arise as a result of internet transmission, nor
+&gt; accept liability for statements which are those of the author and
+&gt; clearly not made on behalf of BMT ARGOSS BV.
+
+Gary Strand
+strandwg@xxxxxxxx
+
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00021" href="msg00021.html">[ferret_users] Possible bug in Ferret 6.7 vs 6.64</a></strong>
+<ul><li><em>From:</em> Gary Strand</li></ul></li>
+<li><strong><a name="00027" href="msg00027.html">Re: [ferret_users] Possible bug in Ferret 6.7 vs 6.64</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00027.html">Re: [ferret_users] Possible bug in Ferret 6.7 vs 6.64</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00029.html">Re: [ferret_users] Possible bug in Ferret 6.7 vs 6.64</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00027.html">Thread Prev</a>][<a href="msg00029.html">Thread Next</a>][<A HREF="threads.html#00028">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

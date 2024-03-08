@@ -1,0 +1,290 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: [ferret_users] missing value not detected in double&#45;precision ferret -->
+<!--X-From-R13: Vryyn Dvrqr <uryyn.evrqrNzcvp.qr> -->
+<!--X-Date: Mon, 10 Jun 2013 14:14:11 &#45;0700 -->
+<!--X-Message-Id: 51B64176.6080105@mpic.de -->
+<!--X-Content-Type: multipart/mixed -->
+<!--X-Reference: 51B6027C.7010700@mpic.de -->
+<!--X-Derived: cdfpliD3O7pqy.cdf -->
+<!--X-Derived: cdff2ovfJErmc.cdf -->
+<!--X-Derived: cdfIKxbphm83e.cdf -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>[ferret_users] missing value not detected in double-precision ferret</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00388.html">Thread Prev</a>][<a href="msg00393.html">Thread Next</a>][<A HREF="threads.html#00392">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>[ferret_users] missing value not detected in double-precision ferret</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Ferret Users &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>[ferret_users] missing value not detected in double-precision ferret</strong></li>
+<li><strong>From</strong>: <strong>Hella Riede &lt;<a href="mailto:hella.riede@DOMAIN.HIDDEN">hella.riede@xxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 10 Jun 2013 23:13:26 +0200</li>
+<li>Cc: Patrick J&#xF6;ckel &lt;<a href="mailto:patrick.joeckel@DOMAIN.HIDDEN">patrick.joeckel@xxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;51B6027C.7010700@mpic.de&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;51B6027C.7010700@mpic.de&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (X11; Linux x86_64; rv:17.0) Gecko/20130510 Thunderbird/17.0.6</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Dear ferret list,
+
+there is a problem reading our climate model netcdf files with the new
+ferret double precision version. I boiled it down to a set of small
+files in the attachment.
+
+'-1E+34' is not recognized as 'missing value' (see 'ex_float'). To save
+space, all variables except dimensional variables in our climate model
+output are defined as &quot;float&quot; = &quot;single precision&quot;.
+
+When a netcdf file is read into double-precision ferret, the entry
+'-1E+34' in a float (single precision) variable is not recognized as
+'missing value' anymore, but has a numerical value of
+-9.999999790214768E+33 (prec=16). The bad values are thus not masked,
+which is inconvenient for plotting or analysis.
+
+yes? list press
+                VARIABLE : pressure (Pa)
+                FILENAME : ex_float.nc
+                SUBSET   : 3 points (TIME)
+    01-JAN-2000 00:20:00 / 1:  1.000E+04
+    01-JAN-2000 00:40:00 / 2: -1.000E+34
+    01-JAN-2000 01:00:00 / 3:  1.000E+05
+
+The workaround 'set var/bad=-9.999999790214768E+33
+&lt;variable&gt;' is inconvenient as well.
+
+Interestingly, when listing the bad value of the variable, the bad-value
+masking seems to work:
+
+yes? list `press,ret=bad`
+    !-&gt; list -1.E+34
+                VARIABLE : constant
+           ....
+
+In 'ex_double' (attachment), I exchanged 'float' to 'double' by hand for
+all variables. The value '-1E+34' is then recognized correctly:
+
+yes? list press
+                VARIABLE : pressure (Pa)
+                FILENAME : ex_traj2.nc
+                SUBSET   : 3 points (TIME)
+    01-JAN-2000 00:20:00 / 1:   10000.
+    01-JAN-2000 00:40:00 / 2:     ....
+    01-JAN-2000 01:00:00 / 3:  100020.
+
+The explicit definition of a missing value in the netCDF file does not
+solve the issue (attachment: ex_float_missing).
+
+Please help us with backwards compatibility as we cannot go into several
+terabyte of climate data output to change &quot;float&quot; to &quot;double&quot; in the
+variable definitions.
+
+
+Thanks a lot in advance,
+Hella
+
+
+</pre><pre>netcdf ex_float {
+dimensions:
+        time = UNLIMITED ; // (3 currently)
+variables:
+        float lat(time) ;
+                lat:units = &quot;degrees_north&quot; ;
+        float lon(time) ;
+                lon:units = &quot;degrees_east&quot; ;
+        float level(time) ;
+                level:units = &quot;Pa&quot; ;
+        double time(time) ;
+                time:units = &quot;seconds since 2000-01-01 00:00:00&quot; ;
+        float press(time) ;
+                press:long_name = &quot;pressure&quot; ;
+                press:units = &quot;Pa&quot; ;
+        float rh(time) ;
+                rh:long_name = &quot;relative humidity&quot; ;
+                rh:valid_range = 0., 1. ;
+        float temp(time) ;
+                temp:long_name = &quot;temperature&quot; ;
+                temp:units = &quot;kelvin&quot; ;
+
+// global attributes:
+                :source = &quot;Pulp Fictional Model Output&quot; ;
+data:
+
+ lat = 16, 17, 18 ;
+
+ lon = 110, 115, 120 ;
+
+ level = 90, 88, 89 ;
+
+ time = 1200, 2400, 3600 ;
+
+ press = 10000, -1E+34, 100020 ;
+
+ rh = 0.1, 0.2, 0.3 ;
+
+ temp = 290, 291, 292 ;
+}
+</pre><p><strong>Attachment:
+<a href="cdfpliD3O7pqy.cdf" ><tt>ex_float.nc</tt></a></strong><br>
+<em>Description:</em> Cdf file</p>
+<p><strong>Attachment:
+<a href="cdff2ovfJErmc.cdf" ><tt>ex_double.nc</tt></a></strong><br>
+<em>Description:</em> Cdf file</p>
+<pre>netcdf ex_double {
+dimensions:
+        time = UNLIMITED ; // (3 currently)
+variables:
+        double lat(time) ;
+                lat:units = &quot;degrees_north&quot; ;
+        double lon(time) ;
+                lon:units = &quot;degrees_east&quot; ;
+        double level(time) ;
+                level:units = &quot;Pa&quot; ;
+        double time(time) ;
+                time:units = &quot;seconds since 2000-01-01 00:00:00&quot; ;
+        double press(time) ;
+                press:long_name = &quot;pressure&quot; ;
+                press:units = &quot;Pa&quot; ;
+        double rh(time) ;
+                rh:long_name = &quot;relative humidity&quot; ;
+                rh:valid_range = 0., 1. ;
+        double temp(time) ;
+                temp:long_name = &quot;temperature&quot; ;
+                temp:units = &quot;kelvin&quot; ;
+
+// global attributes:
+                :source = &quot;Pulp Fictional Model Output&quot; ;
+data:
+
+ lat = 16, 17, 18 ;
+
+ lon = 110, 115, 120 ;
+
+ level = 90, 88, 89 ;
+
+ time = 1200, 2400, 3600 ;
+
+ press = 10000, -1E+34, 100020 ;
+
+ rh = 0.1, 0.2, 0.3 ;
+
+ temp = 290, 291, 292 ;
+}
+</pre><p><strong>Attachment:
+<a href="cdfIKxbphm83e.cdf" ><tt>ex_float_missing.nc</tt></a></strong><br>
+<em>Description:</em> Cdf file</p>
+<pre>netcdf ex_traj1 {
+dimensions:
+        time = UNLIMITED ; // (3 currently)
+variables:
+        float lat(time) ;
+                lat:units = &quot;degrees_north&quot; ;
+        float lon(time) ;
+                lon:units = &quot;degrees_east&quot; ;
+        float level(time) ;
+                level:units = &quot;Pa&quot; ;
+        double time(time) ;
+                time:units = &quot;seconds since 2000-01-01 00:00:00&quot; ;
+        float press(time) ;
+                press:long_name = &quot;pressure&quot; ;
+                press:units = &quot;Pa&quot; ;
+                press:missing = -1E+34 ;
+        float rh(time) ;
+                rh:long_name = &quot;relative humidity&quot; ;
+                rh:valid_range = 0., 1. ;
+        float temp(time) ;
+                temp:long_name = &quot;temperature&quot; ;
+                temp:units = &quot;kelvin&quot; ;
+
+// global attributes:
+                :source = &quot;Pulp Fictional Model Output&quot; ;
+data:
+
+ lat = 16, 17, 18 ;
+
+ lon = 110, 115, 120 ;
+
+ level = 90, 88, 89 ;
+
+ time = 1200, 2400, 3600 ;
+
+ press = 10000, -1E+34, 100020 ;
+
+ rh = 0.1, 0.2, 0.3 ;
+
+ temp = 290, 291, 292 ;
+}
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00395" href="msg00395.html">Re: [ferret_users] missing value not detected in double-precision ferret</a></strong>
+<ul><li><em>From:</em> Russ Fiedler</li></ul></li>
+<li><strong><a name="00393" href="msg00393.html">Re: [ferret_users] missing value not detected in double-precision ferret</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00388.html">[ferret_users] installation problem with pyferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00393.html">Re: [ferret_users] missing value not detected in double-precision ferret</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00388.html">Thread Prev</a>][<a href="msg00393.html">Thread Next</a>][<A HREF="threads.html#00392">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] error while computinf EOF -->
+<!--X-From-R13: Yney Ezvgu <xney.fzvguNabnn.tbi> -->
+<!--X-Date: Thu, 31 May 2012 10:13:45 &#45;0700 -->
+<!--X-Message-Id: CAELLC7UdMrT62Mtz5cUnL2VVvSYYPGgyZv9myd6xnoVUs+wiSA@mail.gmail.com -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: CAEenqfKcQ&#45;eVtDDNd0WWk3G1JPUwfLtDmhTfprhRKQrTB07sUw@mail.gmail.com -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] error while computinf EOF</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00240.html">Thread Prev</a>][<a href="msg00242.html">Thread Next</a>][<A HREF="threads.html#00241">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] error while computinf EOF</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>nitin patil &lt;<a href="mailto:nitinpatil85@DOMAIN.HIDDEN">nitinpatil85@xxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] error while computinf EOF</strong></li>
+<li><strong>From</strong>: <strong>Karl Smith &lt;<a href="mailto:karl.smith@DOMAIN.HIDDEN">karl.smith@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Thu, 31 May 2012 10:13:42 -0700</li>
+<li>Cc: <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a></li>
+<li>In-reply-to: &lt;<a href="msg00240.html">CAEenqfKcQ-eVtDDNd0WWk3G1JPUwfLtDmhTfprhRKQrTB07sUw@mail.gmail.com</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/?hl=en_US</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?hl=en_US&topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/post?hl=en_US</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe?hl=en_US</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00240.html">CAEenqfKcQ-eVtDDNd0WWk3G1JPUwfLtDmhTfprhRKQrTB07sUw@mail.gmail.com</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre>Hi Nitin,
+
+First off, I hope you realize that your SET MEMORY /SIZE=3600 is
+telling Ferret to immediate use about 13 Gb (3600 x 4 x 10^6 bytes) of
+your machine's memory.  That might be necessary for what you are
+trying to do, but maybe you do not to dedicate that much of your
+machine's memory for Ferret's inner working and cache.  You might try
+using smaller values.
+
+The function you are using uses temporary work arrays in its
+computations.  These work arrays use memory outside of that dedicated
+for Ferret's inner working and cache.  The memory is obtained from
+your system just prior to doing the computation and then returned to
+the system immediately after the computation is done.  The problem you
+are seeing is that you do not have enough system memory for the work
+arrays this function requires.  (I admit that it does seem a bit
+confusing that the work arrays do not come from the memory dedicated
+to Ferret, but we did not want Ferret requiring a huge amount of
+memory that it rarely, or never, used.)
+
+I suspect that maybe so much of your system's memory is used for
+Ferret's inner working and cache that there was not enough left for
+the work arrays.  It may be that is you reduced the SET MEMORY /SIZE=
+to something smaller (maybe 500 or 1000), then there may be enough
+system memory still available for the work arrays.
+
+The size of the work arrays for the eof_space function increase by the
+square of the number of data points (277222510 = 16650 * 16650 + 10),
+so if the above fails, you may want to consider working on a coarser
+grid.  (There are nine work arrays for the eof_space function.)
+
+Karl
+
+On Thu, May 31, 2012 at 5:29 AM, nitin patil &lt;nitinpatil85@xxxxxxxxx&gt; wrote:
+&gt; Dear ferret users
+&gt;
+&gt; this is my script to display first four eofs:
+&gt;
+&gt; cancel data/all
+&gt; SET MEMORY/SIZE=3600
+&gt; show memory
+&gt; use hadisst.nc
+&gt; set region/x=50E:50W/y=32S:32N
+&gt; let eof_xyfcn=eof_space(sst[l=1001:1024],0.5) &#xA0; &#xA0;!for 2 years
+&gt; SAVE/file=temp.nc eof_xyfcn[l=1:4]
+&gt;
+&gt; after executing this script i am getting the following error:
+&gt;
+&gt; ERROR in efcn_compute() allocating 1108890040 bytes of memory
+&gt; work array 5: &#xA0;X=1:277222510, Y=1:1, Z=1:1, T=1:1
+&gt; &#xA0;**ERROR: error in external function
+&gt; LIST/FORMAT=CDF/file=temp.nc eof_xyfcn[l=1:4]
+&gt; Command file, command group, or REPEAT execution aborted
+&gt;
+&gt; This script works fine with coads_climatology.
+&gt;
+&gt; Kindly let me know the possible solution.
+&gt;
+&gt; --
+&gt; Regards,
+&gt; Mr. Nitin Patil
+&gt; Ph.D. Research Scholar,
+&gt; Centre of Excellence in Climate Studies,
+&gt; Indian Institute of Technology (IIT) Bombay,
+&gt; Powai, Mumbai - 400076, INDIA.
+
+
+
+-- 
+Karl M. Smith, Ph.D.
+JISAO Univ. Wash. and TMAP/PMEL NOAA
+&quot;The contents of this message are mine personally and do
+not necessarily reflect any position of the Government
+or the National Oceanic and Atmospheric Administration.&quot;
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00240" href="msg00240.html">[ferret_users] error while computinf EOF</a></strong>
+<ul><li><em>From:</em> nitin patil</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00240.html">[ferret_users] error while computinf EOF</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00242.html">Re: [ferret_users] error while computinf EOF</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00240.html">Thread Prev</a>][<a href="msg00242.html">Thread Next</a>][<A HREF="threads.html#00241">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

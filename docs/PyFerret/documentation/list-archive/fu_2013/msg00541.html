@@ -1,0 +1,156 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] Ferret crash with shade -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Mon, 16 Sep 2013 10:14:11 &#45;0700 -->
+<!--X-Message-Id: 52373C5E.5070501@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 5232FE8A.6080903@mercator&#45;ocean.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] Ferret crash with shade</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00540.html">Thread Prev</a>][<a href="msg00542.html">Thread Next</a>][<A HREF="threads.html#00541">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] Ferret crash with shade</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Bruno Levier &lt;<a href="mailto:bruno.levier@DOMAIN.HIDDEN">bruno.levier@xxxxxxxxxxxxxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] Ferret crash with shade</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Mon, 16 Sep 2013 10:14:06 -0700</li>
+<li>Cc: Ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00538.html">5232FE8A.6080903@mercator-ocean.fr</a>&gt;</li>
+<li>List-archive: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/">http://groups.google.com/a/noaa.gov/group/ferret_users/</a>&gt;</li>
+<li>List-help: &lt;<a href="http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838">http://support.google.com/a/noaa.gov/bin/topic.py?topic=25838</a>&gt;, &lt;<a href="mailto:ferret_users+help@noaa.gov">mailto:ferret_users+help@noaa.gov</a>&gt;</li>
+<li>List-id: &lt;ferret_users.noaa.gov&gt;</li>
+<li>List-post: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/post">http://groups.google.com/a/noaa.gov/group/ferret_users/post</a>&gt;, &lt;<a href="mailto:ferret_users@noaa.gov">mailto:ferret_users@noaa.gov</a>&gt;</li>
+<li>List-unsubscribe: &lt;<a href="http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe">http://groups.google.com/a/noaa.gov/group/ferret_users/subscribe</a>&gt;, &lt;<a href="mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com">mailto:googlegroups-manage+809428289204+unsubscribe@googlegroups.com</a>&gt;</li>
+<li>Mailing-list: list <a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>; contact <a href="mailto:ferret_users%2Bowners@DOMAIN.HIDDEN">ferret_users+owners@xxxxxxxx</a></li>
+<li>References: &lt;<a href="msg00538.html">5232FE8A.6080903@mercator-ocean.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:17.0) Gecko/20130801 Thunderbird/17.0.8</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Bruno,
+</pre><tt>Thank you for the report.  This happens with older versions of Ferret as 
+</tt><tt>well. (I was wondering if it might be some detail in double-precision 
+</tt><tt>Ferret, or something that occurred in a particular version of the NetCDF 
+</tt><tt>libraries, but it seems not.)  It does not seem to relate to coordinate 
+</tt><tt>storage; the same thing happens if I force the coordinates to be stored 
+</tt><tt>as if they were regularly-spaced.  For regularly-spaced grids, we store 
+</tt><tt>only the first coordinate, coordinate count, and delta-coordinate.
+</tt><pre style="margin: 0em;">
+
+   yes? use/regulart mooring.nc
+
+</pre><tt>Your last example, where FILL looks so odd, is I think a good clue. A 
+</tt><tt>fill plot with up to 50000 time points is fine, over 50000 fills in part 
+</tt><tt>of the field with green. This seems to me that there is an unintended 
+</tt><tt>fixed value somewhere, perhaps in the graphics code, and which has 
+</tt><tt>different symptoms when the SHADE command is used.  I will see if I can 
+</tt><tt>track this down.
+</tt><pre style="margin: 0em;">
+
+Ansley
+
+On 9/13/2013 5:01 AM, Bruno Levier wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi !
+
+</pre><tt>Using shade causes Ferret (v6.82) to crash with a specific dataset (in 
+</tt><tt>attachment).
+</tt><pre style="margin: 0em;">
+
+yes? use mooring.nc
+yes? sha votemper
+**ERROR Ferret crash; signal = 11
+Segmentation fault
+
+yes? use mooring.nc
+yes? sha /L=1:82000 votemper ! OK, but ...
+yes? show data
+Bus error
+
+It doesn't crash with fill, but the result is not good :
+
+yes? use mooring.nc
+yes? fill /l=1:50000 votemper ! Seems good
+yes? fill votemper ! Not good
+
+Perhaps is it due to the limit of storage for coordinates ?
+
+Thanks in advance for any help.
+
+Bruno Levier
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00542" href="msg00542.html">Re: [ferret_users] Ferret crash with shade</a></strong>
+<ul><li><em>From:</em> Ansley Manke</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00538" href="msg00538.html">[ferret_users] Ferret crash with shade</a></strong>
+<ul><li><em>From:</em> Bruno Levier</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00540.html">Re: [ferret_users] sea water toolbox with ferret</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00542.html">Re: [ferret_users] Ferret crash with shade</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00540.html">Thread Prev</a>][<a href="msg00542.html">Thread Next</a>][<A HREF="threads.html#00541">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>

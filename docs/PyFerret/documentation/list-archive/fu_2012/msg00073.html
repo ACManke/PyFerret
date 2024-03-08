@@ -1,0 +1,195 @@
+<!-- MHonArc v2.6.18 -->
+<!--X-Subject: Re: [ferret_users] shade/modulo every time -->
+<!--X-From-R13: Oafyrl [naxr <nafyrl.o.znaxrNabnn.tbi> -->
+<!--X-Date: Tue, 6 Mar 2012 10:07:44 &#45;0800 -->
+<!--X-Message-Id: 4F56526A.2000107@noaa.gov -->
+<!--X-Content-Type: text/plain -->
+<!--X-Reference: 4F5642B1.1080305@cea.fr -->
+<!--X-Head-End-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Re: [ferret_users] shade/modulo every time</title>
+</head>
+<body>
+<!--X-Body-Begin-->
+<!--X-User-Header-->
+<!--X-User-Header-End-->
+<!--X-TopPNI-->
+<HR>
+<center>[<a href="msg00072.html">Thread Prev</a>][<a href="msg00076.html">Thread Next</a>][<A HREF="threads.html#00073">Index</A>]</center>
+
+<!--X-TopPNI-End-->
+<!--X-MsgBody-->
+<!--X-Subject-Header-Begin-->
+<h1>Re: [ferret_users] shade/modulo every time</h1>
+<hr>
+<!--X-Subject-Header-End-->
+<!--X-Head-of-Message-->
+<ul>
+<li><strong>To</strong>: <strong>Brockmann Patrick &lt;<a href="mailto:Patrick.Brockmann@DOMAIN.HIDDEN">Patrick.Brockmann@xxxxxx</a>&gt;</strong></li>
+<li><strong>Subject</strong>: <strong>Re: [ferret_users] shade/modulo every time</strong></li>
+<li><strong>From</strong>: <strong>Ansley Manke &lt;<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a>&gt;</strong></li>
+<li>Date: Tue, 06 Mar 2012 10:07:38 -0800</li>
+<li>Authentication-results: mr.google.com; spf=pass (google.com: domain of <a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a> designates 10.236.178.65 as permitted sender) smtp.mail=<a href="mailto:ansley.b.manke@DOMAIN.HIDDEN">ansley.b.manke@xxxxxxxx</a></li>
+<li>Cc: ferret &lt;<a href="mailto:ferret_users@DOMAIN.HIDDEN">ferret_users@xxxxxxxx</a>&gt;</li>
+<li>In-reply-to: &lt;<a href="msg00072.html">4F5642B1.1080305@cea.fr</a>&gt;</li>
+<li>References: &lt;<a href="msg00072.html">4F5642B1.1080305@cea.fr</a>&gt;</li>
+<li>Sender: <a href="mailto:owner-ferret_users@DOMAIN.HIDDEN">owner-ferret_users@xxxxxxxx</a></li>
+<li>User-agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:10.0.2) Gecko/20120216 Thunderbird/10.0.2</li>
+</ul>
+<!--X-Head-of-Message-End-->
+<!--X-Head-Body-Sep-Begin-->
+<hr>
+<!--X-Head-Body-Sep-End-->
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Patrick,
+</pre><tt>/HLIM is intended to set the axis limits without impacting the context 
+</tt><tt>of the expression you're plotting. It lets you set up the plot axes 
+</tt><tt>independent of the data.  It's also a way to handle curvilinear grids 
+</tt><tt>where specifying /X= isn't the right way to go.   To get what you want, 
+</tt><tt>for data on a rectilinear grid, it would be
+</tt><pre style="margin: 0em;">
+
+   shade/x=-180:180:30 temp[k=1]
+
+</pre><tt>and then the modulo character of the longitudes is applied. We have 
+</tt><tt>plans to make commands more seamless for users, to make better use of 
+</tt><tt>the coordinates attributes, so that you won't have to use the 3-argument 
+</tt><tt>form of the plot commands when  your data is on a curvilinear grid.
+</tt><pre style="margin: 0em;">
+
+For now, perhaps using symbols is a reasonable solution
+
+   if ($curvilienar) then
+      define symbol plot_qualifiers /hlim=-180:180:30
+      define symbol plot_var = temp[k=1], x_coords, y_coords
+   else
+      define symbol plot_qualifiers /x=-180:180
+      define symbol plot_var = temp[k=1]
+   endif
+
+   shade($plot_qualifiers)  ($plot_var)
+
+Ansley
+
+
+On 3/6/2012 9:00 AM, Brockmann Patrick wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+
+I am wondering if it could be possible to have the qualifier /modulo
+for the shade command even if I use this command with 1 arg
+(this qualifier is proposed only for the shade 3 args)
+
+</pre><tt>For now, the only way to get a correct plot is to specify var with 
+</tt><tt>var[x=-180:180]
+</tt><pre style="margin: 0em;">
+
+yes? use levitus_climatology
+yes? shade/hlim=-180:180:30 temp[k=1]
+--&gt; missing some part of the plot
+
+You then must do
+yes? shade/hlim=-180:180:30 temp[k=1,x=-180:180]
+
+But I would like to do:
+yes? shade/hlim=-180:180:30/modulo temp[k=1]
+
+</pre><tt>By this way, I can treat in the same way, variables that are with 
+</tt><tt>rectlinear grid
+</tt><pre style="margin: 0em;">
+and the ones that are with curvilinear grids.
+In both case, I will use:
+shade/hlim=-180:180:30/modulo var [,...]
+
+</pre><tt>I can even think to a transparent way to swith between shade1arg and 
+</tt><tt>shade3args.
+</tt><pre style="margin: 0em;">
+Bellow the script that does the switch.
+
+</pre><tt>let me know, if this request can be accpeted or if there is a good 
+</tt><tt>workaround.
+</tt><pre style="margin: 0em;">
+
+Regards
+Patrick
+
+$ cat CMIP5_shade.jnl
+!======================================
+let allnames = ..varnames
+
+def sym isexist_lon=`IS_ELEMENT_OF_STR (allnames, &quot;lon&quot;)`
+def sym isexist_lat=`IS_ELEMENT_OF_STR (allnames, &quot;lat&quot;)`
+
+if `($isexist_lon) AND ($isexist_lat)` then
+       set variable/units=&quot;degrees_east&quot;/title=&quot;Longitude&quot; lon
+       set variable/units=&quot;degrees_north&quot;/title=&quot;Latitude&quot; lat
+       def sym nbpts=`lon,return=isize`
+       set axis/modulo `lon,return=xaxis`
+       ($01)/modulo/i=1:`($nbpts)+1` ($02),lon,lat
+
+else
+       ($01) ($02)
+
+endif
+!======================================
+
+$ ferret
+yes? go CMIP5_shade.jnl shade/lev=20 var2D
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre>
+<!--X-Body-of-Message-End-->
+<!--X-MsgBody-End-->
+<!--X-Follow-Ups-->
+<hr>
+<ul><li><strong>Follow-Ups</strong>:
+<ul>
+<li><strong><a name="00076" href="msg00076.html">Re: [ferret_users] shade/modulo every time</a></strong>
+<ul><li><em>From:</em> Hein Zelle</li></ul></li>
+</ul></li></ul>
+<!--X-Follow-Ups-End-->
+<!--X-References-->
+<ul><li><strong>References</strong>:
+<ul>
+<li><strong><a name="00072" href="msg00072.html">[ferret_users] shade/modulo every time</a></strong>
+<ul><li><em>From:</em> Brockmann Patrick</li></ul></li>
+</ul></li></ul>
+<!--X-References-End-->
+<!--X-BotPNI-->
+<UL>
+<li>Previous by thread:
+<strong><a href="msg00072.html">[ferret_users] shade/modulo every time</a></strong>
+</li>
+<li>Next by thread:
+<strong><a href="msg00076.html">Re: [ferret_users] shade/modulo every time</a></strong>
+</li>
+
+</UL>
+<center>[<a href="msg00072.html">Thread Prev</a>][<a href="msg00076.html">Thread Next</a>][<A HREF="threads.html#00073">Index</A>]</center>
+
+<!--X-BotPNI-End-->
+<!--X-User-Footer-->
+<A HREF="http://ferret.pmel.noaa.gov/Ferret/contact-us">Contact Us</A>
+<br>
+<font size=-1>
+<address>
+<a href="http://www.doc.gov">Dept of Commerce</a> /
+<a href="http://www.noaa.gov">NOAA</a> /
+<a href="http://www.oar.noaa.gov">OAR</a> /
+<a href="http://www.pmel.noaa.gov">PMEL</a> /
+<a href="http://ferret.pmel.noaa.gov">Ferret</a>
+</address>
+
+<br>
+ <a href="http://www.noaa.gov/privacy.html">Privacy Policy</a> | <a href="http://www.noaa.gov/disclaimer.html">Disclaimer</a> | <a href="accessibility.html">Accessibility Statement</a> 
+
+</font>
+<!--X-User-Footer-End-->
+</body>
+</html>
