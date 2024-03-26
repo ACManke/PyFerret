@@ -56,6 +56,8 @@
 *		  Data would be too large to plot
 * v767 6/22 *acm* Issue 113: Differences between PLOT/SYM/LINE=n and PLOT/SYM/LINE/COLOR=c/THICK=t 
 *		  when overlaying multiple lines 
+* v767 3/24 *acm* PyFerret issue 90: Catch case of PLOT/VS/OVER but there's no underlying plot 
+* v767 3/24 *acm* Remove unused error-exits
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -157,8 +159,10 @@
 	IF ( mode_diagnostic ) CALL SPLIT_LIST(pttmode_ops, ttout_lun,
      .				'setting up plot', 15)
 
-	versus = .TRUE.
+	IF (no_plot_yet) GOTO 5120 
 
+	versus = .TRUE.
+	
 * limits error check
         IF (nmv .GT. max_line_on_plot) GOTO 5050
 	
@@ -186,6 +190,13 @@
 * in  order to draw the plot axes on the last plot
 
 	set_up_axes = overlay .AND.   (qual_given(slash_plot_axes) .GT. 0 ) 
+
+* check for improper data supplied
+
+	IF ( overlay ) THEN
+	   CALL GET_CX_DIMS( cx, ndim, dims )
+	   IF ( indep_dim .EQ. 0 ) GOTO 5120
+	ENDIF
 
 * ragged DSG data?  Get number of features and obsdimlen. If it's a 
 * Trajectory or Point dataset and they did "PLOT var", set that up.
@@ -353,10 +364,6 @@
      .         arbitrary_large_int4) GOTO 5300
 	   plot_mem_used = plot_mem_used + 2*step_inc*gsize 
 	ENDDO
-
-
-* check for improper data supplied
-	IF ( num_uvars_in_cmnd .LT. 2 ) GOTO 5100
 
 * length of plot array
         gsize = CGRID_SIZE8(cx)
@@ -1441,10 +1448,8 @@ c	         IF ( .NOT.overlay .OR.  set_up_axes ) THEN
      .                  //buff1(:slen)//' lines with a single PLOT', *5000)
  5100	CALL ERRMSG( ferr_invalid_command, status, 
      .		     cmnd_buff(:len_cmnd)//' : vs what ?', *5000 )
- 5110	CALL ERRMSG( ferr_invalid_command, status, 
-     .		     ' overlay when no existing plot', *5000 )
- 5120	CALL ERRMSG( ferr_dim_underspec, status, 
-     .			'overlay is on a different axis'//pCR//
+ 5120	CALL ERRMSG( ferr_invalid_command, status, 
+     .       'overlay with no existing plot'//pCR//
      .			'"'//cmnd_buff(:len_cmnd)//'"', *5000 )
  5130	buff1 = LEFINT( npts, slen  )
 	buff2 = LEFINT( npts2, slen2 )
@@ -1455,19 +1460,6 @@ c	         IF ( .NOT.overlay .OR.  set_up_axes ) THEN
      .		'Expression '//buff3(:slen3)//' has '//buff2(:slen2)//
      .						' points:'//
      .		pCR//'"'//cmnd_buff(:len_cmnd)//'"', *5000 )
-
- 5140	buff3 = LEFINT( ipl, slen3 )
-	CALL ERRMSG( ferr_dim_underspec, status,
-     .		'differing axes: '//pCR//
-     .		'first line is on '//ww_dim_name(indep_dim)//' axis'//pCR//
-     .		'line '//buff3(:slen3)//' is on '//ww_dim_name(dep_dim)//
-     .		' axis', *5000 )
-        
-! 5150	buff3 = LEFINT( INT(0.999*pplmem_nsize), slen3 )
-!	buff2 = LEFINT( plot_mem_used, slen2 )
-!	CALL ERRMSG( ferr_prog_limit, status,
-!     .          'Requested '//buff2(:slen2)//' words to plot'//pCR//
-!     .		'Plot buffer size is: '//buff3(:slen3), *5000 )
 
  5160	cal_name = TM_GET_CALENDAR_NAME(cal_id_old)
         cal_name_new = TM_GET_CALENDAR_NAME(cal_id_new)
@@ -1490,22 +1482,8 @@ c	         IF ( .NOT.overlay .OR.  set_up_axes ) THEN
      . 'Data all-missing. Cannot define log axis for plotting',
      .  *5000 )
 
-
- 5180	CALL ERRMSG( ferr_limits, status,
-     . 'One-point independent axis: Requires a '//
-     .  '/HLIMIT or /VLIMIT specification', *5000 )
-
  5190	CALL ERRMSG( ferr_syntax, status,
      . 'PLOT/VS/GAPLOC only for a single dependent variable', *5000 )
-
- 5200	CALL ERRMSG( ferr_grid_definition, status,
-     .		'Data grid is not a DSG grid ',
-     .		*5000 )
-
- 5210	CALL ERRMSG( ferr_grid_definition, status,
-     .		'Plot trajectoryProfile data as trajectory, '//
-     .          'only for a single variable',
-     .		*5000 )
      
  5300   CALL ERRMSG( ferr_out_of_range, status,
      .     'data too large to plot'//pCR//

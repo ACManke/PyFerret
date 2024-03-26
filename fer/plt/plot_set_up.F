@@ -239,6 +239,9 @@
 *		  Data would be too large to plot
 * v767 6/22 *acm* Issue 113: Differences between PLOT/SYM/LINE=n and PLOT/SYM/LINE/COLOR=c/THICK=t 
 *      1/23 *acm* Issue 131 plot/step=conntected has wrong independent axis
+* v767 3/24 *acm* Change to an error msg, see PyFerret issue 90: Case where PLOT/OVER but 
+*		  there's no underlying plot 
+* v767 3/24 *acm* Remove unused error-exits
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -1012,7 +1015,6 @@ c	      ul_dolab(t_dim) = .FALSE.  ! why was this added?
               ELSE   ! /HLIM or /VLIM not used; check for range in indep direction
 
 c one-point on the independent axis, still make a nominal plot?
-c                 IF (nload_all .EQ. 1) GOTO 5180
 
                  IF (nload_all .EQ. 1) THEN
 		    IF ( indep_dim .EQ. the_taxis) THEN  ! nominally +/- 10 day
@@ -1227,39 +1229,20 @@ c		       ind_max = indep_dat(1) + 240*3600
  5050	buff1 = LEFINT( max_line_on_plot, slen  )
 	CALL ERRMSG( ferr_invalid_command, status, 'cannot plot more than '
      .                  //buff1(:slen)//' lines with a single PLOT', *5000)
- 5100	CALL ERRMSG( ferr_invalid_command, status, 
-     .		     cmnd_buff(:len_cmnd)//' : vs what ?', *5000 )
  5110	dep_ax = LEFINT( ndim, slen )
 	CALL ERRMSG( ferr_dim_underspec, status, 
      .			'specified data is not a line'//pCR//
      .			' - its a '//dep_ax(:slen)//'D region: "'//
      .			cmnd_buff(:len_cmnd)//'"', *5000 )
  5120	CALL ERRMSG( ferr_dim_underspec, status, 
-     .			'overlay is on a different axis'//pCR//
+     .       'overlay with no existing plot or overlay on a different axis'//pCR//
      .			'"'//cmnd_buff(:len_cmnd)//'"', *5000 )
- 5130	buff1 = LEFINT( npts, slen  )
-	buff2 = LEFINT( npts2, slen2 )
-	buff3 = LEFINT( ipl, slen3 )
-	CALL ERRMSG( ferr_dim_underspec, status,
-     .		 'unequal line lengths: '//pCR//
-     .		'First expression has '//buff1(:slen)//' points.'//pCR//
-     .		'Expression '//buff3(:slen3)//' has '//buff2(:slen2)//
-     .						' points:'//
-     .		pCR//'"'//cmnd_buff(:len_cmnd)//'"', *5000 )
-
  5140	buff3 = LEFINT( ipl, slen3 )
 	CALL ERRMSG( ferr_dim_underspec, status,
      .		'differing axes: '//pCR//
      .		'first line is on '//ww_dim_name(indep_dim)//' axis'//pCR//
      .		'line '//buff3(:slen3)//' is on '//ww_dim_name(dep_dim)//
      .		' axis', *5000 )
-        
-! 5150	buff3 = LEFINT( INT(0.999*pplmem_nsize), slen3 )
-!	buff2 = LEFINT( plot_mem_used, slen2 )
-!	CALL ERRMSG( ferr_prog_limit, status,
-!     .          'Requested '//buff2(:slen2)//' words to plot'//pCR//
-!     .		'Plot buffer size is: '//buff3(:slen3), *5000 )
-
  5160	cal_name = TM_GET_CALENDAR_NAME(cal_id_old)
         cal_name_new = TM_GET_CALENDAR_NAME(cal_id_new)
         slen = TM_LENSTR1 (cal_name)
@@ -1270,7 +1253,6 @@ c		       ind_max = indep_dat(1) + 240*3600
      .          ' axis'//pCR//
      .		'subsequent variable is on '//cal_name_new(:slen2)//
      .		' axis', *5000 )
-
  5170	buff1 = LEFT_REAL (first, '(G15.3)', slen)
 	buff2 = LEFT_REAL (last, '(G15.3)', slen2)
 	CALL ERRMSG( ferr_out_of_range, status,
@@ -1281,25 +1263,8 @@ c		       ind_max = indep_dat(1) + 240*3600
      . 'Data all-missing. Cannot define log axis for plotting',
      .  *5000 )
 
-
- 5180	CALL ERRMSG( ferr_limits, status,
-     . 'One-point independent axis: Requires a '//
-     .  '/HLIMIT or /VLIMIT specification', *5000 )
-
- 5190	CALL ERRMSG( ferr_syntax, status,
-     . 'PLOT/VS/GAPLOC only for a single dependent variable', *5000 )
-
- 5200	CALL ERRMSG( ferr_grid_definition, status,
-     .		'Data grid is not a DSG grid ',
-     .		*5000 )
-
- 5210	CALL ERRMSG( ferr_grid_definition, status,
-     .		'Plot trajectoryProfile data as trajectory, '//
-     .          'only for a single variable',
-     .		*5000 )
-
  5300   CALL ERRMSG( ferr_out_of_range, status,
      .     'data too large to plot'//pCR//
-     .      cmnd_buff(:len_cmnd), *5100 )
+     .      cmnd_buff(:len_cmnd), *5000 )
 
 	END

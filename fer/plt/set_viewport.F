@@ -57,6 +57,8 @@
 *                  No need to protect colors in PyFerret.
 *                  Send an update to make sure the changes are immediately seen.
 * 11/2022 *acm* Code cleanup: Modernize DO-loop syntax. 
+* v767 3/24 *acm* PyFerret issue 90: Catch case of PLOT/VS/OVER but there's no underlying plot 
+*		  use the flag no_plot_yet
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -111,6 +113,8 @@ C  clipping indicator (lines from VMS SYS$LIBRARY:GKSDEFS.BND)
 	      CALL FGD_GDSG( iseg ) 
  	   ENDDO
 	ENDIF
+	
+        no_plot_yet = .TRUE.  ! ? right ?
 
 * indicate where new segments in this viewport of this window begin
 	vp_seg0( vp_num ) = curr_seg_name

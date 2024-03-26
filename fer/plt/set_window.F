@@ -98,6 +98,9 @@
 *                   if the engine changes
 * V69x *sh* 21/1/15 clarify data type of arguments sent to QUERY_DISPLAY_SIZE
 * V7   *kms*  10/16 Add SET WINDOW /SCALE=
+* 3/24 *acm* Code cleanup: Modernize DO-loop syntax. 
+* v767 3/24 *acm* PyFerret issue 90: Catch case of PLOT/VS/OVER but there's no underlying plot 
+*		  use the flag no_plot_yet
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -194,9 +197,9 @@
            CALL EQUAL_STR_LC( cmnd_buff(qual_start(qp):qual_end(qp)),
      .			   window_title, status )
            tlen = TM_LENSTR1(window_title)
-           DO 70 i = 1, tlen
+           DO i = 1, tlen
              IF (window_title(i:i) .EQ. ' ') window_title(i:i) = '_'
- 70        CONTINUE
+           ENDDO
 
 * By default let the session date and time be incorporated into the name.
 
@@ -214,9 +217,9 @@
 
 c           call getenv ('PWD',window_title)
 c           tlen = TM_LENSTR1(window_title)
-c           DO 75 i=1, tlen
+c           DO i=1, tlen
 c              IF (window_title(i:i) .EQ. '/') window_title(i:i) = '_'
-c 75        CONTINUE
+c           ENDDO
 
         ENDIF
         tlen = TM_LENSTR1(window_title)
@@ -240,9 +243,9 @@ c 75        CONTINUE
 * *kob* 1/00 - check to make sure user doesnt open window 9 - reserved
 *              for animation purposes
            chg_window = .TRUE.
-           DO 50 n = 1, (max_windows-1)
+           DO n = 1, (max_windows-1)
               IF ( .NOT.wn_open( n ) ) GOTO 60
- 50        CONTINUE
+           ENDDO
            CALL ERRMSG(ferr_prog_limit,status,'# windows',*5000)
 	ELSEIF ( num_args .GT. 0 ) THEN
 * ... use number given
@@ -253,19 +256,20 @@ c 75        CONTINUE
 	ELSE
 	   chg_window = .FALSE.
 * ... locate currently active window
-	   DO 55 wn = 1, max_windows
+	   DO wn = 1, max_windows
 	      IF ( wn_active( wn ) ) THEN
 	         n = wn
 	         GOTO 60
 	      ENDIF
- 55	   CONTINUE
+	   ENDDO
 	   GOTO 5060
 	ENDIF
 
 * valid number ?
 * *kob* 1/00 - check to make sure user doesnt open window 9 - reserved
 *              for animation purposes
- 60	IF ( (n.LT.1 .OR. n.GT.(max_windows-1)) .AND.
+ 60	CONTINUE
+	IF ( (n.LT.1 .OR. n.GT.(max_windows-1)) .AND.
      .          .NOT.animate  ) CALL ERRMSG
      .		( ferr_out_of_range, status, 'legal numbers are 1-8', *5000 )
 
@@ -338,7 +342,6 @@ c 75        CONTINUE
 	   physical_chg = .TRUE.
 * ... set up GKS bundles for the new "workstation" (window)
 	   CALL WS_LINE_BUNDLES( n, wstype )
-           no_plot_yet = .TRUE.
 	ENDIF
 
 * clear the screen ? (which deletes all segments from window)
@@ -353,10 +356,10 @@ c 75        CONTINUE
 * ... change windows --> segments will remain until previous window is cleared
 	   vp_num = mvp_dflt
            PPL_viewports_active = .FALSE.    ! communicate to PPLUS (10/92)
-	   DO 80 ivp = mvp_dflt, max_viewport
+	   DO ivp = mvp_dflt, max_viewport
 	      vp_seg0(ivp) = 0
 	      vp_segn(ivp) = 0
- 80	   CONTINUE
+	   ENDDO
 	ENDIF
 
 * Decipher /SIZE /ASPECT /XPIXELS /YPIXELS /XINCHES /YINCHES
@@ -388,15 +391,16 @@ c 75        CONTINUE
            CALL FGD_GSWKWN(n, rzero, FCTX, rzero, FCTY)
            CALL FGD_GSVP(n, rzero, FCTX, rzero, FCTY)
            CALL FGD_GSWN(n, rzero, ASIZE, rzero, BSIZE)
+           no_plot_yet = .TRUE.
         ENDIF
 
 * deactivate previously active window
-        DO 100 wn = 1, max_windows
+        DO wn = 1, max_windows
            IF ( wn_active( wn ) ) THEN
               CALL FGD_GDAWK( wn )
 	      wn_active( wn ) = .FALSE.
 	   ENDIF
- 100	CONTINUE
+	ENDDO
 
 * activate window and select the default transform (same as the windowid)
         CALL FGD_GACWK(n)
@@ -589,10 +593,7 @@ c 75        CONTINUE
 
 * error exit(s)
  5000	RETURN
-! 5010	CALL ERRMSG( ferr_erreq, status, buffer, *5000 )
- 5020	CALL ERRMSG( ferr_syntax,status, buffer, *5000 )
  5040	CALL ERRMSG( ferr_unknown_arg, status, buffer, *5000 )
- 5050	CALL ERRMSG( ferr_out_of_range, status, buffer,*5000)
  5060	CALL ERRMSG( ferr_invalid_command,status,
      .          'no open window',*5000 )
  5070   CALL ERRMSG( ferr_out_of_range, status,
