@@ -42,6 +42,8 @@
 *      *sh* 2/16 - if a pre-existing identical axis exists, re-use it
 *                  else we cannot aggregate the aggs (for EF and FE aggs)
 *      *sh* 4/16 - put special E and F units onto agg axes
+* 4/2024 *acm*   PyFerret issue 115: allow simple timeseries aggregation if no 
+*                  time coordinate in file
 
       IMPLICIT NONE
         include 'tmap_errors.parm'
@@ -78,6 +80,11 @@
 	   CALL TM_NEW_LINE_NAME ( 'RUN', newname )
 	   line_direction( iline ) = 'FI'
 	   line_units( iline ) = plag_ax_units_f
+	ENDIF
+	IF (line_dir .EQ. t_dim) THEN
+	   CALL TM_NEW_LINE_NAME ( 'TSERIES', newname )
+	   line_direction( iline ) = 'TT'
+	   line_units( iline ) = plag_ax_units_t
 	ENDIF
 
 	line_name     ( iline ) = newname

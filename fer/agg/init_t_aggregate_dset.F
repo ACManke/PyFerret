@@ -56,6 +56,9 @@
 * V698 *sh* 1/16  pass explicit path name (for "USE file.agg" compatibility)
 * V71 12/16 *acm* For ticket 2158: working with true monthly time axes.
 * 03/2024 *acm* Make length of strings for file paths consistent at 2048 characters
+* 4/2024 *acm*   PyFerret issue 115: allow simple timeseries aggregation if no 
+*                  time coordinate in files
+
 
 * arguments:
 *	mem_filename_list - if have_expr, the variable of names (input)

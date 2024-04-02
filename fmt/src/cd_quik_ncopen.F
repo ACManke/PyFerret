@@ -1,5 +1,5 @@
-	SUBROUTINE CD_QUIK_NCOPEN (dset, filename, vname,
-     .	    cdfid, vid, bounds_id, units_str, cal_str, n, status)
+	SUBROUTINE CD_QUIK_NCOPEN (dset, filename, vname, quiet, 
+     .	    cdfid, vid, bounds_id, units_str, cal_str, nsteps, status)
 *
 *
 *  This software was developed by the Thermal Modeling and Analysis
@@ -44,18 +44,23 @@
 
 * V695+ 10/15 *sh*
 * V71  *acm* 1/17 Ticket 2493 Fix to the piece of this that checks bounds attribute.
+* 4/2024 *acm*   PyFerret issue 115: allow simple timeseries aggregation if no 
+*                  time coordinate in files
+
 
 *
 * arguments:
 *	dset		- (input) Ferret dataset number
 *	filename	- (input) name of file to be opened
 *       vname		- (input) name of variable to look for (case-sensitive)
+*	quiet		- (input) if true, checking for existence of 
+*				  time coordinate variable; issue no errors
 *	cdfid		- (output) netCDF id of the open dataset
 *	vid		- (output) netCDF id of the requested variable
 *	bounds_id	- (output) netCDF id of the bounds variable
 *	units_str	- (output) string value of the units attribute
 *	cal_str		- (output) string value of the calendar attribute
-*	n		- (output) length of the named variable
+*	nsteps		- (output) length of the named variable
 *	status		- (output) TMAP status code
 
         include 'netcdf.inc'
@@ -67,7 +72,8 @@
 
 * Argument variable declarations
 	CHARACTER*(*) filename, vname, units_str, cal_str
-	INTEGER   dset, cdfid, vid, bounds_id, n, status
+	INTEGER   dset, cdfid, vid, bounds_id, nsteps, status
+	LOGICAL   quiet
 
 * Local variable declarations
 	LOGICAL	CD_GET_ATTRIB, coordvar, got_it
@@ -109,6 +115,10 @@
         cdfstat = NF_INQ_VARID(cdfid, vname(:vlen), vid)
 	IF (cdfstat.NE.NF_NOERR) THEN
 	   tmap_status = merr_unkvar
+	   IF (quiet) THEN
+	      nsteps = 0
+	      GOTO 5000
+	   ENDIF
 	   errmsg = 'time axis variable is missing: '//vname
 	   GOTO 5100
 	ENDIF
@@ -130,7 +140,7 @@
 	ENDIF
 
 * get the axis length
-	cdfstat = NF_INQ_DIM( cdfid, vdims(1), varname, n )
+	cdfstat = NF_INQ_DIM( cdfid, vdims(1), varname, nsteps )
 	IF ( cdfstat .NE. NF_NOERR ) THEN
 	   tmap_status = merr_badtimedef
 	   errmsg = 'unable to read time ax dim length '//vname

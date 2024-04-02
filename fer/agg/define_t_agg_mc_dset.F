@@ -46,6 +46,9 @@
 * V695+ *sh* 10/15 new routine -- built as hack on tm_init_dset.F
 * V698 *sh* 1/16  pass explicit path name (for "USE file.agg" compatibility)
 *                 date-sort the file list in BUILD_T_AGG_AXIS
+* 4/2024 *acm*   PyFerret issue 115: allow simple timeseries aggregation if no 
+*                  time coordinate in files
+
 
 * arguments:
 
@@ -123,11 +126,26 @@
 	CALL CD_NCCLOSE ( dset_num, status)
 	IF ( status .NE. merr_ok ) GOTO 5010
 
+* If the datasets don't have timestamps can still create the aggregation.
+* If the user has defined a time axis use that, or define an abstract axis here.
+
+	IF (ds_time_axis(dset_num).EQ.mnormal) THEN
+	    
+	   IF (tline .NE. unspecified_int4) THEN
+	      CALL WARN('First file has no time dependence. Assigning files in order to axis '//
+     .		         line_name(tline)(:TM_LENSTR1(line_name(tline))))
+	   ELSE
+	      CALL WARN('First file has no time dependence. Assigning files in order to an abstract L axis')
+	      CALL CREATE_AGG_AXIS (nagfiles, t_dim, tline, status)
+	   ENDIF
+	ENDIF
+
         IF ( tline .NE. unspecified_int4 ) THEN
 * Verify and assign the given time axis for the aggregration
            CALL ASSIGN_T_AGG_AXIS(tline, tmatch, toverlap, dset_num,
      .       nagfiles, memb_filename, memb_tstep_start, memb_tstep_end,
      .       memb_nstep_start, memb_nsteps, memb_order, status)
+	   IF (status .NE. ferr_ok) GOTO 9900
         ELSE
 * Build the aggregated time axis by reading the coord from the netCDF files
            CALL BUILD_T_AGG_AXIS(dset_num, nagfiles, memb_filename,

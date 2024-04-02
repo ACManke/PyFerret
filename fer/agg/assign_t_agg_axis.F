@@ -40,6 +40,10 @@
 *  Fill in the file time metadata and assign the ordering of the member
 *  files according to this time axis.
 
+* 4/2024 *acm*   PyFerret issue 115: allow simple timeseries aggregation if no 
+*                  time coordinate in files
+
+
         IMPLICIT NONE
         include 'tmap_errors.parm'
 #include "tmap_dset.parm"
@@ -88,7 +92,7 @@
         CHARACTER*(*) tmatch
 
 * local variable declarations:
-        LOGICAL need_t0_adjust
+        LOGICAL need_t0_adjust, no_timestamp
         INTEGER TM_LENSTR1, TM_GET_CALENDAR_ID,
      .          taxis, agg_nsteps, nsteps, dtype, vlen,
      .          idx, ifile, istep, ivar, iline, plen, flen,
@@ -105,9 +109,11 @@
 *       Get the time axis name from the first file
 *       (assumes rest of the files use the same name for the axis)
         taxis          = ds_time_axis(dset_num)
-        IF (taxis .EQ. mnormal) GOTO 5020  ! no time axis?
         vname          = line_name_orig(taxis)
         vlen           = TM_LENSTR1(vname)
+
+	no_timestamp = taxis .EQ. mnormal
+	IF (no_timestamp) tmatch = '@ASN'
 
         agg_nsteps    = line_dim(given_taxis)
         dtype         = unspecified_int4   ! irrelevant from older netCD
@@ -135,7 +141,7 @@
         DO ifile = 1, nagfiles
 *          Read the length of the time axis from the file to be aggregated
            CALL CD_QUIK_NCOPEN(dset_num, memb_filename(ifile),
-     .                         vname(:vlen), cdfid, vid, bounds_id,
+     .                         vname(:vlen), no_timestamp, cdfid, vid, bounds_id,
      .                         units_str, calendar_str, nsteps, status)
            IF (status .NE. merr_ok) GOTO 5010
 
@@ -439,13 +445,19 @@
 *       Blindly associate the time steps contiguously onto the given time axis
 *       in the order the data files were provided
  1000   istep = 0
+
         DO ifile = 1, nagfiles
 *          Read the length of the time axis from the file to be aggregated
            CALL CD_QUIK_NCOPEN(dset_num, memb_filename(ifile),
-     .                         vname(:vlen), cdfid, vid, bounds_id,
+     .                         vname(:vlen), no_timestamp, cdfid, vid, bounds_id,
      .                         units_str, calendar_str, nsteps, status)
-           IF (status .NE. merr_ok) GOTO 5010
-           IF ( (istep + nsteps) .GT. agg_nsteps ) GOTO 5040
+           IF (nsteps .EQ. 0) THEN
+	      nsteps = 1
+           ELSE
+	      IF (status .NE. merr_ok) GOTO 5010
+	      IF (no_timestamp) GOTO 5070
+           ENDIF
+	   IF ( (istep + nsteps) .GT. agg_nsteps ) GOTO 5040
            memb_nstep_start(ifile) = istep + 1
 *          Record times from the given time axis
            IF ( line_regular(given_taxis) ) THEN
@@ -473,6 +485,7 @@
            IF ( ds_var_setnum(ivar) .EQ. dset_num ) THEN
               gg = ds_grid_number(ivar)
               IF ( grid_line(t_dim,gg) .EQ. taxis .OR.
+     .             grid_line(t_dim,gg) .EQ. mnormal .OR.
      .             grid_line(t_dim,gg) .EQ. given_taxis ) THEN
                  ds_grid_end(t_dim,ivar) = agg_nsteps
               ENDIF
@@ -489,6 +502,19 @@
                  CALL TM_USE_LINE(given_taxis)
                  CALL TM_DEALLO_DYN_LINE(taxis)
               ENDIF
+
+              IF ( grid_line(t_dim,gg) .EQ. mnormal ) THEN
+                 DO idx = 1, ivar-1
+                    IF ( ds_var_setnum(idx) .EQ. dset_num ) THEN
+                       IF (ds_grid_number(idx) .EQ. gg) GOTO 4100
+                    ENDIF
+                 ENDDO
+                 grid_line(t_dim,gg) = given_taxis
+*                "use" the given time axis
+                 CALL TM_USE_LINE(given_taxis)
+              ENDIF
+
+
            ENDIF
  4100      CONTINUE
         ENDDO
@@ -505,5 +531,8 @@
  5050   idx = TM_LENSTR1(tmatch)
         CALL ERRMSG(ferr_aggregate_error, status,
      .   'Invalid time axis assocation "'//tmatch(1:idx)//'"', *5000)
-
+ 5060   CALL ERRMSG(ferr_aggregate_error, status,
+     .   'Given time axis must equal number of files when files have no timesteps', *5000)
+ 5070   CALL ERRMSG(ferr_aggregate_error, status,
+     .   'First file in aggretation has no timesteps: therefore all files must have no timesteps', *5000)
         END

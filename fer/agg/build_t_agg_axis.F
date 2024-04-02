@@ -60,6 +60,9 @@
 *                 large for 4-byte integer indexing
 C 12/2022 *acm* Code cleanup: Declare variable tedge as array to avoid rank-mismatch 
 *               errors when compiling under gfortran v10.
+* 4/2024 *acm*   PyFerret issue 115: allow simple timeseries aggregation if no 
+*                  time coordinate in files
+
 
         IMPLICIT NONE
         include 'tmap_errors.parm'
@@ -104,7 +107,7 @@ C 12/2022 *acm* Code cleanup: Declare variable tedge as array to avoid rank-mism
 
 * local variable declarations:
 	LOGICAL TM_DFPEQ_TOL, ITSA_TRUEMONTH_AXIS, need_midpoints, need_T0_adjust,
-     .		swap_axes, true_month, memb_true_month
+     .		swap_axes, true_month, memb_true_month, quiet
 	INTEGER TM_LENSTR1, TM_GET_CALENDAR_ID, TM_FIND_LIKE_DYN_LINE,
      .		memb_tline(nagfiles), taxis, nsteps, dtype, vlen, blen,
      .		i, ifile, istep, ivar, TMAP_status,
@@ -119,7 +122,7 @@ C 12/2022 *acm* Code cleanup: Declare variable tedge as array to avoid rank-mism
      .		memb_sort(nagfiles), axwwlen, bc_to_t0, secsperyear, 
      .		secs2start, timefac, steps_total
 	CHARACTER LEFINT*20, lname*20, vname*64, bname*12, units_str*128,
-     .		  calendar_str*128, agg_t0_str*20, file_t0_str*20
+     .		  calendar_str*128, agg_t0_str*20, file_t0_str*20, err_msg*128
 
 	PARAMETER (depsilon = 2.**(-42)) 
 
@@ -139,6 +142,9 @@ C 12/2022 *acm* Code cleanup: Declare variable tedge as array to avoid rank-mism
 	agg_unit_code  = line_unit_code(taxis)
 	agg_T0_str     = line_T0(taxis)
 	agg_cal_id     = TM_GET_CALENDAR_ID (line_cal_name(taxis))
+
+	quiet = .FALSE.  ! argument to cd_quik_open in assign-t-agg-axis
+	err_msg = ' '
 
 * note that this routine is called under a promise that
 * dset_num is the *only* dataset that uses the time axis pointed to by
@@ -198,11 +204,14 @@ C 12/2022 *acm* Code cleanup: Declare variable tedge as array to avoid rank-mism
 	      DO ifile = 2, nagfiles
 * ... first read the length of the time axis from the file to be aggregated
 	         CALL CD_QUIK_NCOPEN (dset_num, memb_filename(ifile),
-     .				      vname(:vlen),
+     .				      vname(:vlen), quiet,
      .				      cdfid, vid, bounds_id,
      .				      units_str, calendar_str,
      .				      nsteps, TMAP_status)
-	         IF (TMAP_status .NE. merr_ok) GOTO 5010
+		 IF (TMAP_status .NE. merr_ok) THEN
+		    err_msg = 'Error building tseries aggregation'
+		    GOTO 5020
+		 ENDIF
 * ... check to see if calendar, units, and T0 are consistent with the agg axis
 	         CALL CD_GET_T0(memb_filename(ifile), units_str, calendar_str,
      .                  agg_cal_id, file_unit_code, file_t0_str, status)
@@ -526,7 +535,8 @@ C check for overlap???
 	ENDDO
 
  	RETURN
- 5010	CALL ERRMSG( ferr_TMAP_error, status, ' ', *5000 )
+ 5010	CALL ERRMSG( ferr_TMAP_error, status, err_msg, *5000 )
+ 5020	CALL ERRMSG( ferr_ef_error, status, err_msg, *5000 )
  5050	CALL ERRMSG( ferr_grid_definition, status,
      .		'first file of aggregation has no time axis '
      .		//memb_filename(1), *5000 )
