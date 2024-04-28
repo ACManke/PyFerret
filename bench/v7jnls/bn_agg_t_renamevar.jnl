@@ -1,0 +1,172 @@
+! bn_aggregate_t.jnl
+! 9/12/2015 *sh* tweak to put all test files into "tmp" subdirectory
+! 1/2016 *sh* added implicit naming of aggregation from script filename
+! 2/2016      and auto-sorting of member files
+! 1/2017 *acm* changes in output due to backing off auto-detection of truemonth axes, tkt 2497
+! acm 9/2023 PMEL thredds server no longer includes the test datasets for the OPendap tests
+! acm 4/2024 No longer an error to do tseries aggregatio on file with no time coordinate
+
+
+spawn "mkdir -p tmp"     ! tmp directory t store files
+
+! *** create test files for T aggregation ***
+
+
+
+! see if the test file already exists
+SPAWN "ls tmp/tagg_reg_1.nc"
+IF ($SPAWN_OK) THEN
+  say *** NOT RE-CREATING bn_aggregate_t.jnl test files. They already exist.
+ELSE
+  go bn_aggregate_t  ! makes the files
+ENDIF
+
+! *****************************************
+! *** test renaming t aggregation variables ***
+! --- regularly-spaced axes ---
+
+! double file aggregation
+define data/agg/t myagg2 = tmp/tagg_reg_1.nc, tmp/tagg_reg_2.nc
+show grid myvar
+stat myvar
+
+set var/name=tagg myvar
+list tagg
+
+
+
+
+! define a long aggregation
+define data/agg/t myagg8 = tmp/tagg_reg_1.nc, tmp/tagg_reg_2.nc,tmp/tagg_reg_3.nc, tmp/tagg_reg_4.nc,tmp/tagg_reg_5.nc, tmp/tagg_reg_6.nc,tmp/tagg_reg_7.nc, tmp/tagg_reg_8.nc
+show data/full  ! all 4 datasets
+show grid myvar
+
+
+set var/name=tagg myvar
+list/t=25-feb-1980:12-mar-1980 tagg
+
+
+! read a time-independent field from the first file of the aggregation
+set var/name=my2d mymap
+stat my2d
+
+
+! 2/2016 -- reorder deliberately out of order regular files
+define data/agg/t myagg8_disordered1 = tmp/tagg_reg_2.nc, tmp/tagg_reg_1.nc,tmp/tagg_reg_3.nc, tmp/tagg_reg_4.nc,tmp/tagg_reg_5.nc, tmp/tagg_reg_6.nc,tmp/tagg_reg_7.nc, tmp/tagg_reg_8.nc
+
+define data/agg/t myagg8_disordered2 = tmp/tagg_reg_1.nc, tmp/tagg_reg_2.nc,tmp/tagg_reg_3.nc, tmp/tagg_reg_4.nc,tmp/tagg_reg_5.nc, tmp/tagg_reg_6.nc,tmp/tagg_reg_8.nc, tmp/tagg_reg_7.nc
+
+
+set var/name=tagg myvar[d=myagg8_disordered1]
+set var/name=tagg myvar[d=myagg8_disordered2]
+
+stat/brief T[g=tagg[d=myagg8]] - T[g=tagg[d=myagg8_disordered1]]
+stat/brief TBOXLO[g=tagg[d=myagg8]] - TBOXLO[g=tagg[d=myagg8_disordered1]]
+stat/brief TBOXHI[g=tagg[d=myagg8]] - TBOXHI[g=tagg[d=myagg8_disordered1]]
+
+cancel data/all
+
+
+! --- irregularly-spaced axes ---
+
+! aggregate collection that mixes regular (file 2) with irregular
+define data/agg/t myagg4 = tmp/tagg_irreg_1.nc, tmp/tagg_irreg_2_reg.nc,tmp/tagg_irreg_3.nc, tmp/tagg_irreg_4.nc
+  show grid/t myvar[d=myagg4]
+
+! Intentional error: The renaming seems to work but reading the data
+! fails. Not finding out why. Rename for regular-axis is ok, irregular is not.
+! There is a general warning in the SET VAR/NAME= code when renaming in a TSERIES or MC datasets
+! 
+set mode ignore
+set var/name=tagg myvar
+list tagg
+
+set mode/last ignore
+cancel data/all
+
+! --- aggregation from T0-varying files ---
+
+! aggregate two
+  define data/agg/t myagg2 = tmp/tagg_T0varying_1.nc, tmp/tagg_T0varying_2.nc
+set var/name=tagg myvar
+
+! aggregate several
+define data/agg/t myagg8 = tmp/tagg_T0varying_1.nc, tmp/tagg_T0varying_2.nc,tmp/tagg_T0varying_3.nc, tmp/tagg_T0varying_4.nc,tmp/tagg_T0varying_5.nc
+set var/name=tagg myvar
+
+  show data/full
+  show data myagg2
+  show grid/t tagg[d=1]
+  show grid tagg[d=2]
+
+  plot/line/sym tagg[d=2],tagg[d=1] 
+
+canc data/all
+
+! --- aggregations of disjoint, irregularly-sized, T0-varying files ---
+! aggregate two
+  define data/agg/t myagg2 = tmp/tagg_disjoint_T0varying_1.nc, tmp/tagg_disjoint_T0varying_2.nc
+
+
+set var/name=tagg myvar
+list tagg
+
+! aggregate several
+define data/agg/t myagg8 = tmp/tagg_disjoint_T0varying_1.nc, tmp/tagg_disjoint_T0varying_2.nc,tmp/tagg_disjoint_T0varying_3.nc, tmp/tagg_disjoint_T0varying_4.nc,tmp/tagg_disjoint_T0varying_5.nc, tmp/tagg_disjoint_T0varying_6.nc,tmp/tagg_disjoint_T0varying_7.nc, tmp/tagg_disjoint_T0varying_8.nc
+  set var/name=tagg myvar
+
+  show data/full
+  show data myagg2
+  show grid tagg[d=1]
+  show grid tagg[d=2]
+  plot/line/sym/vlim=0:11 tagg[d=2],tagg[d=1] 
+
+! reorder deliberately out of order file of differing lengths
+define data/agg/t myagg8_disordered3 = tmp/tagg_disjoint_T0varying_2.nc, tmp/tagg_disjoint_T0varying_1.nc,tmp/tagg_disjoint_T0varying_5.nc, tmp/tagg_disjoint_T0varying_4.nc,tmp/tagg_disjoint_T0varying_3.nc, tmp/tagg_disjoint_T0varying_8.nc,tmp/tagg_disjoint_T0varying_7.nc, tmp/tagg_disjoint_T0varying_6.nc
+set var/name=tagg myvar
+
+show data/members/brief myagg8_disordered3
+! ... the same calendar axis, but encoded with the T0 of the first file
+
+load tagg[d=myagg8_disordered3]
+
+cancel data/all
+
+
+! --- aggregations of single timestep files ---
+! define a regular aggregation
+define data/agg/t MYsing_reg_agg6 = tmp/tagg_single_1.nc, tmp/tagg_single_2.nc,tmp/tagg_single_3.nc, tmp/tagg_single_4.nc,tmp/tagg_single_5.nc, tmp/tagg_single_6.nc
+show data/full  MYsing_reg_agg6
+show grid/t myvar
+set var/name=tagg myvar
+list tagg
+
+
+! define an irregular aggregation
+define data/agg/t MYsing_irreg_agg4 = tmp/tagg_single_1.nc, tmp/tagg_single_2.nc,tmp/tagg_single_4.nc, tmp/tagg_single_5.nc
+show data/full MYsing_irreg_agg4
+show grid/t myvar
+
+! irregular time axis --> using the renamed variable will fail
+set mode ignore
+
+set var/name=tagg myvar
+show grid tagg
+list myvar
+
+set mode/last ignore
+
+! 2/2016 - reorder deliberately out of order aggregation of irregular times
+! The time axes themselves are regularly spaced so we can rename vars.
+
+define data/agg/t MYsing_irreg_agg4_disordered1 = tmp/tagg_single_2.nc, tmp/tagg_single_1.nc,tmp/tagg_single_4.nc, tmp/tagg_single_5.nc
+set var/name=tagg myvar
+
+define data/agg/t MYsing_irreg_agg4_disordered2 = tmp/tagg_single_1.nc, tmp/tagg_single_2.nc,tmp/tagg_single_5.nc, tmp/tagg_single_4.nc
+set var/name=tagg myvar
+
+show data/members/brief
+stat/brief T[g=tagg[d=MYsing_irreg_agg4]] - T[g=tagg[d=MYsing_irreg_agg4_disordered1]]
+stat/brief TBOXLO[g=tagg[d=MYsing_irreg_agg4]] - TBOXLO[g=tagg[d=MYsing_irreg_agg4_disordered1]]
+stat/brief TBOXHI[g=tagg[d=MYsing_irreg_agg4]] - TBOXHI[g=tagg[d=MYsing_irreg_agg4_disordered1]]
+canc data/all

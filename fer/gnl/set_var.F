@@ -89,7 +89,9 @@
 * V7   *acm* 5/16  Fix ticket 2432, see alsoticket 2352. For LET/D variables 
 *                  look for info under that dataset
 * V7   *acm*  6/12 Add Union aggregations: DEFINE DATA/AGG/U, ds_type 'UNI'
-* V720 *acm* 5/17 Implement specific calls in place of CD_GET_VAR_INFO
+* V720 *acm*  5/17 Implement specific calls in place of CD_GET_VAR_INFO
+* V765 *acm*  4/24 Issue 119: Allow SET VAR/NAME= in Ensemble, Union, or 
+*                  Forecast aggregations
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -112,12 +114,13 @@
 
 * internal variable declarations:
 	LOGICAL		VALID_GRID, TM_LEGAL_NAME, TM_HAS_STRING,
-     .			ACTS_LIKE_FVAR,
-     .                  have_mods, ez, gtts, ncfile
+     .			ACTS_LIKE_FVAR, 
+     .                  have_mods, ez, gtts, ncfile, do_agg_rename
 	INTEGER		GRID_FROM_NAME, TM_LENSTR1, STR_UPCASE, mod_cx,
      .			i, dset, grid, cat, var, loc, TMAP_status, 
      .			testvar, outtype_flag, varid, attid, attype, attlen, 
-     .			attoutflag, vartype, cx, idum
+     .			attoutflag, vartype, cx, idum, imemb, membset, 
+     .			nmemb, mvar, membid, mods_cx
 	REAL		bad, scalefac, offset, val, dummy
 	CHARACTER	grid_name*64, title*128, units*128, newname*128,
      .                  is_nan*3, flag*10, typflag*10, varattname*512,
@@ -146,6 +149,7 @@
 	dset = unspecified_int4			! default is global variable
 	CALL PARSE_NAM_DSET( vname, cx_last, dset,
      .			     cat, var, mod_cx, status )
+
 * ... RISC FORTRAN bug prevents "//" on char*(*) variable vname
 	risc_buff = vname
 	len_rbuff = LEN(vname)
@@ -153,10 +157,8 @@
 	IF ( var .EQ. munknown_var_name ) GOTO 5005
 
 * May be an EZ or user-defined variable
-!	IF ( cat .EQ. cat_file_var ) THEN    ! pre 4/16
 	IF ( ACTS_LIKE_FVAR(cat) ) THEN
 	   ez = ds_type(dset) .EQ. pds_type_ez
-!	   IF ( .NOT. ez ) GOTO 5010		! removed restriction 10/95
 	ELSEIF ( cat .EQ. cat_user_var ) THEN   ! uvars bad, too, until 10/92
            ez = .FALSE.
 	ELSE
@@ -167,17 +169,9 @@
 
 * SET VAR/NAME=
 
+	do_agg_rename = .FALSE.
 	loc = qual_given( slash_set_var_name )
 	IF ( loc .GT. 0 ) THEN
-
-* SET VAR/NAME does not work for GT, TS datasets where sanity check is done
-* in gt_find_rec.F comparing var name to the name in the dataset.
-
-	   IF (dset .GT. 0) THEN
-	      gtts = ( (ds_type(dset) .EQ. pds_type_gt)  .OR. 
-     .              (ds_type(dset) .EQ. pds_type_ts) )
-	      IF ( gtts ) GOTO 5600
-	   ENDIF
 
 	   have_mods = .TRUE.
            CALL EQUAL_STR_LC 
@@ -393,7 +387,6 @@
         IF (dset .EQ. unspecified_int4) dset = pdset_uvars ! user variable
         CALL CD_GET_VAR_ID (dset, vname, varid, status)
 
-
 * note on EZ vars:
 * modifying the variable info invalidates data in memory
 *        the purging of memory variables below is unnecessarily strict in both
@@ -437,9 +430,9 @@
 	      ENDIF
 	   ENDIF
 
-!	ELSEIF ( cat .EQ. cat_file_var ) THEN  ! pre 4/16
 	ELSEIF ( ACTS_LIKE_FVAR(cat) ) THEN
 * ... other file variables (10/95)
+
 	   IF ( grid .NE. int4_init   ) GOTO 5112
 	   IF ( bad  .NE. real4_init  ) THEN
 	      CALL PURGE_FILE_VAR( var ) ! remove memory-resident variables
@@ -467,9 +460,65 @@
 
 	   ENDIF
 *	   IF (newname.NE. char_init16 ) ds_var_code ( var ) = newname
-	   IF (newname.NE. char_init128 )
-     .         CALL string_array_modify( ds_var_code_head, var,
-     .                                   newname, LEN(newname))
+
+	   IF (newname.NE. char_init128 )  THEN
+
+*	Aggregation? If so change the name saved for member datasets
+
+
+	      IF (TM_HAS_STRING(ds_type(dset), 'ENS') .OR. 
+     .            TM_HAS_STRING(ds_type(dset), 'FCT') .OR. 
+     .            TM_HAS_STRING(ds_type(dset), 'UNI')) THEN 
+     
+* ... loop over aggregation members, changing the name stored for member files
+*     If variable in file is a LET/D= user variable, cannot rename in the aggregation.
+*     If its a nested aggregation (ensemble of unions, etc) then refuse to rename.
+
+	         CALL CD_GET_AGG_DSET_INFO (dset, nmemb, status)
+		 
+	         IF (status .NE. ferr_ok) CALL WARN('crptn: isit_agg_member')
+
+	         DO imemb = 1, nmemb
+	            CALL CD_GET_AGG_DSET_MEMBER (dset, imemb, membset, status)
+	            CALL FIND_VAR_NAME ( membset, vname, cat, mvar )
+		    
+	            IF (mvar.LT.0 .OR. cat.EQ.0) CYCLE
+
+		    IF (TM_HAS_STRING(ds_type(membset), 'ENS') .OR. 
+     .                  TM_HAS_STRING(ds_type(membset), 'FCT') .OR. 
+     .                  TM_HAS_STRING(ds_type(membset), 'UNI') ) GOTO 5650  ! agg of aggs
+
+	            IF (cat .EQ. cat_user_var) THEN
+
+		      CALL string_array_modify(uvar_name_code_head,
+     .                                  mvar,
+     .                                  newname,
+     .                                  LEN(newname))
+		      do_agg_rename = .TRUE.
+
+	            ELSE
+
+	               IF (mvar .GT. 0) CALL string_array_modify( ds_var_code_head,
+     .                                mvar, newname, LEN(newname))
+
+	            ENDIF
+		    
+		 ENDDO 
+
+	      ENDIF
+* Change the variable name in the aggregate dataset
+
+	      CALL string_array_modify( ds_var_code_head, var,
+     .                                   newname, LEN(newname)) 
+
+* TSERIES aggregation? If so issue a note about possible limitation
+
+	      IF (TM_HAS_STRING(ds_type(dset), 'MC')) 
+     .           CALL WARN ('(Warning) SET VARIABLE/NAME in TSERIES aggregation: '//
+     .               'Reading data will fail if irregularly spaced time axis' )
+
+	   ENDIF  ! newname
+
 
 	   IF ( units .NE. char_init16 ) THEN
               ds_var_units( var ) = units
@@ -645,9 +694,46 @@
 
 	ENDIF
 
-! Replace the name in the linked-list structure.
-	IF (newname .NE. char_init128 ) 
-     .      CALL CD_RENAME_VAR (dset, varid, newname_lc, status)
+* Replace the name in the linked-list structure.
+	IF (newname .NE. char_init128 ) THEN
+	   CALL CD_RENAME_VAR (dset, varid, newname_lc, status)
+
+* Check that the rename is valid: if the agg was defined using LET/D=
+* variables, it'll fail down the line trying to read data.
+
+*----- sequence of lines from xeq_show for SHOW GRID ----
+
+	   IF (do_agg_rename) THEN
+	      CALL STACK_PTR_UP ( cx_stack_ptr, max_context, status )
+	      IF ( status .NE. ferr_ok ) GOTO 5000
+	      mods_cx = cx_stack_ptr
+
+	      CALL INIT_CONTEXT_MODS( mods_cx )
+	      CALL GET_CONTEXT_MODS (	cx_last,
+     .				cmnd_buff,
+     .				mods_cx,
+     .				max_qual_list,
+     .				num_qualifiers,
+     .				qual_start,
+     .				qual_end,
+     .				unknown_qual_ok,
+     .				status	)
+	      IF ( status .NE. ferr_ok ) GOTO 5000
+
+	      cx_only = .TRUE.
+
+	      CALL DELETE_OLD_UGRIDS
+      
+	      grid = GRID_FROM_NAME ( newname, cx_last, status )
+	      IF ( status .NE. ferr_ok ) GOTO 5600
+
+	   ENDIF
+	   
+
+*----- show grid ----
+
+	ENDIF	
+
 
 * successful completion
 	status = ferr_ok
@@ -657,15 +743,10 @@
  5000	RETURN
  5005	CALL ERRMSG( ferr_unknown_variable, status,
      .		    '(data set ok ?): '//risc_buff(:len_rbuff), *5000 )
-! 5010	CALL ERRMSG( ferr_invalid_command, status,
-!     .		risc_buff(:len_rbuff)//' is from a self-documented data set'
-!     .		//pCR//'Can only SET VARIABLE on variable from an EZ data set',
-!     .							 *5000 )
  5015	CALL ERRMSG( ferr_invalid_command, status,
      .		'Cannot SET VARIABLE on '//risc_buff(:len_rbuff)//pCR//
      .		'Only on variables from "EZ" data sets',
      .							 *5000 )
-!     .		'Only on user-defined and variables from "EZ" data sets',
  5100	CALL ERRMSG( ferr_erreq, status,
      .		cmnd_buff(qual_start(loc):qual_end(loc)), *5000 )
  5110   CALL ERRMSG( ferr_invalid_command, status,
@@ -682,7 +763,6 @@
      .               						*5000 )
  5400	CALL PARSE_NAM_DSET( newname, cx_last, dset,
      .			     cat, var, mod_cx, status )
-!	IF (cat .EQ. cat_file_var) THEN   ! pre 4/16
 	IF (ACTS_LIKE_FVAR(cat)) THEN
            CALL ERRMSG( ferr_invalid_command, status,
      .               'illegal new name.  Variable '
@@ -702,8 +782,14 @@
      .			'referenced variable is not an acceptable name', *5000)
 
  5600	CALL ERRMSG( ferr_invalid_command, status,
-     .               'Cannot SET VARIABLE/NAME= with GT or TS datasets',
+     .               'Variable definition overwritten when '
+     .			//'SET VAR/NAME in aggregation dataset',	*5000 )
+     
+ 5650	CALL ERRMSG( ferr_invalid_command, status,
+     .               'Cannot SET VARIABLE/NAME in multi-level  '//
+     .               'aggregation of aggregations',
      .               						*5000 )
+
  5700	CALL ERRMSG( ferr_invalid_command, status,
      .           'Can SET VARIABLE/SCALEFAC= only with NetCDF datasets',
      .               						*5000 )

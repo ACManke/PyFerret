@@ -1,0 +1,45 @@
+! bn_agg_f_rename.sub
+! same as bn_aggregate_f.sub but assuming the
+! variable name fcst has been renamed to fubb.
+
+DEFINE SYMBOL TF_CAL_T = `fubb._cal_t_ax`
+DEFINE SYMBOL TF_LAG_F = `fubb._lag_f_ax`
+DEFINE SYMBOL TF_LAG_T = `fubb._lag_t_ax`
+DEFINE SYMBOL TF_CAL_F = `fubb._cal_f_ax`
+
+! native compact form
+SHADE/I=10/J=10 fubb
+LIST/I=10/J=10/ORDER=FT/L=1:20/WIDTH=300 fubb
+
+! compact form with spaces
+LET fubbfine = fubb[GT=($TF_LAG_T)@BIN,GF=($TF_CAL_F)@BIN]
+SHADE/I=10/J=10 fubbfine
+LIST/I=10/J=10/ORDER=FT/L=1:20/WIDTH=300 fubbfine
+
+! diagonal form
+LET diagform = fubbfine[GT(TF_TIMES)=($TF_CAL_T)]
+SHADE/I=10/J=10 diagform
+LIST/I=10/J=10/ORDER=FT/L=1:20/WIDTH=300 diagform
+
+! forecast evaluation form
+LET leadform = fubbfine[GT(TF_TIMES)=($TF_CAL_T),GF(TF_TIMES)=($TF_LAG_F)]
+SHADE/I=10/J=10 leadform
+LIST/I=10/J=10/ORDER=FT/L=1:20/WIDTH=300 leadform
+
+! forecast error visualizatio
+LET errform = leadform - leadform[N=1]
+SHADE/I=10/J=10 errform
+LIST/I=10/J=10/ORDER=FT/L=1:20/WIDTH=300 errform
+
+! confirm the second variable works, too
+LET fubb2fine = fubb_2[GT=($TF_LAG_T)@BIN,GF=($TF_CAL_F)@BIN]
+LET lead2form = fubb2fine[GT(TF_TIMES)=($TF_CAL_T),GF(TF_TIMES)=($TF_LAG_F)]
+LET err2form = lead2form - lead2form[N=1]
+LIST/I=10/J=10/ORDER=FT/L=1:20/WIDTH=300 err2form
+
+! since the N=1 values are subtracted off, the +2 offset is removed from fubb_2
+! so this should give identically zero ... except that all of the subtractions
+! lead to errors Order(e-16).  To avoid benchmark results that differ from
+! one machine to another, this is commented out
+! STAT/I=10/J=10/L=1:20/BRIEF err2form - errform
+

@@ -1,0 +1,117 @@
+! bn_agg_f_renamevar.jnl
+! tests of SET VARIABLE/NAME= for forecast aggregation datasets
+
+! *** create an artificial forecast model run collection ***
+spawn "mkdir -p tmp"     ! tmp directory t store files
+
+! see if the test files already exist
+SPAWN "ls tmp/long_fcst_1.nc"
+IF ($SPAWN_OK) THEN
+  say *** NOT RE-CREATING bn_aggregate_f.jnl test files. They already exist.
+ELSE
+  go bn_aggregate_f.jnl  ! makes the files
+ENDIF
+
+
+! define a complete FMRC aggregation
+let files = SPAWN("ls -1 tmp/fcst_*.nc")
+list files  ! notice that they are not properly ordered
+fmrc my_fmrc = files
+show data
+
+! plot and list the aggregation
+set var/name=fubb fcst
+set var/name=fubb_2 fcst_2
+show data
+
+go bn_agg_f_renamevar.sub
+
+
+cancel data my_fmrc
+show data/hidden   ! note that all member files were canceled, too
+
+! agg with 2nd, 3rd, 9th and 10th forecasts missing 
+use tmp/fcst_1.nc, tmp/fcst_2.nc, tmp/fcst_3.nc, tmp/fcst_9.nc, tmp/fcst_10.nc, tmp/fcst_11.nc
+let files = SPAWN("ls -1 tmp/fcst_*.nc")
+fmrc/hide my_fmrc = XCAT(files[I=6:10],{"6","1"})           ! double-wide gaps
+!fmrc my_fmrc = XCAT(files[I=6:10],{"6","1","2","5"})  ! single-wide gaps
+show data/members my_fmrc
+show data/brief
+LIST TF_TIMES
+
+set var/name=fubb fcst
+set var/name=fubb_2 fcst_2
+show data
+
+go bn_agg_f_renamevar.sub
+
+
+cancel data my_fmrc
+show data/brief/hidden
+cancel data/all
+
+! agg with the first forecast of longer time range than the others
+let files = SPAWN("ls -1 tmp/fcst_*.nc")
+fmrc/hide my_fmrc = XCAT(files[I=4:11],{"tmp/long_fcst_1.nc"}) ! first member is long
+show data/members my_fmrc
+
+set var/name=fubb fcst
+set var/name=fubb_2 fcst_2
+show data
+
+go bn_agg_f_renamevar.sub
+
+cancel data my_fmrc
+
+! agg with the sixth forecast of longer time range than the others
+fmrc/hide my_fmrc = tmp/fcst_1.nc, tmp/fcst_2.nc, tmp/fcst_3.nc, tmp/fcst_4.nc, tmp/fcst_5.nc, tmp/long_fcst_6.nc, tmp/fcst_7.nc, tmp/fcst_8.nc
+show data/members my_fmrc
+
+set var/name=fubb fcst
+set var/name=fubb_2 fcst_2
+show data
+
+go bn_agg_f_renamevar.sub
+
+cancel data my_fmrc
+
+! agg where one dataset lacks one of the variables
+fmrc/hide my_fmrc = tmp/fcst_7.nc, tmp/fcst_4.nc, tmp/fcst_5.nc, tmp/one_var_fcst_6.nc, tmp/fcst_3.nc
+show data/members
+stat/l=1:20 fcst
+cancel data my_fmrc
+
+! ... added 1/28/2016
+! the same agg, but the dataset name pulled implicitly from the script name
+fmrc/hide tmp/fcst_7.nc, tmp/fcst_4.nc, tmp/fcst_5.nc, tmp/one_var_fcst_6.nc, tmp/fcst_3.nc
+show data/brief
+
+! the same agg using the very same files under a different name
+fmrc/hide my_fmrc = tmp/fcst_7.nc, tmp/fcst_4.nc, tmp/fcst_5.nc, tmp/one_var_fcst_6.nc, tmp/fcst_3.nc
+show data/full
+
+! cancel a component dataset -- used in two aggregations
+cancel data tmp/fcst_4.nc
+show data
+
+cancel data/all
+
+! agg where a LET/D variable is used to fill in a missing variable
+use tmp/one_var_fcst_1.nc, tmp/one_var_fcst_6.nc
+let/d=one_var_fcst_1.nc fcst_2 = fcst + 2  ! compute same value as file vars
+let/d=one_var_fcst_6.nc fcst_2 = fcst + 2  ! compute same value as file vars
+show data
+
+
+! intentional error: When LET/D variables used to define FMRC then cannot do SET VAR/NAME= in the FMRC
+set mode ignore
+
+FMRC/hide my_fmrc_letd_6 = tmp/fcst_1.nc, tmp/fcst_2.nc, tmp/fcst_3.nc, tmp/fcst_4.nc, tmp/fcst_5.nc, tmp/one_var_fcst_6.nc, tmp/fcst_7.nc
+set var/name=fubb fcst
+set var/name=fubb_2 fcst_2
+
+set mode/last ignore
+
+
+cancel data/all
+

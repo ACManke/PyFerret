@@ -1,0 +1,112 @@
+! bn_aggregate_e.jnl
+! Test renaming variables in ensemble aggregations
+
+use ens1, ens2, ens3, ens4
+define data/agg/E fourfiles = ens1, ens3, ens2, ens4
+
+show data fourfiles
+set var/name=sea_surf sst
+show grid sea_surf
+
+list/i=3 sea_surf[T=@ave]
+
+
+cancel data/all
+use coads_climatology
+use ens1, ens2, ens3, ens4
+define data/agg/E/hide fourfiles = ens1, ens3, ens2, ens4
+show data
+
+! rename a variable
+set var/name=sea_temp_in sst
+show grid sea_temp_in
+list/y=13N/x=91W sea_temp_in
+
+
+cancel data/all
+
+! Create airt in the other datasets by LET/D definitions.
+use ens1, ens2, ens3, ens4
+let/d=ens2 airt = sst + 1
+let/d=ens3 airt = sst + 1
+let/d=ens4 airt = sst + 1
+
+ensemble/hide fourfiles = ens1, ens3, ens2, ens4
+show data fourfiles
+
+set var/name=air_temp airt
+show grid air_temp
+show data
+list/y=13N/x=91W air_temp
+
+! Make a new definition of airt, a common reason for a rename.
+let/like=air_temp airt = air_temp + 1.1
+list/y=13N/x=91W airt
+
+list/i=3 airt[T=@ave]
+
+cancel data/all
+cancel var/all
+
+! create an ensemble where one member is missing
+ENSEMBLE fourfiles_gap = ens1, -, ens3, ens4
+show data fourfiles_gap
+
+set var/name=sea_t sst
+show grid sea_t
+let/d=fourfiles_gap sst = 3* sea_t
+list/i=3 sst[T=@ave]
+
+
+cancel data/all
+cancel var/all
+
+! Subsets of coads_climatology and monthly_navy_winds.
+! Define an ensemble after making LET/D definitions so that
+! variables have the same name and grid.
+
+use navy_uw
+
+set var/name=uin uwnd
+set var/name=vin vwnd
+save/clobber/file=file2.nc uin, vin
+can data/all
+
+use coads_uw
+use file2
+
+! Define the ensemble dataset
+
+! Define uwnd and vwnd in dataset 2 to have the grid of 
+! those variables in dataset 1
+
+let/d=2/units="`uin,return=units`"/title="`uin,return=title`" \
+ uwnd = uin[d=2,gxy=uwnd[d=1],gt=uwnd[d=1]@mod]
+let/d=2/units="`vin,return=units`"/title="`vin,return=title`" \
+ vwnd = vin[d=2,gxy=vwnd[d=1],gt=vwnd[d=1]@mod]
+
+
+! Define the ensemble dataset
+ensemble windy = 1,2
+show grid vwnd
+show data windy
+
+! Intentional errors: a limit to this capability
+
+set mode ignore
+
+! but, in doing the LET/D= renames, we have changed the (internal) name of
+! the variable in the member sets, so the info is now lost for the 
+! LET definitions made to set up the ensemble if they use the 
+! original variable names.
+
+! Can make the definitions
+
+set var/name=uu uwnd
+
+cancel data/all
+cancel variable/all
+sp rm file2.nc
+
+set mode /last ignore
+

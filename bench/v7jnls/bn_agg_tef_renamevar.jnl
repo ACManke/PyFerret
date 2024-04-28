@@ -1,0 +1,85 @@
+! bn_agg_tef_rename.jnl
+
+
+! Test variable renaming in 6D aggregations: T, E, and F simultaneously
+!  The full aggregation of aggregations is an error, testing graceful exit.
+
+! do not bother to echo the creation of files and the definitions of the
+! many time aggregations
+CANCEL MODE VERIFY
+
+
+! see if the test file already exists
+SPAWN "ls tmp/f04_e3_t3_1v.nc"
+IF ($SPAWN_OK) THEN
+  say *** NOT RE-CREATING bn_aggregate_tef.jnl test files. They already exist.
+ELSE
+  go bn_aggregate_tef.sub
+ENDIF
+
+! ***** end of TEF file creation ****************
+
+! define T aggregations -- lots of em
+repeat/name=fdate/range=1:31:3 (\
+  let tstart = t[gt=monthly,l=`fdate`];\
+  repeat/name=ens/range=1:5:1 (\
+    let realization = `ens`;\
+    TSERIES  t_f`(fdate-1)/3+1,zw=2`_e`ens` = SPAWN("ls -1 tmp/f`(fdate-1)/3+1,zw=2`_e`ens`_t?.nc")  ))
+
+! plus 1 T-aggregation lacking fcst_2
+repeat/name=fdate/range=10:10:3 (\
+  let tstart = t[gt=monthly,l=`fdate`];\
+  repeat/name=ens/range=3:3:1 (\
+    let realization = `ens`;\
+    TSERIES  t_f`(fdate-1)/3+1,zw=2`_e`ens`_1v = SPAWN("ls -1 tmp/f`(fdate-1)/3+1,zw=2`_e`ens`_t*_1v.nc")  ))
+cancel variable realization
+
+SET MODE VERIFY
+
+show data/members/br
+
+
+! should share the same time axis
+show grid fcst[d=t_f01_e1]
+show grid fcst[d=t_f01_e2]
+
+! ======== TEST SET 1:  aggregate E first, then F
+
+! define te aggregations -- only the first 5 remain unhidden
+ENSEMBLE      te_f01 = t_f01_e1, t_f01_e2, t_f01_e3, t_f01_e4, t_f01_e5
+ENSEMBLE/hide te_f02 = t_f02_e1, t_f02_e2, t_f02_e3, t_f02_e4, t_f02_e5
+ENSEMBLE/hide te_f03 = t_f03_e1, t_f03_e2, t_f03_e3, t_f03_e4, t_f03_e5
+ENSEMBLE/hide te_f04 = t_f04_e1, t_f04_e2, t_f04_e3, t_f04_e4, t_f04_e5
+ENSEMBLE/hide te_f05 = t_f05_e1, t_f05_e2, t_f05_e3, t_f05_e4, t_f05_e5
+ENSEMBLE/hide te_f06 = t_f06_e1, t_f06_e2, t_f06_e3, t_f06_e4, t_f06_e5
+ENSEMBLE/hide te_f07 = t_f07_e1, t_f07_e2, t_f07_e3, t_f07_e4, t_f07_e5
+ENSEMBLE/hide te_f08 = t_f08_e1, t_f08_e2, t_f08_e3, t_f08_e4, t_f08_e5
+ENSEMBLE/hide te_f09 = t_f09_e1, t_f09_e2, t_f09_e3, t_f09_e4, t_f09_e5
+ENSEMBLE/hide te_f10 = t_f10_e1, t_f10_e2, t_f10_e3, t_f10_e4, t_f10_e5
+ENSEMBLE/hide te_f11 = t_f11_e1, t_f11_e2, t_f11_e3, t_f11_e4, t_f11_e5
+SHOW DATA/brief
+
+SHOW DATA/FULL te_f11
+
+! Can do a rename for ensemble variable
+
+set variable/name=fubb fcst
+list/i=11/j=5/L=2:3 fubb
+
+! Name it back
+set variable/name=fcst fubb
+
+
+! define tef aggregation
+FMRC/HIDE tef = te_f01, te_f02, te_f03, te_f04, te_f05, te_f06, te_f07, te_f08, te_f09, te_f10, te_f11
+SHOW DATA/brief/members
+show data/full tef
+
+
+! Intentional error -- SET VAR/RENAME in aggregation of aggregations not allowed
+
+set mode ignore
+set var/name=fubb fcst
+
+set mode /last ignore
+
