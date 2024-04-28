@@ -15,9 +15,11 @@
 !	 41 42 43 44 45 46 47 48 49 50
 
 * fill with dummy data
-	DO 5 j = 1,5
-	DO 5 i = 1,10
- 5	myvar(i,j) = (j-1)*10+i
+	DO j = 1,5
+	DO i = 1,10
+	   myvar(i,j) = (j-1)*10+i
+	ENDDO
+	ENDDO
 
 
 * messages to user
@@ -50,8 +52,9 @@
 #endif
 #endif
 
-	DO 100 j = 1, 5
- 100	WRITE (20,REC=j) (myvar(i,j),i=1,10)
+	DO j = 1, 5
+	   WRITE (20,REC=j) (myvar(i,j),i=1,10)
+	ENDDO
 
 	STOP
 	END
