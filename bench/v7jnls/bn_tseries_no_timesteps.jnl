@@ -1,0 +1,93 @@
+! bn_tseries_no_timesteps.jnl
+! See PyFerret issue 115. Files with no timestamps. Time
+! aggregation can create an abstract L axis or assign to a
+! defined time axis.
+
+! Create some files. The first 4 have no time axis.
+use coads_climatology
+
+let/like=sst/units="Deg f" ftemp = (sst* 9/5) + 32
+save/clobber/keep/outtype=float/x=160:170/y=35:45/file=sstdat1.nc sst[l=1:1@ave],  ftemp[l=1:1@ave]
+save/clobber/keep/outtype=float/x=160:170/y=35:45/file=sstdat2.nc sst[l=2:2@ave],  ftemp[l=2:2@ave]
+save/clobber/keep/outtype=float/x=160:170/y=35:45/file=sstdat3.nc sst[l=3:3@ave],  ftemp[l=3:3@ave]
+
+save/clobber/keep/outtype=float/x=160:170/y=35:45/file=seadat_time.nc sst[l=2],  ftemp[l=2]
+
+cancel data/all
+cancel variable/all
+
+! Define any time axis
+define axis/t=1-jun-2002:3-jun-2002:1/units=day tday
+let file_list = spawn("ls sstdat*.nc")
+tseries/taxis=tday threeday = file_list
+
+show data threeday
+show grid sst
+
+list/i=4/j=5 sst, ftemp
+
+! Now aggregate (in a different order) without a defined time axis. This 
+! defines the aggregation on an abstract axis in the L direction.
+
+tseries three = sstdat2.nc, sstdat3.nc, sstdat1.nc
+
+show data three
+show grid sst
+list/i=4/j=5 sst
+
+cancel data/all
+
+! Intentional errors
+
+set mode ignore
+
+! Try including a file with a single timestep. This is an error.
+! Just as encountering any file inconsistent with the tseries
+! aggregation, the error does not show up until we try to use data
+! from the offending file 
+
+tseries four = sstdat1.nc, sstdat2.nc, seadat_time.nc, sstdat3.nc
+
+show data 
+show grid sst
+
+list/i=4/j=5 sst - ftemp
+
+cancel data/all
+
+! Requested time axis has wrong number of steps for # of files
+
+! Too long a time axis is ok - the extra steps are filled with missing-data
+define axis/t=1-jun-2002:15-jul-2002:5/units=day tday
+let file_list = spawn("ls sstdat*.nc")
+tseries/taxis=tday days = file_list
+
+show grid sst
+list/i=4/j=5 sst 
+
+cancel data/all
+
+! Too long a time axis is ok - the extra steps are just missing-data
+define axis/t=1-jun-2002:15-jul-2002:5/units=day tday
+let file_list = spawn("ls sstdat*.nc")
+tseries/taxis=tday days = file_list
+
+show grid sst
+list/i=4/j=5 sst 
+
+cancel data/all
+
+
+! Too short a time axis is an error
+define axis/t=1-jun-2002:2-jun-2002:1/units=day tday
+let file_list = spawn("ls sstdat*.nc")
+tseries/taxis=tday days = file_list
+
+
+! First file listed has a time coordinate. So the aggregation
+! starts but then runs into files with no time coords.
+
+set mode/last ignore
+
+sp rm sstdat*.nc
+sp rm seadat_time.nc
