@@ -139,6 +139,8 @@ c	        IF (NL.EQ.1 .AND. J.LE.2) ZLEV(2) = zlev(1)
 *                   into the array val_lab.
 *  V7.6 *acm*  6/20 PyFerret issue 63: when using the system fonts, move the text away 
 *                   from vertical colorbar.
+*  V7.65*acm*  5/24 Ferret issue 63 and others: rework and simplify right-justifying
+*		    the labels on vertical colorbars
 
         IMPLICIT NONE
 
@@ -177,12 +179,13 @@ c	        IF (NL.EQ.1 .AND. J.LE.2) ZLEV(2) = zlev(1)
 	real		xx,yy,xxx,yyy, xx1, xxn, xxlen, xpos, wid, xp
         real            kx_lo_def, kx_hi_def, ky_lo_def, ky_hi_def,
      .                  val, del, x_inc_inf, y_inc_inf, frac, fixx, inc_min, 
-     .                  center_add, ht_ann, keylab_angl, val_lab(ICNLEV)
+     .                  center_add, ht_ann, keylab_angl, val_lab(ICNLEV), 
+     .                  factr, wid_max
 
         character*48    TM_FMT_SNGL
         character*30    txt_out, text, buff
-	logical		TM_FPEQ_SNGL, TM_DFPEQ, ITSA_AXIS_VIEW, TM_HAS_STRING,  
-     .                  windof_hold, check_0, nofill, cont_key_keep, 
+	logical         TM_FPEQ_SNGL, TM_DFPEQ, ITSA_AXIS_VIEW, TM_HAS_STRING, 
+     .                  windof_hold, check_0, nofill, cont_key_keep,
      .                  no_lines, is_viewport, have_neg, string_labs, skip_key
 
 	equivalence 	(px(1),kpx(1)),(py(1),kpy(1))
@@ -207,6 +210,11 @@ c	        IF (NL.EQ.1 .AND. J.LE.2) ZLEV(2) = zlev(1)
 	center_add = 0.
 	if (center_key_labels) center_add = 0.5
 	keylab_angl = 0.
+
+	karht = 0.
+	rem = 0.
+	max_len = 0
+	lab_digits = 0
 
 	incr = 0
 
@@ -624,8 +632,14 @@ c	IF ( no_lines ) cont_key = .TRUE.
 *	MAKE A VERTICAL KEY 
 1000	CONTINUE
 
-* Define default x and y lo and hi locations
+* The system fonts such as arial and helvetica are larger than Hershey font by 
+* approx this factor, which affects right-justifying the labels.
+* (Serif fonts are even bigger, could do more to set another factr.)
 
+	factr = 1.
+	IF (pyfont) factr = 6.4/ 5.7
+
+* Define x and y lo and hi locations
 
         if (ppl_in_ferret) then
            call get_view_size (vwidth,vheight,is_viewport)
@@ -715,7 +729,8 @@ c	IF ( (INT(0.5 + inc_min/y_inc) .GE. 2) ) no_lines = .TRUE.
 c	IF ( no_lines ) cont_key = .TRUE.
 
 *	SET CHARACTER HEIGHT IN WORLD COORDINATES, AND INCR INDEX
-        if (klab_size .eq. 0.0) then
+
+	if (klab_size .eq. 0.0) then
 	   karht = AMIN1 (ycsize*1000.0,500.0*rem/real(max_len))/1000.0
 	else
 	   karht = ABS(klab_size)
@@ -805,23 +820,9 @@ c	IF ( no_lines ) cont_key = .TRUE.
 
            ENDIF ! neginf or posinf
 
-           IF (ndx .GE. lev1 .AND. ndx .LE. levn) THEN
-              
-	      IF (string_labs) THEN
-	         text = colorkey_labs(ndx)
-	         str_len = TM_LENSTR1(text)
-		 IF (max_len .LT. str_len) istr_max = ndx
-	      ELSE
-	         val = val_lab(ndx)
-	         IF (TM_FPEQ_SNGL(val,0.) .AND. check_0) val = 0.
-	         text = TM_FMT_SNGL (val,lab_digits,klab_len+lab_add,str_len)
-	      ENDIF
-	      if (max_len .lt. str_len) max_len = str_len
-
-           ENDIF
 1010	continue
-
-        IF (incr .GT. 0) THEN
+	
+	IF (incr .GT. 0) THEN
 
 * Would the labels be squished vertically?  increase the increment as needed  
 * Diff yheight from one label to the next is FLOAT(incr)* y_inc/1000.0)
@@ -832,6 +833,9 @@ c	IF ( no_lines ) cont_key = .TRUE.
 	      incr = 2*incr
 	   ENDDO
 	ENDIF
+
+c	x_inc = 0.1* x_inc  ! used in location of labels when user-defined bar location
+	x_inc = 0.
 
 	shd_lev_hi = shd_levels+1
 	IF (center_key_labels .AND. posinf) shd_lev_hi = shd_levels
@@ -845,15 +849,16 @@ c	IF ( no_lines ) cont_key = .TRUE.
 	   wid = 0.5* karht
 	ELSE
 
-
 	   num_dec = 0
+
 	   DO ndx = lev1+incr, shd_levels, incr
               val = val_lab(ndx)
-c              IF (center_key_labels .AND. ndx.GE.shd_levels) EXIT ! from loop	
+              IF (center_key_labels .AND. ndx.GE.shd_levels) EXIT ! from loop	
               IF (TM_FPEQ_SNGL(val,0.) .AND. check_0) val = 0.
 	      buff = TM_FMT_SNGL (val,lab_digits,klab_len+lab_add,str_len)
               i = INDEX(buff, '.')
               IF (i .GT. 0) num_dec = MAX(num_dec, str_len-i)
+
 	   ENDDO
 
 	   have_neg = .FALSE.
@@ -874,41 +879,16 @@ c              IF (center_key_labels .AND. ndx.GE.shd_levels) EXIT ! from loop
 	         txt_out = buff
 	      ENDIF
 	      have_neg = have_neg .OR. val.LT.0 
+
 	   ENDDO
 	   buff = txt_out
 
-! Use SYMWID to right-justify numeric labels
-
-           txt_out = buff(:max_len)//'X'   ! extra space between key and label
-           wid = SYMWID(karht,max_len+1,txt_out(:max_len))
 	ENDIF
 
-! Set xpos = position of end of string, right-justify from there.
+* Set xpos = starting point for the string, will right-justify later
 
         xpos = kpx(2)/ 1000.0 - xorg
-
-* Keep the labels from running off the edge
-        IF (have_neg) THEN
-           xpos = xpos - 0.2*karht
-           IF (klab_size.EQ.0) karht = 0.9*karht
-        ENDIF
-
         IF ((kuser_loc(1) .OR. kuser_loc(2))) xpos = (kx_hi + x_inc)/ 1000. - xorg
-
-* Set up to right-justify the labels, moving xpos to the rightmost position.
-
-	ndx = max_len
-	IF (pyfont) ndx = ndx-1
-
-        buff = 'X'
-        DO i = 1, ndx
-           buff = buff(:i)//'X'   ! extra space between key and label
-        ENDDO
-
-        wid = SYMWID(karht,ndx,buff(:ndx))
-	IF (pyfont) wid = wid + 0.5*karht
-
-        xpos = xpos + wid
 
 * If klab_size negative put the key labels on the left rather than 
 * the right of the key
@@ -918,12 +898,18 @@ c              IF (center_key_labels .AND. ndx.GE.shd_levels) EXIT ! from loop
            xpos = kx_lo/1000.0 - xorg - wid
         ENDIF
 
+* Keep the labels from running off the edge
+        IF (have_neg) THEN
+           xpos = xpos - 0.2*karht
+           IF (klab_size.EQ.0) karht = 0.9*karht
+        ENDIF
+
 * If the user set the label size, leave it. If we are drawing in a viewport,
 * leave the label sizes as-is.  The user can control whether the labels may
 * run into the next viewport or a margin. Otherwise make labels smaller to 
 * try to fit them on the page.
 
-        IF (klab_size.EQ.0 .AND. .NOT.is_viewport .AND. xpos+xorg.GT.vwidth) THEN
+	IF (klab_size.EQ.0 .AND. .NOT.is_viewport .AND. xpos+xorg.GT.vwidth) THEN
 
            ic = 0
            DO WHILE (xpos+xorg .GT. vwidth .AND. ic.LT.5)
@@ -936,26 +922,21 @@ c              IF (center_key_labels .AND. ndx.GE.shd_levels) EXIT ! from loop
               xp = xp + wid
               ic = ic + 1
               IF (karht .LT. 0.06) THEN 
-		    xp = vwidth - xorg - 0.1*karht
-		    EXIT ! from loop
+	         xp = vwidth - xorg - 0.1*karht
+		 EXIT ! from loop
               ENDIF
-	      xp = kpx(2)/ 1000.0 - xorg
 
            ENDDO
-
 
            xpos = kpx(2)/ 1000.0 - xorg + wid
 	ENDIF
 
-c	IF (klab_size.EQ.0 .AND. karht .LT. 0.05) THEN
-c	   karht = 0.07
-c	   IF (center_key_labels) center_add = 0.8
-c	   keylab_angl = -50.
-c	ENDIF
+* Have finalized karht, incr, and xpos. Get final value for max width of labels
+* for right-justification.
 
-        do 1020 ndx = lev1,shd_lev_hi,incr
-*	   WRITE OUT CORRESPONDING VALUE
-	   	         
+	wid_max = 0.
+	do 1020 ndx = lev1,shd_lev_hi,incr
+
 	   IF (string_labs) THEN
 	      text = colorkey_labs(ndx)
 	      str_len = TM_LENSTR1(text)
@@ -974,6 +955,7 @@ c	ENDIF
 
 	   IF (.NOT.string_labs .AND. num_dec.GT.0 .AND. 
      .         INDEX(text, 'E').EQ.0 .AND. TM_LENSTR(text).GT.0) THEN
+     
 	      IF (INDEX(text, '.') .EQ. 0) THEN
 	         text = text(:TM_LENSTR1(text))//'.0'
 	         IF (num_dec .GT. 1) THEN
@@ -982,7 +964,7 @@ c	ENDIF
 	            ENDDO
 	         ENDIF
 
-	      ELSE IF (str_len.LT.max_len .AND. INDEX(text, 'E').EQ.0) THEN
+	      ELSE IF (str_len.LT.max_len) THEN
 	         maxstr = max_len
 		 IF (have_neg .AND. val .GE. 0.) maxstr = maxstr - 1
 		 
@@ -993,20 +975,82 @@ c	ENDIF
 	         DO i = i_dec+1, num_dec
 		    text = text(:TM_LENSTR1(text))//'0'
 	         ENDDO 
+		 		 
+	      ENDIF
+   
+	   ENDIF
+	   str_len = TM_LENSTR(text)
+	   wid_max = MAX(wid_max, SYMWID(karht*factr,str_len,text(:str_len)))
+	   
+1020	continue
+
+* Finally add the labels to the colorbar, right-justified.
+
+	DO 1030 ndx = lev1,shd_lev_hi,incr
+
+	   IF (string_labs) THEN
+	      text = colorkey_labs(ndx)
+	      str_len = TM_LENSTR1(text)
+	   ELSE
+	      val = val_lab(ndx)
+	      IF (center_key_labels .AND. ndx.GE.shd_lev_hi) EXIT ! from loop
+	      IF (TM_FPEQ_SNGL(val,0.) .AND. check_0) val = 0.
+	      text = TM_FMT_SNGL (val,lab_digits,klab_len+lab_add,str_len)
+	   ENDIF
+	   IF (ndx .EQ. 1 .AND. neginf) CYCLE
+	   IF (ndx .EQ. levn+1 .AND. posinf) CYCLE
+
+* Add a .0 with the right number of 0's if the other labels have 
+* decimal-point .xx but this one does not. Add trailing 0's for 
+* non-scientific-notation numbers so they're all the same length.
+
+	   IF (.NOT.string_labs .AND. num_dec.GT.0 .AND. 
+     .         INDEX(text, 'E').EQ.0 .AND. TM_LENSTR(text).GT.0) THEN
+     
+	      IF (INDEX(text, '.') .EQ. 0) THEN
+	         text = text(:TM_LENSTR1(text))//'.0'
+	         IF (num_dec .GT. 1) THEN
+	            DO i = 2,num_dec
+		       text = text(:TM_LENSTR1(text))//'0'
+	            ENDDO
+	         ENDIF
+
+	      ELSE IF (str_len.LT.max_len) THEN
+	         maxstr = max_len
+		 IF (have_neg .AND. val .GE. 0.) maxstr = maxstr - 1
 		 
+		 i = INDEX(text, '.')
+		 i_dec = 0
+		 IF (i .GT. 0) i_dec = str_len-i
+
+	         DO i = i_dec+1, num_dec
+		    text = text(:TM_LENSTR1(text))//'0'
+	         ENDDO 
+		 		 
 	      ENDIF
    
 	   ENDIF
 	   str_len = TM_LENSTR(text)
 
-* Right-justify them. If using the system fonts, move the text away from
-* the colorbar; it tends to be too close (PyFerret issue 63)
+* For labels on the right, when its a system font we need a bit more space
+
+	   xx = xpos 
+ 	   IF (klab_size .GE. 0) THEN
+	      xx = xpos + 0.5* karht*factr
+	   ENDIF
+
+* Right-justify labels on the right.
 
 	   txt_out = text
-	   wid = SYMWID(karht,str_len,txt_out)
-	   IF (pyfont) wid = wid-0.5*karht
-	   IF (string_labs) wid = 0.
-	   xx = xpos - WID
+	   IF (.NOT. string_labs) THEN
+	      wid = SYMWID(karht*factr,str_len,txt_out(:str_len))
+	      IF (klab_size .GE. 0) THEN
+c		 IF (wid .LT. wid_max) xx = xx + (wid_max - wid)*factr  ?
+		 IF (wid .LT. wid_max) xx = xx + (wid_max - wid)	 
+	      ELSE
+		  xx = xx - wid 
+	      ENDIF
+	   ENDIF
 
 	   yy = ( ky_lo + y_inc* (center_add+ real(ndx-1)) )/1000.0 - 
      .        yorg - 0.5*karht
@@ -1022,7 +1066,8 @@ c	ENDIF
 
 	   call symbel (xxx,yyy,keylab_angl,karht,str_len,txt_out(1:str_len))
 
-1020	continue
+1030	continue
+
         ENDIF
 
 *  Set these to actual locations that were used for PPL LIST SHAKEY
