@@ -180,7 +180,7 @@ c	        IF (NL.EQ.1 .AND. J.LE.2) ZLEV(2) = zlev(1)
         real            kx_lo_def, kx_hi_def, ky_lo_def, ky_hi_def,
      .                  val, del, x_inc_inf, y_inc_inf, frac, fixx, inc_min, 
      .                  center_add, ht_ann, keylab_angl, val_lab(ICNLEV), 
-     .                  factr, wid_max
+     .                  wid_max
 
         character*48    TM_FMT_SNGL
         character*30    txt_out, text, buff
@@ -632,13 +632,6 @@ c	IF ( no_lines ) cont_key = .TRUE.
 *	MAKE A VERTICAL KEY 
 1000	CONTINUE
 
-* The system fonts such as arial and helvetica are larger than Hershey font by 
-* approx this factor, which affects right-justifying the labels.
-* (Serif fonts are even bigger, could do more to set another factr.)
-
-	factr = 1.
-	IF (pyfont) factr = 6.4/ 5.7
-
 * Define x and y lo and hi locations
 
         if (ppl_in_ferret) then
@@ -980,8 +973,7 @@ c	x_inc = 0.1* x_inc  ! used in location of labels when user-defined bar locatio
    
 	   ENDIF
 	   str_len = TM_LENSTR(text)
-	   wid_max = MAX(wid_max, SYMWID(karht*factr,str_len,text(:str_len)))
-	   
+	   wid_max = MAX(wid_max, SYMWID(karht,str_len,text(:str_len)))
 1020	continue
 
 * Finally add the labels to the colorbar, right-justified.
@@ -1036,16 +1028,15 @@ c	x_inc = 0.1* x_inc  ! used in location of labels when user-defined bar locatio
 
 	   xx = xpos 
  	   IF (klab_size .GE. 0) THEN
-	      xx = xpos + 0.5* karht*factr
+	      xx = xpos + 0.5* karht
 	   ENDIF
 
 * Right-justify labels on the right.
 
 	   txt_out = text
 	   IF (.NOT. string_labs) THEN
-	      wid = SYMWID(karht*factr,str_len,txt_out(:str_len))
+	      wid = SYMWID(karht,str_len,txt_out(:str_len))
 	      IF (klab_size .GE. 0) THEN
-c		 IF (wid .LT. wid_max) xx = xx + (wid_max - wid)*factr  ?
 		 IF (wid .LT. wid_max) xx = xx + (wid_max - wid)	 
 	      ELSE
 		  xx = xx - wid 
