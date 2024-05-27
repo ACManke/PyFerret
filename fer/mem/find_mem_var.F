@@ -83,6 +83,9 @@
 *	          with what is in memory.
 * V720: 4/17 *sh* special behaviors finding DSG variables 
 * V74+  5/18 *acm* issue 1868: gridding transforms that will grid to same axis
+* V765  5/24 *acm* tiny change: for repeated LABWID calls, the context info
+*                  doesn't know if the font has changed. When its a uservar
+*		   that included LABWID, do not find cached result
 
 * (V510) How on cache hits on external functions (EFs) work:
 * uvar_given is used to encapsulate information about cache reuse for EF
@@ -126,8 +129,8 @@
 	LOGICAL by_value, valid_search
 
 * internal variable declarations:
-	LOGICAL TM_DFPEQ, TM_ITSA_DSG, REGRID_TO_SELF,
-     .          has_trans, itsa_uvar, itsa_dsg,
+	LOGICAL TM_DFPEQ, TM_ITSA_DSG, REGRID_TO_SELF, TM_HAS_STRING,
+     .          has_trans, itsa_uvar, itsa_dsg, ok,
      .          normal(nferdims), non_modulo(nferdims), 
      .          self(nferdims), transformed
 	INTEGER HASH_CX, line, lm, status,
@@ -261,6 +264,9 @@
 * right instance (coordinate ranges and transformations) ?
 
 	IF ( itsa_uvar ) THEN
+	
+*  labwid changes if font has changed but font-change doesnt mean a context change
+	   IF (TM_HAS_STRING(uvar_text(var), 'labwid') ) GOTO 1000  
 
 * * * * * LOOK FOR A USER-DEFINED VARIABLE BASED ON COORDINATE VALUES  * * * * 
 	   DO 40 idim = 1,nferdims
@@ -296,7 +302,7 @@
                  IF ( .NOT. TM_DFPEQ(mr_delta(idim,mv),cx_delta(idim,cx)) )  GOTO 100
 	      ENDIF
 
- 40	   CONTINUE
+ 40	   CONTINUE 
 
 * right instance (coordinate ranges and transformations) ?
 	ELSEIF ( by_value ) THEN
@@ -449,6 +455,7 @@
  92	   CONTINUE
 	ENDIF
 
+	
 * WE FOUND IT !
 	mr = mv
 
