@@ -221,6 +221,7 @@
 *                      Format for the numbers didn't allow listing 100% 
 *  1/2023 *acm* Code cleanup: Replace the computed GOTO statement 
 *                  "GOTO ( 100,200, ... )  subcmnd_num"  with IF blocks
+**  5/2024 *acm* Change SET GIFFILE to SET PNGFILE
 
         IMPLICIT NONE
 
@@ -2209,7 +2210,7 @@ c Free the temporary storage for uvar-grid information
 
       ENDIF
 
-* SHOW GIFFILE
+* SHOW PNGFILE
 
       IF (subcmnd_num .EQ. 20) THEN
 
@@ -2230,6 +2231,9 @@ c Free the temporary storage for uvar-grid information
 	ENDIF
 
       ENDIF
+      
+* SET GIFFILE
+      IF (subcmnd_num .EQ. 24) GOTO 5400
 
 * SHOW FUNCTIONS
 
@@ -2442,6 +2446,8 @@ c Free any temporary storage for uvar-grid information
      .              //' is not available.'//pCR//
      .              '(LOAD this variable and try SHOW GRID again.)',
      .              *5000  )
+ 5400	CALL ERRMSG( ferr_invalid_command, status,
+     .     'The use of "SHOW GIFFILE" is discontinued. Use SHOW PNGFILE', *5000 )
  5060	CALL ERRMSG( ferr_invalid_command, status,
      .			'SHOW ATTRIBUTE given with no argument '
      .			, *5000 )

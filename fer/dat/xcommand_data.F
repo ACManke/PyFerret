@@ -269,6 +269,7 @@
 * V7.62 *acm* 8/20 DSG-enabled Ferret: SET DATA/SMASK= specifies a mask on station or
 *                  trajectory for timeseriesProfile or trajectoryProfile data
 ** 10/2022 *acm* Code cleanup: lengths of strings not to overflow length of character variable
+**  5/2024 *acm* Change SET GIFFILE to SET PNGFILE
 
 * !!!!!!!!!!
 * Use caution when defining new commands, qualifiers, or changing these data structures:
@@ -519,8 +520,8 @@
 		DATA qualifiers  (nqual_at1p+5)	/ '****'	/
 		DATA qualifiers  (nqual_at1p+6)	/ '****'	/
 		DATA qualifiers  (nqual_at1p+7)	/ '****'	/
-* SET GIFFILE							  ! set default gif filename and the pointer used in gif mode
-	   DATA subcommands      (nsub_at1 +16)	/ 'GIFFILE'	/
+* SET PNGFILE							  ! set default image filename and the pointer used in -png mode
+	   DATA subcommands      (nsub_at1 +16)	/ 'PNGFILE'	/
 	   DATA num_qualifs      (nsub_at1 +16)	/ nqual1q	/
 	   DATA qualifier_pointer(nsub_at1 +16)	/ nqual_at1q	/
 * SET TEXT							  ! set text properties for PyFerret fonts
@@ -534,10 +535,11 @@
                 DATA qualifiers  (nqual_at1r+3)	/ 'BOLD'	/
                 DATA qualifiers  (nqual_at1r+4)	/ 'ISIZ'	/
                 DATA qualifiers  (nqual_at1r+5)	/ '****'	/
-* SET ****							  ! unused (s)
-	   DATA subcommands      (nsub_at1 +18)	/ '****'	/
+* SET GIFFILE							  ! for issuing error message on discontinued GIFFILE
+	   DATA subcommands      (nsub_at1 +18)	/ 'GIFFILE'	/
 	   DATA num_qualifs      (nsub_at1 +18)	/ nqual1s	/
 	   DATA qualifier_pointer(nsub_at1 +18)	/ nqual_at1s	/
+
 * SET **** / ****
 		DATA qualifiers  (nqual_at1s+0)	/ '****'	/
 		DATA qualifiers  (nqual_at1s+1)	/ '****'	/
@@ -748,11 +750,11 @@
 	   DATA qualifier_pointer(nsub_at2 +18)	/ nqual_at2s	/
 * SHOW NCCACHE/ ****
 		DATA qualifiers  (nqual_at2s+0)	/ '****'	/
-* SHOW GIFFILE
-	   DATA subcommands      (nsub_at2 +19)	/ 'GIFFILE'	/
+* SHOW PNGFILE
+	   DATA subcommands      (nsub_at2 +19)	/ 'PNGFILE'	/
 	   DATA num_qualifs      (nsub_at2 +19)	/ nqual2t	/
 	   DATA qualifier_pointer(nsub_at2 +19)	/ nqual_at2t	/
-* SHOW GIFFILE/ ****
+* SHOW PNGFILE/ ****
 		DATA qualifiers  (nqual_at2t+0)	/ '****'	/
 * SHOW FUNCTION
 	   DATA subcommands      (nsub_at2 +20)	/ 'FUNCTION'	/
@@ -783,6 +785,13 @@
 		DATA qualifiers  (nqual_at2w+0)	/ 'ALL'		/
 		DATA qualifiers  (nqual_at2w+1)	/ '****'	/
 		DATA qualifiers  (nqual_at2w+2)	/ '****'	/
+		
+* SHOW GIFFILE						! for issuing error message on discontinued GIFFILE
+	   DATA subcommands      (nsub_at2 +23)	/ 'GIFFILE'	/
+	   DATA num_qualifs      (nsub_at2 +23)	/ nqual2t	/
+	   DATA qualifier_pointer(nsub_at2 +23)	/ nqual_at2t	/
+* SHOW GIFFILE/ ****
+		DATA qualifiers  (nqual_at2x+0)	/ '****'	/
 
 * CANCEL	 - command # 3
 	DATA commands(3)			/ 'CANCEL'	/

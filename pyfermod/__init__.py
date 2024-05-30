@@ -271,7 +271,7 @@ def addpath(newdir):
 pyferret_help_message = \
 """
 
-    Usage:  pyferret  [-memsize <N>]  [-nodisplay]  [-png]  [-nojnl]  [-noverify]
+    Usage:  pyferret  [-memsize <N>]  [-nodisplay]  [-png <pngname>]  [-nojnl]  [-noverify]
                       [-secure]  [-server]  [-python]  [-version]  [-help]
                       [-quiet]  [-linebuffer]  [-script <scriptname> [ <scriptarg> ... ]]
 
@@ -283,8 +283,11 @@ pyferret_help_message = \
                      option of SET WINDOW will be ignored when this is specified.
 
        -png          do not display to the console and only raster (PNG) images can be 
-                     saved.  Implies -nodisplay and removes support for deletion of 
-                     parts (segments) of a plot; however, plots will be generated faster.
+                     saved to an image file. The image filename is an optional argument 
+					 <name>.png (default ferret.png). Implies -nodisplay and removes 
+                     support for deletion of parts(segments) of a plot; however, plots 
+                     will be generated faster. When using this option, new windows 
+                     should not be created.
 
        -nojnl:       on startup do not open a journal file (can be turned on later with 
                      SET MODE JOURNAL)
@@ -374,6 +377,9 @@ def init(arglist=None, enterferret=True):
     script = None
     # To be compatible with traditional Ferret command-line options
     # (that are still supported), we need to parse the options by hand.
+	# Adding an argument to the -png option: the my_metaname change for
+	# -batch is a hack to pass to the ferret code the info about whether
+	# the option was -batch or -png for purposes of warning messages.
     if arglist:
         print_help = False
         just_exit = False
@@ -390,12 +396,12 @@ def init(arglist=None, enterferret=True):
                     if my_memsize <= 0.0:
                         raise ValueError("a positive number must be given for a -memsize value")
                 elif opt == "-batch":
-                    my_metaname = "ferret.png"
+                    my_metaname = "ferret.png.batch_option_with_name.png"
                     k += 1
                     # -batch has an optional argument
                     try:
                         if arglist[k][0] != '-':
-                            my_metaname = arglist[k]
+                            my_metaname = arglist[k] + ".batch_option_with_name.png"
                         else:
                             k -= 1
                     except:
@@ -407,6 +413,16 @@ def init(arglist=None, enterferret=True):
                 elif opt == "-unmapped":
                     my_unmapped = True
                 elif opt == "-png":
+                    my_metaname = "ferret.png"
+                    k += 1
+                    # -batch has an optional argument
+                    try:
+                        if arglist[k][0] != '-':
+                            my_metaname = arglist[k]
+                        else:
+                            k -= 1
+                    except:
+                        k -= 1
                     my_unmapped = True
                     my_pngonly = True
                 elif opt == "-gif":

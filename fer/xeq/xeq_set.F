@@ -229,6 +229,7 @@
 ** 10/2022 *acm* Code cleanup: remove references to obsolete gui interface
 *  1/2023 *acm* Code cleanup: Replace the computed GOTO statement 
 *                  "GOTO ( 100,200, ... )  subcmnd_num"  with IF blocks
+**  5/2024 *acm* Change SET GIFFILE to SET PNGFILE
 
         IMPLICIT NONE
 	include 'tmap_dims.parm'
@@ -2156,7 +2157,7 @@ c           ENDIF
 
       ENDIF
 
-
+* SET PNGFILE filename
       IF (subcmnd_num .EQ. 17) THEN
 
 	IF ( num_args .EQ. 0 ) GOTO 5100
@@ -2165,16 +2166,17 @@ c           ENDIF
         buff2 = cmnd_buff(item_start(1):item_end(1))
         IF ( .NOT. pplus_started ) CALL START_PPLUS(.FALSE.)
         CALL PPLCMD(from, line, 0, 'PLTNME ' // buff2, 1, 1)
-        CALL WARN('the use of "SET GIFFILE" is deprecated;')
-        CALL WARN('instead use "FRAME /FILE=... /FORMAT=..."')
         mode_metafile = .TRUE.
         RETURN
 
       ENDIF
 
 	
-* SET TEXT /FONT /COLOR /ITALIC /BOLD /ISIZ  GROUP
+* SET GIFFILE
+      IF (subcmnd_num .EQ. 19) GOTO 5105
 
+
+* SET TEXT /FONT /COLOR /ITALIC /BOLD /ISIZ  GROUP
 
       IF (subcmnd_num .EQ. 18) THEN
 
@@ -2233,6 +2235,8 @@ c           ENDIF
  5090	CALL ERRMSG( ferr_TMAP_error, status, ' ', *5000 )
  5100	CALL ERRMSG( ferr_invalid_command, status, 
      .			'SET what?', *5000 )
+ 5105	CALL ERRMSG( ferr_invalid_command, status, 
+     .     'The use of "SET GIFFILE" is discontinued. Use SET PNGFILE', *5000 )
  5110	CALL ERRMSG( ferr_unknown_data_set, status,
      .			cmnd_buff( item_start(item):item_end(item) ), *5000 )
  5120	CALL ERRMSG( ferr_unknown_grid, status, 

@@ -65,6 +65,8 @@
 *                   now needed for SAVE_FRAME
 * The following changes were not applied to PyFerret:
 * V6.95 *acm* 4/15 Haven't used HDF images for a long time: require GIF only.
+* V7.65 *acm* 5/24 see issue 123: Tweak to pyferret -batch imagename.png  
+*                  save multiple images with name using FRAME or FRAME/FILE=
 
         IMPLICIT NONE
         include 'tmap_dims.parm'
@@ -76,6 +78,7 @@
         include 'xplot_setup.cmn'
         include 'gkscm1_inc.decl'
         include 'GKSCM1.INC'      ! wsid
+	include 'gkscm2.cmn'      ! with meta_file
 
         REAL memory(*)
 
@@ -176,14 +179,18 @@
 
 * FRAME/FILE=filename
         loc = qual_given( slash_frame_file )
+	flen = TM_LENSTR1(meta_file) 
+
         IF ( loc .GT. 0 ) THEN
            CALL EQUAL_STR_LC(
      .          cmnd_buff(qual_start(loc):qual_end(loc)),
      .                    filename, sts )
            IF ( sts .NE. ferr_ok ) GOTO 5000
+        ELSEIF ( flen .GT. 0 ) THEN
+	  filename = meta_file
         ELSEIF ( fformat .NE. '' ) THEN
-           filename = 'ferret.' // fformat
-        ELSE
+             filename = 'ferret.' // fformat
+	ELSE
            filename = frame_file        ! saved SET MOVIE/FILE name
         ENDIF
         flen = TM_LENSTR1(filename)

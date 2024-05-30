@@ -95,7 +95,7 @@ void FORTRAN(recover_cached_full_array)(double *array, int *alen, double **point
 int  FORTRAN(replaceable_bad_flags)(DFTYPE *bad1, DFTYPE *bad2);
 void FORTRAN(replace_bad_data_sub)(DFTYPE *old_bad, DFTYPE *src, int *size, DFTYPE *new_bad);
 void FORTRAN(save_c_string)(char *string, int *inlen, char ***fer_ptr, int *offset, int *stat);
-void FORTRAN(save_metafile_name)(char *outfile, int *length);
+void FORTRAN(save_metafile_name)(char *outfile, int *length, int *batch_mode);
 void FORTRAN(set_batch_graphics)(char *outfile, int *batmode);
 void FORTRAN(set_nan)(DFTYPE *val);
 void FORTRAN(set_null_c_string)(char **out_ptr);

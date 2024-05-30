@@ -142,13 +142,29 @@
 * on start-up and there is no active window at this time.
 * Instead, set imgname_sent to .FALSE.
 *
-        SUBROUTINE SAVE_METAFILE_NAME(mname, clen)
+* 5/2024 Changes to let -png mode pass in a name, hack was to 
+*        use the my_metaname argument for both -batch and
+*        for -png, marking up the name sent in for -batch.
+*	 Undo that here, and for -batch, issue a warning.
+
+        SUBROUTINE SAVE_METAFILE_NAME(mname, clen, batch_mode)
         IMPLICIT NONE
         INCLUDE 'gkscm2.cmn'
-        INTEGER clen
+
+	LOGICAL TM_HAS_STRING
+        INTEGER clen, batch_mode, ndx
         integer*1 mname(clen)
 
         CALL TM_CTOF_STRNG(mname, meta_file, clen)
+
+	batch_mode = 0
+	IF (TM_HAS_STRING (meta_file, ".batch_option_with_name") ) 
+     .        batch_mode = 1
+	IF (batch_mode .EQ. 1) THEN
+	   ndx = INDEX(meta_file, ".batch_option_with_name")
+	   meta_file = meta_file(:ndx-1)
+	ENDIF
+
         save_on_exit = .TRUE.
         imgname_sent = .FALSE.
         RETURN
