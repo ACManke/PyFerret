@@ -162,6 +162,8 @@
 * V751  *acm* 5/19 Ticket 1931; don't try to translate the delta value in LO:HI:DEL
 *                  from a formatted string.  It's just a number.
 * 11/2022 *acm* Code cleanup: Modernize DO-loop syntax. 
+*  6/2024 *acm* Minor bug fix: trap and report missing argument to transformation
+*		e.g. var[L=5:50@sbx($smoother)]  when the symbol hasnt been defined.
 
 * specifiers may give coordinate in subscript units (/I,/J,/K,/L) or
 * may give coordinate in "world" units (/X,/Y,/Z,/T)
@@ -215,7 +217,7 @@
 	INTEGER		ATOM_POS, STR_CASE_BLIND_COMPARE, STR_UPCASE,
      .			TM_GET_GRIDNUM, KNOWN_GRID, FIND_DSET_NUMBER,
      .			REGION_NUMBER, TM_GET_LINENUM, TM_AXIS_DIRECTION,
-     .			TM_LENSTR1,
+     .			TM_LENSTR1, TM_LENSTR,
      .			equal_pos, colon_pos, atsin_pos, atcolon_pos, grid,
      .			suborval, lo_start, lo_end, namlen, rgdim,
      .			hi_start, hi_end, item, idim, del_start, del_end,
@@ -1036,6 +1038,7 @@ c	            axis = TM_GET_LINENUM( name(:nend) )
 	IF ( lo_start .GT. lo_end ) THEN
 	   fmat_lo = .FALSE.
 	ELSE
+	
 	   CALL TRANSLATE_LIMIT
      .		      ( text_buff(lo_start:lo_end), idim,
      .			cx_by_ss( idim, mods_cx ),
@@ -1125,6 +1128,7 @@ c	            axis = TM_GET_LINENUM( name(:nend) )
 * get the argument for the transformation, if given
 	   IF ( atcolon ) THEN
 	      buff = text_buff(atcolon_pos+1:iend)
+	      IF (TM_LENSTR(buff) .EQ. 0) goto 5180
 	      READ ( buff,* , ERR=5180 ) cx_trans_arg( idim, mods_cx )
 	   ENDIF
 
@@ -1317,7 +1321,7 @@ c	            axis = TM_GET_LINENUM( name(:nend) )
      .	 'Use SHOW TRANSFORMS for a list of legal transformations',
      .  *5000)
  5180	CALL ERRMSG( ferr_syntax, status, 
-     .	 'Invalid transformation argument:'//risc_buff(:len_rbuff),
+     .	 'Invalid transformation argument: '// text_buff(istart:iend),
      .	*5000)
  5190	CALL ERRMSG( ferr_syntax, status, 
      .	 'transformation reserved for FERRET internal use:'//pCR//
