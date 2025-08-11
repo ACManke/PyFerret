@@ -26,10 +26,10 @@ or activity by the DOC or the United States Government.*
 For more information on using PyFerret, see the Ferret and PyFerret documentation under
 [https://ferret.pmel.noaa.gov/Ferret/](https://ferret.pmel.noaa.gov/Ferret/)
 
-Information about the Ferret email users group, and archives of past discussions
-from the group (which should be searched prior to sending a question to the email
-users group) can be found at
-[https://ferret.pmel.noaa.gov/Ferret/email-users-group/](https://ferret.pmel.noaa.gov/Ferret/email-users-group/)
+A copy of the documentation plus the Ferret Users'List Archive can be found here:
+https://acmanke.github.io/PyFerret.Community/
+This version of the documentation includes a copy of the Archives of the Ferret email users group, 
+
 
 ## Jupyter / iPython notebook
 
