@@ -104,8 +104,11 @@ if ! echo "$fver" | grep -q "pyferret"; then
 else
    ispyferret=1
 #  command-line options for pyferret
-   feropts="-nojnl -quiet -nodisplay -noverify -linebuffer"
 #  -linebuffer sets line buffering for C and Python I/O
+#    This seems to cause a failure in bn_attributes.jnl
+#    reading or listing some attributes that are long-ish strings
+#   feropts="-nojnl -quiet -nodisplay -noverify -linebuffer"
+   feropts="-nojnl -quiet -nodisplay -noverify "
 #  GFORTRAN_UNBUFFERED_PRECONNECTED=1 removes buffering of Fortran I/O
    GFORTRAN_UNBUFFERED_PRECONNECTED=1
    export GFORTRAN_UNBUFFERED_PRECONNECTED
@@ -113,7 +116,6 @@ else
    PYFER_EXTERNAL_FUNCTIONS="$efdir"
    export PYFER_EXTERNAL_FUNCTIONS
 fi
-
 # set up a generic data environment
 echo "****** Restricting Ferret paths to bench directory ******" >> $log_file
 . ./bench_environment.sh
